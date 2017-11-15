@@ -1,5 +1,5 @@
 import re, pexpect, sys, time
-from byexample import ExampleParser
+from byexample.byexample import ExampleParser
 
 class ShellInterpreter(ExampleParser):
     def example_regex(self):

@@ -1,19 +1,24 @@
-.PHONY: all test dist upload
+.PHONY: all test dist upload clean
 
 all:
 	echo "Usage: make test|dist"
 	exit 1
 
 test:
-	python -m doctest byexample.py
-	python -m byexample `find regress -name "*.rst"`
+	python -m doctest byexample/byexample.py
+	python -m byexample README.rst
+	python -m byexample `find docs -name "*.rst"`
 
 dist:
 	rm -Rf dist/ build/ *.egg-info
-	#pandoc --from=markdown --to=rst README.md -o README.rst
 	python setup.py sdist bdist_wheel --universal
-	rm -Rf build/ *.egg-info README.rst
+	rm -Rf build/ *.egg-info
 
 upload: dist
 	twine upload dist/*.tar.gz dist/*.whl
 
+clean:
+	rm -Rf dist/ build/ *.egg-info
+	rm -Rf build/ *.egg-info
+	find . -name "*.pyc" -delete
+	find . -type d -name "__pycache__" -delete

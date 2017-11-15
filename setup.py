@@ -11,38 +11,36 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-#with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
-#    long_description = f.read() # TODO XXX -----------
-long_description = 'bla'
+with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
     name='byexample',
     version='1.0.0',
 
-    description='Write snippets of code as documentation and execute them ' +\
-                'as tests. Execute your docs!.',
+    description='Write snippets of code in Python, Ruby, and others as ' +\
+                'documentation and execute them as regression tests.',
     long_description=long_description,
 
-    url='https://github.com/XXXXXXXXXXXXXXXXXXXXXXX', # TODO XXX -----------
+    url='https://github.com/eldipa/byexample',
 
     # Author details
     author='Di Paola Martin',
-    author_email='no-email@example.com',
+    author_email='use-github-issues@example.com',
 
-    license='GNU LGPLv3', # TODO XXX also add a LICENSE file
+    license='GNU GPLv3',
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Topic :: Documentation',
         'Topic :: Software Development :: Documentation',
         'Topic :: Software Development :: Testing',
 
-        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)', # TODO XXX------------
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
 
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3',
         'Programming Language :: Ruby',
         'Programming Language :: Unix Shell',
     ],
@@ -52,8 +50,12 @@ setup(
 
     keywords='doctest documentation test testing',
 
-    py_modules=['byexample'],
-    packages=['byexample_interpreters']
+    packages=['byexample', 'byexample.interpreters'],
 
+    entry_points={
+        'console_scripts': [
+            'byexample = byexample.byexample:main',
+            ],
+        }
 )
 

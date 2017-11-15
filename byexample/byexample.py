@@ -870,7 +870,3 @@ def main():
             break
 
     return exit_status
-
-
-if __name__ == "__main__":
-    sys.exit(main())
