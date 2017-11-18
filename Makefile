@@ -1,8 +1,11 @@
 .PHONY: all test dist upload clean
 
 all:
-	echo "Usage: make test|dist"
+	echo "Usage: make test|dist|upload|clean|deps"
 	exit 1
+
+deps:
+	pip install pexpect
 
 test:
 	@python r.py -f -i python byexample/*.py
