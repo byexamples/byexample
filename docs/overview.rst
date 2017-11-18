@@ -6,21 +6,38 @@ ordinary text and snippets the code in the same file
 It is intended primary for writing good and live documentation showing
 how a piece of software works or it can be used *by example*.
 
-Currently Python and Ruby are the supported languages. Stay tuned.
+Currently we support
+ - Python
+ - Ruby
+ - Shell (sh and bash)
 
-Expressions
-------------
+More languages will be supported in the future. Stay tuned.
 
-Expressions are preceded by the primary prompt. If the expression spans
+Snippets of code
+----------------
+
+Any snippet of code that it is detected by ``byexample`` will be executed
+and its output compared with the expected one.
+This a quite useful way to test and document by example.
+
+The snippets are preceded by the primary prompt. If the code spans
 multiple lines, ``byexample`` uses a secondary prompt.
 
-In Python ``byexample`` uses the ``>>>`` string as the primary prompt and
+There is not restriction in which snippets you can add. You can even mix
+snippets of different languages in the same file!
+
+For Python ``byexample`` uses the ``>>>`` string as the primary prompt and
 ``...`` as the secondary prompt.
 
 .. code:: python
 
     >>> 1 + 2
     3
+
+The expression ``1 + 2`` is executed and the output compared with ``3`` to
+see if the test passes or not.
+
+.. code:: python
 
     >>> a = 1
     >>> b = 2
@@ -46,7 +63,7 @@ In Python ``byexample`` uses the ``>>>`` string as the primary prompt and
     ...  3, 4]
     [1, 2, 3, 4]
 
-In Ruby ``byexample`` uses the ``rb>`` string as the primary prompt and
+Instead for Ruby ``byexample`` uses the ``rb>`` string as the primary prompt and
 ``...`` as the secondary prompt.
 
 The ``=>`` marker is written by the Ruby interpreter and not by ``byexample``.
@@ -79,8 +96,8 @@ It is left as is as this is quite common in the Ruby examples and literature.
     rb> g(1, 2, 3)
     => 6
 
-In Shell, we use the simples ``$`` or ``#`` as the primary prompt and ``>``
-as the secondary prompt.
+For Shell, we use the simple ``$`` or ``#`` markers as the primary prompt
+and ``>`` as the secondary prompt.
 It is common to use ``#`` when user of the shell is ``root`` and to use ``>``
 otherwise but nevertheless ``byexample`` treats those prompts like the same.
 
@@ -119,9 +136,6 @@ The 'match anything' wildcard
 By default, if the expected text has the ``<...>`` marker, that
 will match for any string.
 Very useful to match long strings with unwanted or uninteresting pieces.
-
-This is different from ``doctest`` where the marker is ``...`` and needs
-to be enabled with the ``+ELLIPSIS`` option but the net effect is the same.
 
 .. code:: python
     >>> print(list(range(20)))
@@ -268,3 +282,24 @@ normally but it will not check the output.
     $ echo $a
     42
 
+Differences
+-----------
+
+``byexample`` will show you the differences when there is a mismatch.
+How?  it will depend of flags used.
+
+===========  ==============  ==============  ==============
+default      ``UDIFF`` flag  ``NDIFF`` flag  ``CDIFF`` flag
+===========  ==============  ==============  ==============
+Expected:     Differences:    Differences:    Differences:
+one           +zero           + zero          *** 1,4 ****
+two            one              one             one
+three         -two            - two           ! two
+four          -three          - three         ! three
+Got:          +tree           ?  -              four
+zero           four           + tree          --- 1,4 ----
+one                             four          + zero
+tree                                            one
+four                                          ! tree
+                                                four
+===========  ==============  ==============  ==============

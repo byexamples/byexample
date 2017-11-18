@@ -5,9 +5,9 @@ all:
 	exit 1
 
 test:
-	python -m doctest byexample/byexample.py
-	python -m byexample README.rst
-	python -m byexample `find docs -name "*.rst"`
+	@python r.py -f -i python byexample/*.py
+	@python r.py -f README.rst
+	@python r.py -f `find docs -name "*.rst"`
 
 dist:
 	rm -Rf dist/ build/ *.egg-info

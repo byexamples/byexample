@@ -1,5 +1,5 @@
 import re, pexpect, sys, time
-from byexample.byexample import ExampleParser
+from byexample.parser import ExampleParser
 
 class PythonInterpreter(ExampleParser):
     """
@@ -14,13 +14,14 @@ class PythonInterpreter(ExampleParser):
 
     def example_regex(self):
         return re.compile(r'''
-            # Source consists of a PS1 line >>>
+            # Snippet consists of a PS1 line >>>
             # followed by zero or more PS2 lines.
-            (?P<source>
+            (?P<snippet>
                 (?:^(?P<indent> [ ]*) >>>[ ]     .*)    # PS1 line
                 (?:\n           [ ]*  \.\.\.   .*)*)    # PS2 lines
             \n?
-            # Want consists of any non-blank lines that do not start with PS1
+            # The expected output consists of any non-blank lines
+            # that do not start with PS1
             (?P<expected> (?:(?![ ]*$)     # Not a blank line
                           (?![ ]*>>>)      # Not a line starting with PS1
                          .+$\n?            # But any other line
@@ -28,6 +29,8 @@ class PythonInterpreter(ExampleParser):
             ''', re.MULTILINE | re.VERBOSE)
 
     def example_options_regex(self):
+        # anything of the form:
+        #   #  byexample:  +FOO -BAR
         optstring_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
 
@@ -36,8 +39,8 @@ class PythonInterpreter(ExampleParser):
 
         return optstring_re, opt_re
 
-    def remove_prompts(self, source):
-        return '\n'.join(line[4:] for line in source.split("\n"))
+    def source_from_snippet(self, snippet):
+        return '\n'.join(line[4:] for line in snippet.split("\n"))
 
     def __repr__(self):
         return self.INTERPRETER_NAME

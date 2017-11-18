@@ -1,10 +1,10 @@
 import re, pexpect, sys, time
-from byexample.byexample import ExampleParser
+from byexample.parser import ExampleParser
 
 class ShellInterpreter(ExampleParser):
     def example_regex(self):
         return re.compile(r'''
-            (?P<source>
+            (?P<snippet>
                 (?:^(?P<indent> [ ]*) (?:\$|\#)[ ]  .*)      # PS1 line
                 (?:\n           [ ]*  >             .*)*)    # PS2 lines
             \n?
@@ -24,8 +24,8 @@ class ShellInterpreter(ExampleParser):
 
         return optstring_re, opt_re
 
-    def remove_prompts(self, source):
-        return '\n'.join(line[1:] for line in source.split("\n"))
+    def source_from_snippet(self, snippet):
+        return '\n'.join(line[1:] for line in snippet.split("\n"))
 
     def __repr__(self):
         return self.INTERPRETER_NAME

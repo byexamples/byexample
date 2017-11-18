@@ -1,5 +1,5 @@
 import re, pexpect, sys, time
-from byexample.byexample import ExampleParser
+from byexample.parser import ExampleParser
 
 class RubyInterpreter(ExampleParser):
     ''' An interpreter for Ruby using irb.
@@ -14,9 +14,9 @@ class RubyInterpreter(ExampleParser):
     '''
     def example_regex(self):
         return re.compile(r'''
-            # Source consists of a PS1 line rb>
+            # Snippet consists of a PS1 line rb>
             # followed by zero or more PS2 lines.
-            (?P<source>
+            (?P<snippet>
                 (?:^(?P<indent> [ ]*) rb>[ ]     .*)    # PS1 line
                 (?:\n           [ ]*  \.\.\.   .*)*)    # PS2 lines
             \n?
@@ -37,15 +37,13 @@ class RubyInterpreter(ExampleParser):
 
         return optstring_re, opt_re
 
-    def remove_prompts(self, source):
-        return '\n'.join(line[self.PROMPT_LEN+1:] for line in source.split("\n"))
+    def source_from_snippet(self, snippet):
+        return '\n'.join(line[4:] for line in snippet.split("\n"))
 
     def __repr__(self):
         return self.INTERPRETER_NAME
 
     INTERPRETER_NAME = "Ruby (%s)" % "/usr/bin/irb"
-    PROMPT_LEN = 3
-
 
     _EXCEPTION_RE = re.compile(r"""
         # in ruby, the exception message is shown at the begin
