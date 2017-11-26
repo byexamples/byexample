@@ -84,7 +84,7 @@ def search_interprerters(dirnames, allowed_interpreters, verbosity, encoding):
     return [klass(verbosity, encoding) for klass in interpreters]
 
 def get_encoding(encoding, verbosity):
-    if sys.version_info.major <= 2:
+    if sys.version_info[0] <= 2: # version major
         # we don't support a different encoding
         encoding = None
 
