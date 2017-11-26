@@ -26,8 +26,9 @@ def print_example(example):
     print('\n')
 
 class ExampleParser(object):
-    def __init__(self, verbosity=0):
+    def __init__(self, verbosity, encoding):
         self.verbosity = verbosity
+        self.encoding = encoding
 
     def example_regex(self):
         '''
@@ -82,7 +83,7 @@ class ExampleParser(object):
         raise NotImplementedError() # pragma: no cover
 
     def get_examples_from_file(self, options, filepath, encoding):
-        with open(filepath, 'r') as f:
+        with open(filepath, 'rtU') as f:
             string = f.read()
 
         return self.get_examples_from_string(options, string, filepath)
@@ -173,7 +174,7 @@ class ExampleParser(object):
         Given an example string, remove its indent, including a possible empty
         line at the end.
             >>> from byexample.parser import ExampleParser
-            >>> check_and_remove_ident = ExampleParser().check_and_remove_ident
+            >>> check_and_remove_ident = ExampleParser(0, None).check_and_remove_ident
             >>> check_and_remove_ident('  >>> 1 + 2\n  3\n ', '  ', (1, 'foo.rst'))
             '>>> 1 + 2\n3'
 
@@ -215,8 +216,8 @@ class ExampleParser(object):
             >>> from byexample.parser import ExampleParser
             >>> import re
 
-            >>> check_and_remove_ident = ExampleParser().check_and_remove_ident
-            >>> check_keep_matching    = ExampleParser().check_keep_matching
+            >>> check_and_remove_ident = ExampleParser(0, None).check_and_remove_ident
+            >>> check_keep_matching    = ExampleParser(0, None).check_keep_matching
 
             >>> code = '  >>> 1 + 2'
             >>> match = re.match(r'[ ]*>>> [^\n]*', code)
@@ -284,7 +285,7 @@ class ExampleParser(object):
            ambiguous:
 
             >>> from byexample.parser import ExampleParser
-            >>> expected_as_regex = ExampleParser().expected_as_regex
+            >>> expected_as_regex = ExampleParser(0, None).expected_as_regex
 
             >>> m, _ = expected_as_regex('a<foo>b<bar>c', False, (1, 'foo.rst'))
             >>> # there is not ambiguity here: a----b---c
@@ -381,7 +382,7 @@ class ExampleParser(object):
 
 class ExampleMultiParser(ExampleParser):
     def __init__(self, interpreters, verbosity=0):
-        ExampleParser.__init__(self, verbosity)
+        ExampleParser.__init__(self, verbosity, None)
         self.interpreters = interpreters
 
     def get_examples_from_string(self, options, string, filepath='<string>'):

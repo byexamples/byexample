@@ -147,7 +147,7 @@ del pprint
 ''' % (self.PS1, self.PS2)
 
         self.py = pexpect.spawn("/usr/bin/python -i -c '%s'" % change_prompts,
-                                echo=False)
+                                echo=False, encoding=self.encoding)
         self.py.delaybeforesend = 0.010
         self.last_output = []
 

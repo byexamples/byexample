@@ -120,7 +120,7 @@ class RubyInterpreter(ExampleParser):
     def initialize(self):
         self.PS1 = 'irb[^:]*:\d+:0(>|\*) '
 
-        self.irb = pexpect.spawn('/usr/bin/irb', echo=False)
+        self.irb = pexpect.spawn('/usr/bin/irb', echo=False, encoding=self.encoding)
         self.irb.delaybeforesend = 0.010
         self.last_output = []
 

@@ -25,6 +25,10 @@ def parse_args():
     parser.add_argument("-i", "--interpreters", action='append', metavar='interpreter',
                         default=[], # all by default
                         help='select which interpreters to use (all by default).')
+    parser.add_argument("--encoding",
+                        default=sys.stdout.encoding,
+                        help='select the encoding (supported in Python 3 only, ' + \
+                             'use the same enconding of stdout by default)')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", action='count', dest='verbosity', default=0,
@@ -44,7 +48,7 @@ def is_an_interpreter(obj):
 
     return True
 
-def search_interprerters(dirnames, allowed_interpreters, verbosity=0):
+def search_interprerters(dirnames, allowed_interpreters, verbosity, encoding):
     interpreters = []
     for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
         path = importer.path
@@ -77,13 +81,22 @@ def search_interprerters(dirnames, allowed_interpreters, verbosity=0):
 
             interpreters.extend(i_classes)
 
-    return [klass(verbosity) for klass in interpreters]
+    return [klass(verbosity, encoding) for klass in interpreters]
 
+def get_encoding(encoding, verbosity):
+    if sys.version_info.major <= 2:
+        # we don't support a different encoding
+        encoding = None
+
+    log("Encoding: %s." % encoding, verbosity-2)
+    return encoding
 
 def main():
     args = parse_args()
+
+    encoding = get_encoding(args.encoding, args.verbosity)
     available_interpreters = search_interprerters(args.search, args.interpreters,
-                                                  args.verbosity)
+                                                  args.verbosity, encoding)
 
     allowed_files = set(args.files) - set(args.skip)
     testfiles = [f for f in args.files if f in allowed_files]
@@ -97,7 +110,6 @@ def main():
                        CDIFF=args.diff=='context'
                        )
 
-    encoding = sys.stdout.encoding
 
     parser = ExampleMultiParser(available_interpreters, args.verbosity)
     runner = ExampleRunner(reporter, checker, args.verbosity)

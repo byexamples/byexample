@@ -93,7 +93,7 @@ class ShellInterpreter(ExampleParser):
         self.PS1     =  "/byexample/sh/ps1> "
         self.PS2_re  = r"/byexample/sh/ps\d+> "
 
-        self.sh = pexpect.spawn('/bin/sh', echo=False)
+        self.sh = pexpect.spawn('/bin/sh', echo=False, encoding=self.encoding)
         self.sh.delaybeforesend = 0.010
         self.last_output = []
 
