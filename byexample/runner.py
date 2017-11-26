@@ -217,7 +217,7 @@ class Checker(object):
         others = set(range(256)) - set(ord(c) for c in string.printable)
         tr = ''.join('?' if i in others else chr(i) for i in range(256))
 
-        s = string.translate(s, tr)
+        s = s.translate(tr)
 
         # replace empty line by '<blankline>'
         s = '\n'.join((l if l else '<blankline>') for l in s.split('\n'))
