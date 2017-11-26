@@ -121,7 +121,7 @@ class SimpleReporter(object):
 
         self._write("*" * 70)
 
-        msg = '\nFile "%s", line %i\n' % (filepath, lineno+1)
+        msg = '\nFile "%s", line %i\n' % (filepath, lineno)
         self._write(msg)
 
         self._write("Failed example:\n")
