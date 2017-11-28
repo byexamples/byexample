@@ -33,7 +33,7 @@ Usage
 Install and run it against any source file(s), like this Readme.
 All the snippets will be collected, executed and checked.
 
-.. code:: shell
+.. code:: sh
     $ pip install --user byexample      # install it # byexample: +SKIP
     $ byexample README.rst              # run it     # byexample: +SKIP
     .............
@@ -43,7 +43,7 @@ All the snippets will be collected, executed and checked.
 
 See the inline help for more information about how to tweak the execution
 
-.. code:: shell
+.. code:: sh
     $ byexample -h
     usage: byexample <...>
 

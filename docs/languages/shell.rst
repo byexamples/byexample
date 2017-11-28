@@ -16,7 +16,7 @@ that ``byexample`` uses internally.
 Exporting all the prompts to the other subshell should be enough.
 For example to use ``/bin/bash`` instead of ``/bin/sh``
 
-.. code:: shell
+.. code:: sh
     $ export PS1
     $ export PS2
     $ export PS3
@@ -44,7 +44,7 @@ Using other shells (short story)
 ``byexample`` already has a shortcut to use a different shell.
 Use the ``+bash`` option like this:
 
-.. code:: shell
+.. code:: sh
     $ echo $0
     /bin/sh
 

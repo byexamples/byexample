@@ -101,7 +101,7 @@ and ``>`` as the secondary prompt.
 It is common to use ``#`` when user of the shell is ``root`` and to use ``>``
 otherwise but nevertheless ``byexample`` treats those prompts like the same.
 
-.. code:: shell
+.. code:: sh
 
     $ echo $(( 1 + 2 ))
     3
@@ -145,7 +145,7 @@ Very useful to match long strings with unwanted or uninteresting pieces.
     rb> (0...20).to_a
     => [0, 1, <...>, 18, 19]
 
-.. code:: shell
+.. code:: sh
     $ echo 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
     0 1 <...> 18 19
 
@@ -167,7 +167,7 @@ but also it assigns a name to the capture.
     rb> [1, 2, X, 4]
     => [1, 2, <random-number>, 4]
 
-.. code:: shell
+.. code:: sh
     $ X=42;
 
     $ echo 1 2 $X 4
@@ -195,7 +195,7 @@ the same string.
     rb> [1, X, 2, 4]        # byexample: +PASS
     => [1, <random-number>, 2, <random-number>]
 
-.. code:: shell
+.. code:: sh
     $ echo 1 $X 2 $X
     1 <random-number> 2 <random-number>
 
@@ -227,7 +227,7 @@ more robust against small differences (trailing spaces, space/tab mismatch)
     => [0,   1,  2,  3,  4,  5,  6,  7,  8,  9,
     10,  11, 12, 13, 14, 15, 16, 17, 18, 19]
 
-.. code:: shell
+.. code:: sh
     $ echo 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19   # byexample: +WS
     0    1   2   3   4   5   6   7   8   9
     10   11  12  13  14  15  16  17  18  19
@@ -267,7 +267,7 @@ normally but it will not check the output.
     rb> a
     => 42
 
-.. code:: shell
+.. code:: sh
     $ a=1;
     $ a=2;      # do not run this code # byexample: +SKIP
     $ echo $a
