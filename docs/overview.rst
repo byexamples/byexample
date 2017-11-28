@@ -314,18 +314,21 @@ Differences
 ``byexample`` will show you the differences when there is a mismatch.
 How?  it will depend of flags used.
 
-===========  ==============  ==============  ==============
-default      ``UDIFF`` flag  ``NDIFF`` flag  ``CDIFF`` flag
-===========  ==============  ==============  ==============
-Expected:     Differences:    Differences:    Differences:
-one           +zero           + zero          *** 1,4 ****
-two            one              one             one
-three         -two            - two           ! two
-four          -three          - three         ! three
-Got:          +tree           ?  -              four
-zero           four           + tree          --- 1,4 ----
-one                             four          + zero
-tree                                            one
-four                                          ! tree
-                                                four
-===========  ==============  ==============  ==============
+::
+
+    ===========  ==============  ==============  ==============
+      default      UDIFF flag      NDIFF flag      CDIFF flag
+    ===========  ==============  ==============  ==============
+    Expected:     Differences:    Differences:    Differences:
+    one           +zero           + zero          *** 1,4 ****
+    two            one              one             one
+    three         -two            - two           ! two
+    four          -three          - three         ! three
+    Got:          +tree           ?  -              four
+    zero           four           + tree          --- 1,4 ----
+    one                             four          + zero
+    tree                                            one
+    four                                          ! tree
+                                                    four
+    ===========  ==============  ==============  ==============
+
