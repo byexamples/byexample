@@ -1,10 +1,14 @@
+.. image:: https://travis-ci.org/eldipa/byexample.svg?branch=master
+   :alt Build Status
+   :target https://travis-ci.org/eldipa/byexample
+
 ``byexample``
 =============
 
 ``byexample`` is literate programming engine where you can write
 ordinary text and snippets the code in the same file
-It is intended primary for writing good and live documentation showing
-how a piece of software works or it can be used *by example*.
+It is intended primary for writing good and live tutorials and documentation
+showing how a piece of software works or it can be used *by example*.
 
 Currently we support
  - Python
@@ -13,38 +17,71 @@ Currently we support
 
 More languages will be supported in the future. Stay tuned.
 
+Contribute
+^^^^^^^^^^
+
+Go ahead, fork this project a start to hack it. Run `make test` to ensure that
+everything is working as expected and then propose your Pull Request!
+
+There are some interesting areas where you can contribute like
+ - add support to new languages (Javascript, Julia, just listen to you heart)
+ - add more examples. How do you use ``byexample``? Give us your feedback!
+
+Usage
+^^^^^
+
+Install and run it against any source file(s), like this Readme.
+All the snippets will be collected, executed and checked.
+
+.. code:: shell
+    $ pip install --user byexample      # install it # byexample: +SKIP
+    $ byexample README.rst              # run it     # byexample: +SKIP
+    .............
+    File README.rst, 13/13 test ran in 0.81 seconds
+    [PASS] Pass: 13 Fail: 0 Aborted: 0
+
+
+See the inline help for more information about how to tweak the execution
+
+.. code:: shell
+    $ byexample -h
+    usage: byexample <...>
+
 Snippets of code
 ----------------
 
 Any snippet of code that it is detected by ``byexample`` will be executed
-and its output compared with the expected one.
-This a quite useful way to test and document by example.
+and its output compared with the text below.
+This is a quite useful way to test and document by example.
 
 The snippets are preceded by the primary prompt. If the code spans
 multiple lines, ``byexample`` uses a secondary prompt.
 
-There is not restriction in which snippets you can add. You can even mix
-snippets of different languages in the same file!
-
-You can write some Python code
+For Python we use ``>>>`` and ``...`` respectively
 
 .. code:: python
 
-    >>> 1 + 2
+    >>> def add(a, b):
+    ...   return a + b
+
+    >>> add(1, 2)
     3
 
-The expression ``1 + 2`` is executed and the output compared with ``3`` to
+The expression ``add(1, 2)`` is executed and the output compared with ``3`` to
 see if the test passes or not.
 
-And then write some Ruby code
+There is not restriction in which snippets you can add. You can even mix
+snippets of different languages in the same file!
+
+Here there is an example in Ruby
 
 .. code:: ruby
 
-    rb> def f(a, b)
+    rb> def add(a, b)
     ...   a + b
     ... end;
 
-    rb> f(2, 6)
+    rb> add(2, 6)
     => 8
 
 
@@ -53,7 +90,7 @@ The 'match anything' wildcard
 
 By default, if the expected text has the ``<...>`` marker, that
 will match for any string.
-Very useful to match long strings with unwanted or uninteresting pieces.
+Very useful to match long unwanted or uninteresting strings.
 
 .. code:: python
     >>> print(list(range(20)))
@@ -65,8 +102,8 @@ Capture
 The ``<name>`` marker can be used to capture any string (like ``<...>``)
 but also it assigns a name to the capture.
 
-If the same name is used in an example, all the string captured must be
-the same string.
+If a name is used in an example more than once, all the string captured under
+that name must be the same string, otherwise the test will fail.
 
 .. code:: python
     >>> X = 42
@@ -75,7 +112,7 @@ the same string.
     [1, <random-number>, 2, <random-number>]
 
     >>> # this will fail because X and 4 are not the **same** 'random-number'
-    >>> # we use +PASS to force the skip the checks of this test
+    >>> # we use +PASS to skip the checks of this test
     >>> [1, X, 2, 4]        # byexample: +PASS
     [1, <random-number>, 2, <random-number>]
 
@@ -83,7 +120,7 @@ the same string.
 Option flags
 ------------
 
-``byexample`` support a set of flags or options that can change some
+``byexample`` supports a set of flags or options that can change some
 parameters of the execution of the example.
 Some flags are generic, others are interpreter-specific.
 
@@ -118,3 +155,8 @@ normally but it will not check the output.
     >>> a
     42
 
+Documentation
+^^^^^^^^^^^^^
+
+See more examples, in general and in particular for each supported language,
+in ``docs/``.
