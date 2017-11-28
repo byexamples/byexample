@@ -1,4 +1,5 @@
 import re, pexpect, sys, time
+from .runner import TimeoutException
 
 class PexepctMixin(object):
     def __init__(self, cmd, PS1_re, any_PS_re):
@@ -65,7 +66,7 @@ class PexepctMixin(object):
             # good, we found a prompt and we couldn't find another prompt after
             # the last one so we should be on the *last* prompt
         elif what == Timeout:
-            raise Exception("Prompt not found: the code is taking too long to finish or there is a syntax error. Until now we got (last 1000 bytes):\n%s" % self.interpreter.before[-1000:])
+            raise TimeoutException("Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s" % self.interpreter.before[-1000:])
 
     def _get_output(self):
         out = "".join(self.last_output)

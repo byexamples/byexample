@@ -1,6 +1,9 @@
 from .common import log, build_exception_msg, colored
 import string, re, difflib
 
+class TimeoutException(Exception):
+    pass
+
 class ExampleRunner(object):
     def __init__(self, reporter, checker, verbosity=0):
         self.reporter  = reporter
@@ -32,6 +35,7 @@ class ExampleRunner(object):
         failed = False
         user_aborted = False
         crashed = False
+        timedout = False
         for example in examples:
             options.up(example.options)
             try:
@@ -42,24 +46,33 @@ class ExampleRunner(object):
                 self.reporter.start_example(example, options)
                 try:
                     got = example.interpreter.run(example, options)
-                except KeyboardInterrupt:    # pragma: no cover
+                except TimeoutException as e:  # pragma: no cover
+                    got = "**Execution timed out**\n" + str(e)
+                    timedout = True
+                except KeyboardInterrupt:      # pragma: no cover
                     self.reporter.user_aborted(example)
                     user_aborted = True
-                except Exception as e:       # pragma: no cover
+                except Exception as e:         # pragma: no cover
                     self.reporter.crashed(example, e)
                     crashed = True
 
-                if user_aborted or crashed:  # pragma: no cover
+                if user_aborted or crashed:    # pragma: no cover
                     failed = True
                     break # always fail fast if the user aborted or code crashed
 
+                # We can pass the test regardless of the output
+                # however, a Timeout is always a fail
                 force_pass = options['PASS']
-                if force_pass or self.checker.check_output(example, got, options):
+                if not timedout and \
+                        (force_pass or self.checker.check_output(example, got, options)):
                     self.reporter.success(example, got, self.checker)
                 else:
                     self.reporter.failure(example, got, self.checker)
                     failed = True
-                    if fail_fast:
+
+                    # fail fast if the user want this or
+                    # if we got a Timeout
+                    if fail_fast or timedout:
                         break
             finally:
                 options.down()
