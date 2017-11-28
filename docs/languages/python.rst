@@ -13,6 +13,7 @@ The first is that the options are enabled using the ``byexample`` keyword
 instead of ``doctest``
 
 .. code:: python
+
     >>> [1, 2, 3]   # use byexample, not doctest --> # byexample: +WS
     [1,   2,   3]
 
@@ -49,6 +50,7 @@ This is different from ``doctest`` where the marker is ``...`` and needs
 to be enabled with the ``+ELLIPSIS`` option but the net effect is the same.
 
 .. code:: python
+
     >>> print(list(range(20)))
     [0, 1, <...>, 18, 19]
 
@@ -64,6 +66,7 @@ different from other outputs. This enables ``doctest`` to know when an
 exception was raised but in the practice is not critical.
 
 .. code:: python
+
     >>> raise Exception('oh no!')
     Traceback <...>
     Exception: oh no!
@@ -76,6 +79,7 @@ exception was raised but in the practice is not critical.
 Syntax errors are also captured.
 
 .. code:: python
+
     >>> f(]        # invalid syntax
       File<...>
     SyntaxError: invalid syntax
@@ -140,6 +144,7 @@ texts to reduce the probability of a collision with the code to be
 executed and with the output returned by the interpreter.
 
 .. code:: python
+
     >>> ">>> "
     '>>> '
 

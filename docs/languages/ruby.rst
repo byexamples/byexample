@@ -28,6 +28,7 @@ This is how ``irb`` works behind scenes, so be careful with the use of
 semicolons. It is easy to get confused with this weird effect.
 
 .. code:: ruby
+
     rb> a = 1;
     rb> b = 2;
     rb> a + b     # nice without side effects
@@ -43,6 +44,7 @@ An alternative could be group all the expression using the secondary prompt
 and run the example with the ``PASS`` option to ignore the intermediate results.
 
 .. code:: ruby
+
     rb> a = 1       # byexample: +PASS
     ... b = 2
 

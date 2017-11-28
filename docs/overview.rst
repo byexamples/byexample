@@ -138,14 +138,17 @@ will match for any string.
 Very useful to match long strings with unwanted or uninteresting pieces.
 
 .. code:: python
+
     >>> print(list(range(20)))
     [0, 1, <...>, 18, 19]
 
 .. code:: ruby
+
     rb> (0...20).to_a
     => [0, 1, <...>, 18, 19]
 
 .. code:: sh
+
     $ echo 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
     0 1 <...> 18 19
 
@@ -156,18 +159,21 @@ The ``<name>`` marker can be used to capture any string (like ``<...>``)
 but also it assigns a name to the capture.
 
 .. code:: python
+
     >>> X = 42
 
     >>> [1, 2, X, 4]
     [1, 2, <random-number>, 4]
 
 .. code:: ruby
+
     rb> X = 42;
 
     rb> [1, 2, X, 4]
     => [1, 2, <random-number>, 4]
 
 .. code:: sh
+
     $ X=42;
 
     $ echo 1 2 $X 4
@@ -178,6 +184,7 @@ If the same name is used in an example, all the string captured must be
 the same string.
 
 .. code:: python
+
     >>> [1, X, 2, X]
     [1, <random-number>, 2, <random-number>]
 
@@ -187,6 +194,7 @@ the same string.
     [1, <random-number>, 2, <random-number>]
 
 .. code:: ruby
+
     rb> [1, X, 2, X]
     => [1, <random-number>, 2, <random-number>]
 
@@ -196,6 +204,7 @@ the same string.
     => [1, <random-number>, 2, <random-number>]
 
 .. code:: sh
+
     $ echo 1 $X 2 $X
     1 <random-number> 2 <random-number>
 
@@ -218,16 +227,19 @@ Replace any sequence of whitespace by a single one. This makes the test
 more robust against small differences (trailing spaces, space/tab mismatch)
 
 .. code:: python
+
     >>> print(list(range(20)))     # byexample: +WS
     [0,   1,  2,  3,  4,  5,  6,  7,  8,  9,
     10,  11, 12, 13, 14, 15, 16, 17, 18, 19]
 
 .. code:: ruby
+
     rb> (0...20).to_a              # byexample: +WS
     => [0,   1,  2,  3,  4,  5,  6,  7,  8,  9,
     10,  11, 12, 13, 14, 15, 16, 17, 18, 19]
 
 .. code:: sh
+
     $ echo 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19   # byexample: +WS
     0    1   2   3   4   5   6   7   8   9
     10   11  12  13  14  15  16  17  18  19
@@ -239,6 +251,7 @@ Skip and Pass
 normally but it will not check the output.
 
 .. code:: python
+
     >>> a = 1
     >>> a = 2       # do not run this code # byexample: +SKIP
     >>> a
@@ -253,6 +266,7 @@ normally but it will not check the output.
     42
 
 .. code:: ruby
+
     rb> a = 1;
     rb> a = 2;      # do not run this code # byexample: +SKIP
     rb> a
@@ -268,6 +282,7 @@ normally but it will not check the output.
     => 42
 
 .. code:: sh
+
     $ a=1;
     $ a=2;      # do not run this code # byexample: +SKIP
     $ echo $a
@@ -289,6 +304,7 @@ The execution of each example has a timeout which can be changed by
 a flag
 
 .. code:: python
+
     >>> import time
     >>> time.sleep(2.5) # simulates a slow operation # byexample: +TIMEOUT=3
 

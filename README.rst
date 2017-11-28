@@ -34,6 +34,7 @@ Install and run it against any source file(s), like this Readme.
 All the snippets will be collected, executed and checked.
 
 .. code:: sh
+
     $ pip install --user byexample      # install it # byexample: +SKIP
     $ byexample README.rst              # run it     # byexample: +SKIP
     .............
@@ -44,6 +45,7 @@ All the snippets will be collected, executed and checked.
 See the inline help for more information about how to tweak the execution
 
 .. code:: sh
+
     $ byexample -h
     usage: byexample <...>
 
@@ -93,6 +95,7 @@ will match for any string.
 Very useful to match long unwanted or uninteresting strings.
 
 .. code:: python
+
     >>> print(list(range(20)))
     [0, 1, <...>, 18, 19]
 
@@ -106,6 +109,7 @@ If a name is used in an example more than once, all the string captured under
 that name must be the same string, otherwise the test will fail.
 
 .. code:: python
+
     >>> X = 42
 
     >>> [1, X, 2, X]
@@ -131,6 +135,7 @@ Replace any sequence of whitespace by a single one. This makes the test
 more robust against small differences (trailing spaces, space/tab mismatch)
 
 .. code:: python
+
     >>> print(list(range(20)))     # byexample: +WS
     [0,   1,  2,  3,  4,  5,  6,  7,  8,  9,
     10,  11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -142,6 +147,7 @@ Skip and Pass
 normally but it will not check the output.
 
 .. code:: python
+
     >>> a = 1
     >>> a = 2       # do not run this code # byexample: +SKIP
     >>> a
