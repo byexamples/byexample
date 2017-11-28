@@ -46,7 +46,7 @@ See the inline help for more information about how to tweak the execution
 
 .. code:: sh
 
-    $ byexample -h
+    $ byexample -h                                   # byexample: +SKIP
     usage: byexample <...>
 
 Snippets of code
