@@ -213,6 +213,7 @@ class Checker(object):
                   "    $: trailing spaces  ?: non-printable    ^t: tab\n" + \
                   "    ^v: vertical tab   ^r: carriage return  ^f: form feed"
 
+    WS = re.compile(r"[ ]+$", flags=re.MULTILINE)
 
     def _human(self, s):
         ws      = '\t\x0b\x0c\r'
@@ -223,8 +224,7 @@ class Checker(object):
             s = s.replace(c, tr_c)
 
         # replace trailing spaces by something like "$"
-        s = re.sub(r"[ ]+$", lambda m: '$' * (m.end(0) - m.start(0)),
-                        s, flags=re.MULTILINE)
+        s = self.WS.sub(lambda m: '$' * (m.end(0) - m.start(0)), s)
 
         # any weird thing replace it by a '?'
         others = set(range(256)) - set(ord(c) for c in string.printable)
