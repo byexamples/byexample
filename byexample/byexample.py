@@ -29,6 +29,8 @@ def parse_args():
                         default=sys.stdout.encoding,
                         help='select the encoding (supported in Python 3 only, ' + \
                              'use the same enconding of stdout by default)')
+    parser.add_argument("--no-color", action='store_true',
+                        help="do not output any escape sequence for coloring.")
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", action='count', dest='verbosity', default=0,
@@ -101,7 +103,8 @@ def main():
     allowed_files = set(args.files) - set(args.skip)
     testfiles = [f for f in args.files if f in allowed_files]
 
-    reporter = SimpleReporter(sys.stdout, args.quiet, args.verbosity)
+    reporter = SimpleReporter(sys.stdout, not args.no_color,
+                              args.quiet, args.verbosity)
     checker  = Checker()
     options  = Options(FAIL_FAST=args.fail_fast, WS=False, PASS=False,
                        SKIP=False, H=True, TIMEOUT=2,
