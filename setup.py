@@ -16,7 +16,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='byexample',
-    version='1.0.0',
+    version='2.1.1',
 
     description='Write snippets of code in Python, Ruby, and others as ' +\
                 'documentation and execute them as regression tests.',
@@ -41,6 +41,7 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
 
         'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Ruby',
         'Programming Language :: Unix Shell',
     ],
