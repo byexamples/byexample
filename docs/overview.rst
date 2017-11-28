@@ -63,37 +63,40 @@ see if the test passes or not.
     ...  3, 4]
     [1, 2, 3, 4]
 
-Instead for Ruby ``byexample`` uses the ``rb>`` string as the primary prompt and
-``...`` as the secondary prompt.
+Instead for Ruby ``byexample`` uses the ``>>`` string as the primary and
+secondary prompts.
+
+Because of this, all the consecutive lines that start with ``>>`` will belong
+to the same example and they will be executed together.
 
 The ``=>`` marker is written by the Ruby interpreter and not by ``byexample``.
 It is left as is as this is quite common in the Ruby examples and literature.
 
 .. code:: ruby
 
-    rb> 1 + 2
+    >> 1 + 2
     => 3
 
-    rb> a = 1;
-    rb> b = 2;
-    rb> a + b
+    >> a = 1;
+    >> b = 2;
+    >> a + b
     => 3
 
-    rb> def f(a, b)
-    ...   a + b
-    ... end;
+    >> def f(a, b)
+    >>   a + b
+    >> end;
 
-    rb> f(2, 6)
+    >> f(2, 6)
     => 8
 
-    rb> def g(a, b, c)
-    ...     c += a
-    ...     c += b
-    ...
-    ...     return c
-    ... end;
+    >> def g(a, b, c)
+    >>     c += a
+    >>     c += b
+    >>
+    >>     return c
+    >> end;
 
-    rb> g(1, 2, 3)
+    >> g(1, 2, 3)
     => 6
 
 For Shell, we use the simple ``$`` or ``#`` markers as the primary prompt
@@ -144,7 +147,7 @@ Very useful to match long strings with unwanted or uninteresting pieces.
 
 .. code:: ruby
 
-    rb> (0...20).to_a
+    >> (0...20).to_a
     => [0, 1, <...>, 18, 19]
 
 .. code:: sh
@@ -167,9 +170,9 @@ but also it assigns a name to the capture.
 
 .. code:: ruby
 
-    rb> X = 42;
+    >> X = 42;
 
-    rb> [1, 2, X, 4]
+    >> [1, 2, X, 4]
     => [1, 2, <random-number>, 4]
 
 .. code:: sh
@@ -195,12 +198,12 @@ the same string.
 
 .. code:: ruby
 
-    rb> [1, X, 2, X]
+    >> [1, X, 2, X]
     => [1, <random-number>, 2, <random-number>]
 
-    rb> # this will fail because X and 4 are not the **same** 'random-number'
-    rb> # we use +PASS to force the skip the checks of this test
-    rb> [1, X, 2, 4]        # byexample: +PASS
+    >> # this will fail because X and 4 are not the **same** 'random-number'
+    >> # we use +PASS to force the skip the checks of this test
+    >> [1, X, 2, 4]        # byexample: +PASS
     => [1, <random-number>, 2, <random-number>]
 
 .. code:: sh
@@ -234,7 +237,7 @@ more robust against small differences (trailing spaces, space/tab mismatch)
 
 .. code:: ruby
 
-    rb> (0...20).to_a              # byexample: +WS
+    >> (0...20).to_a              # byexample: +WS
     => [0,   1,  2,  3,  4,  5,  6,  7,  8,  9,
     10,  11, 12, 13, 14, 15, 16, 17, 18, 19]
 
@@ -267,18 +270,20 @@ normally but it will not check the output.
 
 .. code:: ruby
 
-    rb> a = 1;
-    rb> a = 2;      # do not run this code # byexample: +SKIP
-    rb> a
+    >> a = 1;
+
+    >> a = 2;      # do not run this code # byexample: +SKIP
+
+    >> a
     => 1
 
-    rb> def f()
-    ...   puts("Choosing a random number...")
-    ...   return 42
-    ... end;
+    >> def f()
+    >>   puts("Choosing a random number...")
+    >>   return 42
+    >> end;
 
-    rb> a = f()     # execute the code but ignore the output # byexample: +PASS
-    rb> a
+    >> a = f()     # execute the code but ignore the output # byexample: +PASS
+    >> a
     => 42
 
 .. code:: sh

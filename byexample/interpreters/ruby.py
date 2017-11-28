@@ -5,11 +5,11 @@ from byexample.interpreter import PexepctMixin
 class RubyInterpreter(ExampleParser, PexepctMixin):
     ''' An interpreter for Ruby using irb.
         Example:
-            rb> def hello
-            ...     'hello bla world'
-            ... end;
+            >> def hello
+            >>     'hello bla world'
+            >> end;
 
-            rb> hello
+            >> hello
             => "hello<...>world"
 
     '''
@@ -23,16 +23,15 @@ class RubyInterpreter(ExampleParser, PexepctMixin):
 
     def example_regex(self):
         return re.compile(r'''
-            # Snippet consists of a PS1 line rb>
-            # followed by zero or more PS2 lines.
+            # Snippet consists of one or more PS1 lines >>
             (?P<snippet>
-                (?:^(?P<indent> [ ]*) rb>[ ]     .*)    # PS1 line
-                (?:\n           [ ]*  \.\.\.   .*)*)    # PS2 lines
+                (?:^(?P<indent> [ ]*) >>[ ]     .*)    # PS1 line
+                (?:\n           [ ]*  >>      .*)*)    # and more PS1 lines
             \n?
             # Want consists of any non-blank lines that do not start with PS1
             # The '=>' indicator is included (implicitly)
             (?P<expected> (?:(?![ ]*$)     # Not a blank line
-                         (?![ ]*rb>)       # Not a line starting with PS1
+                          (?![ ]*>>)       # Not a line starting with PS1
                          .+$\n?            # But any other line
                       )*)
             ''', re.MULTILINE | re.VERBOSE)
@@ -51,7 +50,7 @@ class RubyInterpreter(ExampleParser, PexepctMixin):
         return optstring_re, opt_re
 
     def source_from_snippet(self, snippet):
-        return '\n'.join(line[4:] for line in snippet.split("\n"))
+        return '\n'.join(line[3:] for line in snippet.split("\n"))
 
     def __repr__(self):
         return self.INTERPRETER_NAME

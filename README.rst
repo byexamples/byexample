@@ -79,11 +79,11 @@ Here there is an example in Ruby
 
 .. code:: ruby
 
-    rb> def add(a, b)
-    ...   a + b
-    ... end;
+    >> def add(a, b)
+    >>   a + b
+    >> end;
 
-    rb> add(2, 6)
+    >> add(2, 6)
     => 8
 
 
