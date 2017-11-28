@@ -41,6 +41,13 @@ class ShellInterpreter(ExampleParser, PexepctMixin):
         opt_re = re.compile(r'(?:(?P<add>\+)|(?P<del>-))(?P<name>\w+)',
                                                     re.MULTILINE)
 
+        opt_re = re.compile(r'''
+                (?:(?P<add>\+) | (?P<del>-))   #  + or - followed by
+                (?P<name>\w+)                  # the name of the option and
+                (?:=(?P<val>\w+))?             # optionally, = and its value
+
+                ''', re.MULTILINE | re.VERBOSE)
+
         return optstring_re, opt_re
 
     def source_from_snippet(self, snippet):
@@ -65,7 +72,8 @@ class ShellInterpreter(ExampleParser, PexepctMixin):
         elif flags.get('sh', False):
             self._spawn_new_shell('/bin/sh')
 
-        return self._exec_and_wait(example.source + '\n')
+        return self._exec_and_wait(example.source + '\n',
+                                    timeout=int(flags['TIMEOUT']))
 
     def initialize(self):
         self._spawn_interpreter(wait_first_prompt=False)

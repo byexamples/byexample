@@ -56,6 +56,16 @@ class ExampleParser(object):
          - del: if non empty, the option is meant to be disabled
         and an additional mandatory group:
          - name: the name of the option
+
+        An optional group 'val' can be set which matching string will be
+        the value of the option, true/false otherwise if the add/del are
+        present.
+         - val: if non empty, this is the value of the option
+
+        Examples:
+          +WS           'add' the 'WS' option
+          -CAPTURE      'remove' the 'CAPTURE' option
+          +TIMEOUT=10   'set' the 'TIMEOUT' to the 'value' of 10
         '''
         raise NotImplementedError() # pragma: no cover
 
@@ -376,7 +386,11 @@ class ExampleParser(object):
                 msg = msg % (start_lineno, filepath, match.group(0))
                 raise ValueError(build_exception_msg(msg, where, self))
 
-            options[name] = True if add else False
+            if add:
+                val  = match.group("val")
+                options[name] = val if val else True
+            else:
+                options[name] = False    # del
 
         return options
 

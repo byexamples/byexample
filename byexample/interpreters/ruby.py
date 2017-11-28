@@ -41,8 +41,12 @@ class RubyInterpreter(ExampleParser, PexepctMixin):
         optstring_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
 
-        opt_re = re.compile(r'(?:(?P<add>\+)|(?P<del>-))(?P<name>\w+)',
-                                                    re.MULTILINE)
+        opt_re = re.compile(r'''
+                (?:(?P<add>\+) | (?P<del>-))   #  + or - followed by
+                (?P<name>\w+)                  # the name of the option and
+                (?:=(?P<val>\w+))?             # optionally, = and its value
+
+                ''', re.MULTILINE | re.VERBOSE)
 
         return optstring_re, opt_re
 
@@ -55,7 +59,8 @@ class RubyInterpreter(ExampleParser, PexepctMixin):
     INTERPRETER_NAME = "Ruby (%s)" % "/usr/bin/irb"
 
     def run(self, example, flags):
-        return self._exec_and_wait(example.source + '\n', timeout=2)
+        return self._exec_and_wait(example.source + '\n',
+                                    timeout=int(flags['TIMEOUT']))
 
     def initialize(self):
         self._spawn_interpreter()

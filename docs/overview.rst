@@ -282,6 +282,16 @@ normally but it will not check the output.
     $ echo $a
     42
 
+Timeout
+.......
+
+The execution of each example has a timeout which can be changed by
+a flag
+
+.. code:: python
+    >>> import time
+    >>> time.sleep(2.5) # simulates a slow operation # byexample: +TIMEOUT=3
+
 Differences
 -----------
 

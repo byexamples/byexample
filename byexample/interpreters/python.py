@@ -77,12 +77,16 @@ del pprint
 
     def example_options_regex(self):
         # anything of the form:
-        #   #  byexample:  +FOO -BAR
+        #   #  byexample:  +FOO -BAR +ZAZ=42
         optstring_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
 
-        opt_re = re.compile(r'(?:(?P<add>\+)|(?P<del>-))(?P<name>\w+)',
-                                                    re.MULTILINE)
+        opt_re = re.compile(r'''
+                (?:(?P<add>\+) | (?P<del>-))   #  + or - followed by
+                (?P<name>\w+)                  # the name of the option and
+                (?:=(?P<val>\w+))?             # optionally, = and its value
+
+                ''', re.MULTILINE | re.VERBOSE)
 
         return optstring_re, opt_re
 
@@ -100,7 +104,8 @@ del pprint
         # finish a definition like
         #    >>> def f()
         #    ...   pass
-        return self._exec_and_wait(example.source + '\n', timeout=2)
+        return self._exec_and_wait(example.source + '\n',
+                                    timeout=int(flags['TIMEOUT']))
 
     def initialize(self):
         self._spawn_interpreter()

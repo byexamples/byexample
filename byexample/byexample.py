@@ -104,7 +104,7 @@ def main():
     reporter = SimpleReporter(sys.stdout, args.quiet, args.verbosity)
     checker  = Checker()
     options  = Options(FAIL_FAST=args.fail_fast, WS=False, PASS=False,
-                       SKIP=False, H=True,
+                       SKIP=False, H=True, TIMEOUT=2,
                        UDIFF=args.diff=='unified',
                        NDIFF=args.diff=='ndiff',
                        CDIFF=args.diff=='context'
