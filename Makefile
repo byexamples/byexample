@@ -9,6 +9,9 @@ deps:
 
 test:
 	@python r.py -f -i python byexample/*.py
+	@python r.py -f -i python byexample/interpreters/python.py
+	@python r.py -f -i ruby   byexample/interpreters/ruby.py
+	@python r.py -f -i shell  byexample/interpreters/shell.py
 	@python r.py -f ${interpreters} README.rst
 	@python r.py -f ${interpreters} `find docs -name "*.rst"`
 

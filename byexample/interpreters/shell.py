@@ -1,14 +1,33 @@
 import re, pexpect, sys, time
 from byexample.parser import ExampleParser
+from byexample.interpreter import PexepctMixin
 
-class ShellInterpreter(ExampleParser):
+class ShellInterpreter(ExampleParser, PexepctMixin):
+    """
+    Example:
+      $ hello() {
+      >     echo "hello bla world"
+      > }
+
+      $ hello
+      hello<...>world
+
+    """
+    def __init__(self, *args, **kargs):
+        PexepctMixin.__init__(self,
+                                cmd='/bin/sh',
+                                PS1_re = r"/byexample/sh/ps1> ",
+                                any_PS_re = r"/byexample/sh/ps\d+> ")
+
+        ExampleParser.__init__(self, *args, **kargs)
+
     def example_regex(self):
         return re.compile(r'''
             (?P<snippet>
                 (?:^(?P<indent> [ ]*) (?:\$|\#)[ ]  .*)      # PS1 line
                 (?:\n           [ ]*  >             .*)*)    # PS2 lines
             \n?
-            # Want consists of any non-blank lines that do not start with PS1
+            ## Want consists of any non-blank lines that do not start with PS1
             (?P<expected> (?:(?![ ]*$)        # Not a blank line
                           (?![ ]*(?:\$|\#))   # Not a line starting with PS1
                           .+$\n?              # But any other line
@@ -33,12 +52,11 @@ class ShellInterpreter(ExampleParser):
     INTERPRETER_NAME = "Shell (%s)" % "/bin/sh"
 
     def _spawn_new_shell(self, cmd):
-        self.sh.send('export PS1\n' +\
-                     'export PS2\n' +\
-                     'export PS3\n' +\
-                     'export PS4\n' +\
-                     cmd + '\n')
-        self._expect_prompt()
+        self._exec_and_wait('export PS1\n' +\
+                            'export PS2\n' +\
+                            'export PS3\n' +\
+                            'export PS4\n' +\
+                            cmd + '\n')
 
 
     def run(self, example, flags):
@@ -47,70 +65,20 @@ class ShellInterpreter(ExampleParser):
         elif flags.get('sh', False):
             self._spawn_new_shell('/bin/sh')
 
-        self.sh.send(example.source + '\n')
-
-        self._expect_prompt()
-        return self._get_output()
-
-    def _expect_prompt(self, timeout=2):
-        expect = [self.PS1, pexpect.TIMEOUT]
-        PS1_found, Timeout = range(len(expect))
-
-        what = self.sh.expect(expect, timeout=timeout)
-        self.last_output.append(self.sh.before)
-
-        if what == PS1_found:
-            while what != Timeout:
-                what = self.sh.expect(expect, timeout=0.05)
-                self.last_output.append(self.sh.before)
-
-            # good, we found a prompt and we couldn't find another prompt after
-            # the last one so we should be on the *last* prompt
-        elif what == Timeout:
-            raise Exception("Prompt not found: the code is taking too long to finish or there is a syntax error. Until now we got (last 1000 bytes):\n%s" % self.sh.before[-1000:])
-
-
-    def _get_output(self):
-        out = "".join(self.last_output)
-        self.drop_output()
-
-        # remove any other 'prompt'
-        out = re.sub(self.PS2_re, '', out)
-
-        # uniform the new line endings (aka universal new lines)
-        out = re.sub(r'\r\n', r'\n', out)
-
-        # TODO: is this ok?
-        if out and not out.endswith('\n'):
-            out += '\n'
-
-        return out
-
-    def drop_output(self):
-        self.last_output = []
+        return self._exec_and_wait(example.source + '\n')
 
     def initialize(self):
-        self.PS1     =  "/byexample/sh/ps1> "
-        self.PS2_re  = r"/byexample/sh/ps\d+> "
+        self._spawn_interpreter(wait_first_prompt=False)
 
-        self.sh = pexpect.spawn('/bin/sh', echo=False, encoding=self.encoding)
-        self.sh.delaybeforesend = 0.010
-        self.last_output = []
-
-        self.sh.send(
+        self.interpreter.send(
 '''export PS1="/byexample/sh/ps1> "
 export PS2="/byexample/sh/ps2> "
 export PS3="/byexample/sh/ps3> "
 export PS4="/byexample/sh/ps4> "
 ''')
         self._expect_prompt(timeout=10)
-        self.drop_output() # discard banner and things like that
-
-    def drop_output(self):
-        self.last_output = []
+        self._drop_output() # discard banner and things like that
 
     def shutdown(self):
-        self.sh.sendeof()
-        self.sh.close()
-        time.sleep(0.01)
-        self.sh.terminate(force=True)
+        self._shutdown_interpreter()
+
