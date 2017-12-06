@@ -1,8 +1,8 @@
 import re, pexpect, sys, time
-from byexample.parser import ExampleParser
+from byexample.parser import ExampleParser, ExampleMatchFinder
 from byexample.interpreter import PexepctMixin
 
-class RubyInterpreter(ExampleParser, PexepctMixin):
+class RubyInterpreter(ExampleMatchFinder, ExampleParser, PexepctMixin):
     ''' An interpreter for Ruby using irb.
         Example:
             >> def hello
@@ -35,6 +35,12 @@ class RubyInterpreter(ExampleParser, PexepctMixin):
                          .+$\n?            # But any other line
                       )*)
             ''', re.MULTILINE | re.VERBOSE)
+
+    def get_parser_for(self, *args, **kargs):
+        return self
+
+    def get_interpreter_for(self, *args, **kargs):
+        return self
 
     def example_options_regex(self):
         optstring_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',

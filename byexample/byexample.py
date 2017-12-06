@@ -1,7 +1,7 @@
 import sys, argparse, os, pkgutil, inspect
 
 from .options import Options
-from .parser import ExampleMultiParser
+from .parser import ExampleFinder
 from .runner import ExampleRunner, Checker
 from .reporter import SimpleReporter
 from .common import log, build_exception_msg
@@ -44,7 +44,7 @@ def is_an_interpreter(obj):
     if not inspect.isclass(obj):
         return False
 
-    for attr in ('get_examples_from_string', 'run', 'INTERPRETER_NAME'):
+    for attr in ('INTERPRETER_NAME', ):
         if not hasattr(obj, attr):
             return False
 
@@ -114,12 +114,12 @@ def main():
                        )
 
 
-    parser = ExampleMultiParser(available_interpreters, args.verbosity)
+    finder = ExampleFinder(args.verbosity, available_interpreters)
     runner = ExampleRunner(reporter, checker, args.verbosity)
 
     exit_status = 0
     for filename in testfiles:
-        examples = parser.get_examples_from_file(options, filename, encoding)
+        examples = finder.get_examples_from_file(options, filename, encoding)
         if args.dry:
             continue
 

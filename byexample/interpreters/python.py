@@ -1,8 +1,8 @@
 import re, pexpect, sys, time
-from byexample.parser import ExampleParser
+from byexample.parser import ExampleParser, ExampleMatchFinder
 from byexample.interpreter import PexepctMixin
 
-class PythonInterpreter(ExampleParser, PexepctMixin):
+class PythonInterpreter(ExampleMatchFinder, ExampleParser, PexepctMixin):
     """
     Example:
       >>> def hello():
@@ -74,6 +74,12 @@ del pprint
                          .+$\n?            # But any other line
                       )*)
             ''', re.MULTILINE | re.VERBOSE)
+
+    def get_parser_for(self, *args, **kargs):
+        return self
+
+    def get_interpreter_for(self, *args, **kargs):
+        return self
 
     def example_options_regex(self):
         # anything of the form:
