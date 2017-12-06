@@ -1,5 +1,6 @@
 import re, pexpect, sys, time
-from byexample.parser import ExampleParser, ExampleMatchFinder
+from byexample.parser import ExampleParser
+from byexample.finder import ExampleMatchFinder
 from byexample.interpreter import PexepctMixin
 
 class RubyInterpreter(ExampleMatchFinder, ExampleParser, PexepctMixin):

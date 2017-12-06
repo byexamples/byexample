@@ -1,7 +1,7 @@
 import sys, argparse, os, pkgutil, inspect
 
 from .options import Options
-from .parser import ExampleFinder
+from .finder import ExampleFinder
 from .runner import ExampleRunner, Checker
 from .reporter import SimpleReporter
 from .common import log, build_exception_msg
