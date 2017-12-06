@@ -1,6 +1,6 @@
 
 def build_exception_msg(msg, where, parser=None):
-    start_lineno, filepath = where
+    start_lineno, _, filepath = where
     who = "" if parser is None else (", [%s]" % str(parser))
     return 'File "%s", line %i%s\n%s' % (filepath, start_lineno, who, msg)
 

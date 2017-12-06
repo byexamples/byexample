@@ -9,6 +9,10 @@ Example = collections.namedtuple('Example', ['interpreter',
                                              'expected', 'expected_re',
                                              'captures', 'match'])
 
+Where = collections.namedtuple('Where', ['start_lineno',
+                                         'end_lineno',
+                                         'filepath'])
+
 def print_example(example):
     print("*" * 70)
     for i, field in enumerate(example._fields):
@@ -92,6 +96,9 @@ class ExampleParser(object):
         '''
         raise NotImplementedError() # pragma: no cover
 
+    def iter_examples(self, string):
+        return self.example_regex().finditer(string)
+
     def get_examples_from_file(self, options, filepath, encoding):
         with open(filepath, 'rtU') as f:
             string = f.read()
@@ -102,7 +109,7 @@ class ExampleParser(object):
         charno = 0
         start_lineno = 1  # humans tend to count from 1
         examples = []
-        for match in self.example_regex().finditer(string):
+        for match in self.iter_examples(string):
             example_str = string[match.start():match.end()]
 
             # start_lineno and end_lineno are inclusive
@@ -113,65 +120,19 @@ class ExampleParser(object):
             charno = match.start()
 
             # where we are, used for the messages of the exceptions
-            where = (start_lineno, filepath)
+            where = Where(start_lineno, end_lineno, filepath)
 
-            indent = match.group('indent')
+            example = self.get_example_from_match(options, match, example_str, where)
 
-            # update the example string and the match removin any indentation
-            example_str = self.check_and_remove_ident(example_str, indent, where)
-            match = self.check_keep_matching(example_str, match, where)
+            if example:
+                if self.verbosity >= 2:
+                    print_example(example)
 
-            snippet   = match.group("snippet")
-            expected = match.group("expected")
-
-            options.up(self.extract_options(snippet, where))
-
-            norm_ws = options.get('WS', False)
-
-            if norm_ws:
-                expected_norm = self.normalize_whitespace(expected)
+                examples.append(example)
             else:
-                expected_norm = expected
+                log(build_exception_msg("Dropped example", where, self),
+                    self.verbosity-2)
 
-            expected_re, captures = self.expected_as_regex(expected_norm, norm_ws, where)
-
-            source = self.source_from_snippet(snippet)
-            if not source.endswith('\n'):
-                source += '\n'
-
-            example = Example(
-                              # the source code to execute and the output
-                              # expected.
-                              source=source, expected=expected,
-
-                              # expected regex version
-                              expected_re=expected_re,
-
-                              # the names of the capture tags in the expected regex
-                              captures=captures,
-
-                              # the options to customize this example
-                              options=options.copy(),
-
-                              # full match of this example (without indentation)
-                              match=match,
-
-                              # the original indentation of the example
-                              indentation=indent,
-
-                              # file from where this example was extracted
-                              filepath=filepath,
-
-                              # start / end line numbers (inclusive) in the file
-                              start_lineno=start_lineno, end_lineno=end_lineno,
-
-                              # the interpreter for this example
-                              interpreter=self)
-
-            if self.verbosity >= 2:
-                print_example(example)
-
-            examples.append(example)
             options.down()
 
         log("File '%s': %i examples [%s]" % (filepath, len(examples), str(self)),
@@ -179,25 +140,88 @@ class ExampleParser(object):
 
         return examples
 
+    def get_example_from_match(self, options, match, example_str, where=None):
+        if not where:
+            where = Where(1, example_str.count('\n'), '<match>')
+
+        start_lineno, end_lineno, filepath = where
+        indent = match.group('indent')
+
+        # update the example string and the match removin any indentation
+        example_str = self.check_and_remove_ident(example_str, indent, where)
+        match = self.check_keep_matching(example_str, match, where)
+
+        snippet  = match.group("snippet")
+        expected = match.group("expected")
+
+        if not expected:
+            expected = ''   # make sure that it is a string
+
+        options.up(self.extract_options(snippet, where))
+
+        norm_ws = options.get('WS', False)
+
+        if norm_ws:
+            expected_norm = self.normalize_whitespace(expected)
+        else:
+            expected_norm = expected
+
+        expected_re, captures = self.expected_as_regex(expected_norm, norm_ws, where)
+
+        source = self.source_from_snippet(snippet)
+        if not source.endswith('\n'):
+            source += '\n'
+
+        example = Example(
+                          # the source code to execute and the output
+                          # expected.
+                          source=source, expected=expected,
+
+                          # expected regex version
+                          expected_re=expected_re,
+
+                          # the names of the capture tags in the expected regex
+                          captures=captures,
+
+                          # the options to customize this example
+                          options=options.copy(),
+
+                          # full match of this example (without indentation)
+                          match=match,
+
+                          # the original indentation of the example
+                          indentation=indent,
+
+                          # file from where this example was extracted
+                          filepath=filepath,
+
+                          # start / end line numbers (inclusive) in the file
+                          start_lineno=start_lineno, end_lineno=end_lineno,
+
+                          # the interpreter for this example
+                          interpreter=self)
+
+        return example
+
     def check_and_remove_ident(self, example_str, indent, where):
         r'''
         Given an example string, remove its indent, including a possible empty
         line at the end.
             >>> from byexample.parser import ExampleParser
             >>> check_and_remove_ident = ExampleParser(0, None).check_and_remove_ident
-            >>> check_and_remove_ident('  >>> 1 + 2\n  3\n ', '  ', (1, 'foo.rst'))
+            >>> check_and_remove_ident('  >>> 1 + 2\n  3\n ', '  ', (1, 2, 'foo.rst'))
             '>>> 1 + 2\n3'
 
         If the string contains a line with a lower level of indentation,
         raise an exception.
 
-            >>> check_and_remove_ident('  >>> 1 + 2\n3\n', '  ', (1, 'foo.rst'))
+            >>> check_and_remove_ident('  >>> 1 + 2\n3\n', '  ', (1, 2, 'foo.rst'))
             Traceback (most recent call last):
             <...>
             ValueError: <...>
 
         '''
-        start_lineno, filepath = where
+        start_lineno, _, filepath = where
 
         lines = example_str.split('\n')
 
@@ -232,28 +256,28 @@ class ExampleParser(object):
             >>> code = '  >>> 1 + 2'
             >>> match = re.match(r'[ ]*>>> [^\n]*', code)
 
-            >>> code_i = check_and_remove_ident(code, '  ', (1, 'foo.rst'))
+            >>> code_i = check_and_remove_ident(code, '  ', (1, 2, 'foo.rst'))
             >>> code_i != code
             True
-            >>> new_match = check_keep_matching(code_i, match, (1, 'foo.rst'))
+            >>> new_match = check_keep_matching(code_i, match, (1, 2, 'foo.rst'))
 
         This should not happen but if for some reason the regex doesn't match
         the full string, raise an exception:
 
             >>> x_code = 'x' + code_i
-            >>> check_keep_matching(x_code, match, (1, 'foo.rst'))
+            >>> check_keep_matching(x_code, match, (1, 2, 'foo.rst'))
             Traceback (most recent call last):
             <...>
             ValueError: <...>
 
             >>> code_x = code_i + '\nx'
-            >>> check_keep_matching(code_x, match, (1, 'foo.rst'))
+            >>> check_keep_matching(code_x, match, (1, 2, 'foo.rst'))
             Traceback (most recent call last):
             <...>
             ValueError: <...>
 
         '''
-        start_lineno, filepath = where
+        start_lineno, _, filepath = where
 
         new_match = match.re.match(example_str)
         if not new_match:
@@ -297,19 +321,19 @@ class ExampleParser(object):
             >>> from byexample.parser import ExampleParser
             >>> expected_as_regex = ExampleParser(0, None).expected_as_regex
 
-            >>> m, _ = expected_as_regex('a<foo>b<bar>c', False, (1, 'foo.rst'))
+            >>> m, _ = expected_as_regex('a<foo>b<bar>c', False, (1, 2, 'foo.rst'))
             >>> # there is not ambiguity here: a----b---c
             >>> m.match('axxbyyyc').groups()
             ('xx', 'yyy')
 
             >>> # but here? foo is 'x' and bar 'xyyy'?, '' and 'xxyyy', or ....
-            >>> expected_as_regex('a<foo><bar>c', False, (1, 'foo.rst'))
+            >>> expected_as_regex('a<foo><bar>c', False, (1, 2, 'foo.rst'))
             Traceback (most recent call last):
             <...>
             ValueError: <...>
 
         '''
-        start_lineno, filepath = where
+        start_lineno, _, filepath = where
 
         charno = 0
         regexs = []
@@ -364,7 +388,7 @@ class ExampleParser(object):
             regexs.append(re.escape(literals))
 
     def extract_options(self, snippet, where):
-        start_lineno, filepath = where
+        start_lineno, _, filepath = where
         optstring_re, opt_re = self.example_options_regex()
 
         match = optstring_re.search(snippet)
