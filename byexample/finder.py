@@ -95,7 +95,7 @@ class ExampleMatchFinder(object):
     def __repr__(self):
         '''
         Return a simple name for the finder. Like
-            "Python Interactive Session (>>>)"
+            "Python Prompt Finder (>>>)"
         '''
         raise NotImplementedError() # pragma: no cover
 

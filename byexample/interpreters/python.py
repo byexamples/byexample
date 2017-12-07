@@ -3,7 +3,7 @@ from byexample.parser import ExampleParser
 from byexample.finder import ExampleMatchFinder
 from byexample.interpreter import Interpreter, PexepctMixin
 
-class PythonInteractiveSessionFinder(ExampleMatchFinder):
+class PythonPromptFinder(ExampleMatchFinder):
     def __init__(self, parser):
         ExampleMatchFinder.__init__(self)
         self._parser = parser
@@ -28,7 +28,7 @@ class PythonInteractiveSessionFinder(ExampleMatchFinder):
         return self._parser
 
     def __repr__(self):
-        return "Python Interactive Session (>>>)"
+        return "Python Prompt Finder (>>>)"
 
 class PythonParser(ExampleParser):
     def __init__(self, interpreter):
@@ -73,7 +73,7 @@ class PythonInterpreter(Interpreter, PexepctMixin):
 
     def __init__(self, verbosity, encoding):
         self._parser = PythonParser(self)
-        self._finder = PythonInteractiveSessionFinder(self._parser)
+        self._finder = PythonPromptFinder(self._parser)
 
         self.encoding = encoding
 
