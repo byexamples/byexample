@@ -47,14 +47,21 @@ def is_an_interpreter(obj):
 
     return issubclass(obj, Interpreter) and obj is not Interpreter
 
-def search_interprerters(dirnames, allowed_interpreters, verbosity, encoding):
+def is_a_finder(obj):
+    if not inspect.isclass(obj):
+        return False
+
+    return issubclass(obj, ExampleMatchFinder) and obj is not ExampleMatchFinder
+
+def search_interprerters_and_finders(dirnames, allowed, verbosity, encoding):
     interpreters = []
+    finders = []
     for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
         path = importer.path
 
         # if we have a whitelist of allowed interpreters, do not load
         # a module if it is not there
-        if allowed_interpreters and name not in allowed_interpreters:
+        if allowed and name not in allowed:
             log("From '%s' found '%s' but it was blacklisted. Skip." %
                                                     (path, name), verbosity-2)
             continue
@@ -68,32 +75,26 @@ def search_interprerters(dirnames, allowed_interpreters, verbosity, encoding):
                                                         verbosity-2)
             continue
 
-        found = inspect.getmembers(module, is_an_interpreter)
-        if not found:
-            log("From '%s' loaded '%s', found nothing." % (path, name), verbosity-1)
-        else:
-            i_names, i_classes = zip(*found)
-            i_names_str = ', '.join(i_names)
+        interpreters_found = inspect.getmembers(module, is_an_interpreter)
+        finders_found = inspect.getmembers(module, is_a_finder)
 
-            ints = [klass(verbosity, encoding) for klass in i_classes]
-            log("From '%s' loaded '%s'\nLoaded %i interpreters:" % (
-                                    path, name, len(i_classes)),
-                                        verbosity-1)
-            log("\n".join((" - %s" % repr(i)) for i in ints), verbosity-1)
-            interpreters.extend(ints)
+        for pred, what, container in [(is_an_interpreter, 'interpreters', interpreters),
+                                      (is_a_finder, 'finders', finders)]:
+
+            klasses_found = inspect.getmembers(module, pred)
+            if klasses_found:
+                klasses_found = zip(*klasses_found)[1]
+
+            objs = [klass(verbosity, encoding) for klass in klasses_found]
+            log("From '%s' loaded '%s'\nLoaded %i %s%s" % (
+                                  path, name, len(objs), what, ":" if objs else "."),
+                                  verbosity-1)
+            if objs:
+                log("\n".join((" - %s" % repr(i)) for i in objs), verbosity-1)
+                container.extend(objs)
 
 
-    return interpreters
-
-def get_example_match_finders(available_interpreters, verbosity):
-    available_finders = [i.get_example_match_finders() for i in available_interpreters]
-    available_finders = sum(available_finders, []) # flatten
-
-    log("Loaded %i finders:" % len(available_finders), verbosity-1)
-    for f in available_finders:
-        log(" - %s" % str(f), verbosity-1)
-
-    return available_finders
+    return interpreters, finders
 
 def get_encoding(encoding, verbosity):
     if sys.version_info[0] <= 2: # version major
@@ -107,11 +108,8 @@ def main():
     args = parse_args()
 
     encoding = get_encoding(args.encoding, args.verbosity)
-    available_interpreters = search_interprerters(args.search, args.interpreters,
+    available_interpreters, available_finders = search_interprerters_and_finders(args.search, args.interpreters,
                                                   args.verbosity, encoding)
-
-    available_finders = get_example_match_finders(available_interpreters,
-                                                    args.verbosity)
 
     allowed_files = set(args.files) - set(args.skip)
     testfiles = [f for f in args.files if f in allowed_files]
@@ -128,7 +126,7 @@ def main():
 
 
     finder = ExampleFinder(args.verbosity, available_finders)
-    runner = ExampleRunner(reporter, checker, args.verbosity)
+    runner = ExampleRunner(reporter, checker, available_interpreters, args.verbosity)
 
     exit_status = 0
     for filename in testfiles:

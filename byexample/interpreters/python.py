@@ -4,10 +4,6 @@ from byexample.finder import ExampleMatchFinder
 from byexample.interpreter import Interpreter, PexepctMixin
 
 class PythonPromptFinder(ExampleMatchFinder):
-    def __init__(self, parser):
-        ExampleMatchFinder.__init__(self)
-        self._parser = parser
-
     def example_regex(self):
         return re.compile(r'''
             # Snippet consists of a PS1 line >>>
@@ -25,16 +21,12 @@ class PythonPromptFinder(ExampleMatchFinder):
             ''', re.MULTILINE | re.VERBOSE)
 
     def get_parser_for(self, *args, **kargs):
-        return self._parser
+        return PythonParser()
 
     def __repr__(self):
         return "Python Prompt Finder (>>>)"
 
 class PythonParser(ExampleParser):
-    def __init__(self, interpreter):
-        ExampleParser.__init__(self)
-        self._interpreter = interpreter
-
     def example_options_regex(self):
         # anything of the form:
         #   #  byexample:  +FOO -BAR +ZAZ=42
@@ -51,11 +43,14 @@ class PythonParser(ExampleParser):
         return optstring_re, opt_re
 
     def source_from_snippet(self, snippet):
-        # TODO
-        return '\n'.join(line[4:] for line in snippet.split("\n"))
+        lines = snippet.split("\n")
+        if lines and lines[0].startswith(">>> "):
+            return '\n'.join(line[4:] for line in lines)
 
-    def get_interpreter_for(self, options, match, where):
-        return self._interpreter
+        return snippet
+
+    def get_interpreter_class_for(self, options, match, where):
+        return PythonInterpreter
 
     def __repr__(self):
         return "Python Parser"
@@ -72,9 +67,6 @@ class PythonInterpreter(Interpreter, PexepctMixin):
     """
 
     def __init__(self, verbosity, encoding):
-        self._parser = PythonParser(self)
-        self._finder = PythonPromptFinder(self._parser)
-
         self.encoding = encoding
 
         PS1 = r'/byexample/py/ps1> '

@@ -1,7 +1,7 @@
 import collections, re
 from .common import log, build_exception_msg
 
-Example = collections.namedtuple('Example', ['interpreter',
+Example = collections.namedtuple('Example', ['interpreter_class',
                                              'filepath',
                                              'start_lineno', 'end_lineno',
                                              'options', 'indentation',
@@ -123,7 +123,7 @@ class ExampleParser(object):
         if not source.endswith('\n'):
             source += '\n'
 
-        interpreter = self.get_interpreter_for(options, match, where)
+        interpreter_class = self.get_interpreter_class_for(options, match, where)
         example = Example(
                           # the source code to execute and the output
                           # expected.
@@ -150,8 +150,8 @@ class ExampleParser(object):
                           # start / end line numbers (inclusive) in the file
                           start_lineno=start_lineno, end_lineno=end_lineno,
 
-                          # the interpreter for this example
-                          interpreter=interpreter)
+                          # the interpreter class for this example
+                          interpreter_class=interpreter_class)
 
         return example
 

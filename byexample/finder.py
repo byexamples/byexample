@@ -83,6 +83,9 @@ class ExampleFinder(object):
         return examples
 
 class ExampleMatchFinder(object):
+    def __init__(self, verbosity, encoding):
+        pass
+
     def example_regex(self):
         raise NotImplementedError() # pragma: no cover
 
@@ -101,5 +104,4 @@ class ExampleMatchFinder(object):
 
     def __str__(self):
         return repr(self)
-
 
