@@ -78,6 +78,7 @@ def search_interprerters_and_finders(dirnames, allowed, verbosity, encoding):
         interpreters_found = inspect.getmembers(module, is_an_interpreter)
         finders_found = inspect.getmembers(module, is_a_finder)
 
+        log("From '%s' loaded '%s'" % (path, name), verbosity-1)
         for pred, what, container in [(is_an_interpreter, 'interpreters', interpreters),
                                       (is_a_finder, 'finders', finders)]:
 
@@ -86,9 +87,8 @@ def search_interprerters_and_finders(dirnames, allowed, verbosity, encoding):
                 klasses_found = zip(*klasses_found)[1]
 
             objs = [klass(verbosity, encoding) for klass in klasses_found]
-            log("From '%s' loaded '%s'\nLoaded %i %s%s" % (
-                                  path, name, len(objs), what, ":" if objs else "."),
-                                  verbosity-1)
+            log("Loaded %i %s%s" % (len(objs), what, ":" if objs else "."),
+                                    verbosity-1)
             if objs:
                 log("\n".join((" - %s" % repr(i)) for i in objs), verbosity-1)
                 container.extend(objs)

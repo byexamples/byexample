@@ -31,10 +31,7 @@ class ExampleParser(object):
         Return a simple name for the parser. Like
             "Python Parser"
         '''
-        raise NotImplementedError() # pragma: no cover
-
-    def __str__(self):
-        return repr(self)
+        return '???'    # pragma: no cover
 
     def example_options_regex(self):
         '''
@@ -160,7 +157,7 @@ class ExampleParser(object):
         Given an example string, remove its indent, including a possible empty
         line at the end.
             >>> from byexample.parser import ExampleParser
-            >>> check_and_remove_ident = ExampleParser(0, None).check_and_remove_ident
+            >>> check_and_remove_ident = ExampleParser().check_and_remove_ident
             >>> check_and_remove_ident('  >>> 1 + 2\n  3\n ', '  ', (1, 2, 'foo.rst'))
             '>>> 1 + 2\n3'
 
@@ -202,8 +199,8 @@ class ExampleParser(object):
             >>> from byexample.parser import ExampleParser
             >>> import re
 
-            >>> check_and_remove_ident = ExampleParser(0, None).check_and_remove_ident
-            >>> check_keep_matching    = ExampleParser(0, None).check_keep_matching
+            >>> check_and_remove_ident = ExampleParser().check_and_remove_ident
+            >>> check_keep_matching    = ExampleParser().check_keep_matching
 
             >>> code = '  >>> 1 + 2'
             >>> match = re.match(r'[ ]*>>> [^\n]*', code)
@@ -271,7 +268,7 @@ class ExampleParser(object):
            ambiguous:
 
             >>> from byexample.parser import ExampleParser
-            >>> expected_as_regex = ExampleParser(0, None).expected_as_regex
+            >>> expected_as_regex = ExampleParser().expected_as_regex
 
             >>> m, _ = expected_as_regex('a<foo>b<bar>c', False, (1, 2, 'foo.rst'))
             >>> # there is not ambiguity here: a----b---c

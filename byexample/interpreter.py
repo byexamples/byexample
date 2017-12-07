@@ -29,10 +29,7 @@ class Interpreter(object):
         Return a simple name for the interpreter. Like
             "Python (/usr/bin/python)"
         '''
-        raise NotImplementedError() # pragma: no cover
-
-    def __str__(self):
-        return repr(self)
+        return '???'    # pragma: no cover
 
     def run(self, example, options):
         '''

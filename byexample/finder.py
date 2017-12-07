@@ -6,6 +6,20 @@ Where = collections.namedtuple('Where', ['start_lineno',
                                          'filepath'])
 
 class ExampleFinder(object):
+    '''
+          Finding process    Parsing process         Run process
+    ----------\                           example
+    | foo     |     example match    ............ . . .
+    |         |      -----------     : > 1 + 2 } snippet  =>  1 + 2 --> interpreter
+    | > 1 + 2 |      | > 1 + 2 |     :                                      |
+    | 3       |  =>  | 3       |  => : 3 } expected       =>  3 == ?? <-- output
+    |         |      -----------     :.......... .. . .       compare
+    | bar     |      -----------                           done by checker
+    | > 1 + 3 |  =>  | > 1 + 3 |                                |
+    | 4       |      | 4       |                                |--> PASS/FAIL
+    :         :      -----------                                      report
+                                                                  done by reporter
+    '''
     def __init__(self, verbosity, example_match_finders):
         self.verbosity = verbosity
         self.finders = example_match_finders
@@ -100,8 +114,5 @@ class ExampleMatchFinder(object):
         Return a simple name for the finder. Like
             "Python Prompt Finder (>>>)"
         '''
-        raise NotImplementedError() # pragma: no cover
-
-    def __str__(self):
-        return repr(self)
+        return '???'    # pragma: no cover
 
