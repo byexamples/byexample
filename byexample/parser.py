@@ -26,9 +26,15 @@ def print_example(example):
     print('\n')
 
 class ExampleParser(object):
-    def __init__(self, verbosity, encoding):
-        self.verbosity = verbosity
-        self.encoding = encoding
+    def __repr__(self):
+        '''
+        Return a simple name for the parser. Like
+            "Python Parser"
+        '''
+        raise NotImplementedError() # pragma: no cover
+
+    def __str__(self):
+        return repr(self)
 
     def example_options_regex(self):
         '''
@@ -83,6 +89,9 @@ class ExampleParser(object):
         raise NotImplementedError() # pragma: no cover
 
     def get_interpreter_for(self, options, match, where):
+        '''
+        Return an Interpreter to execute the example matched in 'match'.
+        '''
         raise NotImplementedError() # pragma: no cover
 
     def get_example_from_match(self, options, match, example_str, where):

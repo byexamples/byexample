@@ -1,7 +1,8 @@
 import sys, argparse, os, pkgutil, inspect
 
 from .options import Options
-from .finder import ExampleFinder
+from .interpreter import Interpreter
+from .finder import ExampleFinder, ExampleMatchFinder
 from .runner import ExampleRunner, Checker
 from .reporter import SimpleReporter
 from .common import log, build_exception_msg
@@ -28,7 +29,7 @@ def parse_args():
     parser.add_argument("--encoding",
                         default=sys.stdout.encoding,
                         help='select the encoding (supported in Python 3 only, ' + \
-                             'use the same enconding of stdout by default)')
+                             'use the same encoding of stdout by default)')
     parser.add_argument("--no-color", action='store_true',
                         help="do not output any escape sequence for coloring.")
 
@@ -44,11 +45,7 @@ def is_an_interpreter(obj):
     if not inspect.isclass(obj):
         return False
 
-    for attr in ('INTERPRETER_NAME', ):
-        if not hasattr(obj, attr):
-            return False
-
-    return True
+    return issubclass(obj, Interpreter) and obj is not Interpreter
 
 def search_interprerters(dirnames, allowed_interpreters, verbosity, encoding):
     interpreters = []
@@ -77,13 +74,26 @@ def search_interprerters(dirnames, allowed_interpreters, verbosity, encoding):
         else:
             i_names, i_classes = zip(*found)
             i_names_str = ', '.join(i_names)
-            log("From '%s' loaded '%s', found %i interpreters: %s" % (
-                                    path, name, len(i_classes), i_names_str),
+
+            ints = [klass(verbosity, encoding) for klass in i_classes]
+            log("From '%s' loaded '%s'\nLoaded %i interpreters:" % (
+                                    path, name, len(i_classes)),
                                         verbosity-1)
+            log("\n".join((" - %s" % repr(i)) for i in ints), verbosity-1)
+            interpreters.extend(ints)
 
-            interpreters.extend(i_classes)
 
-    return [klass(verbosity, encoding) for klass in interpreters]
+    return interpreters
+
+def get_example_match_finders(available_interpreters, verbosity):
+    available_finders = [i.get_example_match_finders() for i in available_interpreters]
+    available_finders = sum(available_finders, []) # flatten
+
+    log("Loaded %i finders:" % len(available_finders), verbosity-1)
+    for f in available_finders:
+        log(" - %s" % str(f), verbosity-1)
+
+    return available_finders
 
 def get_encoding(encoding, verbosity):
     if sys.version_info[0] <= 2: # version major
@@ -100,6 +110,9 @@ def main():
     available_interpreters = search_interprerters(args.search, args.interpreters,
                                                   args.verbosity, encoding)
 
+    available_finders = get_example_match_finders(available_interpreters,
+                                                    args.verbosity)
+
     allowed_files = set(args.files) - set(args.skip)
     testfiles = [f for f in args.files if f in allowed_files]
 
@@ -114,7 +127,7 @@ def main():
                        )
 
 
-    finder = ExampleFinder(args.verbosity, available_interpreters)
+    finder = ExampleFinder(args.verbosity, available_finders)
     runner = ExampleRunner(reporter, checker, args.verbosity)
 
     exit_status = 0

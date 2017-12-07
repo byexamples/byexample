@@ -1,9 +1,66 @@
 import re, pexpect, sys, time
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleMatchFinder
-from byexample.interpreter import PexepctMixin
+from byexample.interpreter import Interpreter, PexepctMixin
 
-class PythonInterpreter(ExampleMatchFinder, ExampleParser, PexepctMixin):
+class PythonInteractiveSessionFinder(ExampleMatchFinder):
+    def __init__(self, parser):
+        ExampleMatchFinder.__init__(self)
+        self._parser = parser
+
+    def example_regex(self):
+        return re.compile(r'''
+            # Snippet consists of a PS1 line >>>
+            # followed by zero or more PS2 lines.
+            (?P<snippet>
+                (?:^(?P<indent> [ ]*) >>>[ ]     .*)    # PS1 line
+                (?:\n           [ ]*  \.\.\.   .*)*)    # PS2 lines
+            \n?
+            # The expected output consists of any non-blank lines
+            # that do not start with PS1
+            (?P<expected> (?:(?![ ]*$)     # Not a blank line
+                          (?![ ]*>>>)      # Not a line starting with PS1
+                         .+$\n?            # But any other line
+                      )*)
+            ''', re.MULTILINE | re.VERBOSE)
+
+    def get_parser_for(self, *args, **kargs):
+        return self._parser
+
+    def __repr__(self):
+        return "Python Interactive Session (>>>)"
+
+class PythonParser(ExampleParser):
+    def __init__(self, interpreter):
+        ExampleParser.__init__(self)
+        self._interpreter = interpreter
+
+    def example_options_regex(self):
+        # anything of the form:
+        #   #  byexample:  +FOO -BAR +ZAZ=42
+        optstring_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
+                                                    re.MULTILINE)
+
+        opt_re = re.compile(r'''
+                (?:(?P<add>\+) | (?P<del>-))   #  + or - followed by
+                (?P<name>\w+)                  # the name of the option and
+                (?:=(?P<val>\w+))?             # optionally, = and its value
+
+                ''', re.MULTILINE | re.VERBOSE)
+
+        return optstring_re, opt_re
+
+    def source_from_snippet(self, snippet):
+        # TODO
+        return '\n'.join(line[4:] for line in snippet.split("\n"))
+
+    def get_interpreter_for(self, options, match, where):
+        return self._interpreter
+
+    def __repr__(self):
+        return "Python Parser"
+
+class PythonInterpreter(Interpreter, PexepctMixin):
     """
     Example:
       >>> def hello():
@@ -14,7 +71,12 @@ class PythonInterpreter(ExampleMatchFinder, ExampleParser, PexepctMixin):
 
     """
 
-    def __init__(self, *args, **kargs):
+    def __init__(self, verbosity, encoding):
+        self._parser = PythonParser(self)
+        self._finder = PythonInteractiveSessionFinder(self._parser)
+
+        self.encoding = encoding
+
         PS1 = r'/byexample/py/ps1> '
         PS2 = r'/byexample/py/ps2> '
 
@@ -58,53 +120,9 @@ del pprint
                                 PS1_re = PS1,
                                 any_PS_re = r'/byexample/py/ps\d> ')
 
-        ExampleParser.__init__(self, *args, **kargs)
-
-    def example_regex(self):
-        return re.compile(r'''
-            # Snippet consists of a PS1 line >>>
-            # followed by zero or more PS2 lines.
-            (?P<snippet>
-                (?:^(?P<indent> [ ]*) >>>[ ]     .*)    # PS1 line
-                (?:\n           [ ]*  \.\.\.   .*)*)    # PS2 lines
-            \n?
-            # The expected output consists of any non-blank lines
-            # that do not start with PS1
-            (?P<expected> (?:(?![ ]*$)     # Not a blank line
-                          (?![ ]*>>>)      # Not a line starting with PS1
-                         .+$\n?            # But any other line
-                      )*)
-            ''', re.MULTILINE | re.VERBOSE)
-
-    def get_parser_for(self, *args, **kargs):
-        return self
-
-    def get_interpreter_for(self, *args, **kargs):
-        return self
-
-    def example_options_regex(self):
-        # anything of the form:
-        #   #  byexample:  +FOO -BAR +ZAZ=42
-        optstring_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
-                                                    re.MULTILINE)
-
-        opt_re = re.compile(r'''
-                (?:(?P<add>\+) | (?P<del>-))   #  + or - followed by
-                (?P<name>\w+)                  # the name of the option and
-                (?:=(?P<val>\w+))?             # optionally, = and its value
-
-                ''', re.MULTILINE | re.VERBOSE)
-
-        return optstring_re, opt_re
-
-    def source_from_snippet(self, snippet):
-        return '\n'.join(line[4:] for line in snippet.split("\n"))
 
     def __repr__(self):
-        return self.INTERPRETER_NAME
-
-    INTERPRETER_NAME = "Python (%s)" % "/usr/bin/python"
-
+        return "Python (%s)" % "/usr/bin/python"
 
     def run(self, example, flags):
         # we need to add an extra newline to
@@ -119,3 +137,7 @@ del pprint
 
     def shutdown(self):
         self._shutdown_interpreter()
+
+    def get_example_match_finders(self):
+        return [self._finder]
+

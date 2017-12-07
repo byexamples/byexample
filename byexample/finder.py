@@ -77,7 +77,7 @@ class ExampleFinder(object):
 
             options.down()
 
-        log("File '%s': %i examples [Finder %s]" % (filepath, len(examples), str(finder)),
+        log("File '%s': %i examples [%s]" % (filepath, len(examples), str(finder)),
                                             self.verbosity-1)
 
         return examples
@@ -91,4 +91,15 @@ class ExampleMatchFinder(object):
 
     def get_parser_for(self, options, match, where):
         raise NotImplementedError() # pragma: no cover
+
+    def __repr__(self):
+        '''
+        Return a simple name for the finder. Like
+            "Python Interactive Session (>>>)"
+        '''
+        raise NotImplementedError() # pragma: no cover
+
+    def __str__(self):
+        return repr(self)
+
 

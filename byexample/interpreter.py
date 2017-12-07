@@ -1,6 +1,82 @@
 import re, pexpect, sys, time
 from .runner import TimeoutException
 
+class Interpreter(object):
+    def __init__(self, verbosity, encoding):
+        self.verbosity = verbosity
+        self.encoding = encoding
+
+    def get_example_match_finders(self):
+        '''
+        Return a list of ExampleMatchFinders, objects that will find
+        examples in a given file/string.
+        See the doc of ExampleMatchFinder for more information.
+
+        If the list is empty, no example will be find (nor executed)
+        unless the generic 'FencedExampleMatchFinder' find the examples
+        for this interpreter.
+
+        In general, if your language support a prompt-like session, like
+        Python or Ruby, you probably want to add a custom finder.
+
+        If you add multiple finders, make sure that two finders will not find
+        the same example. This will be considered an error.
+        '''
+        return []
+
+    def __repr__(self):
+        '''
+        Return a simple name for the interpreter. Like
+            "Python (/usr/bin/python)"
+        '''
+        raise NotImplementedError() # pragma: no cover
+
+    def __str__(self):
+        return repr(self)
+
+    def run(self, example, options):
+        '''
+        Run the example and return the output of the execution.
+
+        The source code is in example.source.
+        You may want to add additional new lines to the source
+        to ensure that the underlying interprerter accept the code
+
+        For example, if the source (in Python) is:
+           'def f()
+               pass
+           '
+
+        the Python interpreter will need an extra new line to understand
+        that the function definition does not continue.
+
+        See the documentation of Example to see what other attributes it
+        has.
+
+        The parameter 'options' configure some aspects of the execution.
+        For example, the option 'TIMEOUT' set for how long an execution
+        should be running.
+        If time out, raise an exception of type TimeoutException.
+
+        See the code of the default interpreters of ``byexample`` like
+        PythonInterpreter and RubyInterpreter to get more information.
+        '''
+        raise NotImplementedError() # pragma: no cover
+
+    def initialize(self):
+        '''
+        Hook to initialize the interpreter. This method will be called
+        before running any example.
+        '''
+        raise NotImplementedError() # pragma: no cover
+
+    def shutdown(self):
+        '''
+        Hook to shutdown the interpreter. This method will be called
+        after running all the examples.
+        '''
+        raise NotImplementedError() # pragma: no cover
+
 class PexepctMixin(object):
     def __init__(self, cmd, PS1_re, any_PS_re):
         self.cmd = cmd
