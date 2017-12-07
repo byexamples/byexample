@@ -1,27 +1,9 @@
 import re, pexpect, sys, time
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleMatchFinder
-from byexample.interpreter import PexepctMixin
+from byexample.interpreter import Interpreter, PexepctMixin
 
-class ShellInterpreter(ExampleMatchFinder, ExampleParser, PexepctMixin):
-    """
-    Example:
-      $ hello() {
-      >     echo "hello bla world"
-      > }
-
-      $ hello
-      hello<...>world
-
-    """
-    def __init__(self, *args, **kargs):
-        PexepctMixin.__init__(self,
-                                cmd='/bin/sh',
-                                PS1_re = r"/byexample/sh/ps1> ",
-                                any_PS_re = r"/byexample/sh/ps\d+> ")
-
-        ExampleParser.__init__(self, *args, **kargs)
-
+class ShellPromptFinder(ExampleMatchFinder):
     def example_regex(self):
         return re.compile(r'''
             (?P<snippet>
@@ -36,11 +18,12 @@ class ShellInterpreter(ExampleMatchFinder, ExampleParser, PexepctMixin):
             ''', re.MULTILINE | re.VERBOSE)
 
     def get_parser_for(self, *args, **kargs):
-        return self
+        return ShellParser()
 
-    def get_interpreter_for(self, *args, **kargs):
-        return self
+    def __repr__(self):
+        return "Shell Prompt Finder ($)"
 
+class ShellParser(ExampleParser):
     def example_options_regex(self):
         optstring_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
@@ -58,12 +41,39 @@ class ShellInterpreter(ExampleMatchFinder, ExampleParser, PexepctMixin):
         return optstring_re, opt_re
 
     def source_from_snippet(self, snippet):
-        return '\n'.join(line[1:] for line in snippet.split("\n"))
+        lines = snippet.split("\n")
+        if lines and (lines[0].startswith("$ ") or lines[0].startswith("# ")):
+            return '\n'.join(line[1:] for line in lines)
+
+        return snippet
+
+    def get_interpreter_class_for(self, options, match, where):
+        return ShellInterpreter
 
     def __repr__(self):
-        return self.INTERPRETER_NAME
+        return "Shell Parser"
 
-    INTERPRETER_NAME = "Shell (%s)" % "/bin/sh"
+class ShellInterpreter(Interpreter, PexepctMixin):
+    """
+    Example:
+      $ hello() {
+      >     echo "hello bla world"
+      > }
+
+      $ hello
+      hello<...>world
+
+    """
+    def __init__(self, verbosity, encoding):
+        self.encoding = encoding
+
+        PexepctMixin.__init__(self,
+                                cmd='/bin/sh',
+                                PS1_re = r"/byexample/sh/ps1> ",
+                                any_PS_re = r"/byexample/sh/ps\d+> ")
+
+    def __repr__(self):
+        return "Shell (%s)" % "/bin/sh"
 
     def _spawn_new_shell(self, cmd):
         self._exec_and_wait('export PS1\n' +\

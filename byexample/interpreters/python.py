@@ -129,7 +129,3 @@ del pprint
 
     def shutdown(self):
         self._shutdown_interpreter()
-
-    def get_example_match_finders(self):
-        return [self._finder]
-
