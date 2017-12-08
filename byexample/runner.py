@@ -5,12 +5,12 @@ class TimeoutException(Exception):
     pass
 
 class ExampleRunner(object):
-    def __init__(self, reporter, checker, available_interpreters, verbosity):
+    def __init__(self, reporter, checker, interpreters, verbosity):
         self.reporter  = reporter
         self.checker   = checker
         self.verbosity = verbosity
 
-        self.interpreters_by_class = {i.__class__: i for i in available_interpreters}
+        self.interpreters_by_class = {i.__class__: i for i in interpreters}
 
     def initialize_interpreters(self, interpreters):
         log("Initializing %i interpreters..." % len(interpreters),

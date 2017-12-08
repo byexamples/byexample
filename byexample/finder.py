@@ -20,9 +20,9 @@ class ExampleFinder(object):
     :         :      -----------                                      report
                                                                   done by reporter
     '''
-    def __init__(self, verbosity, example_match_finders):
+    def __init__(self, verbosity, finders):
         self.verbosity = verbosity
-        self.finders = example_match_finders
+        self.finders = finders
 
     def get_examples_from_file(self, options, filepath, encoding):
         with open(filepath, 'rtU') as f:
@@ -98,7 +98,8 @@ class ExampleFinder(object):
 
 class ExampleMatchFinder(object):
     def __init__(self, verbosity, encoding):
-        pass
+        self.verbosity = verbosity
+        self.encoding = encoding
 
     def example_regex(self):
         raise NotImplementedError() # pragma: no cover
@@ -115,4 +116,5 @@ class ExampleMatchFinder(object):
             "Python Prompt Finder (>>>)"
         '''
         return '???'    # pragma: no cover
+
 

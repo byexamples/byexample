@@ -4,6 +4,8 @@ from byexample.finder import ExampleMatchFinder
 from byexample.interpreter import Interpreter, PexepctMixin
 
 class ShellPromptFinder(ExampleMatchFinder):
+    target = 'shell-prompt'
+
     def example_regex(self):
         return re.compile(r'''
             (?P<snippet>
@@ -18,12 +20,13 @@ class ShellPromptFinder(ExampleMatchFinder):
             ''', re.MULTILINE | re.VERBOSE)
 
     def get_parser_for(self, *args, **kargs):
-        return ShellParser()
+        return ShellParser(self.verbosity, self.encoding)
 
     def __repr__(self):
         return "Shell Prompt Finder ($)"
 
 class ShellParser(ExampleParser):
+    target = 'shell'
     def example_options_regex(self):
         optstring_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
@@ -64,6 +67,7 @@ class ShellInterpreter(Interpreter, PexepctMixin):
       hello<...>world
 
     """
+    target = 'shell'
     def __init__(self, verbosity, encoding):
         self.encoding = encoding
 

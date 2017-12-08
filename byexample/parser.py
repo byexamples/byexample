@@ -26,6 +26,10 @@ def print_example(example):
     print('\n')
 
 class ExampleParser(object):
+    def __init__(self, verbosity, encoding):
+        self.verbosity = verbosity
+        self.encoding = encoding
+
     def __repr__(self):
         '''
         Return a simple name for the parser. Like

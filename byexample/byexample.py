@@ -4,6 +4,7 @@ from .options import Options
 from .interpreter import Interpreter
 from .finder import ExampleFinder, ExampleMatchFinder
 from .runner import ExampleRunner, Checker
+from .parser import ExampleParser
 from .reporter import SimpleReporter
 from .common import log, build_exception_msg
 
@@ -41,21 +42,22 @@ def parse_args():
 
     return parser.parse_args()
 
-def is_an_interpreter(obj):
-    if not inspect.isclass(obj):
-        return False
+def is_a(target_class):
+    def _is_X(obj):
+        if not inspect.isclass(obj):
+            return False
 
-    return issubclass(obj, Interpreter) and obj is not Interpreter
+        return issubclass(obj, target_class) and \
+               obj is not target_class and \
+               hasattr(obj, 'target')
 
-def is_a_finder(obj):
-    if not inspect.isclass(obj):
-        return False
+    return _is_X
 
-    return issubclass(obj, ExampleMatchFinder) and obj is not ExampleMatchFinder
-
-def search_interprerters_and_finders(dirnames, allowed, verbosity, encoding):
-    interpreters = []
-    finders = []
+def load_modules(dirnames, allowed, verbosity, encoding):
+    registry = {'interpreters': {},
+                'finders': {},
+                'parsers': {},
+                }
     for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
         path = importer.path
 
@@ -75,26 +77,28 @@ def search_interprerters_and_finders(dirnames, allowed, verbosity, encoding):
                                                         verbosity-2)
             continue
 
-        interpreters_found = inspect.getmembers(module, is_an_interpreter)
-        finders_found = inspect.getmembers(module, is_a_finder)
-
         log("From '%s' loaded '%s'" % (path, name), verbosity-1)
-        for pred, what, container in [(is_an_interpreter, 'interpreters', interpreters),
-                                      (is_a_finder, 'finders', finders)]:
+        for pred, what in [(is_a(Interpreter), 'interpreters'),
+                           (is_a(ExampleMatchFinder), 'finders'),
+                           (is_a(ExampleParser), 'parsers')]:
 
+            container = registry[what]
             klasses_found = inspect.getmembers(module, pred)
             if klasses_found:
                 klasses_found = zip(*klasses_found)[1]
+
+                # remove already loaded
+                klasses_found = set(klasses_found) - set(container.values())
 
             objs = [klass(verbosity, encoding) for klass in klasses_found]
             log("Loaded %i %s%s" % (len(objs), what, ":" if objs else "."),
                                     verbosity-1)
             if objs:
                 log("\n".join((" - %s" % repr(i)) for i in objs), verbosity-1)
-                container.extend(objs)
+                for obj in objs:
+                    container[obj.target] = obj
 
-
-    return interpreters, finders
+    return registry
 
 def get_encoding(encoding, verbosity):
     if sys.version_info[0] <= 2: # version major
@@ -108,8 +112,8 @@ def main():
     args = parse_args()
 
     encoding = get_encoding(args.encoding, args.verbosity)
-    available_interpreters, available_finders = search_interprerters_and_finders(args.search, args.interpreters,
-                                                  args.verbosity, encoding)
+    registry = load_modules(args.search, args.interpreters,
+                            args.verbosity, encoding)
 
     allowed_files = set(args.files) - set(args.skip)
     testfiles = [f for f in args.files if f in allowed_files]
@@ -124,7 +128,8 @@ def main():
                        CDIFF=args.diff=='context'
                        )
 
-
+    available_finders = registry['finders'].values()
+    available_interpreters = registry['interpreters'].values()
     finder = ExampleFinder(args.verbosity, available_finders)
     runner = ExampleRunner(reporter, checker, available_interpreters, args.verbosity)
 

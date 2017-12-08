@@ -4,6 +4,8 @@ from byexample.finder import ExampleMatchFinder
 from byexample.interpreter import Interpreter, PexepctMixin
 
 class PythonPromptFinder(ExampleMatchFinder):
+    target = 'python-prompt'
+
     def example_regex(self):
         return re.compile(r'''
             # Snippet consists of a PS1 line >>>
@@ -21,12 +23,14 @@ class PythonPromptFinder(ExampleMatchFinder):
             ''', re.MULTILINE | re.VERBOSE)
 
     def get_parser_for(self, *args, **kargs):
-        return PythonParser()
+        return PythonParser(self.verbosity, self.encoding)
 
     def __repr__(self):
         return "Python Prompt Finder (>>>)"
 
 class PythonParser(ExampleParser):
+    target = 'python'
+
     def example_options_regex(self):
         # anything of the form:
         #   #  byexample:  +FOO -BAR +ZAZ=42
@@ -65,6 +69,8 @@ class PythonInterpreter(Interpreter, PexepctMixin):
       hello<...>world
 
     """
+
+    target = 'python'
 
     def __init__(self, verbosity, encoding):
         self.encoding = encoding

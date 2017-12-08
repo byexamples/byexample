@@ -4,6 +4,8 @@ from byexample.finder import ExampleMatchFinder
 from byexample.interpreter import Interpreter, PexepctMixin
 
 class RubyPromptFinder(ExampleMatchFinder):
+    target = 'ruby-prompt'
+
     def example_regex(self):
         return re.compile(r'''
             # Snippet consists of one or more PS1 lines >>
@@ -20,12 +22,14 @@ class RubyPromptFinder(ExampleMatchFinder):
             ''', re.MULTILINE | re.VERBOSE)
 
     def get_parser_for(self, *args, **kargs):
-        return RubyParser()
+        return RubyParser(self.verbosity, self.encoding)
 
     def __repr__(self):
         return "Ruby Prompt Finder (>>)"
 
 class RubyParser(ExampleParser):
+    target = 'ruby'
+
     def example_options_regex(self):
         optstring_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
@@ -63,6 +67,8 @@ class RubyInterpreter(Interpreter, PexepctMixin):
             => "hello<...>world"
 
     '''
+    target = 'ruby'
+
     def __init__(self, verbosity, encoding):
         PexepctMixin.__init__(self,
                                 cmd='/usr/bin/irb',
