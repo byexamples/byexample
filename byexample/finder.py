@@ -1,5 +1,5 @@
 import collections, re
-from .common import log, build_exception_msg
+from .common import log, build_exception_msg, tohuman
 
 Where = collections.namedtuple('Where', ['start_lineno',
                                          'end_lineno',
@@ -111,10 +111,5 @@ class ExampleMatchFinder(object):
         raise NotImplementedError() # pragma: no cover
 
     def __repr__(self):
-        '''
-        Return a simple name for the finder. Like
-            "Python Prompt Finder (>>>)"
-        '''
-        return '???'    # pragma: no cover
-
+        return '%s Finder' % tohuman(self.target)
 

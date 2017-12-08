@@ -22,11 +22,9 @@ class ShellPromptFinder(ExampleMatchFinder):
     def get_parser_for(self, *args, **kargs):
         return ShellParser(self.verbosity, self.encoding)
 
-    def __repr__(self):
-        return "Shell Prompt Finder ($)"
-
 class ShellParser(ExampleParser):
-    target = 'shell'
+    language = 'shell'
+
     def example_options_regex(self):
         optstring_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
@@ -53,9 +51,6 @@ class ShellParser(ExampleParser):
     def get_interpreter_class_for(self, options, match, where):
         return ShellInterpreter
 
-    def __repr__(self):
-        return "Shell Parser"
-
 class ShellInterpreter(Interpreter, PexepctMixin):
     """
     Example:
@@ -67,7 +62,8 @@ class ShellInterpreter(Interpreter, PexepctMixin):
       hello<...>world
 
     """
-    target = 'shell'
+    language = 'shell'
+
     def __init__(self, verbosity, encoding):
         self.encoding = encoding
 
@@ -75,9 +71,6 @@ class ShellInterpreter(Interpreter, PexepctMixin):
                                 cmd='/bin/sh',
                                 PS1_re = r"/byexample/sh/ps1> ",
                                 any_PS_re = r"/byexample/sh/ps\d+> ")
-
-    def __repr__(self):
-        return "Shell (%s)" % "/bin/sh"
 
     def _spawn_new_shell(self, cmd):
         self._exec_and_wait('export PS1\n' +\

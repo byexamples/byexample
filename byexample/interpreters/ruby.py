@@ -24,11 +24,8 @@ class RubyPromptFinder(ExampleMatchFinder):
     def get_parser_for(self, *args, **kargs):
         return RubyParser(self.verbosity, self.encoding)
 
-    def __repr__(self):
-        return "Ruby Prompt Finder (>>)"
-
 class RubyParser(ExampleParser):
-    target = 'ruby'
+    language = 'ruby'
 
     def example_options_regex(self):
         optstring_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
@@ -53,9 +50,6 @@ class RubyParser(ExampleParser):
     def get_interpreter_class_for(self, options, match, where):
         return RubyInterpreter
 
-    def __repr__(self):
-        return "Ruby Parser"
-
 class RubyInterpreter(Interpreter, PexepctMixin):
     ''' An interpreter for Ruby using irb.
         Example:
@@ -67,7 +61,7 @@ class RubyInterpreter(Interpreter, PexepctMixin):
             => "hello<...>world"
 
     '''
-    target = 'ruby'
+    language = 'ruby'
 
     def __init__(self, verbosity, encoding):
         PexepctMixin.__init__(self,
@@ -76,9 +70,6 @@ class RubyInterpreter(Interpreter, PexepctMixin):
                                 any_PS_re = r'irb[^:]*:\d+:\d+(>|\*) ')
 
         self.encoding = encoding
-
-    def __repr__(self):
-        return "Ruby (%s)" % "/usr/bin/irb"
 
     def run(self, example, flags):
         return self._exec_and_wait(example.source + '\n',

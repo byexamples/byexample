@@ -25,11 +25,8 @@ class PythonPromptFinder(ExampleMatchFinder):
     def get_parser_for(self, *args, **kargs):
         return PythonParser(self.verbosity, self.encoding)
 
-    def __repr__(self):
-        return "Python Prompt Finder (>>>)"
-
 class PythonParser(ExampleParser):
-    target = 'python'
+    language = 'python'
 
     def example_options_regex(self):
         # anything of the form:
@@ -56,9 +53,6 @@ class PythonParser(ExampleParser):
     def get_interpreter_class_for(self, options, match, where):
         return PythonInterpreter
 
-    def __repr__(self):
-        return "Python Parser"
-
 class PythonInterpreter(Interpreter, PexepctMixin):
     """
     Example:
@@ -70,7 +64,7 @@ class PythonInterpreter(Interpreter, PexepctMixin):
 
     """
 
-    target = 'python'
+    language = 'python'
 
     def __init__(self, verbosity, encoding):
         self.encoding = encoding
@@ -118,9 +112,6 @@ del pprint
                                 PS1_re = PS1,
                                 any_PS_re = r'/byexample/py/ps\d> ')
 
-
-    def __repr__(self):
-        return "Python (%s)" % "/usr/bin/python"
 
     def run(self, example, flags):
         # we need to add an extra newline to

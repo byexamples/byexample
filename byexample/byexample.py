@@ -42,14 +42,14 @@ def parse_args():
 
     return parser.parse_args()
 
-def is_a(target_class):
+def is_a(target_class, key_attr):
     def _is_X(obj):
         if not inspect.isclass(obj):
             return False
 
         return issubclass(obj, target_class) and \
                obj is not target_class and \
-               hasattr(obj, 'target')
+               hasattr(obj, key_attr)
 
     return _is_X
 
@@ -78,12 +78,14 @@ def load_modules(dirnames, allowed, verbosity, encoding):
             continue
 
         log("From '%s' loaded '%s'" % (path, name), verbosity-1)
-        for pred, what in [(is_a(Interpreter), 'interpreters'),
-                           (is_a(ExampleMatchFinder), 'finders'),
-                           (is_a(ExampleParser), 'parsers')]:
+        for klass, key, what in [(Interpreter, 'language', 'interpreters'),
+                                 (ExampleParser, 'language', 'parsers'),
+                                 (ExampleMatchFinder, 'target', 'finders')]:
+
+            predicate = is_a(klass, key)
 
             container = registry[what]
-            klasses_found = inspect.getmembers(module, pred)
+            klasses_found = inspect.getmembers(module, predicate)
             if klasses_found:
                 klasses_found = zip(*klasses_found)[1]
 
@@ -91,12 +93,12 @@ def load_modules(dirnames, allowed, verbosity, encoding):
                 klasses_found = set(klasses_found) - set(container.values())
 
             objs = [klass(verbosity, encoding) for klass in klasses_found]
-            log("Loaded %i %s%s" % (len(objs), what, ":" if objs else "."),
-                                    verbosity-1)
             if objs:
                 log("\n".join((" - %s" % repr(i)) for i in objs), verbosity-1)
                 for obj in objs:
-                    container[obj.target] = obj
+                    container[getattr(obj, key)] = obj
+            else:
+                log("Loaded 0 %s." % what, verbosity-1)
 
     return registry
 
@@ -130,6 +132,8 @@ def main():
 
     available_finders = registry['finders'].values()
     available_interpreters = registry['interpreters'].values()
+
+    # TODO check that if we have a parser for language X, we have a interpreter for it
     finder = ExampleFinder(args.verbosity, available_finders)
     runner = ExampleRunner(reporter, checker, available_interpreters, args.verbosity)
 

@@ -1,5 +1,5 @@
 import collections, re
-from .common import log, build_exception_msg
+from .common import log, build_exception_msg, tohuman
 
 Example = collections.namedtuple('Example', ['interpreter_class',
                                              'filepath',
@@ -31,11 +31,7 @@ class ExampleParser(object):
         self.encoding = encoding
 
     def __repr__(self):
-        '''
-        Return a simple name for the parser. Like
-            "Python Parser"
-        '''
-        return '???'    # pragma: no cover
+        return '%s Parser' % tohuman(self.language)
 
     def example_options_regex(self):
         '''

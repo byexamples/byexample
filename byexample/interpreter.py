@@ -1,5 +1,6 @@
 import re, pexpect, sys, time
 from .runner import TimeoutException
+from .common import tohuman
 
 class Interpreter(object):
     def __init__(self, verbosity, encoding):
@@ -25,11 +26,7 @@ class Interpreter(object):
         return []
 
     def __repr__(self):
-        '''
-        Return a simple name for the interpreter. Like
-            "Python (/usr/bin/python)"
-        '''
-        return '???'    # pragma: no cover
+        return '%s Interpreter' % tohuman(self.language)
 
     def run(self, example, options):
         '''

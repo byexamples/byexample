@@ -15,3 +15,9 @@ def colored(s, color, use_colors):
         return "\033[%sm%s\033[0m" % (c, s)
     else:
         return s
+
+def tohuman(s):
+    s = s.replace("-", " ").replace("_", " ")
+    s = ' '.join(w.capitalize() for w in s.split())
+
+    return s
