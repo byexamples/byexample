@@ -1,7 +1,7 @@
 import collections, re
 from .common import log, build_exception_msg, tohuman
 
-Example = collections.namedtuple('Example', ['interpreter_class',
+Example = collections.namedtuple('Example', ['interpreter',
                                              'filepath',
                                              'start_lineno', 'end_lineno',
                                              'options', 'indentation',
@@ -85,13 +85,7 @@ class ExampleParser(object):
         '''
         raise NotImplementedError() # pragma: no cover
 
-    def get_interpreter_for(self, options, match, where):
-        '''
-        Return an Interpreter to execute the example matched in 'match'.
-        '''
-        raise NotImplementedError() # pragma: no cover
-
-    def get_example_from_match(self, options, match, example_str, where):
+    def get_example_from_match(self, options, match, example_str, interpreter, where):
         start_lineno, end_lineno, filepath = where
         indent = match.group('indent')
 
@@ -120,7 +114,6 @@ class ExampleParser(object):
         if not source.endswith('\n'):
             source += '\n'
 
-        interpreter_class = self.get_interpreter_class_for(options, match, where)
         example = Example(
                           # the source code to execute and the output
                           # expected.
@@ -147,8 +140,8 @@ class ExampleParser(object):
                           # start / end line numbers (inclusive) in the file
                           start_lineno=start_lineno, end_lineno=end_lineno,
 
-                          # the interpreter class for this example
-                          interpreter_class=interpreter_class)
+                          # the interpreter for this example
+                          interpreter=interpreter)
 
         return example
 

@@ -21,8 +21,8 @@ class RubyPromptFinder(ExampleMatchFinder):
                       )*)
             ''', re.MULTILINE | re.VERBOSE)
 
-    def get_parser_for(self, *args, **kargs):
-        return RubyParser(self.verbosity, self.encoding)
+    def get_language_of(self, *args, **kargs):
+        return 'ruby'
 
 class RubyParser(ExampleParser):
     language = 'ruby'
@@ -46,9 +46,6 @@ class RubyParser(ExampleParser):
             return '\n'.join(line[3:] for line in lines)
 
         return snippet
-
-    def get_interpreter_class_for(self, options, match, where):
-        return RubyInterpreter
 
 class RubyInterpreter(Interpreter, PexepctMixin):
     ''' An interpreter for Ruby using irb.

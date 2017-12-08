@@ -5,12 +5,10 @@ class TimeoutException(Exception):
     pass
 
 class ExampleRunner(object):
-    def __init__(self, reporter, checker, interpreters, verbosity):
+    def __init__(self, reporter, checker, verbosity):
         self.reporter  = reporter
         self.checker   = checker
         self.verbosity = verbosity
-
-        self.interpreters_by_class = {i.__class__: i for i in interpreters}
 
     def initialize_interpreters(self, interpreters):
         log("Initializing %i interpreters..." % len(interpreters),
@@ -26,11 +24,8 @@ class ExampleRunner(object):
             log("* %s" % str(interpreter), self.verbosity-1)
             interpreter.shutdown()
 
-    def interpreter_for(self, example):
-        return self.interpreters_by_class[example.interpreter_class]
-
     def run(self, examples, options, filepath):
-        interpreters = list(set(self.interpreter_for(e) for e in examples))
+        interpreters = list(set(e.interpreter for e in examples))
 
         self.initialize_interpreters(interpreters)
         self.reporter.start_run(examples, interpreters, filepath)
@@ -50,7 +45,7 @@ class ExampleRunner(object):
 
                 self.reporter.start_example(example, options)
                 try:
-                    got = self.interpreter_for(example).run(example, options)
+                    got = example.interpreter.run(example, options)
                 except TimeoutException as e:  # pragma: no cover
                     got = "**Execution timed out**\n" + str(e)
                     timedout = True

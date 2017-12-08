@@ -130,12 +130,8 @@ def main():
                        CDIFF=args.diff=='context'
                        )
 
-    available_finders = registry['finders'].values()
-    available_interpreters = registry['interpreters'].values()
-
-    # TODO check that if we have a parser for language X, we have a interpreter for it
-    finder = ExampleFinder(args.verbosity, available_finders)
-    runner = ExampleRunner(reporter, checker, available_interpreters, args.verbosity)
+    finder = ExampleFinder(args.verbosity, registry)
+    runner = ExampleRunner(reporter, checker, args.verbosity)
 
     exit_status = 0
     for filename in testfiles:

@@ -22,8 +22,8 @@ class PythonPromptFinder(ExampleMatchFinder):
                       )*)
             ''', re.MULTILINE | re.VERBOSE)
 
-    def get_parser_for(self, *args, **kargs):
-        return PythonParser(self.verbosity, self.encoding)
+    def get_language_of(self, *args, **kargs):
+        return 'python'
 
 class PythonParser(ExampleParser):
     language = 'python'
@@ -49,9 +49,6 @@ class PythonParser(ExampleParser):
             return '\n'.join(line[4:] for line in lines)
 
         return snippet
-
-    def get_interpreter_class_for(self, options, match, where):
-        return PythonInterpreter
 
 class PythonInterpreter(Interpreter, PexepctMixin):
     """

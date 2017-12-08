@@ -19,8 +19,8 @@ class ShellPromptFinder(ExampleMatchFinder):
                       )*)
             ''', re.MULTILINE | re.VERBOSE)
 
-    def get_parser_for(self, *args, **kargs):
-        return ShellParser(self.verbosity, self.encoding)
+    def get_language_of(self, *args, **kargs):
+        return 'shell'
 
 class ShellParser(ExampleParser):
     language = 'shell'
@@ -47,9 +47,6 @@ class ShellParser(ExampleParser):
             return '\n'.join(line[1:] for line in lines)
 
         return snippet
-
-    def get_interpreter_class_for(self, options, match, where):
-        return ShellInterpreter
 
 class ShellInterpreter(Interpreter, PexepctMixin):
     """

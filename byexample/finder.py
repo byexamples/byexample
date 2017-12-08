@@ -20,9 +20,12 @@ class ExampleFinder(object):
     :         :      -----------                                      report
                                                                   done by reporter
     '''
-    def __init__(self, verbosity, finders):
+    def __init__(self, verbosity, registry):
         self.verbosity = verbosity
-        self.finders = finders
+        self.available_finders = registry['finders'].values()
+
+        self.parser_by_language = registry['parsers']
+        self.interpreter_by_language = registry['interpreters']
 
     def get_examples_from_file(self, options, filepath, encoding):
         with open(filepath, 'rtU') as f:
@@ -32,7 +35,7 @@ class ExampleFinder(object):
 
     def get_examples_from_string(self, options, string, filepath='<string>'):
         all_examples = []
-        for finder in self.finders:
+        for finder in self.available_finders:
             examples = self.get_examples_using(finder, options, string, filepath)
             all_examples.extend(examples)
 
@@ -77,16 +80,25 @@ class ExampleFinder(object):
             # where we are, used for the messages of the exceptions
             where = Where(start_lineno, end_lineno, filepath)
 
-            parser = finder.get_parser_for(options, match, where)
-            example = parser.get_example_from_match(options, match, example_str, where)
+            language = finder.get_language_of(options, match, where)
+            parser = self.parser_by_language.get(language)
+            interpreter = self.interpreter_by_language.get(language)
 
-            if example:
+            example = None
+            if language and parser and interpreter:
+                example = parser.get_example_from_match(options, match, example_str, 
+                                                        interpreter, where)
+
                 if self.verbosity >= 2:
                     print_example(example)
 
                 examples.append(example)
+
             else:
-                log(build_exception_msg("Dropped example", where, self),
+                reason =  'language undefined' if not language else \
+                         ('no parser found for %s language' % language) if not parser else \
+                         ('no interpreter found for %s language' % language)
+                log(build_exception_msg("Dropped example: " + reason, where, self),
                     self.verbosity-2)
 
             options.down()
@@ -107,7 +119,7 @@ class ExampleMatchFinder(object):
     def get_example_matches(self, string):
         return self.example_regex().finditer(string)
 
-    def get_parser_for(self, options, match, where):
+    def get_language_of(self, options, match, where):
         raise NotImplementedError() # pragma: no cover
 
     def __repr__(self):
