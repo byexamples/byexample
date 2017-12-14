@@ -143,6 +143,7 @@ class ExampleParser(object):
                           # the interpreter for this example
                           interpreter=interpreter)
 
+        options.down()
         return example
 
     def check_and_remove_ident(self, example_str, indent, where):

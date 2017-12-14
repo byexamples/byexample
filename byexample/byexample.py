@@ -21,12 +21,13 @@ def parse_args():
                         help='skip these files')
     parser.add_argument("--search", action='append', metavar='dir',
                         default=[search_default],
-                        help='append a directory for searching interpreters there.')
+                        help='append a directory for searching modules there.')
     parser.add_argument("-d", "--diff", choices=['unified', 'ndiff', 'context'],
                         help='select diff algorithm.')
-    parser.add_argument("-i", "--interpreters", action='append', metavar='interpreter',
+    parser.add_argument("-l", "--language", action='append', metavar='language',
+                        dest='languages',
                         default=[], # all by default
-                        help='select which interpreters to use (all by default).')
+                        help='select which languages to parse and run (all by default).')
     parser.add_argument("--encoding",
                         default=sys.stdout.encoding,
                         help='select the encoding (supported in Python 3 only, ' + \
@@ -53,20 +54,13 @@ def is_a(target_class, key_attr):
 
     return _is_X
 
-def load_modules(dirnames, allowed, verbosity, encoding):
+def load_modules(dirnames, verbosity, encoding):
     registry = {'interpreters': {},
                 'finders': {},
                 'parsers': {},
                 }
     for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
         path = importer.path
-
-        # if we have a whitelist of allowed interpreters, do not load
-        # a module if it is not there
-        if allowed and name not in allowed:
-            log("From '%s' found '%s' but it was blacklisted. Skip." %
-                                                    (path, name), verbosity-2)
-            continue
 
         log("From '%s' loading '%s'..." % (path, name), verbosity-2)
 
@@ -100,6 +94,22 @@ def load_modules(dirnames, allowed, verbosity, encoding):
 
     return registry
 
+def get_allowed_languages(registry, user_defined):
+    available = set([obj.language for obj in registry['interpreters'].values()] + \
+                      [obj.language for obj in registry['parsers'].values()])
+
+    if not user_defined:
+        return available # all languages can be used
+
+    user_defined = set(user_defined)
+    not_found = user_defined - available
+
+    if not_found:
+        raise ValueError("The following languages were specified " + \
+                         "but they were not found in any module:\n%s" %
+                                (str(not_found)))
+    return user_defined
+
 def get_encoding(encoding, verbosity):
     if sys.version_info[0] <= 2: # version major
         # we don't support a different encoding
@@ -112,8 +122,9 @@ def main():
     args = parse_args()
 
     encoding = get_encoding(args.encoding, args.verbosity)
-    registry = load_modules(args.search, args.interpreters,
-                            args.verbosity, encoding)
+    registry = load_modules(args.search, args.verbosity, encoding)
+
+    allowed_languages = get_allowed_languages(registry, args.languages)
 
     allowed_files = set(args.files) - set(args.skip)
     testfiles = [f for f in args.files if f in allowed_files]
@@ -128,7 +139,7 @@ def main():
                        CDIFF=args.diff=='context'
                        )
 
-    finder = ExampleFinder(args.verbosity, registry)
+    finder = ExampleFinder(allowed_languages, args.verbosity, registry)
     runner = ExampleRunner(reporter, checker, args.verbosity)
 
     exit_status = 0

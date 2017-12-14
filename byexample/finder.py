@@ -20,7 +20,8 @@ class ExampleFinder(object):
     :         :      -----------                                      report
                                                                   done by reporter
     '''
-    def __init__(self, verbosity, registry):
+    def __init__(self, allowed_languages, verbosity, registry):
+        self.allowed_languages = allowed_languages
         self.verbosity = verbosity
         self.available_finders = registry['finders'].values()
 
@@ -63,6 +64,10 @@ class ExampleFinder(object):
 
             prev = example
 
+    def _log_drop(self, reason, where):
+        log(build_exception_msg("Dropped example: " + reason, where, self),
+                self.verbosity-2)
+
     def get_examples_using(self, finder, options, string, filepath='<string>'):
         charno = 0
         start_lineno = 1  # humans tend to count from 1
@@ -80,28 +85,37 @@ class ExampleFinder(object):
             # where we are, used for the messages of the exceptions
             where = Where(start_lineno, end_lineno, filepath)
 
+            # let's find what language is about
             language = finder.get_language_of(options, match, where)
+            if not language:
+                self._log_drop('language undefined', where)
+                continue
+
+            if language not in self.allowed_languages:
+                self._log_drop('language %s not allowed' % language, where)
+                continue
+
+            # who can parse it?
             parser = self.parser_by_language.get(language)
+            if not parser:
+                self._log_drop('no parser found for %s language' % language, where)
+                continue # TODO should be an error?
+
+            # who can execute it?
             interpreter = self.interpreter_by_language.get(language)
+            if not interpreter:
+                self._log_drop('no interpreter found for %s language' % language, where)
+                continue # TODO should be an error?
 
-            example = None
-            if language and parser and interpreter:
-                example = parser.get_example_from_match(options, match, example_str, 
-                                                        interpreter, where)
+            # perfect, we have everything to build an example
+            example = parser.get_example_from_match(options, match, example_str,
+                                                    interpreter, where)
 
-                if self.verbosity >= 2:
-                    print_example(example)
+            if self.verbosity >= 2:
+                print_example(example)
 
-                examples.append(example)
+            examples.append(example)
 
-            else:
-                reason =  'language undefined' if not language else \
-                         ('no parser found for %s language' % language) if not parser else \
-                         ('no interpreter found for %s language' % language)
-                log(build_exception_msg("Dropped example: " + reason, where, self),
-                    self.verbosity-2)
-
-            options.down()
 
         log("File '%s': %i examples [%s]" % (filepath, len(examples), str(finder)),
                                             self.verbosity-1)
