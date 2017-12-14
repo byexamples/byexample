@@ -13,9 +13,9 @@ test:
 	@python r.py -f ${interpreters} `find docs -name "*.rst"`
 
 testquick:
-	@python r.py -f -l python byexample/interpreters/python.py
-	@python r.py -f -l ruby   byexample/interpreters/ruby.py
-	@python r.py -f -l shell  byexample/interpreters/shell.py
+	@python r.py -f -l python byexample/modules/python.py
+	@python r.py -f -l ruby   byexample/modules/ruby.py
+	@python r.py -f -l shell  byexample/modules/shell.py
 
 dist:
 	rm -Rf dist/ build/ *.egg-info

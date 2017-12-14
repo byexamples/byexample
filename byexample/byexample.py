@@ -9,7 +9,7 @@ from .reporter import SimpleReporter
 from .common import log, build_exception_msg
 
 def parse_args():
-    search_default = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'interpreters')
+    search_default = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modules')
     parser = argparse.ArgumentParser()
     parser.add_argument("files", nargs='+', metavar='file',
                         help="file that have the examples to run.")
