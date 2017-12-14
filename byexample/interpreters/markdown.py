@@ -15,14 +15,14 @@ class FencedExampleMatchFinder(ExampleMatchFinder):
                 (?: [ ]*\n )*                         # ignore any empty line
                 (?:^(?P<indent> [ ]*)[^ ] .*)         # first line
                 (?:\n                           # the rest of the line that
-                        (?![ ]*=>[ ])           # don't start with the expected marker
+                        (?![ ]*out:[ ]*\n)      # don't start with the expected marker
                         (?![ ]*```)             # don't start with the end marker
                 .*)*)                           # anything else is welcome
 
             \n?
 
-            # the end marker, optional
-            (?: [ ]* =>[ ]
+            # the expected output, optional
+            (?: [ ]* out:[ ]*\n
                 # Followed by the expected output consists of any non-blank
                 # lines that do not start with the end marker
                 (?P<expected> (?:(?![ ]*$)     # Not a blank line
