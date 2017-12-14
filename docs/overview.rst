@@ -1,10 +1,11 @@
 ``byexample``
 =============
 
-``byexample`` is literate programming engine where you can write
-ordinary text and snippets the code in the same file
+``byexample`` is a literate programming engine where you can write
+ordinary text and snippets of code in the same file.
+
 It is intended primary for writing good and live documentation showing
-how a piece of software works or it can be used *by example*.
+how a piece of software works or how to use it *by example*.
 
 Currently we support
  - Python
@@ -18,6 +19,7 @@ Snippets of code
 
 Any snippet of code that it is detected by ``byexample`` will be executed
 and its output compared with the expected one.
+
 This a quite useful way to test and document by example.
 
 Any code that is written inside of a fenced code block will be parsed and
@@ -29,15 +31,22 @@ Here is an example in Python
 
     ```python
     1 + 2
-    => 3
+    
+    out:
+    3
     ```
 
-and another in Ruby
+The expression ``1 + 2`` is executed and the output compared with ``3`` to
+see if the test passes or not.
+
+Here is another example in Ruby
 
 .. code::
 
-    a```ruby
+    ```ruby
     1 + 2
+    
+    out:
     => 3
     ```
 
@@ -48,25 +57,6 @@ This is quite common in Python, with ``>>>`` and ``...`` prompts:
 
 .. code:: python
 
-    >>> 1 + 2
-    3
-
-The expression ``1 + 2`` is executed and the output compared with ``3`` to
-see if the test passes or not.
-
-.. code:: python
-
-    >>> a = 1
-    >>> b = 2
-    >>> a + b
-    3
-
-    >>> def f(a, b):
-    ...     return a + b
-
-    >>> f(2, 6)
-    8
-
     >>> def g(a, b, c):
     ...     c += a
     ...     c += b
@@ -75,10 +65,6 @@ see if the test passes or not.
 
     >>> g(1, 2, 3)
     6
-
-    >>> [1, 2,
-    ...  3, 4]
-    [1, 2, 3, 4]
 
 
 You can even mix snippets of different languages in the same file!
@@ -94,20 +80,10 @@ It is left as is as this is quite common in the Ruby examples and literature.
 
 .. code:: ruby
 
-    >> 1 + 2
-    => 3
-
     >> a = 1;
     >> b = 2;
     >> a + b
     => 3
-
-    >> def f(a, b)
-    >>   a + b
-    >> end;
-
-    >> f(2, 6)
-    => 8
 
     >> def g(a, b, c)
     >>     c += a
@@ -126,22 +102,7 @@ otherwise but nevertheless ``byexample`` treats those prompts like the same.
 
 .. code:: sh
 
-    $ echo $(( 1 + 2 ))
-    3
-
-    $ a=1;
-    $ b=2;
-    $ echo $(( $a + $b ))
-    3
-
-    $ f () {
-    >   echo $(( $1 + $2 ))
-    > }
-
-    $ f 2 6
-    8
-
-    # g () {
+    $ g () {
     >     c=$3
     >     c=$(( $c + $1 ))
     >     c=$(( $c + $2 ))
@@ -149,7 +110,7 @@ otherwise but nevertheless ``byexample`` treats those prompts like the same.
     >     echo $c
     > }
 
-    # g 1 2 3
+    $ g 1 2 3
     6
 
 

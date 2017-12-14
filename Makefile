@@ -1,4 +1,4 @@
-.PHONY: all test dist upload clean
+.PHONY: all test dist upload clean doc
 
 all:
 	echo "Usage: make test|dist|upload|clean|deps|travistest"
@@ -25,8 +25,12 @@ dist:
 upload: dist
 	twine upload dist/*.tar.gz dist/*.whl
 
+doc:
+	pandoc -s -o doc.pdf docs/overview.rst docs/languages/*
+
 clean:
 	rm -Rf dist/ build/ *.egg-info
 	rm -Rf build/ *.egg-info
 	find . -name "*.pyc" -delete
 	find . -type d -name "__pycache__" -delete
+	rm -f doc.pdf
