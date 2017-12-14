@@ -87,7 +87,7 @@ def load_modules(dirnames, allowed, verbosity, encoding):
             container = registry[what]
             klasses_found = inspect.getmembers(module, predicate)
             if klasses_found:
-                klasses_found = zip(*klasses_found)[1]
+                klasses_found = list(zip(*klasses_found))[1]
 
                 # remove already loaded
                 klasses_found = set(klasses_found) - set(container.values())
@@ -97,8 +97,6 @@ def load_modules(dirnames, allowed, verbosity, encoding):
                 log("\n".join((" - %s" % repr(i)) for i in objs), verbosity-1)
                 for obj in objs:
                     container[getattr(obj, key)] = obj
-            else:
-                log("Loaded 0 %s." % what, verbosity-1)
 
     return registry
 

@@ -150,7 +150,8 @@ class ExampleParser(object):
         Given an example string, remove its indent, including a possible empty
         line at the end.
             >>> from byexample.parser import ExampleParser
-            >>> check_and_remove_ident = ExampleParser().check_and_remove_ident
+            >>> parser = ExampleParser(0, 'utf8'); parser.language = 'python'
+            >>> check_and_remove_ident = parser.check_and_remove_ident
             >>> check_and_remove_ident('  >>> 1 + 2\n  3\n ', '  ', (1, 2, 'foo.rst'))
             '>>> 1 + 2\n3'
 
@@ -192,8 +193,9 @@ class ExampleParser(object):
             >>> from byexample.parser import ExampleParser
             >>> import re
 
-            >>> check_and_remove_ident = ExampleParser().check_and_remove_ident
-            >>> check_keep_matching    = ExampleParser().check_keep_matching
+            >>> parser = ExampleParser(0, 'utf8'); parser.language = 'python'
+            >>> check_and_remove_ident = parser.check_and_remove_ident
+            >>> check_keep_matching    = parser.check_keep_matching
 
             >>> code = '  >>> 1 + 2'
             >>> match = re.match(r'[ ]*>>> [^\n]*', code)
@@ -261,7 +263,8 @@ class ExampleParser(object):
            ambiguous:
 
             >>> from byexample.parser import ExampleParser
-            >>> expected_as_regex = ExampleParser().expected_as_regex
+            >>> parser = ExampleParser(0, 'utf8'); parser.language = 'python'
+            >>> expected_as_regex = parser.expected_as_regex
 
             >>> m, _ = expected_as_regex('a<foo>b<bar>c', False, (1, 2, 'foo.rst'))
             >>> # there is not ambiguity here: a----b---c

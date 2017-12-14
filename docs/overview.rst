@@ -20,14 +20,31 @@ Any snippet of code that it is detected by ``byexample`` will be executed
 and its output compared with the expected one.
 This a quite useful way to test and document by example.
 
-The snippets are preceded by the primary prompt. If the code spans
-multiple lines, ``byexample`` uses a secondary prompt.
+Any code that is written inside of a fenced code block will be parsed and
+executed depending of the language selected.
 
-There is not restriction in which snippets you can add. You can even mix
-snippets of different languages in the same file!
+Here is an example in Python
 
-For Python ``byexample`` uses the ``>>>`` string as the primary prompt and
-``...`` as the secondary prompt.
+.. code::
+
+    ```python
+    1 + 2
+    => 3
+    ```
+
+and another in Ruby
+
+.. code::
+
+    a```ruby
+    1 + 2
+    => 3
+    ```
+
+Beside of using a fenced block, a snippet can be detected if they are preceded
+by a prompt like if it were an interactive session of some interpreter.
+
+This is quite common in Python, with ``>>>`` and ``...`` prompts:
 
 .. code:: python
 
@@ -63,7 +80,10 @@ see if the test passes or not.
     ...  3, 4]
     [1, 2, 3, 4]
 
-Instead for Ruby ``byexample`` uses the ``>>`` string as the primary and
+
+You can even mix snippets of different languages in the same file!
+
+For Ruby, ``byexample`` uses the ``>>`` string as the primary and
 secondary prompts.
 
 Because of this, all the consecutive lines that start with ``>>`` will belong

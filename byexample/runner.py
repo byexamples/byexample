@@ -14,14 +14,14 @@ class ExampleRunner(object):
         log("Initializing %i interpreters..." % len(interpreters),
                                                     self.verbosity-1)
         for interpreter in interpreters:
-            log("* %s" % str(interpreter), self.verbosity-1)
+            log(" - %s" % str(interpreter), self.verbosity-1)
             interpreter.initialize()
 
     def shutdown_interpreters(self, interpreters):
         log("Shutting down %i interpreters..." % len(interpreters),
                                                     self.verbosity-1)
         for interpreter in interpreters:
-            log("* %s" % str(interpreter), self.verbosity-1)
+            log(" - %s" % str(interpreter), self.verbosity-1)
             interpreter.shutdown()
 
     def run(self, examples, options, filepath):
