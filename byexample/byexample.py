@@ -9,6 +9,12 @@ from .reporter import SimpleReporter
 from .common import log, build_exception_msg
 
 def parse_args():
+    class CSV(argparse.Action):
+        def __call__(self, parser, namespace, values, option_string=None):
+            # -l a,b  => [a, b]
+            values = values.split(',')
+            getattr(namespace, self.dest).extend(values)
+
     search_default = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modules')
     parser = argparse.ArgumentParser()
     parser.add_argument("files", nargs='+', metavar='file',
@@ -24,10 +30,13 @@ def parse_args():
                         help='append a directory for searching modules there.')
     parser.add_argument("-d", "--diff", choices=['unified', 'ndiff', 'context'],
                         help='select diff algorithm.')
-    parser.add_argument("-l", "--language", action='append', metavar='language',
+    parser.add_argument("-l", "--language", metavar='language',
                         dest='languages',
-                        default=[], # all by default
-                        help='select which languages to parse and run (all by default).')
+                        action=CSV,
+                        required=True,
+                        default=[],
+                        help='select which languages to parse and run. '+
+                             'Comma separated syntax is also accepted.')
     parser.add_argument("--encoding",
                         default=sys.stdout.encoding,
                         help='select the encoding (supported in Python 3 only, ' + \
@@ -94,21 +103,18 @@ def load_modules(dirnames, verbosity, encoding):
 
     return registry
 
-def get_allowed_languages(registry, user_defined):
+def get_allowed_languages(registry, selected):
     available = set([obj.language for obj in registry['interpreters'].values()] + \
                       [obj.language for obj in registry['parsers'].values()])
 
-    if not user_defined:
-        return available # all languages can be used
-
-    user_defined = set(user_defined)
-    not_found = user_defined - available
+    selected = set(selected)
+    not_found = selected - available
 
     if not_found:
         raise ValueError("The following languages were specified " + \
                          "but they were not found in any module:\n%s" %
                                 (str(not_found)))
-    return user_defined
+    return selected
 
 def get_encoding(encoding, verbosity):
     if sys.version_info[0] <= 2: # version major
