@@ -9,12 +9,12 @@ class Interpreter(object):
 
     def get_example_match_finders(self):
         '''
-        Return a list of ExampleMatchFinders, objects that will find
+        Return a list of MatchFinders, objects that will find
         examples in a given file/string.
-        See the doc of ExampleMatchFinder for more information.
+        See the doc of MatchFinder for more information.
 
         If the list is empty, no example will be find (nor executed)
-        unless the generic 'FencedExampleMatchFinder' find the examples
+        unless the generic 'FencedMatchFinder' find the examples
         for this interpreter.
 
         In general, if your language support a prompt-like session, like

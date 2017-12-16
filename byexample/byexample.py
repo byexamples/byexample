@@ -2,7 +2,7 @@ import sys, argparse, os, pkgutil, inspect
 
 from .options import Options
 from .interpreter import Interpreter
-from .finder import ExampleFinder, ExampleMatchFinder
+from .finder import ExampleFinder, MatchFinder
 from .runner import ExampleRunner, Checker
 from .parser import ExampleParser
 from .reporter import SimpleReporter
@@ -83,7 +83,7 @@ def load_modules(dirnames, verbosity, encoding):
         log("From '%s' loaded '%s'" % (path, name), verbosity-1)
         for klass, key, what in [(Interpreter, 'language', 'interpreters'),
                                  (ExampleParser, 'language', 'parsers'),
-                                 (ExampleMatchFinder, 'target', 'finders')]:
+                                 (MatchFinder, 'target', 'finders')]:
 
             predicate = is_a(klass, key)
 

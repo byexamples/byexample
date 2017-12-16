@@ -122,7 +122,7 @@ class ExampleFinder(object):
 
         return examples
 
-class ExampleMatchFinder(object):
+class MatchFinder(object):
     def __init__(self, verbosity, encoding):
         self.verbosity = verbosity
         self.encoding = encoding

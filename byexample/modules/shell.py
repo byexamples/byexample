@@ -1,9 +1,9 @@
 import re, pexpect, sys, time
 from byexample.parser import ExampleParser
-from byexample.finder import ExampleMatchFinder
+from byexample.finder import MatchFinder
 from byexample.interpreter import Interpreter, PexepctMixin
 
-class ShellPromptFinder(ExampleMatchFinder):
+class ShellPromptFinder(MatchFinder):
     target = 'shell-prompt'
 
     def example_regex(self):
