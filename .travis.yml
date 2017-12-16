@@ -7,7 +7,7 @@ python:
     - "3.5"
     - "3.6"
 env:
-    - interpreters="-i python -i shell"
+    - all_languages="python,shell"
 install: make deps
 script: make test
 branches:
