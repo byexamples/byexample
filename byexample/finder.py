@@ -72,7 +72,7 @@ class ExampleFinder(object):
         charno = 0
         start_lineno = 1  # humans tend to count from 1
         examples = []
-        for match in finder.get_example_matches(string):
+        for match in finder.get_matches(string):
             example_str = string[match.start():match.end()]
 
             # start_lineno and end_lineno are inclusive
@@ -130,7 +130,7 @@ class MatchFinder(object):
     def example_regex(self):
         raise NotImplementedError() # pragma: no cover
 
-    def get_example_matches(self, string):
+    def get_matches(self, string):
         return self.example_regex().finditer(string)
 
     def get_language_of(self, options, match, where):
