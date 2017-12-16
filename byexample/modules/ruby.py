@@ -27,18 +27,9 @@ class RubyPromptFinder(ExampleMatchFinder):
 class RubyParser(ExampleParser):
     language = 'ruby'
 
-    def example_options_regex(self):
-        optstring_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
+    def example_options_string_regex(self):
+        return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
-
-        opt_re = re.compile(r'''
-                (?:(?P<add>\+) | (?P<del>-))   #  + or - followed by
-                (?P<name>\w+)                  # the name of the option and
-                (?:=(?P<val>\w+))?             # optionally, = and its value
-
-                ''', re.MULTILINE | re.VERBOSE)
-
-        return optstring_re, opt_re
 
     def source_from_snippet(self, snippet):
         lines = snippet.split("\n")

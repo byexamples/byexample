@@ -33,18 +33,31 @@ class ExampleParser(object):
     def __repr__(self):
         return '%s Parser' % tohuman(self.language)
 
-    def example_options_regex(self):
+    def example_options_string_regex(self):
         '''
-        Return two regular expressions to match the options of an example
-        if any.
-        The first must extract a string, the options-string, and the
-        second will extract from that string the options.
+        Return a regular expressions to extract a string that contains all
+        the options of the example.
 
-        The first regex will be used once per example. The second will be
-        used several times to extract all the options from the string.
+        This regex will be used once per example and it must have an
+        unnamed group.
 
-        The first regex must have an unnamed group. The second must have
-        two exclusive groups:
+        Example:
+          #  byexample: bla bla
+          /* byexample: bla bla
+          # ~byexample~ bla bla
+
+        '''
+        raise NotImplementedError() # pragma: no cover
+
+    def example_option_regex(self):
+        '''
+        Return a regular expressions to extract the options from the
+        string returned by 'example_options_string_regex' method.
+
+        This regex will be used several times to extract all the
+        options from the string.
+
+        It must have two exclusive groups:
          - add: if non empty, the option is meant to be enabled
          - del: if non empty, the option is meant to be disabled
         and an additional mandatory group:
@@ -60,7 +73,12 @@ class ExampleParser(object):
           -CAPTURE      'remove' the 'CAPTURE' option
           +TIMEOUT=10   'set' the 'TIMEOUT' to the 'value' of 10
         '''
-        raise NotImplementedError() # pragma: no cover
+        return re.compile(r'''
+                (?:(?P<add>\+) | (?P<del>-))   #  + or - followed by
+                (?P<name>\w+)                  # the name of the option and
+                (?:=(?P<val>\w+))?             # optionally, = and its value
+
+                ''', re.MULTILINE | re.VERBOSE)
 
     def capture_tag_regex(self):
         '''
@@ -335,7 +353,8 @@ class ExampleParser(object):
 
     def extract_options(self, snippet, where):
         start_lineno, _, filepath = where
-        optstring_re, opt_re = self.example_options_regex()
+        optstring_re = self.example_options_string_regex()
+        opt_re = self.example_option_regex()
 
         match = optstring_re.search(snippet)
         if not match:
