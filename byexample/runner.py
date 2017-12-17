@@ -98,7 +98,7 @@ class Checker(object):
             >>> expected = 'one\ntwo\nthree\nfour'
             >>> got      = 'zero\none\ntree\nfour'
 
-            >>> flags = {k: False for k in ('H', 'UDIFF', 'NDIFF', 'CDIFF')}
+            >>> flags = dict((k, False) for k in ('H', 'UDIFF', 'NDIFF', 'CDIFF'))
             >>> print(output_difference(expected, got, flags, False))
             Expected:
             one
