@@ -9,22 +9,6 @@ Example = collections.namedtuple('Example', ['interpreter',
                                              'expected', 'expected_re',
                                              'captures', 'match'])
 
-def print_example(example):
-    print("*" * 70)
-    for i, field in enumerate(example._fields):
-        if field in ('expected_re', 'match'):
-            continue
-
-        if field == 'indentation':
-            print("%s: |%s| (%i bytes)" % (field, example[i],
-                                            len(example[i])))
-            continue
-
-        sep = '\n' if field in ('source', 'expected') else ' '
-        print("%s:%s%s" % (field, sep, example[i]))
-
-    print('\n')
-
 class ExampleParser(object):
     def __init__(self, verbosity, encoding):
         self.verbosity = verbosity

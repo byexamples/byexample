@@ -1,5 +1,5 @@
 import collections, re
-from .common import log, build_exception_msg, tohuman
+from .common import log, build_exception_msg, tohuman, print_example
 
 Where = collections.namedtuple('Where', ['start_lineno',
                                          'end_lineno',
@@ -43,6 +43,10 @@ class ExampleFinder(object):
         # sort the examples in the same order
         # that they were found in the file/string.
         all_examples.sort(key=lambda this: this.start_lineno)
+
+        if self.verbosity >= 2:
+            for e in all_examples:
+                print_example(e)
 
         self.check_example_overlap(all_examples, filepath)
 
@@ -110,9 +114,6 @@ class ExampleFinder(object):
             # perfect, we have everything to build an example
             example = parser.get_example_from_match(options, match, example_str,
                                                     interpreter, where)
-
-            if self.verbosity >= 2:
-                print_example(example)
 
             examples.append(example)
 
