@@ -142,8 +142,9 @@ class PexepctMixin(object):
         out = "".join(self.last_output)
         self._drop_output()
 
-        # remove any other 'prompt'
-        out = re.sub(self.any_PS_re, '', out)
+        # remove any other 'prompt' if any
+        if self.any_PS_re:
+            out = re.sub(self.any_PS_re, '', out)
 
         # uniform the new line endings (aka universal new lines)
         out = self._universal_new_lines(out)
