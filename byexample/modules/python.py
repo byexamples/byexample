@@ -97,7 +97,7 @@ del pprint
 ''' % (PS1, PS2)
 
         PexepctMixin.__init__(self,
-                                cmd="/usr/bin/python -i -c '%s'" % change_prompts,
+                                cmd="/usr/bin/env python -i -c '%s'" % change_prompts,
                                 PS1_re = PS1,
                                 any_PS_re = r'/byexample/py/ps\d> ')
 

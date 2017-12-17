@@ -53,7 +53,7 @@ class RubyInterpreter(Interpreter, PexepctMixin):
 
     def __init__(self, verbosity, encoding):
         PexepctMixin.__init__(self,
-                                cmd='/usr/bin/irb',
+                                cmd='/usr/bin/env irb',
                                 PS1_re = r'irb[^:]*:\d+:0(>|\*) ',
                                 any_PS_re = r'irb[^:]*:\d+:\d+(>|\*) ')
 

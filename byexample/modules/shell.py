@@ -54,7 +54,7 @@ class ShellInterpreter(Interpreter, PexepctMixin):
         self.encoding = encoding
 
         PexepctMixin.__init__(self,
-                                cmd='/bin/sh',
+                                cmd='/usr/bin/env sh',
                                 PS1_re = r"/byexample/sh/ps1> ",
                                 any_PS_re = r"/byexample/sh/ps\d+> ")
 
@@ -68,9 +68,9 @@ class ShellInterpreter(Interpreter, PexepctMixin):
 
     def run(self, example, flags):
         if flags.get('bash', False):
-            self._spawn_new_shell('/bin/bash --norc -i')
+            self._spawn_new_shell('/usr/bin/env bash --norc -i')
         elif flags.get('sh', False):
-            self._spawn_new_shell('/bin/sh')
+            self._spawn_new_shell('/usr/bin/env sh')
 
         return self._exec_and_wait(example.source + '\n',
                                     timeout=int(flags['TIMEOUT']))
