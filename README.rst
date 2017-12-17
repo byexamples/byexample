@@ -35,12 +35,11 @@ All the snippets will be collected, executed and checked.
 
 .. code:: sh
 
-    $ pip install --user byexample      # install it # byexample: +SKIP
-    $ byexample README.rst              # run it     # byexample: +SKIP
-    .............
-    File README.rst, 13/13 test ran in 0.81 seconds
-    [PASS] Pass: 13 Fail: 0 Aborted: 0
-
+    $ pip install --user byexample                # install it # byexample: +SKIP
+    $ byexample -l python,ruby,shell README.rst   # run it     # byexample: +SKIP
+    ................
+    File README.rst, 16/16 test ran in 1.01 seconds
+    [PASS] Pass: 16 Fail: 0 Aborted: 0
 
 See the inline help for more information about how to tweak the execution
 
@@ -56,10 +55,26 @@ Any snippet of code that it is detected by ``byexample`` will be executed
 and its output compared with the text below.
 This is a quite useful way to test and document by example.
 
-The snippets are preceded by the primary prompt. If the code spans
-multiple lines, ``byexample`` uses a secondary prompt.
+Any code that is written inside of a fenced code block will be parsed and
+executed depending of the language selected.
 
-For Python we use ``>>>`` and ``...`` respectively
+Here is an example in Python
+
+.. code::
+
+    ```python
+    1 + 2
+    
+    out:
+    3
+    ```
+
+The expression ``1 + 2`` is executed and the output compared with ``3`` to
+see if the test passes or not.
+
+For some languages, we support the interpreter-session like syntax.
+
+For Python we use ``>>>`` and ``...`` as prompts to find this sessions
 
 .. code:: python
 
@@ -68,9 +83,6 @@ For Python we use ``>>>`` and ``...`` respectively
 
     >>> add(1, 2)
     3
-
-The expression ``add(1, 2)`` is executed and the output compared with ``3`` to
-see if the test passes or not.
 
 There is not restriction in which snippets you can add. You can even mix
 snippets of different languages in the same file!
