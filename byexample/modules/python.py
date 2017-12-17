@@ -1,3 +1,13 @@
+"""
+Example:
+  >>> def hello():
+  ...     print("hello bla world")
+
+  >>> hello()
+  hello<...>world
+
+"""
+
 import re, pexpect, sys, time
 from byexample.parser import ExampleParser
 from byexample.finder import MatchFinder
@@ -43,16 +53,6 @@ class PythonParser(ExampleParser):
         return snippet
 
 class PythonInterpreter(Interpreter, PexepctMixin):
-    """
-    Example:
-      >>> def hello():
-      ...     print("hello bla world")
-
-      >>> hello()
-      hello<...>world
-
-    """
-
     language = 'python'
 
     def __init__(self, verbosity, encoding):

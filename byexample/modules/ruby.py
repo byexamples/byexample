@@ -1,3 +1,13 @@
+''' An interpreter for Ruby using irb.
+    Example:
+        >> def hello
+        >>     'hello bla world'
+        >> end;
+
+        >> hello
+        => "hello<...>world"
+
+'''
 import re, pexpect, sys, time
 from byexample.parser import ExampleParser
 from byexample.finder import MatchFinder
@@ -39,16 +49,6 @@ class RubyParser(ExampleParser):
         return snippet
 
 class RubyInterpreter(Interpreter, PexepctMixin):
-    ''' An interpreter for Ruby using irb.
-        Example:
-            >> def hello
-            >>     'hello bla world'
-            >> end;
-
-            >> hello
-            => "hello<...>world"
-
-    '''
     language = 'ruby'
 
     def __init__(self, verbosity, encoding):

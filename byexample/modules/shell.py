@@ -1,3 +1,13 @@
+"""
+Example:
+  $ hello() {
+  >     echo "hello bla world"
+  > }
+
+  $ hello
+  hello<...>world
+
+"""
 import re, pexpect, sys, time
 from byexample.parser import ExampleParser
 from byexample.finder import MatchFinder
@@ -38,16 +48,6 @@ class ShellParser(ExampleParser):
         return snippet
 
 class ShellInterpreter(Interpreter, PexepctMixin):
-    """
-    Example:
-      $ hello() {
-      >     echo "hello bla world"
-      > }
-
-      $ hello
-      hello<...>world
-
-    """
     language = 'shell'
 
     def __init__(self, verbosity, encoding):
