@@ -20,6 +20,7 @@ testquick:
 	@$(python_bin) r.py -f -l python byexample/modules/python.py
 	@$(python_bin) r.py -f -l ruby   byexample/modules/ruby.py
 	@$(python_bin) r.py -f -l shell  byexample/modules/shell.py
+	@$(python_bin) r.py -f -l gdb    byexample/modules/gdb.py
 
 dist:
 	rm -Rf dist/ build/ *.egg-info
