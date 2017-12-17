@@ -33,7 +33,7 @@ class ShellParser(ExampleParser):
     def source_from_snippet(self, snippet):
         lines = snippet.split("\n")
         if lines and (lines[0].startswith("$ ") or lines[0].startswith("# ")):
-            return '\n'.join(line[1:] for line in lines)
+            return '\n'.join(line[2:] for line in lines)
 
         return snippet
 
