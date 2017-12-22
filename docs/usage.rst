@@ -10,9 +10,10 @@ capabilities
     $ alias byexample=python\ r.py
 
     $ byexample -h                      # byexample: +WS
-    usage: <...> [-h] [-f] [--dry] [--skip file [file ...]] [--search dir]
+    usage: r.py [-h] [-f] [--dry] [--skip file [file ...]] [--search dir]
                 [-d {unified,ndiff,context}] [--no-enhance-diff] -l language
-                [--encoding ENCODING] [--no-color] [-v | -q]
+                [--timeout TIMEOUT] [-o OPTIONS] [--encoding ENCODING]
+                [--no-color] [-v | -q]
                 file [file ...]
     <blankline>
     positional arguments:
@@ -34,6 +35,11 @@ capabilities
       -l language, --language language
                             select which languages to parse and run. Comma
                             separated syntax is also accepted.
+      --timeout TIMEOUT     timeout in seconds to complete each example (2 by
+                            default); this can be changed per example with TIMEOUT
+                            option.
+      -o OPTIONS, --option OPTIONS
+                            add additional options of the form key=val.
       --encoding ENCODING   select the encoding (supported in Python 3 only, use
                             the same encoding of stdout by default)
       --no-color            do not output any escape sequence for coloring.

@@ -15,6 +15,23 @@ def parse_args():
             values = values.split(',')
             getattr(namespace, self.dest).extend(values)
 
+    class DictExtend(argparse.Action):
+        def __call__(self, parser, namespace, values, option_string=None):
+            assert isinstance(values, dict)
+            getattr(namespace, self.dest).update(values)
+
+    def key_val_type(item):
+        try:
+            key, val = [i.strip() for i in item.split("=", 1)]
+            option = {key: val}
+        except:
+            raise ValueError("Invalid option format. Use key=val.")
+
+        if not key or not val:
+            raise ValueError("Neither the key nor the value of the option can be empty")
+
+        return option
+
     search_default = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modules')
     parser = argparse.ArgumentParser()
     parser.add_argument("files", nargs='+', metavar='file',
@@ -42,6 +59,17 @@ def parse_args():
                         default=[],
                         help='select which languages to parse and run. '+
                              'Comma separated syntax is also accepted.')
+    parser.add_argument("--timeout",
+                        default=2,
+                        type=int,
+                        help='timeout in seconds to complete each example (2 by default); ' + \
+                             'this can be changed per example with TIMEOUT option.')
+    parser.add_argument("-o", "--option",
+                        dest='options',
+                        action=DictExtend,
+                        type=key_val_type,
+                        default={},
+                        help='add additional options of the form key=val.')
     parser.add_argument("--encoding",
                         default=sys.stdout.encoding,
                         help='select the encoding (supported in Python 3 only, ' + \
@@ -145,11 +173,13 @@ def main():
     checker  = Checker()
     options  = Options(FAIL_FAST=args.fail_fast, WS=False, PASS=False,
                        SKIP=False, ENHANCE_DIFF=args.enhance_diff,
-                       TIMEOUT=2,
+                       TIMEOUT=args.timeout,
                        UDIFF=args.diff=='unified',
                        NDIFF=args.diff=='ndiff',
                        CDIFF=args.diff=='context'
                        )
+
+    options.up(args.options)
 
     finder = ExampleFinder(allowed_languages, args.verbosity, registry)
     runner = ExampleRunner(reporter, checker, args.verbosity)
