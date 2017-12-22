@@ -132,14 +132,15 @@ try:
 
             self.bar.update(1)
 
-
         def start_run(self, examples, interpreters, filepath):
             SimpleReporter.start_run(self, examples, interpreters, filepath)
 
             bar_format = '{desc} |{bar}| [ETA {remaining}{postfix}]'
             self.bar = tqdm.tqdm(total=len(examples), file=self.output,
                                  desc=filepath, leave=False,
-                                 bar_format=bar_format)
+                                 bar_format=bar_format,
+                                 disable=None # means disable if the output is not TTY
+                                 )
 
         def end_run(self, examples, interpreters):
             self.bar.close()

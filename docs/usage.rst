@@ -9,7 +9,7 @@ capabilities
     $ # ignore this
     $ alias byexample=python\ r.py
 
-    $ byexample -h                      # byexample: +WS
+    $ byexample -h                      # byexample: +WS +SKIP
     usage: r.py [-h] [-f] [--dry] [--skip file [file ...]] [--search dir]
                 [-d {unified,ndiff,context}] [--no-enhance-diff] -l language
                 [--timeout TIMEOUT] [-o OPTIONS] [--encoding ENCODING]
@@ -78,7 +78,7 @@ Now we just run ``byexample`` selecting ``python`` as the language target:
 
 .. code:: sh
 
-    $ byexample --no-color -l python syntetic.doc       # byexample: +WS
+    $ byexample --pretty none -l python syntetic.doc       # byexample: +WS
     <...>
     File syntetic.doc, 4/4 test ran in <...> seconds
     [FAIL] Pass: 2 Fail: 2 Aborted: 0
@@ -93,7 +93,7 @@ failure:
 
 .. code:: sh
 
-    $ byexample --ff --no-color -l python syntetic.doc       # byexample: +WS
+    $ byexample --ff --pretty none -l python syntetic.doc       # byexample: +WS
     <...>
     File syntetic.doc, 3/4 test ran in <...> seconds
     [FAIL] Pass: 2 Fail: 1 Aborted: 0
@@ -102,7 +102,7 @@ Let's see how the failing examples are shown
 
 .. code:: sh
 
-    $ byexample --no-color -l python syntetic.doc       # byexample: +WS
+    $ byexample --pretty none -l python syntetic.doc       # byexample: +WS
     ..F
     **********************************************************************
     File "syntetic.doc", line 10
@@ -129,7 +129,7 @@ Let's run this again but this time I want to show you only the last example.
 
 .. code:: sh
 
-    $ byexample --no-color -l python syntetic.doc       # byexample: +WS
+    $ byexample --pretty none -l python syntetic.doc       # byexample: +WS
     <...>
     File "syntetic.doc", line 15
     Failed example:
@@ -156,7 +156,7 @@ You can disable this:
 
 .. code:: sh
 
-    $ byexample --no-color --no-enhance-diff -l python syntetic.doc  # byexample: +WS
+    $ byexample --pretty none --no-enhance-diff -l python syntetic.doc  # byexample: +WS
     <...>
     File "syntetic.doc", line 15
     Failed example:
@@ -173,7 +173,7 @@ Is harder to spot the difference, isn't?
 
 .. code:: sh
 
-    $ byexample --no-color --diff ndiff -l python syntetic.doc  # byexample: +WS
+    $ byexample --pretty none --diff ndiff -l python syntetic.doc  # byexample: +WS
     <...>
     **********************************************************************
     File "syntetic.doc", line 10
