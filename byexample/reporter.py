@@ -16,10 +16,12 @@ class SimpleReporter(object):
         self.output.write(msg)
         self.output.flush()
 
+    def _update(self, x):
+        self._write(x)
+
     def start_run(self, examples, interpreters, filepath):
         self.num_examples = len(examples)
         self.examplenro = 0
-        self.in_dot_line = True
         self.filepath = filepath
         self.begin = time.time()
 
@@ -31,8 +33,7 @@ class SimpleReporter(object):
                 self._write("File %s, no test found\n" % self.filepath)
             return
 
-        if self.in_dot_line:
-            self._write('\n')
+        self._write('\n')
 
         elapsed   = max(time.time() - self.begin, 0)
         if elapsed < 300:
@@ -69,9 +70,7 @@ class SimpleReporter(object):
         self.current_merged_flags = options
 
     def user_aborted(self, example):
-        if self.in_dot_line:  # pragma: no cover
-            self._write('\n')
-            self.in_dot_line = False
+        self._write('\n')
 
         msg = 'Execution aborted by the user at example %i of %i.\n' % (
                                     self.examplenro, self.num_examples)
@@ -80,9 +79,7 @@ class SimpleReporter(object):
         self.aborted_or_crashed += 1
 
     def crashed(self, example, exception):
-        if self.in_dot_line:  # pragma: no cover
-            self._write('\n')
-            self.in_dot_line = False
+        self._write('\n')
 
         msg = 'Execution of example %i of %i crashed.\n%s' % (
                                     self.examplenro, self.num_examples,
@@ -92,20 +89,11 @@ class SimpleReporter(object):
         self.aborted_or_crashed += 1
 
     def success(self, example, got, checker):
-        if not self.in_dot_line:  # pragma: no cover
-            self._write('\n')
-            self.in_dot_line = True
-
-        self._write('.')
-
+        self._update('.')
         self.good += 1
 
     def failure(self, example, got, checker):
-        if not self.in_dot_line:  # pragma: no cover
-            self._write('\n')
-            self.in_dot_line = True
-
-        self._write('F\n')
+        self._update('F\n')
 
         self._print_error_header(example)
         diff = checker.output_difference(example, got, self.current_merged_flags,
@@ -127,3 +115,39 @@ class SimpleReporter(object):
         self._write("Failed example:\n")
         self._write(_indent(highlight_syntax(example, self.use_colors)))
 
+try:
+    import tqdm
+
+    class ProgressBarReporter(SimpleReporter):
+        def _write(self, msg):
+            if self.quiet:
+                return
+
+            self.bar.write(msg, file=self.output, end="")
+            self.output.flush()
+
+        def _update(self, x):
+            if self.quiet:
+                return
+
+            self.bar.update(1)
+
+
+        def start_run(self, examples, interpreters, filepath):
+            SimpleReporter.start_run(self, examples, interpreters, filepath)
+
+            bar_format = '{desc} |{bar}| [ETA {remaining}{postfix}]'
+            self.bar = tqdm.tqdm(total=len(examples), file=self.output,
+                                 desc=filepath, leave=False,
+                                 bar_format=bar_format)
+
+        def end_run(self, examples, interpreters):
+            self.bar.close()
+            SimpleReporter.end_run(self, examples, interpreters)
+
+        def skip_example(self, example, options):
+            SimpleReporter.skip_example(self, example, options)
+            self._update(None)
+
+except ImportError:
+    ProgressBarReporter = SimpleReporter

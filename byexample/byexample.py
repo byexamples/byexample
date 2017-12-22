@@ -5,7 +5,7 @@ from .interpreter import Interpreter
 from .finder import ExampleFinder, MatchFinder
 from .runner import ExampleRunner, Checker
 from .parser import ExampleParser
-from .reporter import SimpleReporter
+from .reporter import SimpleReporter, ProgressBarReporter
 from .common import log, build_exception_msg
 
 def parse_args():
@@ -25,10 +25,12 @@ def parse_args():
             key, val = [i.strip() for i in item.split("=", 1)]
             option = {key: val}
         except:
-            raise ValueError("Invalid option format. Use key=val.")
+            raise argparse.ArgumentTypeError(
+                    "Invalid option format '%s'. Use key=val instead." % item)
 
         if not key or not val:
-            raise ValueError("Neither the key nor the value of the option can be empty")
+            raise argparse.ArgumentTypeError(
+                    "Neither the key nor the value of the option can be empty in '%s'." % item)
 
         return option
 
@@ -74,8 +76,9 @@ def parse_args():
                         default=sys.stdout.encoding,
                         help='select the encoding (supported in Python 3 only, ' + \
                              'use the same encoding of stdout by default)')
-    parser.add_argument("--no-color", action='store_true',
-                        help="do not output any escape sequence for coloring.")
+    parser.add_argument("--pretty", choices=['none', 'all'],
+                        default='all',
+                        help="control how to pretty print the output.")
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", action='count', dest='verbosity', default=0,
@@ -163,7 +166,8 @@ def main():
     encoding = get_encoding(args.encoding, args.verbosity)
 
     cfg = {
-            'use_colors': not args.no_color,
+            'use_progress_bar': args.pretty == 'all',
+            'use_colors': args.pretty == 'all',
             'quiet':      args.quiet,
             'verbosity':  args.verbosity,
             'encoding':   encoding,
@@ -181,7 +185,11 @@ def main():
     testfiles = [f for f in args.files if f in allowed_files]
 
 
-    reporter = SimpleReporter(**cfg)
+    if cfg['use_progress_bar']:
+        reporter = ProgressBarReporter(**cfg)
+    else:
+        reporter = SimpleReporter(**cfg)
+
     checker  = Checker(**cfg)
     options  = Options(FAIL_FAST=args.fail_fast, WS=False, PASS=False,
                        SKIP=False, ENHANCE_DIFF=args.enhance_diff,
