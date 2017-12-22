@@ -1,5 +1,5 @@
 import traceback, time
-from .common import colored
+from .common import colored, highlight_syntax
 from doctest import _indent
 
 class SimpleReporter(object):
@@ -125,5 +125,5 @@ class SimpleReporter(object):
         self._write(msg)
 
         self._write("Failed example:\n")
-        self._write(_indent(example.source))
+        self._write(_indent(highlight_syntax(example, self.use_colors)))
 

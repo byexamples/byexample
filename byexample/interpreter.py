@@ -34,7 +34,7 @@ class Interpreter(object):
 
         The source code is in example.source.
         You may want to add additional new lines to the source
-        to ensure that the underlying interprerter accept the code
+        to ensure that the underlying interpreter accept the code
 
         For example, if the source (in Python) is:
            'def f()

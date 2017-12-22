@@ -16,6 +16,44 @@ def colored(s, color, use_colors):
     else:
         return s
 
+try:
+    import pygments
+    import pygments.lexers
+    import pygments.formatters
+    import pygments.formatters.terminal
+    import pygments.formatters.terminal256
+
+    def highlight_syntax(example, use_colors):
+        if not use_colors:
+            return example.source
+
+        try:
+            # we want to use colors, let's try to find a valid lexer
+            language = example.interpreter.language
+            lexer = pygments.lexers.get_lexer_by_name(language)
+
+            # we want the output to be valid for a terminal...
+            # pygments supports:
+            #  - terminal.TerminalFormatter
+            #  - terminal256.Terminal256Formatter
+            #  - terminal256.TerminalTrueColorFormatter
+            #
+            # should we allow the user to change this?
+            formatter = pygments.formatters.terminal.TerminalFormatter()
+
+            return pygments.highlight(example.source, lexer, formatter)
+        except:
+            pass
+
+        # if something fails, just keep going: the highlight syntax is
+        # nice to have but not a must to have.
+        return example.source
+
+except ImportError:
+    # do not use any highlight syntax
+    def highlight_syntax(example, use_colors):
+        return example.source
+
 def tohuman(s):
     s = s.replace("-", " ").replace("_", " ")
     s = ' '.join(w.capitalize() for w in s.split())
@@ -34,7 +72,10 @@ def print_example(example):
             continue
 
         sep = '\n' if field in ('source', 'expected') else ' '
-        print("%s:%s%s" % (field, sep, example[i]))
+        if field == 'source':
+            print("%s:%s%s" % (field, sep, highlight_syntax(example, True)))
+        else:
+            print("%s:%s%s" % (field, sep, example[i]))
 
     print('\n')
 
