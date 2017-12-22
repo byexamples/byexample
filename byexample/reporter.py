@@ -3,9 +3,9 @@ from .common import colored, highlight_syntax
 from doctest import _indent
 
 class SimpleReporter(object):
-    def __init__(self, output, use_colors, quiet=False, verbosity=0):
+    def __init__(self, output, use_colors, quiet, verbosity, **unused):
         self.output = output
-        self.use_colors = use_colors and output.isatty()
+        self.use_colors = use_colors
         self.quiet = quiet
         self.verbosity = verbosity
 

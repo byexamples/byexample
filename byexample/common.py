@@ -60,7 +60,7 @@ def tohuman(s):
 
     return s
 
-def print_example(example):
+def print_example(example, use_colors):
     print("*" * 70)
     for i, field in enumerate(example._fields):
         if field in ('expected_re', 'match'):
@@ -73,7 +73,7 @@ def print_example(example):
 
         sep = '\n' if field in ('source', 'expected') else ' '
         if field == 'source':
-            print("%s:%s%s" % (field, sep, highlight_syntax(example, True)))
+            print("%s:%s%s" % (field, sep, highlight_syntax(example, use_colors)))
         else:
             print("%s:%s%s" % (field, sep, example[i]))
 

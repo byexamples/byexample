@@ -20,15 +20,16 @@ class ExampleFinder(object):
     :         :      -----------                                      report
                                                                   done by reporter
     '''
-    def __init__(self, allowed_languages, verbosity, registry):
+    def __init__(self, allowed_languages, registry, verbosity, use_colors, **unused):
         self.allowed_languages = allowed_languages
         self.verbosity = verbosity
+        self.use_colors = use_colors
         self.available_finders = registry['finders'].values()
 
         self.parser_by_language = registry['parsers']
         self.interpreter_by_language = registry['interpreters']
 
-    def get_examples_from_file(self, options, filepath, encoding):
+    def get_examples_from_file(self, options, filepath):
         with open(filepath, 'rtU') as f:
             string = f.read()
 
@@ -46,7 +47,7 @@ class ExampleFinder(object):
 
         if self.verbosity >= 2:
             for e in all_examples:
-                print_example(e)
+                print_example(e, self.use_colors)
 
         self.check_example_overlap(all_examples, filepath)
 

@@ -5,7 +5,7 @@ class TimeoutException(Exception):
     pass
 
 class ExampleRunner(object):
-    def __init__(self, reporter, checker, verbosity):
+    def __init__(self, reporter, checker, verbosity, **unused):
         self.reporter  = reporter
         self.checker   = checker
         self.verbosity = verbosity
@@ -83,6 +83,9 @@ class ExampleRunner(object):
         return failed, (user_aborted or crashed)
 
 class Checker(object):
+    def __init__(self, **unused):
+        pass
+
     def check_output(self, example, got, flags):
         return example.expected_re.match(got) is not None
 

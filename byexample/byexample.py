@@ -96,7 +96,7 @@ def is_a(target_class, key_attr):
 
     return _is_X
 
-def load_modules(dirnames, verbosity, encoding):
+def load_modules(dirnames, verbosity, encoding, **unused):
     registry = {'interpreters': {},
                 'finders': {},
                 'parsers': {},
@@ -161,16 +161,28 @@ def main():
     args = parse_args()
 
     encoding = get_encoding(args.encoding, args.verbosity)
-    registry = load_modules(args.search, args.verbosity, encoding)
+
+    cfg = {
+            'use_colors': not args.no_color,
+            'quiet':      args.quiet,
+            'verbosity':  args.verbosity,
+            'encoding':   encoding,
+            'output':     sys.stdout,
+            }
+
+    # if the output is not atty, disable the color anyways
+    cfg['use_colors'] &= cfg['output'].isatty()
+
+    registry = load_modules(args.search, **cfg)
 
     allowed_languages = get_allowed_languages(registry, args.languages)
 
     allowed_files = set(args.files) - set(args.skip)
     testfiles = [f for f in args.files if f in allowed_files]
 
-    reporter = SimpleReporter(sys.stdout, not args.no_color,
-                              args.quiet, args.verbosity)
-    checker  = Checker()
+
+    reporter = SimpleReporter(**cfg)
+    checker  = Checker(**cfg)
     options  = Options(FAIL_FAST=args.fail_fast, WS=False, PASS=False,
                        SKIP=False, ENHANCE_DIFF=args.enhance_diff,
                        TIMEOUT=args.timeout,
@@ -181,12 +193,12 @@ def main():
 
     options.up(args.options)
 
-    finder = ExampleFinder(allowed_languages, args.verbosity, registry)
-    runner = ExampleRunner(reporter, checker, args.verbosity)
+    finder = ExampleFinder(allowed_languages, registry, **cfg)
+    runner = ExampleRunner(reporter, checker, **cfg)
 
     exit_status = 0
     for filename in testfiles:
-        examples = finder.get_examples_from_file(options, filename, encoding)
+        examples = finder.get_examples_from_file(options, filename)
         if args.dry:
             continue
 
