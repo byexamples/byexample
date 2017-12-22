@@ -98,7 +98,7 @@ class Checker(object):
             >>> expected = 'one\ntwo\nthree\nfour'
             >>> got      = 'zero\none\ntree\nfour'
 
-            >>> flags = dict((k, False) for k in ('H', 'UDIFF', 'NDIFF', 'CDIFF'))
+            >>> flags = dict((k, False) for k in ('ENHANCE_DIFF', 'UDIFF', 'NDIFF', 'CDIFF'))
             >>> print(output_difference(expected, got, flags, False))
             Expected:
             one
@@ -158,7 +158,7 @@ class Checker(object):
             >>> got      = 'one  \ntwo\n\n    three'
 
             >>> flags['CDIFF'] = False
-            >>> flags['H'] = True
+            >>> flags['ENHANCE_DIFF'] = True
             >>> print(output_difference(expected, got, flags, False))
             Notes:
                 <blankline>: a blank line
@@ -184,7 +184,7 @@ class Checker(object):
         if got.endswith('\n'):
             got = got[:-1]
 
-        if flags['H']:
+        if flags['ENHANCE_DIFF']:
             self._write("Notes:\n%s" % self.HUMAN_EXPL)
             expected, got = self._human(expected), self._human(got)
 

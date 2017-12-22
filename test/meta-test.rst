@@ -42,6 +42,9 @@ And this is the expected output for a full test (it takes a little longer)
     .................
     File README.rst, 17/17 test ran in <...> seconds
     [PASS] Pass: 17 Fail: 0 Aborted: 0
+    ..........
+    File docs/usage.rst, 10/10 test ran in <...> seconds
+    [PASS] Pass: 10 Fail: 0 Aborted: 0
     .............
     File docs/languages/shell.rst, 13/13 test ran in <...> seconds
     [PASS] Pass: 13 Fail: 0 Aborted: 0

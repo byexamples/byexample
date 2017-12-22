@@ -19,7 +19,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("files", nargs='+', metavar='file',
                         help="file that have the examples to run.")
-    parser.add_argument("-f", "--fail-fast", action='store_true',
+    parser.add_argument("-f", "--fail-fast", "--ff", action='store_true',
                         help="if an example fails, fail and stop all the execution.")
     parser.add_argument("--dry", action='store_true',
                         help="do not run any example, only parse them.")
@@ -30,6 +30,11 @@ def parse_args():
                         help='append a directory for searching modules there.')
     parser.add_argument("-d", "--diff", choices=['unified', 'ndiff', 'context'],
                         help='select diff algorithm.')
+    parser.add_argument("--no-enhance-diff", action='store_false',
+                        dest='enhance_diff',
+                        help='by default, some non-printable characters are replaced ' +\
+                             'by printable ones in the diffs to make them easier to spot; ' +\
+                             'this flag disables that.')
     parser.add_argument("-l", "--language", metavar='language',
                         dest='languages',
                         action=CSV,
@@ -139,7 +144,8 @@ def main():
                               args.quiet, args.verbosity)
     checker  = Checker()
     options  = Options(FAIL_FAST=args.fail_fast, WS=False, PASS=False,
-                       SKIP=False, H=True, TIMEOUT=2,
+                       SKIP=False, ENHANCE_DIFF=args.enhance_diff,
+                       TIMEOUT=2,
                        UDIFF=args.diff=='unified',
                        NDIFF=args.diff=='ndiff',
                        CDIFF=args.diff=='context'
