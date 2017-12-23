@@ -2,8 +2,31 @@ import traceback, time
 from .common import colored, highlight_syntax
 from doctest import _indent
 
+try:
+    from tqdm import tqdm
+except ImportError:
+    class tqdm(object):
+        def __init__(self, file, *args, **kargs):
+            self.file = file
+
+        def write(self, msg, file, end):
+            file.write(msg)
+            if end:
+                file.write(end)
+
+            file.flush()
+
+        def update(self, n):
+            self.file.write('.' * n)
+            self.file.flush()
+
+        def close(self):
+            # do not close the output file
+            self.file.flush()
+
 class SimpleReporter(object):
-    def __init__(self, output, use_colors, quiet, verbosity, **unused):
+    def __init__(self, output, use_colors, quiet,
+                                    verbosity, **unused):
         self.output = output
         self.use_colors = use_colors
         self.quiet = quiet
@@ -17,7 +40,7 @@ class SimpleReporter(object):
         self.output.flush()
 
     def _update(self, x):
-        self._write(x)
+        pass
 
     def start_run(self, examples, interpreters, filepath):
         self.num_examples = len(examples)
@@ -91,11 +114,12 @@ class SimpleReporter(object):
         self.aborted_or_crashed += 1
 
     def success(self, example, got, checker):
-        self._update('.')
+        self._update(1)
         self.good += 1
 
     def failure(self, example, got, checker):
-        self._update('F\n')
+        self._update(1)
+        self._write("\n")
 
         self._print_error_header(example)
         diff = checker.output_difference(example, got, self.current_merged_flags,
@@ -117,40 +141,35 @@ class SimpleReporter(object):
         self._write("Failed example:\n")
         self._write(_indent(highlight_syntax(example, self.use_colors)))
 
-try:
-    import tqdm
+class ProgressBarReporter(SimpleReporter):
+    def _write(self, msg):
+        if self.quiet:
+            return
 
-    class ProgressBarReporter(SimpleReporter):
-        def _write(self, msg):
-            if self.quiet:
-                return
+        self.bar.write(msg, file=self.output, end="")
+        self.output.flush()
 
-            self.bar.write(msg, file=self.output, end="")
-            self.output.flush()
+    def _update(self, x):
+        if self.quiet:
+            return
 
-        def _update(self, x):
-            if self.quiet:
-                return
+        self.bar.update(x)
 
-            self.bar.update(1)
+    def start_run(self, examples, interpreters, filepath):
+        SimpleReporter.start_run(self, examples, interpreters, filepath)
 
-        def start_run(self, examples, interpreters, filepath):
-            SimpleReporter.start_run(self, examples, interpreters, filepath)
+        bar_format = '{desc} |{bar}| [ETA {remaining}{postfix}]'
+        self.bar = tqdm(total=len(examples), file=self.output,
+                             desc=filepath, leave=False,
+                             bar_format=bar_format,
+                             disable=None # means disable if the output is not TTY
+                             )
 
-            bar_format = '{desc} |{bar}| [ETA {remaining}{postfix}]'
-            self.bar = tqdm.tqdm(total=len(examples), file=self.output,
-                                 desc=filepath, leave=False,
-                                 bar_format=bar_format,
-                                 disable=None # means disable if the output is not TTY
-                                 )
+    def end_run(self, examples, interpreters):
+        self.bar.close()
+        SimpleReporter.end_run(self, examples, interpreters)
 
-        def end_run(self, examples, interpreters):
-            self.bar.close()
-            SimpleReporter.end_run(self, examples, interpreters)
+    def skip_example(self, example, options):
+        SimpleReporter.skip_example(self, example, options)
+        self._update(1)
 
-        def skip_example(self, example, options):
-            SimpleReporter.skip_example(self, example, options)
-            self._update(None)
-
-except ImportError:
-    ProgressBarReporter = SimpleReporter
