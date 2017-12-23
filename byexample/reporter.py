@@ -51,15 +51,17 @@ class SimpleReporter(object):
         tot_number = (self.num_examples - self.skipped)
         if ran_number == tot_number == self.good:
             status_str = colored("[PASS]", 'green', self.use_colors)
-        else:
+        elif self.aborted_or_crashed == 0:
             status_str = colored("[FAIL]", 'red', self.use_colors)
+        else:
+            status_str = colored("[ABORT]", 'red', self.use_colors)
 
-        msg = "File %s, %i/%i test ran in %s\n%s Pass: %i Fail: %i Aborted: %i\n" % (
+        msg = "File %s, %i/%i test ran in %s\n%s Pass: %i Fail: %i Skip: %i\n" % (
                     self.filepath,
                     ran_number, tot_number,
                     elapsed_str,
                     status_str,
-                    self.good, self.fail, self.aborted_or_crashed)
+                    self.good, self.fail, self.skipped)
         self._write(msg)
 
     def skip_example(self, example, options):

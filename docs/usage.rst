@@ -81,12 +81,17 @@ Now we just run ``byexample`` selecting ``python`` as the language target:
     $ byexample --pretty none -l python syntetic.doc       # byexample: +WS
     <...>
     File syntetic.doc, 4/4 test ran in <...> seconds
-    [FAIL] Pass: 2 Fail: 2 Aborted: 0
+    [FAIL] Pass: 2 Fail: 2 Skip: 0
 
 At the end of the execution a summary shows how many examples were executed,
 how many passed and how many failed.
-An aborted examples means that the user aborted it (pressing ctrl-c) or the
-underlying interpreter crashed.
+A skipped example means that the examples has a '+SKIP' option. It was not
+executed and it will not be part of the count of tests run.
+
+In normal circustances there are two possible status: PASS and FAIL.
+
+If something strange happen like the user pressed ctrl-c or the underlying
+interpreter crashed, the status will be ABORT.
 
 Instead of running all the examples, you can run them but stopping at the first
 failure:
@@ -96,7 +101,7 @@ failure:
     $ byexample --ff --pretty none -l python syntetic.doc       # byexample: +WS
     <...>
     File syntetic.doc, 3/4 test ran in <...> seconds
-    [FAIL] Pass: 2 Fail: 1 Aborted: 0
+    [FAIL] Pass: 2 Fail: 1 Skip: 0
 
 Let's see how the failing examples are shown
 
@@ -118,7 +123,7 @@ Let's see how the failing examples are shown
     File "syntetic.doc", line 15
     <...>
     File syntetic.doc, 4/4 test ran in <...> seconds
-    [FAIL] Pass: 2 Fail: 2 Aborted: 0
+    [FAIL] Pass: 2 Fail: 2 Skip: 0
 
 Each test is found, parsed and executed. For each test or example that failed
 ``byexample`` will print the example followed by the expected and the got
