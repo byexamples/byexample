@@ -9,11 +9,11 @@ capabilities
     $ # ignore this
     $ alias byexample=python\ r.py
 
-    $ byexample -h                      # byexample: +WS +SKIP
+    $ byexample -h                      # byexample: +WS
     usage: r.py [-h] [-f] [--dry] [--skip file [file ...]] [--search dir]
                 [-d {unified,ndiff,context}] [--no-enhance-diff] -l language
                 [--timeout TIMEOUT] [-o OPTIONS] [--encoding ENCODING]
-                [--no-color] [-v | -q]
+                [--pretty {none,all}] [-v | -q]
                 file [file ...]
     <blankline>
     positional arguments:
@@ -42,7 +42,7 @@ capabilities
                             add additional options of the form key=val.
       --encoding ENCODING   select the encoding (supported in Python 3 only, use
                             the same encoding of stdout by default)
-      --no-color            do not output any escape sequence for coloring.
+      --pretty {none,all}   control how to pretty print the output.
       -v                    verbosity level, add more flags to increase the level.
       -q, --quiet           quiet mode, do not print anything even if an example
                             fails.
