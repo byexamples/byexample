@@ -195,3 +195,4 @@ Is harder to spot the difference, isn't?
     ?            ++
     <...>
 
+    $ rm -f syntetic.doc
