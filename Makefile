@@ -2,14 +2,12 @@
 
 all_languages ?= python,ruby,shell
 python_bin ?= python
-colors ?=
+pretty ?= all
 
 all:
 	@echo "Usage: make deps|meta-test|test|quick-test|dist|upload|doc|clean"
 	@echo " - deps: install the dependencies for byexample"
 	@echo " - test: run the all the tests and validate the byexample's output."
-	@echo " - full-test: run the all the tests in the source code and documentation"
-	@echo " - quick-test: run a few tests in the source code of the modules"
 	@echo " - dist: make a source and a binary distribution (package)"
 	@echo " - upload: upload the source and the binary distribution to pypi"
 	@echo " - doc: build a pdf file from the documentation"
@@ -19,21 +17,8 @@ all:
 deps:
 	pip install pexpect
 
-test: quick-test full-test
-	# run the test again, this time validate the byexample's output itself
-	@$(python_bin) r.py $(colors) -f -l shell test/meta-test.rst
-
-full-test:
-	@$(python_bin) r.py $(colors) -f -l python byexample/*.py
-	@$(python_bin) r.py $(colors) -f -l $(all_languages) README.rst
-	@$(python_bin) r.py $(colors) -f -l $(all_languages) --skip docs/how_to_extend.rst -- `find docs -name "*.rst"`
-	@$(python_bin) r.py $(colors) -f -l python docs/how_to_extend.rst
-
-quick-test:
-	@$(python_bin) r.py $(colors) -f -l python byexample/modules/python.py
-	@$(python_bin) r.py $(colors) -f -l ruby   byexample/modules/ruby.py
-	@$(python_bin) r.py $(colors) -f -l shell  byexample/modules/shell.py
-	@$(python_bin) r.py $(colors) -f -l gdb    byexample/modules/gdb.py
+test:
+	@$(python_bin) r.py --timeout 60 --pretty $(pretty) --ff -l shell test/test.rst
 
 dist:
 	rm -Rf dist/ build/ *.egg-info

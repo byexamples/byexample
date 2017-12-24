@@ -108,7 +108,7 @@ Let's see how the failing examples are shown
 .. code:: sh
 
     $ byexample --pretty none -l python syntetic.doc       # byexample: +WS
-    ..F
+    <...>
     **********************************************************************
     File "syntetic.doc", line 10
     Failed example:
