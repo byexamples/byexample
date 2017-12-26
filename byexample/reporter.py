@@ -16,6 +16,9 @@ except ImportError:
 
             file.flush()
 
+        def set_postfix_str(self, msg):
+            pass
+
         def update(self, n):
             self.file.write('.' * n)
             self.file.flush()
@@ -158,7 +161,7 @@ class ProgressBarReporter(SimpleReporter):
     def start_run(self, examples, interpreters, filepath):
         SimpleReporter.start_run(self, examples, interpreters, filepath)
 
-        bar_format = '{desc} |{bar}| [ETA {remaining}{postfix}]'
+        bar_format = '{desc} |{bar}| [{n_fmt}/{total_fmt}{postfix}]'
         self.bar = tqdm(total=len(examples), file=self.output,
                              desc=filepath, leave=False,
                              bar_format=bar_format,
@@ -168,6 +171,10 @@ class ProgressBarReporter(SimpleReporter):
     def end_run(self, examples, interpreters):
         self.bar.close()
         SimpleReporter.end_run(self, examples, interpreters)
+
+    def start_example(self, example, options):
+        SimpleReporter.start_example(self, example, options)
+        self.bar.set_postfix_str('line %i' % example.start_lineno)
 
     def skip_example(self, example, options):
         SimpleReporter.skip_example(self, example, options)
