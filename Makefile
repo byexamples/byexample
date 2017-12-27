@@ -16,7 +16,7 @@ all:
 	@exit 1
 
 deps:
-	pip install --user -e .
+	pip install -e .
 
 test:
 	@$(python_bin) r.py --timeout 60 --pretty $(pretty) --ff -l shell test/test.rst
