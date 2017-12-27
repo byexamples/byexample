@@ -6,10 +6,8 @@ python:
     - "3.4"
     - "3.5"
     - "3.6"
-env:
-    - all_languages="python,shell"
 install: make deps
-script: make test
+script: make travis-test
 branches:
     only:
         - master

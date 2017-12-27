@@ -1,6 +1,6 @@
 .PHONY: all test dist upload clean doc
 
-all_languages ?= python,ruby,shell
+all_languages ?= python,ruby,shell,gdb
 python_bin ?= python
 pretty ?= all
 
@@ -8,6 +8,7 @@ all:
 	@echo "Usage: make deps|meta-test|test|quick-test|dist|upload|doc|clean"
 	@echo " - deps: install the dependencies for byexample"
 	@echo " - test: run the all the tests and validate the byexample's output."
+	@echo " - travis-test: run the all the tests (tweaked for Travis CI)."
 	@echo " - dist: make a source and a binary distribution (package)"
 	@echo " - upload: upload the source and the binary distribution to pypi"
 	@echo " - doc: build a pdf file from the documentation"
@@ -15,10 +16,19 @@ all:
 	@exit 1
 
 deps:
-	pip install pexpect
+	pip install --user -e .
 
 test:
 	@$(python_bin) r.py --timeout 60 --pretty $(pretty) --ff -l shell test/test.rst
+
+travis-test:
+	@# run the test separately so we can control which languages will
+	@# be used. In a Travis CI environment, the Ruby and the GDB are
+	@# not supported
+	@$(python_bin) r.py --pretty $(pretty) --ff -l python byexample/*.py
+	@$(python_bin) r.py --pretty $(pretty) --ff -l $(all_languages) byexample/modules/*.py
+	@$(python_bin) r.py --pretty $(pretty) --ff -l $(all_languages) README.rst
+	@$(python_bin) r.py --pretty $(pretty) --ff -l $(all_languages) `find docs -name "*.rst"`
 
 dist:
 	rm -Rf dist/ build/ *.egg-info
