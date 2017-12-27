@@ -19,12 +19,12 @@ class ShellPromptFinder(MatchFinder):
     def example_regex(self):
         return re.compile(r'''
             (?P<snippet>
-                (?:^(?P<indent> [ ]*) (?:\$|\#)[ ]  .*)      # PS1 line
+                (?:^(?P<indent> [ ]*) (?:\$)[ ]  .*)      # PS1 line
                 (?:\n           [ ]*  >             .*)*)    # PS2 lines
             \n?
             ## Want consists of any non-blank lines that do not start with PS1
             (?P<expected> (?:(?![ ]*$)        # Not a blank line
-                          (?![ ]*(?:\$|\#))   # Not a line starting with PS1
+                          (?![ ]*(?:\$))      # Not a line starting with PS1
                           .+$\n?              # But any other line
                       )*)
             ''', re.MULTILINE | re.VERBOSE)
@@ -42,7 +42,7 @@ class ShellParser(ExampleParser):
 
     def source_from_snippet(self, snippet):
         lines = snippet.split("\n")
-        if lines and (lines[0].startswith("$ ") or lines[0].startswith("# ")):
+        if lines and lines[0].startswith("$ "):
             return '\n'.join(line[2:] for line in lines)
 
         return snippet

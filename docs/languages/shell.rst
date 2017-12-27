@@ -3,6 +3,24 @@ Shell support
 
 ``byexample`` can execute shell commands using by default ``sh``.
 
+Find interactive examples
+-------------------------
+
+For Shell, we use the simple ``$`` marker as the primary prompt
+and ``>`` as the secondary prompt to found examples in a document.
+
+.. code:: sh
+
+    $ g () {
+    >     c=$3
+    >     c=$(( $c + $1 ))
+    >     c=$(( $c + $2 ))
+    >
+    >     echo $c
+    > }
+
+    $ g 1 2 3
+    6
 
 Using other shells (long story)
 -------------------------------
@@ -58,6 +76,8 @@ Use the ``+bash`` option like this:
     $ echo $0
     sh
 
-We support currently ``sh`` and ``bash``. We are accepting Pull
-Request for adding support to other shells!
+We support currently ``sh`` and ``bash``. It will probably work with others.
+Open an issue if not or even better, do a Pull Request for adding support to
+other shells!
+
 
