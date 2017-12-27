@@ -1,6 +1,5 @@
 .PHONY: all test dist upload clean doc
 
-all_languages ?= python,ruby,shell,gdb
 python_bin ?= python
 pretty ?= all
 
@@ -26,9 +25,9 @@ travis-test:
 	@# be used. In a Travis CI environment, the Ruby and the GDB are
 	@# not supported
 	@$(python_bin) r.py --pretty $(pretty) --ff -l python byexample/*.py
-	@$(python_bin) r.py --pretty $(pretty) --ff -l $(all_languages) byexample/modules/*.py
-	@$(python_bin) r.py --pretty $(pretty) --ff -l $(all_languages) README.rst
-	@$(python_bin) r.py --pretty $(pretty) --ff -l $(all_languages) `find docs -name "*.rst"`
+	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell byexample/modules/*.py
+	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell README.rst
+	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell `find docs -name "*.rst"`
 
 dist:
 	rm -Rf dist/ build/ *.egg-info
