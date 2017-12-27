@@ -70,6 +70,12 @@ class ExampleRunner(object):
                     self.reporter.failure(example, got, self.checker)
                     failed = True
 
+                    # start an interactive session if the example failes
+                    # and the user wanted this
+                    if options['INTERACT'] and not timedout:
+                        self.reporter.start_interact(example, options)
+                        example.interpreter.interact(example, options)
+
                     # fail fast if the user want this or
                     # if we got a Timeout
                     if fail_fast or timedout:

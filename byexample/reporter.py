@@ -97,6 +97,12 @@ class SimpleReporter(object):
         self.examplenro += 1
         self.current_merged_flags = options
 
+    def start_interact(self, example, options):
+        self._write('\n')
+        self._write("Starting interactive session.\n")
+        self._write("Escape character is '^]'.\n")
+
+
     def user_aborted(self, example):
         self._write('\n')
 

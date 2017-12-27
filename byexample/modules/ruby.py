@@ -63,6 +63,9 @@ class RubyInterpreter(Interpreter, PexepctMixin):
         return self._exec_and_wait(example.source + '\n',
                                     timeout=int(flags['TIMEOUT']))
 
+    def interact(self, example, options):
+        PexepctMixin.interact(self)
+
     def initialize(self):
         self._spawn_interpreter()
 

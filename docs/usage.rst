@@ -13,7 +13,7 @@ capabilities
     usage: r.py [-h] [-f] [--dry] [--skip file [file ...]] [--search dir]
                 [-d {unified,ndiff,context}] [--no-enhance-diff] -l language
                 [--timeout TIMEOUT] [-o OPTIONS] [--encoding ENCODING]
-                [--pretty {none,all}] [-v | -q]
+                [--pretty {none,all}] [--interact] [-v | -q]
                 file [file ...]
     <blankline>
     positional arguments:
@@ -43,6 +43,8 @@ capabilities
       --encoding ENCODING   select the encoding (supported in Python 3 only, use
                             the same encoding of stdout by default)
       --pretty {none,all}   control how to pretty print the output.
+      --interact, --debug   interact with the interpreter manually if an example
+                            fails.
       -v                    verbosity level, add more flags to increase the level.
       -q, --quiet           quiet mode, do not print anything even if an example
                             fails.

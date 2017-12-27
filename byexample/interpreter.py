@@ -1,4 +1,4 @@
-import re, pexpect, sys, time
+import re, pexpect, sys, time, termios, operator
 from .runner import TimeoutException
 from .common import tohuman
 
@@ -57,6 +57,13 @@ class Interpreter(object):
         '''
         raise NotImplementedError() # pragma: no cover
 
+    def interact(self, example, options):
+        '''
+        Connect the current interpreter session to the byexample's console
+        allowing the user to manually interact with the interpreter.
+        '''
+        raise NotImplementedError() # pragma: no cover
+
     def initialize(self):
         '''
         Hook to initialize the interpreter. This method will be called
@@ -89,6 +96,25 @@ class PexepctMixin(object):
         if wait_first_prompt:
             self._expect_prompt(timeout=first_propmt_timeout)
             self._drop_output() # discard banner and things like that
+
+    def interact(self, send='\n', escape_character=chr(29),
+                                    input_filter=None, output_filter=None):
+        def ensure_cooked_mode(input_str):
+            self.set_cooked_mode(True)
+            if input_filter:
+                return input_filter(input_str)
+            return input_str
+
+        attr = termios.tcgetattr(self.interpreter.child_fd)
+        try:
+            if send:
+                self.interpreter.send(send)
+            self.interpreter.interact(escape_character=escape_character,
+                                      input_filter=ensure_cooked_mode,
+                                      output_filter=output_filter)
+        finally:
+            termios.tcsetattr(self.interpreter.child_fd, termios.TCSANOW, attr)
+
 
     def _drop_output(self):
         self.last_output = []
@@ -159,3 +185,58 @@ class PexepctMixin(object):
             out += '\n'
 
         return out
+
+    def set_cooked_mode(self, state):
+        # code borrowed from ptyprocess/ptyprocess.py, _setecho, and
+        # adapted adding more flags to it based in stty(1)
+        errmsg = 'set_cooked_mode() may not be called on this platform'
+
+        fd = self.interpreter.child_fd
+
+        try:
+            attr = termios.tcgetattr(fd)
+        except termios.error as err:
+            if err.args[0] == errno.EINVAL:
+                raise IOError(err.args[0], '%s: %s.' % (err.args[1], errmsg))
+            raise
+
+        input_flags = (
+                       'BRKINT',
+                       'IGNPAR',
+                       'ISTRIP',
+                       'ICRNL',
+                       'IXON',
+                       )
+
+        output_flags = (
+                       'OPOST',
+                       )
+
+        local_flags = (
+                      'ECHO',
+                      'ISIG',
+                      'ICANON',
+                      )
+
+        if state:
+            attr[0] |= reduce(operator.or_,
+                                [getattr(termios, flag_name) for flag_name in input_flags])
+            attr[1] |= reduce(operator.or_,
+                                [getattr(termios, flag_name) for flag_name in output_flags])
+            attr[3] |= reduce(operator.or_,
+                                [getattr(termios, flag_name) for flag_name in local_flags])
+        else:
+            attr[0] &= reduce(operator.and_,
+                                [~getattr(termios, flag_name) for flag_name in input_flags])
+            attr[1] &= reduce(operator.and_,
+                                [~getattr(termios, flag_name) for flag_name in output_flags])
+            attr[3] &= reduce(operator.and_,
+                                [~getattr(termios, flag_name) for flag_name in local_flags])
+
+
+        try:
+            termios.tcsetattr(fd, termios.TCSANOW, attr)
+        except IOError as err:
+            if err.args[0] == errno.EINVAL:
+                raise IOError(err.args[0], '%s: %s.' % (err.args[1], errmsg))
+            raise

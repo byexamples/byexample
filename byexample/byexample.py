@@ -79,6 +79,8 @@ def parse_args():
     parser.add_argument("--pretty", choices=['none', 'all'],
                         default='all',
                         help="control how to pretty print the output.")
+    parser.add_argument("--interact", "--debug", action='store_true',
+                        help="interact with the interpreter manually if an example fails.")
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", action='count', dest='verbosity', default=0,
@@ -172,6 +174,7 @@ def main():
             'verbosity':  args.verbosity,
             'encoding':   encoding,
             'output':     sys.stdout,
+            'interact':   args.interact,
             }
 
     # if the output is not atty, disable the color anyways
@@ -196,7 +199,8 @@ def main():
                        TIMEOUT=args.timeout,
                        UDIFF=args.diff=='unified',
                        NDIFF=args.diff=='ndiff',
-                       CDIFF=args.diff=='context'
+                       CDIFF=args.diff=='context',
+                       INTERACT=args.interact
                        )
 
     options.up(args.options)
