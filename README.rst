@@ -6,7 +6,8 @@
 =============
 
 ``byexample`` is literate programming engine where you can write
-ordinary text and snippets the code in the same file
+ordinary text and snippets the code in the same file.
+
 It is intended primary for writing good and live tutorials and documentation
 showing how a piece of software works or it can be used *by example*.
 
@@ -14,6 +15,9 @@ Currently we support
  - Python
  - Ruby
  - Shell (sh and bash)
+ - GDB (the GNU Debugger)
+
+The documentation of each one can be found in ``docs/languages/``.
 
 More languages will be supported in the future. Stay tuned.
 
@@ -30,7 +34,7 @@ There are some interesting areas where you can contribute like
 Usage
 ^^^^^
 
-Install and run it against any source file(s), like this Readme.
+Install and run it against any source file(s), like this README.
 All the snippets will be collected, executed and checked.
 
 .. code:: sh
@@ -41,7 +45,13 @@ All the snippets will be collected, executed and checked.
     File README.rst, 16/16 test ran in 1.01 seconds
     [PASS] Pass: 16 Fail: 0 Aborted: 0
 
-See the inline help for more information about how to tweak the execution
+You can select which languages to run, over which files, how to display the
+differences and much more.
+
+The ``doc/usage.rst`` document goes through almost all the flags that the
+``byexample`` program has.
+
+For a quick help, you probably will need to just run:
 
 .. code:: sh
 
@@ -53,6 +63,7 @@ Snippets of code
 
 Any snippet of code that it is detected by ``byexample`` will be executed
 and its output compared with the text below.
+
 This is a quite useful way to test and document by example.
 
 Any code that is written inside of a fenced code block will be parsed and
@@ -87,7 +98,7 @@ For Python we use ``>>>`` and ``...`` as prompts to find this sessions
 There is not restriction in which snippets you can add. You can even mix
 snippets of different languages in the same file!
 
-Here there is an example in Ruby
+Here is an example in Ruby
 
 .. code:: ruby
 
@@ -98,12 +109,14 @@ Here there is an example in Ruby
     >> add(2, 6)
     => 8
 
+The documentation of each language can be found in ``docs/languages/``.
 
 The 'match anything' wildcard
 -----------------------------
 
 By default, if the expected text has the ``<...>`` marker, that
 will match for any string.
+
 Very useful to match long unwanted or uninteresting strings.
 
 .. code:: python
@@ -120,16 +133,24 @@ but also it assigns a name to the capture.
 If a name is used in an example more than once, all the string captured under
 that name must be the same string, otherwise the test will fail.
 
+Given the value:
+
 .. code:: python
 
     >>> X = 42
 
+The following example will pass, as both ``random-number``s are the same (42).
+
+.. code:: python
+
     >>> [1, X, 2, X]
     [1, <random-number>, 2, <random-number>]
 
-    >>> # this will fail because X and 4 are not the **same** 'random-number'
-    >>> # we use +PASS to skip the checks of this test
-    >>> [1, X, 2, 4]        # byexample: +PASS
+But in the following, both numbers are different and the example will fail
+
+.. code:: python
+
+    >>> [1, X, 2, 4]                                    # byexample: +PASS
     [1, <random-number>, 2, <random-number>]
 
 
@@ -138,6 +159,7 @@ Option flags
 
 ``byexample`` supports a set of flags or options that can change some
 parameters of the execution of the example.
+
 Some flags are generic, others are interpreter-specific.
 
 Normalize whitespace
@@ -161,7 +183,7 @@ normally but it will not check the output.
 .. code:: python
 
     >>> a = 1
-    >>> a = 2       # do not run this code # byexample: +SKIP
+    >>> a = 2       # this assignment will not be executed # byexample: +SKIP
     >>> a
     1
 
@@ -173,8 +195,21 @@ normally but it will not check the output.
     >>> a
     42
 
-Documentation
-^^^^^^^^^^^^^
+Timeout
+.......
 
-See more examples, in general and in particular for each supported language,
-in ``docs/``.
+The execution of each example has a timeout which can be changed by
+a flag
+
+.. code:: python
+
+    >>> import time
+    >>> time.sleep(2.5) # simulates a slow operation # byexample: +TIMEOUT=3
+
+Extend ``byexample``
+^^^^^^^^^^^^^^^^^^^^
+
+It is possible to extend ``byexample`` adding new ways to find examples in a
+document and/or to parse and interpret a new language.
+
+The ``doc/how_to_extend.rst`` is a quick tutorial that shows exactly that.

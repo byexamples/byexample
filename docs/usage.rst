@@ -52,13 +52,13 @@ capabilities
 The most direct way to use ``byexample`` is to select the language(s) to use
 and the files where the examples are.
 
-Let's create a syntetic file with some examples. Some should run without
+Let's create a synthetic file with some examples. Some should run without
 problems, but others should fail.
 
 .. code:: sh
 
-    $ cat <<EOF > syntetic.doc
-    > This is a syntetic file.
+    $ cat <<EOF > synthetic.doc
+    > This is a synthetic file.
     > The following is an example written in Python that should PASS
     >
     >     >>> from __future__ import print_function
@@ -76,43 +76,53 @@ problems, but others should fail.
     >     hi everyone
     > EOF
 
-Now we just run ``byexample`` selecting ``python`` as the language target:
+
+Run
+---
+
+Now we just run ``byexample`` selecting ``python`` as the language target
+(for now, ignore the ``--pretty none``):
 
 .. code:: sh
 
-    $ byexample --pretty none -l python syntetic.doc       # byexample: +WS
+    $ byexample --pretty none -l python synthetic.doc       # byexample: +WS
     <...>
-    File syntetic.doc, 4/4 test ran in <...> seconds
+    File synthetic.doc, 4/4 test ran in <...> seconds
     [FAIL] Pass: 2 Fail: 2 Skip: 0
 
 At the end of the execution a summary shows how many examples were executed,
-how many passed and how many failed.
-A skipped example means that the examples has a '+SKIP' option. It was not
+how many passed, failed or where skipped.
+
+A skipped example means that the examples has a ``+SKIP`` option. It was not
 executed and it will not be part of the count of tests run.
 
-In normal circustances there are two possible status: PASS and FAIL.
+In normal circumstances there are two possible status: ``PASS`` and ``FAIL``.
 
-If something strange happen like the user pressed ctrl-c or the underlying
-interpreter crashed, the status will be ABORT.
+If something strange happen like the user pressed ``ctrl-c`` or the underlying
+interpreter crashed, the status will be ``ABORT``.
 
-Instead of running all the examples, you can run them but stopping at the first
-failure:
+For quick regression you may want to stop ``byexample`` at the first failing
+example: *fail fast*
 
 .. code:: sh
 
-    $ byexample --ff --pretty none -l python syntetic.doc       # byexample: +WS
+    $ byexample --ff --pretty none -l python synthetic.doc       # byexample: +WS
     <...>
-    File syntetic.doc, 3/4 test ran in <...> seconds
+    File synthetic.doc, 3/4 test ran in <...> seconds
     [FAIL] Pass: 2 Fail: 1 Skip: 0
 
-Let's see how the failing examples are shown
+Output differences
+------------------
+
+Let's see how the failing examples are shown (the ``<...>`` are meant to be
+ignored for you, me, and ``byexample``)
 
 .. code:: sh
 
-    $ byexample --pretty none -l python syntetic.doc       # byexample: +WS
+    $ byexample --pretty none -l python synthetic.doc       # byexample: +WS
     <...>
     **********************************************************************
-    File "syntetic.doc", line 10
+    File "synthetic.doc", line 10
     Failed example:
         2 + 2
     <...>
@@ -122,23 +132,29 @@ Let's see how the failing examples are shown
     4
     <...>
     **********************************************************************
-    File "syntetic.doc", line 15
+    File "synthetic.doc", line 15
     <...>
-    File syntetic.doc, 4/4 test ran in <...> seconds
+    File synthetic.doc, 4/4 test ran in <...> seconds
     [FAIL] Pass: 2 Fail: 2 Skip: 0
 
 Each test is found, parsed and executed. For each test or example that failed
 ``byexample`` will print the example followed by the expected and the got
 outputs.
 
+In the example at line 10, the code executed was ``2 + 2`` and we expected
+``6`` but instead we got ``4`` as a result.
 
-Let's run this again but this time I want to show you only the last example.
+Whitespace differences
+----------------------
+
+Let's run this again but this time I want to show you only the last example
+(once again, I'm using ``<...>`` to ignore the uninterested output).
 
 .. code:: sh
 
-    $ byexample --pretty none -l python syntetic.doc       # byexample: +WS
+    $ byexample --pretty none -l python synthetic.doc       # byexample: +WS
     <...>
-    File "syntetic.doc", line 15
+    File "synthetic.doc", line 15
     Failed example:
         print('hi', 'everyone  ')
     Notes:
@@ -151,21 +167,26 @@ Let's run this again but this time I want to show you only the last example.
     hi everyone$$
     <...>
 
-``byexample`` will highlight some whitespaces character both in the expected
-and in the got outputs to make easier to see the differences.
+This time the difference is subtle.
+
+``byexample`` will highlight some whitespace characters both in the expected
+and in the got outputs to make easier to see the differences like this.
+
 In this case, the example is printing 'hi everyone' followed by 2 trailing
 spaces.
+
 This is hard to be notice! Fortunately ``byexample`` will mark any trailing
 space with a '$'.
+
 As the example above shows, other non-printable characters are also highlighted.
 
 You can disable this:
 
 .. code:: sh
 
-    $ byexample --pretty none --no-enhance-diff -l python syntetic.doc  # byexample: +WS
+    $ byexample --pretty none --no-enhance-diff -l python synthetic.doc  # byexample: +WS
     <...>
-    File "syntetic.doc", line 15
+    File "synthetic.doc", line 15
     Failed example:
         print('hi', 'everyone  ')
     Expected:
@@ -176,14 +197,21 @@ You can disable this:
 
 Is harder to spot the difference, isn't?
 
-``byexample`` supports other diff algorithms. You can select one like this
+Diff algorithms
+---------------
+
+``byexample`` supports diff algorithms. Instead of printing the expected
+and the got outputs separately, you can select one diff and print both outputs
+in the same context.
+
+For large outputs this is an awesome tool
 
 .. code:: sh
 
-    $ byexample --pretty none --diff ndiff -l python syntetic.doc  # byexample: +WS
+    $ byexample --pretty none --diff ndiff -l python synthetic.doc  # byexample: +WS
     <...>
     **********************************************************************
-    File "syntetic.doc", line 10
+    File "synthetic.doc", line 10
     Failed example:
         2 + 2
     <...>
@@ -192,7 +220,7 @@ Is harder to spot the difference, isn't?
     + 4
     <...>
     **********************************************************************
-    File "syntetic.doc", line 15
+    File "synthetic.doc", line 15
     Failed example:
         print('hi', 'everyone  ')
     <...>
@@ -202,4 +230,26 @@ Is harder to spot the difference, isn't?
     ?            ++
     <...>
 
-    $ rm -f syntetic.doc
+
+This is a summary of the three diff algorithms plus the default method:
+
+::
+
+    ===========  ==============  ==============  ==============
+      default      UDIFF flag      NDIFF flag      CDIFF flag
+    ===========  ==============  ==============  ==============
+    Expected:     Differences:    Differences:    Differences:
+    one           +zero           + zero          *** 1,4 ****
+    two            one              one             one
+    three         -two            - two           ! two
+    four          -three          - three         ! three
+    Got:          +tree           ?  -              four
+    zero           four           + tree          --- 1,4 ----
+    one                             four          + zero
+    tree                                            one
+    four                                          ! tree
+                                                    four
+    ===========  ==============  ==============  ==============
+
+
+    $ rm -f synthetic.doc

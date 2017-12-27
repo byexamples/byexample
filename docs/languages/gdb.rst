@@ -31,7 +31,13 @@ The program is quite simple, it just prints its parameters in reverse order
     foo
     ./test.bin
 
+Find interactive examples
+-------------------------
+
 Now, let's debug it with GDB
+
+``byexample`` uses the ``(gdb)`` string as the primary prompt to find
+GDB examples like these:
 
 .. code::
 

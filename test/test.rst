@@ -9,7 +9,7 @@ to start.
 
     $ # ignore this
     $ alias byexample=python\ r.py\ --pretty\ none\ --ff
-    $ all_languages=python,shell,ruby
+    $ all_languages=python,shell,ruby,gdb
 
     $ byexample -l python byexample/*.py
     <nl>
@@ -67,20 +67,17 @@ can be found under the ``doc`` folder
     File docs/usage.rst, 11/11 test ran in <...> seconds
     [PASS] Pass: 11 Fail: 0 Skip: 0
     <nl>
-    File docs/languages/shell.rst, 13/13 test ran in <...> seconds
-    [PASS] Pass: 13 Fail: 0 Skip: 0
+    File docs/languages/shell.rst, 15/15 test ran in <...> seconds
+    [PASS] Pass: 15 Fail: 0 Skip: 0
     <nl>
-    File docs/languages/gdb.rst, 5/5 test ran in <...> seconds
-    [PASS] Pass: 5 Fail: 0 Skip: 0
+    File docs/languages/gdb.rst, 9/9 test ran in <...> seconds
+    [PASS] Pass: 9 Fail: 0 Skip: 0
     <nl>
     File docs/languages/python.rst, 17/17 test ran in <...> seconds
     [PASS] Pass: 17 Fail: 0 Skip: 0
     <nl>
-    File docs/languages/ruby.rst, 6/6 test ran in <...> seconds
-    [PASS] Pass: 6 Fail: 0 Skip: 0
-    <nl>
-    File docs/overview.rst, 47/47 test ran in <...> seconds
-    [PASS] Pass: 47 Fail: 0 Skip: 3
+    File docs/languages/ruby.rst, 9/9 test ran in <...> seconds
+    [PASS] Pass: 9 Fail: 0 Skip: 0
 
 I left out the ``how_to_extend`` doc. It is not something that you will need
 everyday.
