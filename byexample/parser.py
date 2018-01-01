@@ -10,7 +10,7 @@ Example = collections.namedtuple('Example', ['interpreter',
                                              'captures', 'match'])
 
 class ExampleParser(object):
-    def __init__(self, verbosity, encoding):
+    def __init__(self, verbosity, encoding, **unused):
         self.verbosity = verbosity
         self.encoding = encoding
 

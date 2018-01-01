@@ -3,7 +3,7 @@ from .runner import TimeoutException
 from .common import tohuman
 
 class Interpreter(object):
-    def __init__(self, verbosity, encoding):
+    def __init__(self, verbosity, encoding, **unused):
         self.verbosity = verbosity
         self.encoding = encoding
 

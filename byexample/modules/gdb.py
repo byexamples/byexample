@@ -57,7 +57,7 @@ class GDBParser(ExampleParser):
 class GDBInterpreter(Interpreter, PexepctMixin):
     language = 'gdb'
 
-    def __init__(self, verbosity, encoding):
+    def __init__(self, verbosity, encoding, **unused):
         self.encoding = encoding
 
         # --nh     do not read ~/.gdbinit

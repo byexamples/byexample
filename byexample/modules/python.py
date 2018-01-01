@@ -55,7 +55,7 @@ class PythonParser(ExampleParser):
 class PythonInterpreter(Interpreter, PexepctMixin):
     language = 'python'
 
-    def __init__(self, verbosity, encoding):
+    def __init__(self, verbosity, encoding, **unused):
         self.encoding = encoding
 
         PS1 = r'/byexample/py/ps1> '

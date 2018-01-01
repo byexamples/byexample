@@ -50,7 +50,7 @@ class ShellParser(ExampleParser):
 class ShellInterpreter(Interpreter, PexepctMixin):
     language = 'shell'
 
-    def __init__(self, verbosity, encoding):
+    def __init__(self, verbosity, encoding, **unused):
         self.encoding = encoding
 
         PexepctMixin.__init__(self,

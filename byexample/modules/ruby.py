@@ -51,7 +51,7 @@ class RubyParser(ExampleParser):
 class RubyInterpreter(Interpreter, PexepctMixin):
     language = 'ruby'
 
-    def __init__(self, verbosity, encoding):
+    def __init__(self, verbosity, encoding, **unused):
         PexepctMixin.__init__(self,
                                 cmd='/usr/bin/env irb',
                                 PS1_re = r'irb[^:]*:\d+:0(>|\*) ',

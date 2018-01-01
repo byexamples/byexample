@@ -125,7 +125,7 @@ class ExampleFinder(object):
         return examples
 
 class MatchFinder(object):
-    def __init__(self, verbosity, encoding):
+    def __init__(self, verbosity, encoding, **unused):
         self.verbosity = verbosity
         self.encoding = encoding
 

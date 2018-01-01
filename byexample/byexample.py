@@ -1,4 +1,4 @@
-import sys, argparse, os, pkgutil, inspect
+import sys, argparse, os, pkgutil, inspect, pprint
 
 from .options import Options
 from .interpreter import Interpreter
@@ -6,6 +6,7 @@ from .finder import ExampleFinder, MatchFinder
 from .runner import ExampleRunner, Checker
 from .parser import ExampleParser
 from .reporter import SimpleReporter, ProgressBarReporter
+from .hook import Hook, HookComposite
 from .common import log, build_exception_msg
 
 def parse_args():
@@ -86,11 +87,16 @@ def parse_args():
     group.add_argument("-v", action='count', dest='verbosity', default=0,
                         help="verbosity level, add more flags to increase the level.")
     group.add_argument("-q", "--quiet", action='store_true',
-                        help="quiet mode, do not print anything even if an example fails.")
+                        help="quiet mode, do not print anything even if an example fails. "
+                             "Supress the progress output.")
 
     return parser.parse_args()
 
 def is_a(target_class, key_attr):
+    '''
+    Returns a function that will return True if its argument
+    is a subclass of target_class and it has the attribute key_attr
+    '''
     def _is_X(obj):
         if not inspect.isclass(obj):
             return False
@@ -101,10 +107,12 @@ def is_a(target_class, key_attr):
 
     return _is_X
 
-def load_modules(dirnames, verbosity, encoding, **unused):
+def load_modules(dirnames, cfg):
+    verbosity = cfg['verbosity']
     registry = {'interpreters': {},
                 'finders': {},
                 'parsers': {},
+                'hooks': {},
                 }
     for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
         path = importer.path
@@ -121,8 +129,11 @@ def load_modules(dirnames, verbosity, encoding, **unused):
         log("From '%s' loaded '%s'" % (path, name), verbosity-1)
         for klass, key, what in [(Interpreter, 'language', 'interpreters'),
                                  (ExampleParser, 'language', 'parsers'),
-                                 (MatchFinder, 'target', 'finders')]:
+                                 (MatchFinder, 'target', 'finders'),
+                                 (Hook, 'target', 'hooks')]:
 
+            # we are interested in any class that is a subclass of 'klass'
+            # and it has an attribute 'key'
             predicate = is_a(klass, key)
 
             container = registry[what]
@@ -133,11 +144,16 @@ def load_modules(dirnames, verbosity, encoding, **unused):
                 # remove already loaded
                 klasses_found = set(klasses_found) - set(container.values())
 
-            objs = [klass(verbosity, encoding) for klass in klasses_found]
+            objs = [klass(**cfg) for klass in klasses_found]
             if objs:
-                log("\n".join((" - %s" % repr(i)) for i in objs), verbosity-1)
+                loaded_objs = []
                 for obj in objs:
-                    container[getattr(obj, key)] = obj
+                    key_value = getattr(obj, key)
+                    if key_value:
+                        container[key_value] = obj
+                        loaded_objs.append(obj)
+
+                log("\n".join((" - %s" % repr(i)) for i in loaded_objs), verbosity-1)
 
     return registry
 
@@ -180,18 +196,20 @@ def main():
     # if the output is not atty, disable the color anyways
     cfg['use_colors'] &= cfg['output'].isatty()
 
-    registry = load_modules(args.search, **cfg)
+    registry = load_modules(args.search, cfg)
 
     allowed_languages = get_allowed_languages(registry, args.languages)
 
     allowed_files = set(args.files) - set(args.skip)
     testfiles = [f for f in args.files if f in allowed_files]
 
+    if cfg['quiet']:
+        registry['hooks'].pop('progress', None)
 
-    if cfg['use_progress_bar']:
-        reporter = ProgressBarReporter(**cfg)
-    else:
-        reporter = SimpleReporter(**cfg)
+    log("Configuration:\n%s." % pprint.pformat(cfg), cfg['verbosity']-2)
+    log("Registry:\n%s." % pprint.pformat(registry), cfg['verbosity']-2)
+
+    hooks = HookComposite(registry, **cfg)
 
     checker  = Checker(**cfg)
     options  = Options(FAIL_FAST=args.fail_fast, WS=False, PASS=False,
@@ -206,7 +224,7 @@ def main():
     options.up(args.options)
 
     finder = ExampleFinder(allowed_languages, registry, **cfg)
-    runner = ExampleRunner(reporter, checker, **cfg)
+    runner = ExampleRunner(hooks, checker, **cfg)
 
     exit_status = 0
     for filename in testfiles:
