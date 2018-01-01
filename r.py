@@ -1,6 +1,4 @@
 import sys, os, contextlib
-from byexample.byexample import main
-
 try:
     import coverage
 
@@ -21,8 +19,10 @@ except ImportError:
 if __name__ == '__main__':
     if os.environ.get('BYEXAMPLE_COVERAGE_TEST'):
         with coverage_measure():
+            from byexample.byexample import main
             sys.exit(main())
 
     else:
+        from byexample.byexample import main
         sys.exit(main())
 
