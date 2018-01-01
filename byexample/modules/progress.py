@@ -1,5 +1,6 @@
 import traceback, time
-from .common import colored, highlight_syntax
+from byexample.common import colored, highlight_syntax
+from byexample.hook import Hook
 from doctest import _indent
 
 try:
@@ -27,18 +28,20 @@ except ImportError:
             # do not close the output file
             self.file.flush()
 
-class SimpleReporter(object):
-    def __init__(self, output, use_colors, quiet,
-                                    verbosity, **unused):
-        self.output = output
-        self.use_colors = use_colors
-        self.quiet = quiet
+class SimpleReporter(Hook):
+    target = None # progress
+
+    def __init__(self, verbosity, encoding, **unused):
+        if 'use_progress_bar' in unused and unused['use_progress_bar']:
+            self.target = None # disable ourselves
+        else:
+            self.target = 'progress'
+
+        self.output = unused['output']
+        self.use_colors = unused['use_colors']
         self.verbosity = verbosity
 
     def _write(self, msg):
-        if self.quiet:
-            return
-
         self.output.write(msg)
         self.output.flush()
 
@@ -46,6 +49,7 @@ class SimpleReporter(object):
         pass
 
     def start_run(self, examples, interpreters, filepath):
+        self.examples = examples
         self.num_examples = len(examples)
         self.examplenro = 0
         self.filepath = filepath
@@ -53,8 +57,8 @@ class SimpleReporter(object):
 
         self.fail = self.good = self.aborted_or_crashed = self.skipped = 0
 
-    def end_run(self, examples, interpreters):
-        if not examples:
+    def end_run(self, failed, user_aborted, crashed):
+        if not self.examples:
             if self.verbosity >= 1:
                 self._write("File %s, no test found\n" % self.filepath)
             return
@@ -151,24 +155,24 @@ class SimpleReporter(object):
         self._write(_indent(highlight_syntax(example, self.use_colors)))
 
 class ProgressBarReporter(SimpleReporter):
-    def _write(self, msg):
-        if self.quiet:
-            return
+    target = None # progress
 
+    def __init__(self, verbosity, encoding, **unused):
+        SimpleReporter.__init__(self, verbosity, encoding, **unused)
+        if 'use_progress_bar' in unused and not unused['use_progress_bar']:
+            self.target = None # disable ourselves
+        else:
+            self.target = 'progress'
+
+    def _write(self, msg):
         self.bar.write(msg, file=self.output, end="")
         self.output.flush()
 
     def _update(self, x):
-        if self.quiet:
-            return
-
         self.bar.update(x)
 
     def start_run(self, examples, interpreters, filepath):
         SimpleReporter.start_run(self, examples, interpreters, filepath)
-
-        if self.quiet:
-            return
 
         bar_format = '{desc} |{bar}| [{n_fmt}/{total_fmt}{postfix}]'
         self.bar = tqdm(total=len(examples), file=self.output,
@@ -177,17 +181,13 @@ class ProgressBarReporter(SimpleReporter):
                              disable=None # means disable if the output is not TTY
                              )
 
-    def end_run(self, examples, interpreters):
-        if not self.quiet:
-            self.bar.close()
-
-        SimpleReporter.end_run(self, examples, interpreters)
+    def end_run(self, failed, user_aborted, crashed):
+        self.bar.close()
+        SimpleReporter.end_run(self, failed, user_aborted, crashed)
 
     def start_example(self, example, options):
         SimpleReporter.start_example(self, example, options)
-
-        if not self.quiet:
-            self.bar.set_postfix_str('line %i' % example.start_lineno)
+        self.bar.set_postfix_str('line %i' % example.start_lineno)
 
     def skip_example(self, example, options):
         SimpleReporter.skip_example(self, example, options)
