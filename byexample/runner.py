@@ -5,8 +5,8 @@ class TimeoutException(Exception):
     pass
 
 class ExampleRunner(object):
-    def __init__(self, reporter, checker, verbosity, **unused):
-        self.reporter  = reporter
+    def __init__(self, hooks, checker, verbosity, **unused):
+        self.hooks  = hooks
         self.checker   = checker
         self.verbosity = verbosity
 
@@ -28,7 +28,7 @@ class ExampleRunner(object):
         interpreters = list(set(e.interpreter for e in examples))
 
         self.initialize_interpreters(interpreters)
-        self.reporter.start_run(examples, interpreters, filepath)
+        self.hooks.start_run(examples, interpreters, filepath)
 
         fail_fast = options['FAIL_FAST']
 
@@ -40,20 +40,20 @@ class ExampleRunner(object):
             options.up(example.options)
             try:
                 if options['SKIP']:
-                    self.reporter.skip_example(example, options)
+                    self.hooks.skip_example(example, options)
                     continue
 
-                self.reporter.start_example(example, options)
+                self.hooks.start_example(example, options)
                 try:
                     got = example.interpreter.run(example, options)
                 except TimeoutException as e:  # pragma: no cover
                     got = "**Execution timed out**\n" + str(e)
                     timedout = True
                 except KeyboardInterrupt:      # pragma: no cover
-                    self.reporter.user_aborted(example)
+                    self.hooks.user_aborted(example)
                     user_aborted = True
                 except Exception as e:         # pragma: no cover
-                    self.reporter.crashed(example, e)
+                    self.hooks.crashed(example, e)
                     crashed = True
 
                 if user_aborted or crashed:    # pragma: no cover
@@ -65,16 +65,22 @@ class ExampleRunner(object):
                 force_pass = options['PASS']
                 if not timedout and \
                         (force_pass or self.checker.check_output(example, got, options)):
-                    self.reporter.success(example, got, self.checker)
+                    self.hooks.success(example, got, self.checker)
                 else:
-                    self.reporter.failure(example, got, self.checker)
+                    self.hooks.failure(example, got, self.checker)
                     failed = True
 
                     # start an interactive session if the example failes
                     # and the user wanted this
                     if options['INTERACT'] and not timedout:
-                        self.reporter.start_interact(example, options)
-                        example.interpreter.interact(example, options)
+                        self.hooks.start_interact(example, options)
+                        ex = None
+                        try:
+                            example.interpreter.interact(example, options)
+                        except Exception as e:
+                            ex = e
+
+                        self.hooks.finish_interact(ex)
 
                     # fail fast if the user want this or
                     # if we got a Timeout
@@ -83,7 +89,7 @@ class ExampleRunner(object):
             finally:
                 options.down()
 
-        self.reporter.end_run(examples, interpreters)
+        self.hooks.end_run(failed, user_aborted, crashed)
         self.shutdown_interpreters(interpreters)
 
         return failed, (user_aborted or crashed)
