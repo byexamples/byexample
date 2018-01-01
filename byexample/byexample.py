@@ -87,8 +87,8 @@ def parse_args():
     group.add_argument("-v", action='count', dest='verbosity', default=0,
                         help="verbosity level, add more flags to increase the level.")
     group.add_argument("-q", "--quiet", action='store_true',
-                        help="quiet mode, do not print anything even if an example fails. "
-                             "Supress the progress output.")
+                        help="quiet mode, do not print anything even if an example fails; "
+                             "supress the progress output.")
 
     return parser.parse_args()
 

@@ -47,7 +47,7 @@ capabilities
                             fails.
       -v                    verbosity level, add more flags to increase the level.
       -q, --quiet           quiet mode, do not print anything even if an example
-                            fails.
+                            fails; supress the progress output.
 
 The most direct way to use ``byexample`` is to select the language(s) to use
 and the files where the examples are.
