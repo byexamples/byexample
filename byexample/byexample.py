@@ -5,7 +5,6 @@ from .interpreter import Interpreter
 from .finder import ExampleFinder, MatchFinder
 from .runner import ExampleRunner, Checker
 from .parser import ExampleParser
-from .reporter import SimpleReporter, ProgressBarReporter
 from .hook import Hook, HookComposite
 from .common import log, build_exception_msg
 
