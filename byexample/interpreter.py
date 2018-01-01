@@ -23,7 +23,7 @@ class Interpreter(object):
         If you add multiple finders, make sure that two finders will not find
         the same example. This will be considered an error.
         '''
-        return []
+        return [] # pragma: no cover
 
     def __repr__(self):
         return '%s Interpreter' % tohuman(self.language)
@@ -98,9 +98,9 @@ class PexepctMixin(object):
             self._drop_output() # discard banner and things like that
 
     def interact(self, send='\n', escape_character=chr(29),
-                                    input_filter=None, output_filter=None):
+                                    input_filter=None, output_filter=None): # pragma: no cover
         def ensure_cooked_mode(input_str):
-            self.set_cooked_mode(True)
+            self._set_cooked_mode(True)
             if input_filter:
                 return input_filter(input_str)
             return input_str
@@ -186,10 +186,10 @@ class PexepctMixin(object):
 
         return out
 
-    def set_cooked_mode(self, state):
+    def _set_cooked_mode(self, state): # pragma: no cover
         # code borrowed from ptyprocess/ptyprocess.py, _setecho, and
         # adapted adding more flags to it based in stty(1)
-        errmsg = 'set_cooked_mode() may not be called on this platform'
+        errmsg = '_set_cooked_mode() may not be called on this platform'
 
         fd = self.interpreter.child_fd
 
