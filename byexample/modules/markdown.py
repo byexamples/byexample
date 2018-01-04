@@ -31,6 +31,8 @@ class FencedMatchFinder(MatchFinder):
                           )*)
             )?
 
+            (?: [ ]*\n )*                         # ignore any empty line
+
             # finally, the end marker
             ^[ ]*```[ ]*$
             ''', re.MULTILINE | re.VERBOSE)
