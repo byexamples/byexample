@@ -81,20 +81,20 @@ class Interpreter(object):
 class PexepctMixin(object):
     def __init__(self, cmd, PS1_re, any_PS_re):
         self.cmd = cmd
-        self.PS1_re = PS1_re
-        self.any_PS_re = any_PS_re
+        self.PS1_re = re.compile(PS1_re)
+        self.any_PS_re = re.compile(any_PS_re)
 
         self.last_output = []
 
     def _spawn_interpreter(self, delaybeforesend=0.010, wait_first_prompt=True,
-                                        first_propmt_timeout=10):
+                                        first_prompt_timeout=10):
         self._drop_output() # there shouldn't be any output yet but...
         self.interpreter = pexpect.spawn(self.cmd, echo=False,
                                                 encoding=self.encoding)
         self.interpreter.delaybeforesend = delaybeforesend
 
         if wait_first_prompt:
-            self._expect_prompt(timeout=first_propmt_timeout)
+            self._expect_prompt(timeout=first_prompt_timeout, prompt_re=self.PS1_re)
             self._drop_output() # discard banner and things like that
 
     def interact(self, send='\n', escape_character=chr(29),
@@ -125,13 +125,18 @@ class PexepctMixin(object):
         time.sleep(0.001)
         self.interpreter.terminate(force=True)
 
-    def _exec_and_wait(self, source, timeout=2):
-        self.interpreter.send(source)
-        self._expect_prompt(timeout)
+    def _exec_and_wait(self, source, timeout):
+        lines = source.split('\n')
+        for line in lines[:-1]:
+            self.interpreter.sendline(line)
+            self._expect_prompt(timeout)
+
+        self.interpreter.sendline(lines[-1])
+        self._expect_prompt(timeout, prompt_re=self.PS1_re)
 
         return self._get_output()
 
-    def _expect_prompt(self, timeout):
+    def _expect_prompt(self, timeout, prompt_re=None):
         ''' Wait for a PS1 prompt, raises a timeout if we cannot find one.
 
             if we get a timeout that could mean:
@@ -148,21 +153,18 @@ class PexepctMixin(object):
                 - good but we may didn't get the *last* prompt line
                   and we should try to find the next prompt again
         '''
-        expect = [self.PS1_re, pexpect.TIMEOUT]
-        PS1_found, Timeout = range(len(expect))
+        if not prompt_re:
+            prompt_re = self.any_PS_re
+
+        expect = [prompt_re, pexpect.TIMEOUT]
+        PS_found, Timeout = range(len(expect))
 
         what = self.interpreter.expect(expect, timeout=timeout)
         self.last_output.append(self.interpreter.before)
 
-        if what == PS1_found:
-            while what != Timeout:
-                what = self.interpreter.expect(expect, timeout=0.05)
-                self.last_output.append(self.interpreter.before)
-
-            # good, we found a prompt and we couldn't find another prompt after
-            # the last one so we should be on the *last* prompt
-        elif what == Timeout:
+        if what == Timeout:
             raise TimeoutException("Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s" % self.interpreter.before[-1000:])
+
 
     def _get_output(self):
         out = "".join(self.last_output)
