@@ -63,7 +63,7 @@ class ShellInterpreter(Interpreter, PexepctMixin):
                             'export PS2\n' +\
                             'export PS3\n' +\
                             'export PS4\n' +\
-                            cmd + '\n')
+                            cmd + '\n', timeout=2)
 
 
     def run(self, example, flags):
@@ -72,7 +72,7 @@ class ShellInterpreter(Interpreter, PexepctMixin):
         elif flags.get('sh', False):
             self._spawn_new_shell('/usr/bin/env sh')
 
-        return self._exec_and_wait(example.source + '\n',
+        return self._exec_and_wait(example.source,
                                     timeout=int(flags['TIMEOUT']))
 
     def interact(self, example, options):
@@ -81,13 +81,12 @@ class ShellInterpreter(Interpreter, PexepctMixin):
     def initialize(self):
         self._spawn_interpreter(wait_first_prompt=False)
 
-        self.interpreter.send(
+        self._exec_and_wait(
 '''export PS1="/byexample/sh/ps1> "
 export PS2="/byexample/sh/ps2> "
 export PS3="/byexample/sh/ps3> "
 export PS4="/byexample/sh/ps4> "
-''')
-        self._expect_prompt(timeout=10)
+''', timeout=10)
         self._drop_output() # discard banner and things like that
 
     def shutdown(self):

@@ -66,7 +66,7 @@ class GDBInterpreter(Interpreter, PexepctMixin):
         PexepctMixin.__init__(self,
                                 cmd="/usr/bin/env gdb --nh --nx --quiet",
                                 PS1_re = r'\(gdb\)[ ]',
-                                any_PS_re = r'')
+                                any_PS_re = r'\(gdb\)[ ]')
 
 
     def run(self, example, flags):
@@ -76,9 +76,7 @@ class GDBInterpreter(Interpreter, PexepctMixin):
         # be extra carefully. if we add an extra newline, gdb
         # will rexecute the last command again.
         if example.source.endswith('\n'):
-            source = example.source
-        else:
-            source = example.source + '\n'
+            source = example.source[:-1]
 
         return self._exec_and_wait(source, timeout=int(flags['TIMEOUT']))
 
@@ -89,10 +87,10 @@ class GDBInterpreter(Interpreter, PexepctMixin):
         self._spawn_interpreter()
 
         # gdb will not print the address of a variable by default
-        self._exec_and_wait('set print address off\n')
+        self._exec_and_wait('set print address off\n', timeout=1)
 
         # gdb will stop at the first null when printing an array
-        self._exec_and_wait('set print null-stop on\n')
+        self._exec_and_wait('set print null-stop on\n', timeout=1)
 
     def shutdown(self):
         self._shutdown_interpreter()

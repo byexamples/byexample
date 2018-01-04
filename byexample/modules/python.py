@@ -103,11 +103,7 @@ del pprint
 
 
     def run(self, example, flags):
-        # we need to add an extra newline to
-        # finish a definition like
-        #    >>> def f()
-        #    ...   pass
-        return self._exec_and_wait(example.source + '\n',
+        return self._exec_and_wait(example.source,
                                     timeout=int(flags['TIMEOUT']))
 
     def interact(self, example, options):

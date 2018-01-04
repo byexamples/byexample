@@ -60,7 +60,7 @@ class RubyInterpreter(Interpreter, PexepctMixin):
         self.encoding = encoding
 
     def run(self, example, flags):
-        return self._exec_and_wait(example.source + '\n',
+        return self._exec_and_wait(example.source,
                                     timeout=int(flags['TIMEOUT']))
 
     def interact(self, example, options):
