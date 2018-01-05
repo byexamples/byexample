@@ -129,7 +129,10 @@ class PexepctMixin(object):
         lines = source.split('\n')
         for line in lines[:-1]:
             self.interpreter.sendline(line)
+
+            begin = time.time()
             self._expect_prompt(timeout)
+            timeout -= max(time.time() - begin, 0)
 
         self.interpreter.sendline(lines[-1])
         self._expect_prompt(timeout, prompt_re=self.PS1_re)
@@ -137,22 +140,16 @@ class PexepctMixin(object):
         return self._get_output()
 
     def _expect_prompt(self, timeout, prompt_re=None):
-        ''' Wait for a PS1 prompt, raises a timeout if we cannot find one.
+        ''' Wait for a <prompt_re> (any self.any_PS_re if <prompt_re> is None)
+            and raise a timeout if we cannot find one.
 
-            if we get a timeout that could mean:
-                - the code executed is taking too long to finish
-                - the code is malformed and the interpreter is waiting
-                  more data like this:
-                    prompt-1) [ 1, 2,
-                    prompt-2)   3, 4,
-                    prompt-2)   5, 6,
-
-                    (the ] is missing, for example)
-            if we don't get a timeout that could mean:
-                - good, we got the *last* prompt line
-                - good but we may didn't get the *last* prompt line
-                  and we should try to find the next prompt again
+            After the successful expect, collect the 'before' output into
+            self.last_output
         '''
+        _timeout_msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s"
+        if timeout <= 0:
+            raise TimeoutException(_timeout_msg % ''.join(self.last_output)[-1000:])
+
         if not prompt_re:
             prompt_re = self.any_PS_re
 
@@ -163,7 +160,7 @@ class PexepctMixin(object):
         self.last_output.append(self.interpreter.before)
 
         if what == Timeout:
-            raise TimeoutException("Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s" % self.interpreter.before[-1000:])
+            raise TimeoutException(_timeout_msg % ''.join(self.last_output)[-1000:])
 
 
     def _get_output(self):
