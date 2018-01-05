@@ -1,13 +1,26 @@
 """
 Example:
   ```cpp
-  int i = 1;
-  int j = 2;
-  i + j
-
+  #include <iostream>
+  
+  const char *hello = "hello bla world";
+  std::cout << hello << std::endl;
+  
   out:
-  (int) 3
+  hello<...>world
+  ```
 
+  ```cpp
+  int i, j = 2;
+  
+  for (i = 0; i < 4; ++i) {
+     j += i;
+  }
+  
+  j + 3
+  
+  out:
+  (int) 11
   ```
 
 """

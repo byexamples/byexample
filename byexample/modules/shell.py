@@ -7,7 +7,20 @@ Example:
   $ hello
   hello<...>world
 
+  ```shell
+  
+  for i in 0 1 2 3; do
+      echo $i
+  done
+  
+  out:
+  0
+  1
+  2
+  3
+  ```
 """
+
 import re, pexpect, sys, time
 from byexample.parser import ExampleParser
 from byexample.finder import MatchFinder

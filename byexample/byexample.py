@@ -164,9 +164,13 @@ def get_allowed_languages(registry, selected):
     not_found = selected - available
 
     if not_found:
-        raise ValueError("The following languages were specified " + \
-                         "but they were not found in any module:\n%s" %
-                                (str(not_found)))
+        not_found = ', '.join(not_found)
+        raise ValueError(("The following languages were specified " + \
+                          "but they were not found in any module:\n -> %s\n" + \
+                          "May be you forgot to add another place where to " + \
+                          "find it with --search.\nRun again with -vvv to get " + \
+                          "more information about why is this happening.") %
+                               not_found)
     return selected
 
 def get_encoding(encoding, verbosity):

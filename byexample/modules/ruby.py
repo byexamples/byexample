@@ -1,13 +1,26 @@
-''' An interpreter for Ruby using irb.
-    Example:
-        >> def hello
-        >>     'hello bla world'
-        >> end;
+"""
+Example:
+  >> def hello
+  >>     'hello bla world'
+  >> end;
 
-        >> hello
-        => "hello<...>world"
+  >> hello
+  => "hello<...>world"
 
-'''
+  ```ruby
+  
+  j = 2;
+  (0..3).each do |i|
+    j += i;
+  end;
+  
+  j + 3
+  
+  out:
+  => 11
+  ```
+"""
+
 import re, pexpect, sys, time
 from byexample.parser import ExampleParser
 from byexample.finder import MatchFinder
