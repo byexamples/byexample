@@ -29,22 +29,27 @@ a little documentation.
 
     $ byexample -l python byexample/modules/python.py
     <nl>
-    File byexample/modules/python.py, 2/2 test ran in <...> seconds
-    [PASS] Pass: 2 Fail: 0 Skip: 0
+    File byexample/modules/python.py, 3/3 test ran in <...> seconds
+    [PASS] Pass: 3 Fail: 0 Skip: 0
 
     $ byexample -l ruby   byexample/modules/ruby.py
     <nl>
-    File byexample/modules/ruby.py, 2/2 test ran in <...> seconds
-    [PASS] Pass: 2 Fail: 0 Skip: 0
+    File byexample/modules/ruby.py, 3/3 test ran in <...> seconds
+    [PASS] Pass: 3 Fail: 0 Skip: 0
 
     $ byexample -l shell  byexample/modules/shell.py
     <nl>
-    File byexample/modules/shell.py, 2/2 test ran in <...> seconds
-    [PASS] Pass: 2 Fail: 0 Skip: 0
+    File byexample/modules/shell.py, 3/3 test ran in <...> seconds
+    [PASS] Pass: 3 Fail: 0 Skip: 0
 
     $ byexample -l gdb    byexample/modules/gdb.py
     <nl>
     File byexample/modules/gdb.py, 2/2 test ran in <...> seconds
+    [PASS] Pass: 2 Fail: 0 Skip: 0
+
+    $ byexample -l cpp    byexample/modules/cpp.py
+    <nl>
+    File byexample/modules/cpp.py, 2/2 test ran in <...> seconds
     [PASS] Pass: 2 Fail: 0 Skip: 0
 
 If what you are looking for is what is capable of, you definetly need

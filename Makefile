@@ -23,7 +23,7 @@ test:
 
 travis-test:
 	@# run the test separately so we can control which languages will
-	@# be used. In a Travis CI environment, the Ruby and the GDB are
+	@# be used. In a Travis CI environment,  Ruby, GDB and C++ are
 	@# not supported
 	@$(python_bin) r.py --pretty $(pretty) --ff -l python byexample/*.py
 	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell byexample/modules/*.py
@@ -39,8 +39,8 @@ coverage:
 	@#
 	@# Run the rest of the tests with an environment variable to make
 	@# r.py to initialize the coverage too
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l python,shell,ruby,gdb `find docs -name "*.rst"`
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l python,shell,ruby,gdb README.rst
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l python,shell,ruby,gdb,cpp `find docs -name "*.rst"`
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l python,shell,ruby,gdb,cpp README.rst
 	@#
 	@# Run the another test, again, but with different flags to force the
 	@# execution of different parts of byexample

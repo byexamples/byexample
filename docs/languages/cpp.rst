@@ -1,12 +1,17 @@
-C/C++
-=====
+C++
+===
 
-Let's play with some basic maths. What is the surface of a circle?
+To support C++, ``byexample`` relays in the ``cling`` interpreter.
 
-TODO
-The last line of code, if it is an expression, it will evaluated and
-the output compared with the expected below
-OR mark it with ".p"
+It is still an experimental feature that works pretty well but it is not
+inmune to bugs, quirks nor crashes.
+
+Don't forget to send your feedback to the ``cling`` community.
+
+Variable definition
+-------------------
+
+All the variable are global and can be accessed by other examples
 
 .. code:: cpp
 
@@ -21,62 +26,28 @@ OR mark it with ".p"
     
     ```
 
-Cool but ``3.14`` it isn't the most precise approximation to the number PI.
-We could do this better.
+The last expression with out ending by ';' is interpreted by ``cling`` as the
+expression to not only eval but also to print its value.
 
-Preprocessors are supported as well and affect the example and all the examples
-below.
+stdlib
+------
 
-To add more linking flags, the ``+LINK`` option is used. This flag affects this
-example and all the examples below as well.
-
-.. code:: cpp
-
-    ```cpp
-    #include <math.h>  /* byexample: +LINK=-lm */
-    #define PI 3.141592653589793
-    
-    radio = 2.0;
-    sup = PI * pow(radio, 2);
-    
-    sup
-    
-    out:
-    (double) 12.56<decimals>
-    ```
-
-We could refactor this into a function
+You can use the ``stdlib`` as usual. Here is an example of how to print something
+and check the output later:
 
 .. code:: cpp
 
     ```cpp
-    double circle_surface(double radio) {
-        return PI * pow(radio, 2);
-    }
+    #include <iostream>
     
-    circle_surface(radio)
-    
-    out:
-    (double) 12.56<decimals>
-    ```
-
-Let's calculate the surface of several circles
-
-.. code:: cpp
-
-    ```cpp
-    double j = 0;
     int i;
-    for (i = 1; i < 4; ++i)
-        j += circle_surface(i);
-    
-    j
+    for (i = 0; i < 3; ++i)
+        std::cout << i << std::endl;
     
     out:
-    (double) 50.26<...>
+    0
+    1
+    2
+    3
     ```
 
-
-TODO
-====
-See -fvisibility=
