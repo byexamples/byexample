@@ -35,7 +35,7 @@ coverage:
 	@# Run the byexample's tests with the Python interpreter.
 	@# to start the coverage, use a hook in test/ to initialize the coverage
 	@# engine at the begin of the execution (and to finalize it at the end)
-	@$(python_bin) r.py --search test/ -q --ff -l python byexample/*.py
+	@$(python_bin) r.py --modules test/ -q --ff -l python byexample/*.py
 	@#
 	@# Run the rest of the tests with an environment variable to make
 	@# r.py to initialize the coverage too
@@ -44,7 +44,7 @@ coverage:
 	@#
 	@# Run the another test, again, but with different flags to force the
 	@# execution of different parts of byexample
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -vvv --ff -l python README.rst > /dev/null
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -vvv --ff --no-enhance-diff -l python README.rst > /dev/null
 	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py --pretty none -vvv --ff -l python README.rst > /dev/null
 	@#
 	@# Output the result
