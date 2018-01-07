@@ -10,8 +10,8 @@ capabilities
     $ alias byexample=python\ r.py
 
     $ byexample -h                      # byexample: +WS
-    usage: r.py [-h] [-f] [--dry] [--skip file [file ...]] [--search dir]
-                [-d {unified,ndiff,context}] [--no-enhance-diff] -l language
+    usage: r.py [-h] [--ff] [--dry] [--skip file [file ...]] [-m dir]
+                [-d {none,unified,ndiff,context}] [--no-enhance-diff] -l language
                 [--timeout TIMEOUT] [-o OPTIONS] [--encoding ENCODING]
                 [--pretty {none,all}] [--interact] [-v | -q]
                 file [file ...]
@@ -21,13 +21,13 @@ capabilities
     <blankline>
     optional arguments:
       -h, --help            show this help message and exit
-      -f, --fail-fast, --ff
-                            if an example fails, fail and stop all the execution.
+      --ff, --fail-fast     if an example fails, fail and stop all the execution.
       --dry                 do not run any example, only parse them.
       --skip file [file ...]
                             skip these files
-      --search dir          append a directory for searching modules there.
-      -d {unified,ndiff,context}, --diff {unified,ndiff,context}
+      -m dir, --modules dir
+                            append a directory for searching modules there.
+      -d {none,unified,ndiff,context}, --diff {none,unified,ndiff,context}
                             select diff algorithm.
       --no-enhance-diff     by default, some non-printable characters are replaced
                             by printable ones in the diffs to make them easier to
@@ -48,6 +48,7 @@ capabilities
       -v                    verbosity level, add more flags to increase the level.
       -q, --quiet           quiet mode, do not print anything even if an example
                             fails; supress the progress output.
+
 
 The most direct way to use ``byexample`` is to select the language(s) to use
 and the files where the examples are.

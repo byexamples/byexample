@@ -38,16 +38,19 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("files", nargs='+', metavar='file',
                         help="file that have the examples to run.")
-    parser.add_argument("-f", "--fail-fast", "--ff", action='store_true',
+    parser.add_argument("--ff", "--fail-fast", action='store_true',
+                        dest='fail_fast',
                         help="if an example fails, fail and stop all the execution.")
     parser.add_argument("--dry", action='store_true',
                         help="do not run any example, only parse them.")
     parser.add_argument("--skip", nargs='+', metavar='file', default=[],
                         help='skip these files')
-    parser.add_argument("--search", action='append', metavar='dir',
+    parser.add_argument("-m", "--modules", action='append', metavar='dir',
+                        dest='modules_dirs',
                         default=[search_default],
                         help='append a directory for searching modules there.')
-    parser.add_argument("-d", "--diff", choices=['unified', 'ndiff', 'context'],
+    parser.add_argument("-d", "--diff", choices=['none', 'unified', 'ndiff', 'context'],
+                        default='none',
                         help='select diff algorithm.')
     parser.add_argument("--no-enhance-diff", action='store_false',
                         dest='enhance_diff',
@@ -168,7 +171,7 @@ def get_allowed_languages(registry, selected):
         raise ValueError(("The following languages were specified " + \
                           "but they were not found in any module:\n -> %s\n" + \
                           "May be you forgot to add another place where to " + \
-                          "find it with --search.\nRun again with -vvv to get " + \
+                          "find it with -m or --modules.\nRun again with -vvv to get " + \
                           "more information about why is this happening.") %
                                not_found)
     return selected
@@ -199,7 +202,7 @@ def main():
     # if the output is not atty, disable the color anyways
     cfg['use_colors'] &= cfg['output'].isatty()
 
-    registry = load_modules(args.search, cfg)
+    registry = load_modules(args.modules_dirs, cfg)
 
     allowed_languages = get_allowed_languages(registry, args.languages)
 
