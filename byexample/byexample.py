@@ -8,6 +8,8 @@ from .parser import ExampleParser
 from .hook import Hook, HookComposite
 from .common import log, build_exception_msg
 
+from . import __version__
+
 def parse_args():
     class CSV(argparse.Action):
         def __call__(self, parser, namespace, values, option_string=None):
@@ -36,6 +38,8 @@ def parse_args():
 
     search_default = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modules')
     parser = argparse.ArgumentParser()
+    parser.add_argument('-V', '--version', action='version',
+                        version='%(prog)s {version}'.format(version=__version__))
     parser.add_argument("files", nargs='+', metavar='file',
                         help="file that have the examples to run.")
     parser.add_argument("--ff", "--fail-fast", action='store_true',
