@@ -1,7 +1,3 @@
-.. image:: https://travis-ci.org/eldipa/byexample.svg?branch=master
-   :alt Build Status
-   :target https://travis-ci.org/eldipa/byexample
-
 ``byexample``
 =============
 
