@@ -10,7 +10,7 @@ capabilities
     $ alias byexample=python\ r.py
 
     $ byexample -h                      # byexample: +WS
-    usage: r.py [-h] [--ff] [--dry] [--skip file [file ...]] [-m dir]
+    usage: r.py [-h] [-V] [--ff] [--dry] [--skip file [file ...]] [-m dir]
                 [-d {none,unified,ndiff,context}] [--no-enhance-diff] -l language
                 [--timeout TIMEOUT] [-o OPTIONS] [--encoding ENCODING]
                 [--pretty {none,all}] [--interact] [-v | -q]
@@ -21,6 +21,7 @@ capabilities
     <blankline>
     optional arguments:
       -h, --help            show this help message and exit
+      -V, --version         show program's version number and exit
       --ff, --fail-fast     if an example fails, fail and stop all the execution.
       --dry                 do not run any example, only parse them.
       --skip file [file ...]
