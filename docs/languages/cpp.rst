@@ -41,13 +41,13 @@ and check the output later:
     #include <iostream>
     
     int i;
-    for (i = 0; i < 3; ++i)
+    for (i = 0; i < 3; ++i) {
         std::cout << i << std::endl;
+    }
     
     out:
     0
     1
     2
-    3
     ```
 

@@ -9,7 +9,7 @@ to start.
 
     $ # ignore this
     $ alias byexample=python\ r.py\ --pretty\ none\ --ff
-    $ all_languages=python,shell,ruby,gdb
+    $ all_languages=python,shell,ruby,gdb,cpp
 
     $ byexample -l python byexample/*.py
     <nl>
@@ -71,6 +71,9 @@ can be found under the ``doc`` folder
     <nl>
     File docs/usage.rst, 11/11 test ran in <...> seconds
     [PASS] Pass: 11 Fail: 0 Skip: 0
+    <nl>
+    File docs/languages/cpp.rst, 2/2 test ran in <...> seconds
+    [PASS] Pass: 2 Fail: 0 Skip: 0
     <nl>
     File docs/languages/shell.rst, 15/15 test ran in <...> seconds
     [PASS] Pass: 15 Fail: 0 Skip: 0
