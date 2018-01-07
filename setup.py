@@ -1,9 +1,5 @@
-"""A setuptools based setup module.
-
-See:
-https://packaging.python.org/en/latest/distributing.html
-https://github.com/pypa/sampleproject
-"""
+# https://packaging.python.org/en/latest/distributing.html
+# https://github.com/pypa/sampleproject
 
 from setuptools import setup, find_packages
 from codecs import open
@@ -15,6 +11,9 @@ here = path.abspath(path.dirname(__file__))
 
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
+
+# load __version__ and __doc__
+exec(open(path.join(here, 'byexample', '__init__.py')).read())
 
 # the following are the required dependencies
 # without them, we cannot run byexample
@@ -42,10 +41,9 @@ else:
 
 setup(
     name='byexample',
-    version='3.0.0',
+    version=__version__,
 
-    description='Write snippets of code in Python, Ruby, and others as ' +\
-                'documentation and execute them as regression tests.',
+    description=__doc__,
     long_description=long_description,
 
     url='https://github.com/eldipa/byexample',
@@ -69,6 +67,7 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
         'Programming Language :: Ruby',
+        'Programming Language :: C++',
         'Programming Language :: Unix Shell',
     ],
 
