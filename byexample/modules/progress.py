@@ -78,13 +78,13 @@ class SimpleReporter(Hook):
                                                     (elapsed % 3600) / 60)
 
         ran_number = self.examplenro
-        tot_number = (self.num_examples - self.skipped)
-        if ran_number == tot_number == self.good:
-            status_str = colored("[PASS]", 'green', self.use_colors)
-        elif self.aborted_or_crashed == 0:
+        tot_number = self.num_examples
+        if user_aborted or crashed:
+            status_str = colored("[ABORT]", 'red', self.use_colors)
+        elif failed:
             status_str = colored("[FAIL]", 'red', self.use_colors)
         else:
-            status_str = colored("[ABORT]", 'red', self.use_colors)
+            status_str = colored("[PASS]", 'green', self.use_colors)
 
         msg = "File %s, %i/%i test ran in %s\n%s Pass: %i Fail: %i Skip: %i\n" % (
                     self.filepath,
@@ -95,6 +95,7 @@ class SimpleReporter(Hook):
         self._write(msg)
 
     def skip_example(self, example, options):
+        self.examplenro += 1
         self.skipped += 1
 
     def start_example(self, example, options):

@@ -94,8 +94,8 @@ Now we just run ``byexample`` selecting ``python`` as the language target
 At the end of the execution a summary shows how many examples were executed,
 how many passed, failed or where skipped.
 
-A skipped example means that the examples has a ``+SKIP`` option. It was not
-executed and it will not be part of the count of tests run.
+A skipped example means that the example has a ``+SKIP`` option and it was not
+executed.
 
 In normal circumstances there are two possible status: ``PASS`` and ``FAIL``.
 

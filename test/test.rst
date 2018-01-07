@@ -59,7 +59,7 @@ to see the readme
 
     $ byexample -l $all_languages README.rst
     <nl>
-    File README.rst, 17/17 test ran in <...> seconds
+    File README.rst, 21/21 test ran in <...> seconds
     [PASS] Pass: 17 Fail: 0 Skip: 4
 
 But the readme is just the peak of the icerberg, the rest of the documentation
