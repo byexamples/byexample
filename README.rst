@@ -12,6 +12,7 @@ It is intended primary for writing good and live tutorials and documentation
 showing how a piece of software works or it can be used *by example*.
 
 Currently we support
+ - C++
  - Python
  - Ruby
  - Shell (sh and bash)
