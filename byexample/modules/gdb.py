@@ -83,7 +83,7 @@ class GDBInterpreter(Interpreter, PexepctMixin):
     def interact(self, example, options):
         PexepctMixin.interact(self)
 
-    def initialize(self):
+    def initialize(self, examples, options):
         self._spawn_interpreter()
 
         # gdb will not print the address of a variable by default

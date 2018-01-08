@@ -5,7 +5,7 @@ from .interpreter import Interpreter
 from .finder import ExampleFinder, MatchFinder
 from .runner import ExampleRunner, Checker
 from .parser import ExampleParser
-from .hook import Hook, HookComposite
+from .concern import Concern, ConcernComposite
 from .common import log, build_exception_msg
 
 from . import __version__
@@ -118,7 +118,7 @@ def load_modules(dirnames, cfg):
     registry = {'interpreters': {},
                 'finders': {},
                 'parsers': {},
-                'hooks': {},
+                'concerns': {},
                 }
     for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
         path = importer.path
@@ -136,7 +136,7 @@ def load_modules(dirnames, cfg):
         for klass, key, what in [(Interpreter, 'language', 'interpreters'),
                                  (ExampleParser, 'language', 'parsers'),
                                  (MatchFinder, 'target', 'finders'),
-                                 (Hook, 'target', 'hooks')]:
+                                 (Concern, 'target', 'concerns')]:
 
             # we are interested in any class that is a subclass of 'klass'
             # and it has an attribute 'key'
@@ -214,12 +214,12 @@ def main():
     testfiles = [f for f in args.files if f in allowed_files]
 
     if cfg['quiet']:
-        registry['hooks'].pop('progress', None)
+        registry['concerns'].pop('progress', None)
 
     log("Configuration:\n%s." % pprint.pformat(cfg), cfg['verbosity']-2)
     log("Registry:\n%s." % pprint.pformat(registry), cfg['verbosity']-2)
 
-    hooks = HookComposite(registry, **cfg)
+    concerns = ConcernComposite(registry, **cfg)
 
     checker  = Checker(**cfg)
     options  = Options(FAIL_FAST=args.fail_fast, WS=False, PASS=False,
@@ -234,7 +234,7 @@ def main():
     options.up(args.options)
 
     finder = ExampleFinder(allowed_languages, registry, **cfg)
-    runner = ExampleRunner(hooks, checker, **cfg)
+    runner = ExampleRunner(concerns, checker, **cfg)
 
     exit_status = 0
     for filename in testfiles:

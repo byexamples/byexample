@@ -91,7 +91,7 @@ class ShellInterpreter(Interpreter, PexepctMixin):
     def interact(self, example, options):
         PexepctMixin.interact(self)
 
-    def initialize(self):
+    def initialize(self, examples, options):
         self._spawn_interpreter(wait_first_prompt=False)
 
         self._exec_and_wait(

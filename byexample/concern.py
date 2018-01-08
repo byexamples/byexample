@@ -1,8 +1,26 @@
 from .common import tohuman
 
-class Hook(object):
+class Concern(object):
+    '''
+    Cross-cutting Concern interface.
+
+    Set of methods that will be called through the different stages
+    of the execution of ``byexample``.
+    Each method (also known as 'hook') will allow you to read the current
+    state and even to change it.
+
+    Use this mechanism to implement the following (but not limited to):
+     - show the progress of the execution
+     - log / report generation for export
+     - log execution time history for future execution time prediction (estimate)
+     - turn on/off debugging, coverage and profile facilities
+
+    See each method's documentation to get an idea of the capabilities of this
+    interface.
+    '''
+
     def __repr__(self):
-        return '%s Hook' % tohuman(self.target)
+        return '%s Concern' % tohuman(self.target)
 
     def start_run(self, examples, interpreters, filepath):
         '''
@@ -39,7 +57,7 @@ class Hook(object):
     def skip_example(self, example, options):
         '''
         It is the turn for the example to be executed but it will not.
-        No other hook method will be called with this example.
+        No other concern's method will be called with this example.
         '''
         pass    # pragma: no cover
 
@@ -114,20 +132,20 @@ class Hook(object):
         '''
         pass    # pragma: no cover
 
-class HookComposite(Hook):
+class ConcernComposite(Concern):
     def __init__(self, registry, **unused):
-        self.hooks = registry['hooks'].values()
+        self.concerns = registry['concerns'].values()
 
 def _patch(cls, method_name):
-    def for_each_hook_do(self, *args, **kargs):
-        for hook in self.hooks:
-            getattr(hook, method_name)(*args, **kargs)
+    def for_each_concern_do(self, *args, **kargs):
+        for concern in self.concerns:
+            getattr(concern, method_name)(*args, **kargs)
 
-    setattr(cls, method_name, for_each_hook_do)
+    setattr(cls, method_name, for_each_concern_do)
 
 for method_name in ('start_run', 'end_run',
                     'skip_example', 'start_example',
                     'start_interact', 'finish_interact',
                     'user_aborted', 'crashed',
                     'success', 'failure'):
-    _patch(HookComposite, method_name)
+    _patch(ConcernComposite, method_name)

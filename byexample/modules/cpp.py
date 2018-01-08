@@ -68,7 +68,7 @@ class CPPInterpreter(Interpreter, PexepctMixin):
     def interact(self, example, options):
         PexepctMixin.interact(self)
 
-    def initialize(self):
+    def initialize(self, examples, options):
         self._spawn_interpreter()
 
     def shutdown(self):

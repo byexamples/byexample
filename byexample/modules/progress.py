@@ -1,6 +1,6 @@
 import traceback, time
 from byexample.common import colored, highlight_syntax
-from byexample.hook import Hook
+from byexample.concern import Concern
 from doctest import _indent
 
 try:
@@ -28,7 +28,7 @@ except ImportError:
             # do not close the output file
             self.file.flush()
 
-class SimpleReporter(Hook):
+class SimpleReporter(Concern):
     target = None # progress
 
     def __init__(self, verbosity, encoding, **unused):

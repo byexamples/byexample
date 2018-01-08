@@ -5,17 +5,17 @@ class TimeoutException(Exception):
     pass
 
 class ExampleRunner(object):
-    def __init__(self, hooks, checker, verbosity, **unused):
-        self.hooks  = hooks
+    def __init__(self, concerns, checker, verbosity, **unused):
+        self.concerns  = concerns
         self.checker   = checker
         self.verbosity = verbosity
 
-    def initialize_interpreters(self, interpreters):
+    def initialize_interpreters(self, interpreters, examples, options):
         log("Initializing %i interpreters..." % len(interpreters),
                                                     self.verbosity-1)
         for interpreter in interpreters:
             log(" - %s" % str(interpreter), self.verbosity-1)
-            interpreter.initialize()
+            interpreter.initialize(examples, options)
 
     def shutdown_interpreters(self, interpreters):
         log("Shutting down %i interpreters..." % len(interpreters),
@@ -27,8 +27,8 @@ class ExampleRunner(object):
     def run(self, examples, options, filepath):
         interpreters = list(set(e.interpreter for e in examples))
 
-        self.initialize_interpreters(interpreters)
-        self.hooks.start_run(examples, interpreters, filepath)
+        self.initialize_interpreters(interpreters, examples, options)
+        self.concerns.start_run(examples, interpreters, filepath)
 
         fail_fast = options['FAIL_FAST']
 
@@ -40,20 +40,20 @@ class ExampleRunner(object):
             options.up(example.options)
             try:
                 if options['SKIP']:
-                    self.hooks.skip_example(example, options)
+                    self.concerns.skip_example(example, options)
                     continue
 
-                self.hooks.start_example(example, options)
+                self.concerns.start_example(example, options)
                 try:
                     got = example.interpreter.run(example, options)
                 except TimeoutException as e:  # pragma: no cover
                     got = "**Execution timed out**\n" + str(e)
                     timedout = True
                 except KeyboardInterrupt:      # pragma: no cover
-                    self.hooks.user_aborted(example)
+                    self.concerns.user_aborted(example)
                     user_aborted = True
                 except Exception as e:         # pragma: no cover
-                    self.hooks.crashed(example, e)
+                    self.concerns.crashed(example, e)
                     crashed = True
 
                 if user_aborted or crashed:    # pragma: no cover
@@ -65,22 +65,22 @@ class ExampleRunner(object):
                 force_pass = options['PASS']
                 if not timedout and \
                         (force_pass or self.checker.check_output(example, got, options)):
-                    self.hooks.success(example, got, self.checker)
+                    self.concerns.success(example, got, self.checker)
                 else:
-                    self.hooks.failure(example, got, self.checker)
+                    self.concerns.failure(example, got, self.checker)
                     failed = True
 
                     # start an interactive session if the example failes
                     # and the user wanted this
                     if options['INTERACT'] and not timedout:
-                        self.hooks.start_interact(example, options)
+                        self.concerns.start_interact(example, options)
                         ex = None
                         try:
                             example.interpreter.interact(example, options)
                         except Exception as e:
                             ex = e
 
-                        self.hooks.finish_interact(ex)
+                        self.concerns.finish_interact(ex)
 
                     # fail fast if the user want this or
                     # if we got a Timeout
@@ -89,7 +89,7 @@ class ExampleRunner(object):
             finally:
                 options.down()
 
-        self.hooks.end_run(failed, user_aborted, crashed)
+        self.concerns.end_run(failed, user_aborted, crashed)
         self.shutdown_interpreters(interpreters)
 
         return failed, (user_aborted or crashed)
