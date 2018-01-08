@@ -1,7 +1,7 @@
-from byexample.hook import Hook
+from byexample.concern import Concern
 import coverage
 
-class ByexampleCoverage(Hook):
+class ByexampleCoverage(Concern):
     target = 'byexample-coverage'
 
     def __init__(self, **unused):

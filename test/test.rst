@@ -59,8 +59,8 @@ to see the readme
 
     $ byexample -l $all_languages README.rst
     <nl>
-    File README.rst, 21/21 test ran in <...> seconds
-    [PASS] Pass: 17 Fail: 0 Skip: 4
+    File README.rst, 20/20 test ran in <...> seconds
+    [PASS] Pass: 17 Fail: 0 Skip: 3
 
 But the readme is just the peak of the icerberg, the rest of the documentation
 can be found under the ``doc`` folder
@@ -98,6 +98,6 @@ Go ahead!!
 
     $ byexample -l python docs/how_to_extend.rst
     <nl>
-    File docs/how_to_extend.rst, 31/31 test ran in <...> seconds
-    [PASS] Pass: 31 Fail: 0 Skip: 0
+    File docs/how_to_extend.rst, 33/33 test ran in <...> seconds
+    [PASS] Pass: 33 Fail: 0 Skip: 0
 

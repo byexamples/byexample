@@ -1,8 +1,9 @@
 ``byexample``
 =============
 
-``byexample`` is literate programming engine where you can write
-ordinary text and snippets the code in the same file.
+``byexample`` is a literate programming engine where you mix
+ordinary text and snippets of code in the same file and then you can
+execute them as regression tests.
 
 It is intended primary for writing good and live tutorials and documentation
 showing how a piece of software works or it can be used *by example*.
@@ -21,7 +22,7 @@ More languages will be supported in the future. Stay tuned.
 Contribute
 ^^^^^^^^^^
 
-Go ahead, fork this project a start to hack it. Run `make test` to ensure that
+Go ahead, fork this project and start to hack it. Run ``make test`` to ensure that
 everything is working as expected and then propose your Pull Request!
 
 There are some interesting areas where you can contribute like
@@ -39,21 +40,14 @@ All the snippets will be collected, executed and checked.
     $ pip install --user byexample                # install it # byexample: +SKIP
     $ byexample -l python,ruby,shell README.rst   # run it     # byexample: +SKIP
     ................
-    File README.rst, 16/16 test ran in 1.01 seconds
-    [PASS] Pass: 16 Fail: 0 Aborted: 0
+    File README.rst, 20/20 test ran in <...> seconds
+    [PASS] Pass: 17 Fail: 0 Skip: 3
 
 You can select which languages to run, over which files, how to display the
 differences and much more.
 
 The ``doc/usage.rst`` document goes through almost all the flags that the
 ``byexample`` program has.
-
-For a quick help, you probably will need to just run:
-
-.. code:: sh
-
-    $ byexample -h                                   # byexample: +SKIP
-    usage: byexample <...>
 
 Snippets of code
 ----------------
@@ -68,7 +62,7 @@ executed depending of the language selected.
 
 Here is an example in Python
 
-.. code::
+.. code:: python
 
     ```python
     1 + 2

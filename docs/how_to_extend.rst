@@ -1,28 +1,36 @@
 How to extend
 =============
 
-``byexample`` uses three concepts to find, parse and execute the
-examples of a file. The three concepts can be extended to find examples
-in different files or to parse and run other languages.
+There are three different ways in which ``byexample`` can be extended:
+ - how to find examples
+ - how to support new languages
+ - how to perform arbitrary actions during the execution
 
-Let's show them by example. Imagine that we want to write examples in
+``byexample`` uses the concept of modules: a python file with some classes
+defined there.
+What classes will depend of what you want to extend or cutomize.
+
+To load a set of modules you can use the ``--modules <dir>`` parameter:
+all the python files will be loades and the classes with the correct interface
+will be added.
+
+Let's show this by example. Imagine that we want to write examples in
 the mytical language ``ArnoldC``, a programming language which its
 instruction set are phrases of the actor Arnold.
 
 What do we need?
 
-Finder
-------
+How to find examples: the Finder
+--------------------------------
 
 The first thing to teach ``byexample`` is how to find a ``ArnoldC``
 example.
 
-Just for fun, let's imagine that our examples are encloded by the ``~~~``
-strings. Anything between two ``~~~`` will be considered a ``ArnoldC``
-example.
+``byexample`` already has a generic finder, the fenced code block finder.
 
-To discriminate where the code ends and the expected result begins, let's say
-that everything after the ``out:`` string is the expected result.
+But just for fun, let's imagine that we want to do something different.
+Let's say that our examples are encloded by the ``~~~`` strings: anything
+between two ``~~~`` will be considered a ``ArnoldC`` example.
 
 Here is what I mean
 
@@ -30,13 +38,16 @@ Here is what I mean
 
     This is an example which begins here
     ~~~
-    IT'S SHOWTIME   # byexample: +awesome
+    IT'S SHOWTIME                       # byexample: +awesome
     TALK TO THE HAND "Hello World!"
     YOU HAVE BEEN TERMINATED
     out:
     Hello World!
     ~~~
     The code below should produce the famous 'Hello World!' output
+
+Notice how below the code there is a ``out:`` tag. We will use this to
+separate the code from the expected output.
 
 Example regular expression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -81,10 +92,13 @@ To accomplish this we need to create a regular expression to find the
     ...
     ...     ''', re.MULTILINE | re.VERBOSE)
 
-This capture groups ``snippet``, ``indent`` and ``expected`` are mandatory.
+The capture's groups ``snippet``, ``indent`` and ``expected`` are mandatory.
+
 The capture may be empty but those three groups must be defined.
+
 The first should match the executable code, while the last the expected output
 if any that to compare.
+
 The ``indent`` group is to count how many spaces are not part of the example
 and they are just for indentation. Some languages like Python are sensible to
 this.
@@ -92,7 +106,7 @@ this.
 Language of
 ^^^^^^^^^^^
 
-Then, the finder will need to determinate in which language the example
+Then, the finder needs to determinate in which language the example
 was written.
 
 A Finder can be a generic finder that can extract examples of any language
@@ -103,10 +117,10 @@ session).
 For our purposes let's say that anything between ``~~~`` is always an
 ``ArnoldC`` example.
 
-Finder class
-^^^^^^^^^^^^
+The Finder class
+^^^^^^^^^^^^^^^^
 
-Now we ensample every pieces together.
+Now we ensample all the pieces together.
 We need to create a class, inheret from ``MatchFinder``,
 define a ``target`` attribute and implement two methods:
 
@@ -126,10 +140,10 @@ define a ``target`` attribute and implement two methods:
 The ``target`` attribute may need a little explanation. All the
 Finders must declare to which type of examples they are targeting.
 
-If two Finders try to find the same target, one will cover the other.
+If two Finders try to find the same target, one will override the other.
 
 This is useful if you want to use a different Finder in replacement for
-an already created Finder. Just create a class with the same ``target``.
+an already created one: just create a class with the same ``target``.
 
 Let's see if our finder can find the ArnoldC snippet above.
 
@@ -144,7 +158,7 @@ Let's see if our finder can find the ArnoldC snippet above.
 
     >>> match = matches[0]
     >>> print(match.group('snippet'))
-        IT'S SHOWTIME   # byexample: +awesome
+        IT'S SHOWTIME                       # byexample: +awesome
         TALK TO THE HAND "Hello World!"
         YOU HAVE BEEN TERMINATED
 
@@ -154,8 +168,11 @@ Let's see if our finder can find the ArnoldC snippet above.
 
 Nice...
 
-Parser
-------
+How to support new languages: the Parser and the Interpreter
+------------------------------------------------------------
+
+To support new languages we need to be able to parse the code in the first place
+and then, to execute it later.
 
 Now that we have a raw snippet from the Finder we need to polish it and
 extract the options the ``byexample`` uses to customize the example.
@@ -197,10 +214,10 @@ define an another one: the 'name' group to capture the name of the option.
     ...
     ...     ''', re.MULTILINE | re.VERBOSE)
 
-Parser class
-^^^^^^^^^^^^
+The Parser class
+^^^^^^^^^^^^^^^^
 
-Now we ensample every pieces together.
+Now we ensample all the pieces together.
 We need to create a class, inheret from ``ExampleParser``,
 define a ``language`` attribute and implement the missing  methods:
 
@@ -224,7 +241,7 @@ define a ``language`` attribute and implement the missing  methods:
 The user can select which languages should be parsed and executed and which
 should not: the ``language`` attribute is used for that purpose.
 
-The ``source_from_snippet`` is the last change to change the source code.
+The ``source_from_snippet`` is the last chance to change the source code.
 
 Let's peek how the parsing is used
 
@@ -240,7 +257,7 @@ Let's peek how the parsing is used
      ...                                         interpreter, where)
 
      >>> print(example.source)
-     IT'S SHOWTIME   # byexample: +awesome
+     IT'S SHOWTIME                       # byexample: +awesome
      TALK TO THE HAND "Hello World!"
      YOU HAVE BEEN TERMINATED
      <blankline>
@@ -253,8 +270,8 @@ Let's peek how the parsing is used
      {'awesome': True}
 
 
-Interpreter
------------
+The Interpreter class
+^^^^^^^^^^^^^^^^^^^^^
 
 The Interpreter is who will execute the code. It is not necessary a real
 interpreter, for almost all the languages you want to use a real official
@@ -288,7 +305,7 @@ Now we ensample the Interpreter class
     ...     def run(self, example, options):
     ...         return toy_arnoldc_interpreter(example.source)
     ...     
-    ...     def initialize(self):
+    ...     def initialize(self, examples, options):
     ...         pass
     ...     
     ...     def shutdown(self):
@@ -296,10 +313,13 @@ Now we ensample the Interpreter class
 
 The ``initialize`` and ``shutdown`` method are called before and after the
 execution of all the tests. It can be used to set up the real interpreter
-or to perform some off-line task (like compiling)
+or to perform some off-line task (like compiling).
+You may want to change how to setup the interpreter based on the examples that
+it will execute or in the options passed from the command line.
 
 It is in the ``run`` method where the magic happen. Its task is to execute
 the given source and to return the output, if any.
+
 The ``options`` parameter are the parsed options (a dictionary). What to do
 with them is up to you.
 
@@ -315,18 +335,48 @@ with them is up to you.
     PASS
 
 
-Extending ``byexample``
------------------------
+How to perform arbitrary actions during the execution: Concern
+--------------------------------------------------------------
 
-You can create a new Finder to extend how to extract examples (not necessary
-you need to support new languages).
-You can create a new Parser and/or a new Interpreter to support a new languages
-(not necessary you need to define new ways to find those examples)
+During the execution of the whole set of examples, ``byexample`` will execute
+some callbacks or hooks at particular moments like before running an example or
+after it failed.
 
-Now that we created three new classes, what do we need to do to integrate them
-into ``byexample``.
+The set of hooks are collected into the Concern interface (also known as
+Cross-Cutting Concern).
 
-``byexample`` will load any python module in some predefined directories.
-You can put your classes there or you can instruct ``byexample`` to search
-more modules in a directory of your choice from the command line.
+You can create and add your own to concerns to extend the capabilities of
+``byexample``:
+
+ - show the progress of the execution
+ - log / report generation for export
+ - log execution time history for future execution time prediction (estimate)
+ - turn on/off debugging, coverage and profile facilities
+ - others...
+
+Let's imagine that we want to print each example before its execution for
+debugging purposes.
+
+But logging everything all the time is annoying. What we also want is to control
+this from the command line.
+
+
+.. code:: python
+
+    >>> from byexample.concern import Concern
+
+    >>> class PrintExampleDebug(Concern):
+    ...    target = 'print-debug'
+    ...    
+    ...    def start_example(self, example, options):
+    ...        print(example.source)
+    ...
+
+
+See the documentation of the class ``Concern`` in ``byexample/concern.py`` to get
+a description of all the possible hooks and when they are called.
+
+See the implementation of the progress bar in ``byexample/modules/progress.py``
+as a practical example.
+
 
