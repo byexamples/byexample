@@ -59,7 +59,7 @@ upload: dist
 	twine upload dist/*.tar.gz dist/*.whl
 
 doc:
-	pandoc -s -o doc.pdf docs/overview.rst docs/languages/* docs/how_to_extend.rst
+	pandoc -s -o doc.pdf README.rst docs/languages/* docs/how_to_extend.rst
 
 clean:
 	rm -Rf dist/ build/ *.egg-info

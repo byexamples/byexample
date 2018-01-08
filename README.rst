@@ -8,7 +8,8 @@ execute them as regression tests.
 It is intended primary for writing good and live tutorials and documentation
 showing how a piece of software works or it can be used *by example*.
 
-Currently we support
+Currently we support:
+
  - C++
  - Python
  - Ruby
@@ -25,7 +26,8 @@ Contribute
 Go ahead, fork this project and start to hack it. Run ``make test`` to ensure that
 everything is working as expected and then propose your Pull Request!
 
-There are some interesting areas where you can contribute like
+There are some interesting areas where you can contribute like:
+
  - add support to new languages (Javascript, Julia, just listen to you heart)
  - add more examples. How do you use ``byexample``? Give us your feedback!
 

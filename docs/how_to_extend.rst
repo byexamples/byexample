@@ -2,6 +2,7 @@ How to extend
 =============
 
 There are three different ways in which ``byexample`` can be extended:
+
  - how to find examples
  - how to support new languages
  - how to perform arbitrary actions during the execution
@@ -11,7 +12,7 @@ defined there.
 What classes will depend of what you want to extend or cutomize.
 
 To load a set of modules you can use the ``--modules <dir>`` parameter:
-all the python files will be loades and the classes with the correct interface
+all the python files will be loaded and the classes with the correct interface
 will be added.
 
 Let's show this by example. Imagine that we want to write examples in
@@ -21,7 +22,7 @@ instruction set are phrases of the actor Arnold.
 What do we need?
 
 How to find examples: the Finder
---------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The first thing to teach ``byexample`` is how to find a ``ArnoldC``
 example.
@@ -50,7 +51,7 @@ Notice how below the code there is a ``out:`` tag. We will use this to
 separate the code from the expected output.
 
 Example regular expression
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------
 
 To accomplish this we need to create a regular expression to find the
 ``~~~``, where the snippet of code is and where the expected output is.
@@ -104,7 +105,7 @@ and they are just for indentation. Some languages like Python are sensible to
 this.
 
 Language of
-^^^^^^^^^^^
+-----------
 
 Then, the finder needs to determinate in which language the example
 was written.
@@ -118,7 +119,7 @@ For our purposes let's say that anything between ``~~~`` is always an
 ``ArnoldC`` example.
 
 The Finder class
-^^^^^^^^^^^^^^^^
+----------------
 
 Now we ensample all the pieces together.
 We need to create a class, inheret from ``MatchFinder``,
@@ -169,7 +170,7 @@ Let's see if our finder can find the ArnoldC snippet above.
 Nice...
 
 How to support new languages: the Parser and the Interpreter
-------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To support new languages we need to be able to parse the code in the first place
 and then, to execute it later.
@@ -178,7 +179,7 @@ Now that we have a raw snippet from the Finder we need to polish it and
 extract the options the ``byexample`` uses to customize the example.
 
 Option regular expressions
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------
 
 An option or options can be of any form and be in any place.
 Tipically we can write the options in the comments of the code which obviously
@@ -197,7 +198,8 @@ This regular expression should capture that:
 The unnamed group should capture the option or options. How to extract
 each individual option is a task for another regular expression.
 
-This last one needs to support
+This last one needs to support:
+
  - if the 'add' group is present, add an option (aka set to it to True)
  - if the 'del' group is present, delete an option (aka set to it to False)
  - if the 'val' group is present, use it as the value of the option
@@ -215,7 +217,7 @@ define an another one: the 'name' group to capture the name of the option.
     ...     ''', re.MULTILINE | re.VERBOSE)
 
 The Parser class
-^^^^^^^^^^^^^^^^
+----------------
 
 Now we ensample all the pieces together.
 We need to create a class, inheret from ``ExampleParser``,
@@ -271,7 +273,7 @@ Let's peek how the parsing is used
 
 
 The Interpreter class
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 The Interpreter is who will execute the code. It is not necessary a real
 interpreter, for almost all the languages you want to use a real official
@@ -336,7 +338,7 @@ with them is up to you.
 
 
 How to perform arbitrary actions during the execution: Concern
---------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 During the execution of the whole set of examples, ``byexample`` will execute
 some callbacks or hooks at particular moments like before running an example or
