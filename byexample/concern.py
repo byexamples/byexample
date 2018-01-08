@@ -136,6 +136,10 @@ class ConcernComposite(Concern):
     def __init__(self, registry, **unused):
         self.concerns = registry['concerns'].values()
 
+# Patch the ConcernComposite class overriding all its methods
+# For a given method X, ConcernComposite will call X on all of
+# its sub-concerns.
+import inspect
 def _patch(cls, method_name):
     def for_each_concern_do(self, *args, **kargs):
         for concern in self.concerns:
@@ -143,9 +147,9 @@ def _patch(cls, method_name):
 
     setattr(cls, method_name, for_each_concern_do)
 
-for method_name in ('start_run', 'end_run',
-                    'skip_example', 'start_example',
-                    'start_interact', 'finish_interact',
-                    'user_aborted', 'crashed',
-                    'success', 'failure'):
+for method_name, _ in inspect.getmembers(Concern, predicate=inspect.ismethod):
+    if method_name.startswith("_"):
+        continue
+
     _patch(ConcernComposite, method_name)
+
