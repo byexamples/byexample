@@ -136,7 +136,7 @@ class ConcernComposite(Concern):
     def __init__(self, registry, **unused):
         self.concerns = registry['concerns'].values()
 
-# Patch the ConcernComposite class overriding all its methods
+# Patch ConcernComposite overriding all its methods
 # For a given method X, ConcernComposite will call X on all of
 # its sub-concerns.
 import inspect
@@ -147,9 +147,12 @@ def _patch(cls, method_name):
 
     setattr(cls, method_name, for_each_concern_do)
 
-for method_name, _ in inspect.getmembers(Concern, predicate=inspect.ismethod):
-    if method_name.startswith("_"):
-        continue
+def _patchable(obj):
+    # In Python 3, the class's methods are actually functions
+    # so we need to check for both types
+    return (inspect.isfunction(obj) or inspect.ismethod(obj)) \
+            and not obj.__name__.startswith("_")
 
+for method_name, _ in inspect.getmembers(Concern, predicate=_patchable):
     _patch(ConcernComposite, method_name)
 
