@@ -7,6 +7,7 @@ Example = collections.namedtuple('Example', ['interpreter',
                                              'options', 'indentation',
                                              'source',
                                              'expected', 'expected_regexs',
+                                             'regexs_position_in_expected',
                                              'captures', 'match'])
 
 class ExampleParser(object):
@@ -110,11 +111,11 @@ class ExampleParser(object):
         else:
             expected_norm = expected
 
-        expected_regexs, captures = self.expected_as_regexs(
-                                            expected_norm,
-                                            norm_ws,
-                                            options.get('CAPTURE', True),
-                                            where)
+        expected_regexs, positions, captures = self.expected_as_regexs(
+                                                expected_norm,
+                                                norm_ws,
+                                                options.get('CAPTURE', True),
+                                                where)
 
         source = self.source_from_snippet(snippet)
         if not source.endswith('\n'):
@@ -127,6 +128,9 @@ class ExampleParser(object):
 
                           # expected regex version
                           expected_regexs=expected_regexs,
+
+                          # where each regex comes from
+                          regexs_position_in_expected=positions,
 
                           # the names of the capture tags in the expected regex
                           captures=captures,
@@ -168,7 +172,10 @@ class ExampleParser(object):
             >>> check_and_remove_ident('  >>> 1 + 2\n3\n', '  ', (1, 2, 'foo.rst'))
             Traceback (most recent call last):
             <...>
-            ValueError: <...>
+            ValueError: File "foo.rst", line 1, [Python Parser]
+            The line 2 is misaligned (wrong indentation). Expected at least 2 spaces.
+            001   >>> 1 + 2
+            002 3
 
         '''
         start_lineno, _, filepath = where
@@ -182,9 +189,16 @@ class ExampleParser(object):
         for lineno, line in enumerate(lines):
             if not line.startswith(indent):
                 msg = 'The line %i is misaligned (wrong indentation). ' +\
-                      'Expected at least %i spaces.\nOffending line:\n%s\n'
+                      'Expected at least %i spaces.\n%s'
 
-                msg = msg % (start_lineno + lineno, len(indent), line)
+                radio = 2
+                context = lines[max(lineno-radio, 0):lineno+radio+1]
+                context = [("%03i " % (i + start_lineno)) + l
+                            for i, l in enumerate(context, max(lineno-radio, 0))]
+
+                msg = msg % (start_lineno + lineno,
+                                len(indent),
+                                '\n'.join(context))
                 raise ValueError(build_exception_msg(msg, where, self))
 
             indent_stripped.append(line[len(indent):])
@@ -261,41 +275,67 @@ class ExampleParser(object):
         r'''
         From the expected string create a list fo regular expressions that
         joined and with the flags (re.MULTILINE | re.DOTALL) matches
-        that string performing the following additional modifications:
+        that string.
+
+        This method returns three things: a list of regexs, a list with the
+        position in the expected string from where it was created the regex
+        and a list of capture tag names seen.
+
+            >>> from byexample.parser import ExampleParser
+            >>> parser = ExampleParser(0, 'utf8'); parser.language = 'python'
+            >>> _as_regexs = parser.expected_as_regexs
+            >>> where = (1, 2, 'foo.rst')
+
+            >>> expected = 'a<foo>b<bar>c'
+            >>> regexs, positions, names = _as_regexs(expected, False, True, where)
+
+            >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+            >>> m.match('axxbyyyc').groups()
+            ('xx', 'yyy')
+
+            >>> positions
+            [0, 0, 1, 6, 7, 12, 13, 13]
+
+            >>> len(expected) == positions[-1]
+            True
+
+        The normalize_whitespace and capture flags modify how the regexs
+        are built:
          - if normalize_whitespace is true, replace all the consecutive
            whitespaces (except new lines) by a single regular expression that
            matched any amount of whitespaces. The net effect is that regardless of
            the spaces in expected, the regexp will match one ore more.
 
-            >>> from byexample.parser import ExampleParser
-            >>> parser = ExampleParser(0, 'utf8'); parser.language = 'python'
-            >>> expected_as_regexs = parser.expected_as_regexs
-
-            >>> m, _ = expected_as_regexs('a     b  \t\vc', True, True, (1, 2, 'foo.rst'))
-            >>> m = re.compile(''.join(m), re.MULTILINE | re.DOTALL)
+            >>> r, p, _ = _as_regexs('a     b  \t\vc', True, True, where)
+            >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
             >>> m.match('a b c') is not None
             True
 
          - if capture is true, replace the literals capture tags by regexs.
 
-            >>> m, _ = expected_as_regexs('a<foo>b<bar>c', False, True, (1, 2, 'foo.rst'))
-            >>> m = re.compile(''.join(m), re.MULTILINE | re.DOTALL)
+            >>> r, p, n = _as_regexs('a<foo>b<bar>c', False, True, where)
+            >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
             >>> m.match('axxbyyyc').groups()
             ('xx', 'yyy')
+
+           The list of the names seen is returned too
+
+            >>> sorted(list(n))
+            ['bar', 'foo']
 
            But if two or more capture tags are consecutive, raise an exception
            as this is ambiguous:
 
             >>> # but here? foo is 'x' and bar 'xyyy'?, '' and 'xxyyy', or ....
-            >>> expected_as_regexs('a<foo><bar>c', False, True, (1, 2, 'foo.rst'))
+            >>> _as_regexs('a<foo><bar>c', False, True, where)
             Traceback (most recent call last):
             <...>
             ValueError: <...>
 
          - if the capture flag is False, all the <...> tags are taken literally.
 
-            >>> m, _ = expected_as_regexs('a<foo>b<bar>c', False, False, (1, 2, 'foo.rst'))
-            >>> m = re.compile(''.join(m), re.MULTILINE | re.DOTALL)
+            >>> r, p, _ = _as_regexs('a<foo>b<bar>c', False, False, where)
+            >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
             >>> m.match('axxbyyyc') is None # don't matched as <foo> is not xx
             True
 
@@ -306,10 +346,10 @@ class ExampleParser(object):
         start_lineno, _, filepath = where
 
         charno = 0
-        regexs = []
+        regexs_and_pos = []
         names_seen = set()
 
-        regexs.append(r"\A") # the begin of the string
+        regexs_and_pos.append((r"\A", charno)) # the begin of the string
 
         if capture:
             for match in self.capture_tag_regex().finditer(expected):
@@ -318,7 +358,8 @@ class ExampleParser(object):
                           "This is ambiguous."
                     raise ValueError(build_exception_msg(msg, where, self))
 
-                self._add_as_regex(expected[charno:match.start()], regexs, normalize_whitespace)
+                self._add_as_regex(expected[charno:match.start()], charno,
+                                                regexs_and_pos, normalize_whitespace)
 
                 name = match.group("name")
                 name = name.replace("-", "_") # uniform the name
@@ -337,17 +378,20 @@ class ExampleParser(object):
                         regex = r"(?P<%s>.*?)" % name
                         names_seen.add(name)
 
-                regexs.append(regex)
+                regexs_and_pos.append((regex, match.start()))
                 charno = match.end()
 
-        self._add_as_regex(expected[charno:], regexs, normalize_whitespace)
+        self._add_as_regex(expected[charno:], charno, regexs_and_pos, normalize_whitespace)
 
-        regexs.append(r"\n?")
-        regexs.append(r"\Z") # the end of the string
+        charno = len(expected)
 
-        return regexs, list(names_seen)
+        regexs_and_pos.append((r"\n?", charno))
+        regexs_and_pos.append((r"\Z", charno)) # the end of the string
 
-    def _add_as_regex(self, literals, regexs, normalize_whitespace):
+        regexs, positions = zip(*regexs_and_pos)
+        return list(regexs), list(positions), list(names_seen)
+
+    def _add_as_regex(self, literals, charno, regexs, normalize_whitespace):
         ws_re = self.whitespace_non_compiled_regex()
 
         # Split the literal string into lines.
@@ -356,10 +400,12 @@ class ExampleParser(object):
         # of searching the difference in a multiline output.
         # This also is how the different diff algorithms are designed.
         escaped_lines = []
+        line_lens = []
         for line in literals.split('\n'):
+            line_lens.append(len(line))
             if normalize_whitespace:
                 # now split the line by whitespaces (aka words)
-                # escape each word and rejoin them witha whitespace regex
+                # escape each word and rejoin them with a whitespace regex
                 non_ws = re.split(ws_re, line)
                 non_ws_escaped = [re.escape(n) for n in non_ws]
 
@@ -367,17 +413,20 @@ class ExampleParser(object):
             else:
                 escaped_lines.append(re.escape(line))
 
-        # add the escaped lines to the regexs list
-        regexs.append(escaped_lines[0])
-        for el in escaped_lines[1:]:
+        # add the escaped lines to the regexs list next with its
+        # position in the the original literal string
+        regexs.append((escaped_lines[0], charno))
+        for el, llen in zip(escaped_lines[1:], line_lens[:-1]):
             if normalize_whitespace:
                 # add a whitespace regex in replace of the literal \n
-                regexs.append(ws_re)
+                regexs.append((ws_re, charno+1))
             else:
                 # add the literal \n
-                regexs.append(re.escape('\n'))
+                regexs.append((re.escape('\n'), charno+1))
 
-            regexs.append(el)
+            charno += 1      # due the \n
+            charno += llen   # due the previous line
+            regexs.append((el, charno))
 
 
     def extract_options(self, snippet, where):
