@@ -235,7 +235,42 @@ class Checker(object):
         else:
             self.just_print(expected, got, use_colors)
 
+        if flags['ENHANCE_DIFF']:
+            self._print_named_captures(replaced_captures)
+
         return ''.join(self._diff)
+
+    def _print_named_captures(self, replaced_captures):
+        if not replaced_captures:
+            pass
+
+        max_len = 36
+        def _format(k, v):
+            if k is None or v is None:
+                return ""
+
+            _mlen = max_len - len(k) + 2 # plus the : and the space
+
+            v = self._human(v)
+            if len(v) > _mlen:
+                _mlen -= 5 # minus the ' ... '
+                v = v[:_mlen/2] + " ... " + v[-_mlen/2:]
+
+
+            return "%s: %s" % (k, v)
+
+        self._write("Captured:\n")
+        k_vs = list(replaced_captures.items())
+
+        if len(k_vs) % 2 != 0:
+            k_vs.append((None, None)) # make the list even
+
+        for k_v1, k_v2 in zip(k_vs[::2], k_vs[1::2]):
+            left, right = _format(*k_v1), _format(*k_v2)
+
+            space_between = max(max_len - len(left), 1)
+            self._write("    %s%s%s" % (left, " " * space_between, right))
+
 
     def _replace_captures(self, expected_regexs, positions, expected, got):
         r'''
