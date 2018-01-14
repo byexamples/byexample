@@ -99,7 +99,8 @@ class Checker(object):
         pass
 
     def check_output(self, example, got, flags):
-        return example.expected_re.match(got) is not None
+        m = re.compile(''.join(example.expected_regexs), re.MULTILINE | re.DOTALL)
+        return m.match(got) is not None
 
     def output_difference(self, example, got, flags, use_colors):
         r'''
@@ -193,11 +194,18 @@ class Checker(object):
 
         '''
 
-        expected = getattr(example, 'expected', example)
-        self._diff = []
-
         if got.endswith('\n'):
             got = got[:-1]
+
+        if hasattr(example, 'expected'):
+            expected = example.expected
+            expected, replaced_captures = self._replace_captures(example.expected_regexs, expected, got)
+
+        else:
+            expected = example # aka literal string
+
+        self._diff = []
+
 
         if flags['ENHANCE_DIFF']:
             self._write("Notes:\n%s" % self.HUMAN_EXPL)
@@ -218,6 +226,128 @@ class Checker(object):
             self.just_print(expected, got, use_colors)
 
         return ''.join(self._diff)
+
+    def _replace_captures(self, expected_regexs, expected, got):
+        r'''
+        Try to replace all the capture groups in the expected by
+        the strings found in got.
+
+        The idea is to have the expected and the got as much similar as
+        possible making further diffs easier.
+
+            >>> from byexample.runner import Checker
+            >>> _replace_captures = Checker()._replace_captures
+
+        We can only safely replace all the groups at the begin (left) of the
+        string before the first difference and replace all the groups at the
+        end (right) after the last difference.
+
+            >>> expected = r'aa<...>bb<...>ddd<...>eee<...>cc'
+            >>> got = r'aaAAbbBBxxxddeeeCCcc'
+
+            >>> expected_regexs = ['\A', 'aa', '(.*?)', 'bb', '(.*?)', 'ddd',
+            ...                    '(.*?)', 'eee', '(.*?)', 'cc','\Z']
+            >>> _replace_captures(expected_regexs, expected, got)[0]    # byexample: -CAPTURE
+            'aaAAbb<...>ddd<...>eeeCCcc'
+
+            >>> got = r'aaAAbBBxxxddeeeCCcc'
+            >>> _replace_captures(expected_regexs, expected, got)[0]    # byexample: -CAPTURE
+            'aa<...>bb<...>ddd<...>eeeCCcc'
+
+        Named groups are returned as well:
+
+            >>> expected = r'aa<foo>bb<bar>ddd<baz>eee<zaz>cc'
+            >>> got = r'aaAAbbBBxxxddeeeCCcc'
+
+            >>> expected_regexs = ['\A', 'aa', '(?P<foo>.*?)', 'bb', '(?P<bar>.*?)', 'ddd',
+            ...                    '(?P<baz>.*?)', 'eee', '(?P<zaz>.*?)', 'cc','\Z']
+
+            >>> s, c = _replace_captures(expected_regexs, expected, got)
+            >>> s                                                       # byexample: -CAPTURE
+            'aaAAbb<bar>ddd<baz>eeeCCcc'
+            >>> c
+            {'foo': 'AA', 'zaz': 'CC'}
+
+        '''
+
+        regs = expected_regexs
+        def _compile(regexs):
+            return re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+
+        best_left_index = 0
+        best_right_index = len(regs)-1
+
+        # from left to right, find the left most regex that match
+        # a prefix of got by doing an incremental compile/matching
+        for i in range(len(regs)):
+            # a grouping regex doesn't count
+            if regs[i].startswith('('):
+                continue
+
+            if _compile(regs[:i+1]).match(got):
+                best_left_index = i
+
+        left_side = regs[:best_left_index+1]
+        r = _compile(left_side)
+        got_left = r.match(got).group(0)
+
+        # TODO matching against the expected string is awful and weird
+        # it would be much easier if each expected regex has the position
+        # in the original expected string from where it was created
+        # with that, left_matched_len would be as simple as retrieving the
+        # position of the last regexp that was added to left_side
+        left_matched_len = len(r.match(expected).group(0))
+
+        # a 'capture anything' regex between the left and the right side
+        # to hold all the rest of the string
+        buffer_re = '(?P<XXXX>.*?)'
+
+        # now go from the right to the left, add a regex each time
+        # to see where the whole regex doesn't match
+        for i in range(len(regs)-1, best_left_index, -1):
+            try:
+                if regs[i].startswith('('):
+                    continue
+
+                if _compile(left_side + [buffer_re] + regs[i:]).match(got):
+                    best_right_index = i
+
+            except Exception as e:
+                if 'unknown group' in str(e):
+                    # the right side has a named group of the form (?P=xxx) to
+                    # match the value of a previous matched group named xxx.
+                    # but this group is not in the left side so this fails
+                    # we continue moving from the right to the left as it is
+                    # possible that the group xxx is in some place in the right
+                    # side so this technically is not an error
+                    pass
+                else:
+                    raise
+
+        right_side = regs[best_right_index:]
+
+        # because we are using a regex that match all the got string
+        # the got_right is a substring of it: everything after the
+        # buffer in the middle
+        r = _compile(left_side + [buffer_re] + right_side)
+        m = r.match(got)
+        got_right = m.group(0)[m.end('XXXX'):]
+
+        replaced_captures = m.groupdict()
+        replaced_captures.pop('XXXX')
+
+        # TODO the same said in the left_matched_len applies here
+        m = r.match(expected)
+        right_side_matched_len = len(m.group(0)[m.end('XXXX'):])
+
+
+        # we cannot keep replacing the capture tags... leave the
+        # string as it is: this always was a best-effort algorithm
+        middle_part = expected[left_matched_len:-right_side_matched_len] \
+                            if right_side_matched_len \
+                            else expected[left_matched_len:]
+
+        return got_left + middle_part + got_right, replaced_captures
 
     def _write(self, s, end_with_newline=True):
         self._diff.append(s)
