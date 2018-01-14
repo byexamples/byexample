@@ -96,7 +96,7 @@ class ExampleRunner(object):
 
 class Checker(object):
     def __init__(self, **unused):
-        pass
+        self._diff = []
 
     def check_output(self, example, got, flags):
         m = re.compile(''.join(example.expected_regexs), re.MULTILINE | re.DOTALL)
@@ -194,18 +194,28 @@ class Checker(object):
 
         '''
 
-        if got.endswith('\n'):
-            got = got[:-1]
+        # delete any previous diff
+        del self._diff
 
+        # the example may have *named* capture tags like <foo>
+        # if possible, we will save what we captured from the got here
+        replaced_captures = {}
+
+        # get the expected string, and if it is possible (and the
+        # user allows this), try to get the captured strings
         if hasattr(example, 'expected'):
             expected = example.expected
-            expected, replaced_captures = self._replace_captures(example.expected_regexs, expected, got)
+
+            if flags['ENHANCE_DIFF']:
+                expected, replaced_captures = self._replace_captures(
+                                                example.expected_regexs,
+                                                example.regexs_position_in_expected,
+                                                expected, got)
 
         else:
-            expected = example # aka literal string
+            expected = example # aka literal string, mostly for internal testing
 
         self._diff = []
-
 
         if flags['ENHANCE_DIFF']:
             self._write("Notes:\n%s" % self.HUMAN_EXPL)
@@ -227,7 +237,7 @@ class Checker(object):
 
         return ''.join(self._diff)
 
-    def _replace_captures(self, expected_regexs, expected, got):
+    def _replace_captures(self, expected_regexs, positions, expected, got):
         r'''
         Try to replace all the capture groups in the expected by
         the strings found in got.
@@ -246,12 +256,14 @@ class Checker(object):
             >>> got = r'aaAAbbBBxxxddeeeCCcc'
 
             >>> expected_regexs = ['\A', 'aa', '(.*?)', 'bb', '(.*?)', 'ddd',
-            ...                    '(.*?)', 'eee', '(.*?)', 'cc','\Z']
-            >>> _replace_captures(expected_regexs, expected, got)[0]    # byexample: -CAPTURE
+            ...                    '(.*?)', 'eee', '(.*?)', 'cc', r'\n?', '\Z']
+            >>> positions = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32, 32]
+
+            >>> _replace_captures(expected_regexs, positions, expected, got)[0]    # byexample: -CAPTURE
             'aaAAbb<...>ddd<...>eeeCCcc'
 
             >>> got = r'aaAAbBBxxxddeeeCCcc'
-            >>> _replace_captures(expected_regexs, expected, got)[0]    # byexample: -CAPTURE
+            >>> _replace_captures(expected_regexs, positions, expected, got)[0]    # byexample: -CAPTURE
             'aa<...>bb<...>ddd<...>eeeCCcc'
 
         Named groups are returned as well:
@@ -259,10 +271,12 @@ class Checker(object):
             >>> expected = r'aa<foo>bb<bar>ddd<baz>eee<zaz>cc'
             >>> got = r'aaAAbbBBxxxddeeeCCcc'
 
-            >>> expected_regexs = ['\A', 'aa', '(?P<foo>.*?)', 'bb', '(?P<bar>.*?)', 'ddd',
-            ...                    '(?P<baz>.*?)', 'eee', '(?P<zaz>.*?)', 'cc','\Z']
+            >>> expected_regexs = ['\A', 'aa', '(?P<foo>.*?)', 'bb',
+            ...                     '(?P<bar>.*?)', 'ddd', '(?P<baz>.*?)',
+            ...                     'eee', '(?P<zaz>.*?)', 'cc', r'\n?', '\Z']
+            >>> positions = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32, 32]
 
-            >>> s, c = _replace_captures(expected_regexs, expected, got)
+            >>> s, c = _replace_captures(expected_regexs, positions, expected, got)
             >>> s                                                       # byexample: -CAPTURE
             'aaAAbb<bar>ddd<baz>eeeCCcc'
             >>> c
@@ -273,6 +287,8 @@ class Checker(object):
         regs = expected_regexs
         def _compile(regexs):
             return re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+
+        assert len(regs) == len(positions)
 
         best_left_index = 0
         best_right_index = len(regs)-1
@@ -291,12 +307,7 @@ class Checker(object):
         r = _compile(left_side)
         got_left = r.match(got).group(0)
 
-        # TODO matching against the expected string is awful and weird
-        # it would be much easier if each expected regex has the position
-        # in the original expected string from where it was created
-        # with that, left_matched_len would be as simple as retrieving the
-        # position of the last regexp that was added to left_side
-        left_matched_len = len(r.match(expected).group(0))
+        left_ends_at = positions[best_left_index+1]
 
         # a 'capture anything' regex between the left and the right side
         # to hold all the rest of the string
@@ -333,19 +344,14 @@ class Checker(object):
         m = r.match(got)
         got_right = m.group(0)[m.end('XXXX'):]
 
+        right_begin_at = positions[best_right_index]
+
         replaced_captures = m.groupdict()
         replaced_captures.pop('XXXX')
 
-        # TODO the same said in the left_matched_len applies here
-        m = r.match(expected)
-        right_side_matched_len = len(m.group(0)[m.end('XXXX'):])
-
-
         # we cannot keep replacing the capture tags... leave the
         # string as it is: this always was a best-effort algorithm
-        middle_part = expected[left_matched_len:-right_side_matched_len] \
-                            if right_side_matched_len \
-                            else expected[left_matched_len:]
+        middle_part = expected[left_ends_at:right_begin_at]
 
         return got_left + middle_part + got_right, replaced_captures
 
