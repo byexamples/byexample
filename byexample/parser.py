@@ -104,16 +104,9 @@ class ExampleParser(object):
 
         options.up(self.extract_options(snippet, where))
 
-        norm_ws = options.get('WS', False)
-
-        if norm_ws:
-            expected_norm = self.normalize_whitespace(expected)
-        else:
-            expected_norm = expected
-
         expected_regexs, positions, captures = self.expected_as_regexs(
-                                                expected_norm,
-                                                norm_ws,
+                                                expected,
+                                                options.get('WS', False),
                                                 options.get('CAPTURE', True),
                                                 where)
 
@@ -267,10 +260,6 @@ class ExampleParser(object):
 
         return new_match
 
-    def normalize_whitespace(self, expected):
-        ws_re = self.whitespace_non_compiled_regex()
-        return ' '.join(re.split(ws_re, expected))
-
     def expected_as_regexs(self, expected, normalize_whitespace, capture, where):
         r'''
         From the expected string create a list fo regular expressions that
@@ -361,6 +350,8 @@ class ExampleParser(object):
                 self._add_as_regex(expected[charno:match.start()], charno,
                                                 regexs_and_pos, normalize_whitespace)
 
+                charno = match.start()
+
                 name = match.group("name")
                 name = name.replace("-", "_") # uniform the name
 
@@ -378,14 +369,14 @@ class ExampleParser(object):
                         regex = r"(?P<%s>.*?)" % name
                         names_seen.add(name)
 
-                regexs_and_pos.append((regex, match.start()))
+                regexs_and_pos.append((regex, charno))
                 charno = match.end()
 
         self._add_as_regex(expected[charno:], charno, regexs_and_pos, normalize_whitespace)
 
         charno = len(expected)
 
-        regexs_and_pos.append((r"\n?", charno))
+        regexs_and_pos.append((r"\n*", charno))
         regexs_and_pos.append((r"\Z", charno)) # the end of the string
 
         regexs, positions = zip(*regexs_and_pos)
@@ -417,15 +408,16 @@ class ExampleParser(object):
         # position in the the original literal string
         regexs.append((escaped_lines[0], charno))
         for el, llen in zip(escaped_lines[1:], line_lens[:-1]):
+            charno += llen   # due the previous line
+
             if normalize_whitespace:
                 # add a whitespace regex in replace of the literal \n
-                regexs.append((ws_re, charno+1))
+                regexs.append((ws_re, charno))
             else:
                 # add the literal \n
-                regexs.append((re.escape('\n'), charno+1))
+                regexs.append((re.escape('\n'), charno))
 
             charno += 1      # due the \n
-            charno += llen   # due the previous line
             regexs.append((el, charno))
 
 
