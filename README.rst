@@ -2,10 +2,10 @@
 =============
 
 ``byexample`` is a literate programming engine where you mix
-ordinary text and snippets of code in the same file and then you can
+ordinary text and snippets of code in the same file and then you
 execute them as regression tests.
 
-It is intended primary for writing good and live tutorials and documentation
+It is primary intended for writing good and live tutorials and documentation
 showing how a piece of software works or it can be used *by example*.
 
 Currently we support:
@@ -29,7 +29,9 @@ everything is working as expected and then propose your Pull Request!
 There are some interesting areas where you can contribute like:
 
  - add support to new languages (Javascript, Julia, just listen to you heart)
+ - misspelling? I'm not an English native so any grammatical correction is welcome
  - add more examples. How do you use ``byexample``? Give us your feedback!
+ - is ``byexample`` producing a hard-to-debug diff or you found a bug? Create an issue in github
 
 Usage
 ^^^^^
@@ -203,6 +205,7 @@ Extend ``byexample``
 ^^^^^^^^^^^^^^^^^^^^
 
 It is possible to extend ``byexample`` adding new ways to find examples in a
-document and/or to parse and interpret a new language.
+document and/or to parse and interpret a new language or adding hooks to be
+called regardless of the language/interpreter.
 
 The ``doc/how_to_extend.rst`` is a quick tutorial that shows exactly that.
