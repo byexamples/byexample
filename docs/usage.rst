@@ -199,6 +199,32 @@ You can disable this:
 
 Is harder to spot the difference, isn't?
 
+New lines at the end are ignored
+--------------------------------
+
+``byexample`` will ignore any empty line(s) at the end of the expected string
+and the got string from the executed examples.
+
+Look at this successful example:
+
+.. code:: python
+
+    >>> print("bar\n\n")
+    bar
+
+This is because most of the time an empty new line is added for aesthetics
+purposes in the example or produced by the interpreter as an artifact.
+
+If you want to check them explicitly, use a capture tag:
+
+.. code:: python
+
+    >>> print("bar\n\n")
+    bar
+    <nl>
+    <nl>
+
+
 Diff algorithms
 ---------------
 

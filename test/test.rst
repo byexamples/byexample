@@ -13,14 +13,17 @@ to start.
 
     $ byexample -l python byexample/*.py
     <nl>
+    File byexample/finder.py, 26/26 test ran in <...> seconds
+    [PASS] Pass: 26 Fail: 0 Skip: 0
+    <nl>
     File byexample/options.py, 33/33 test ran in <...> seconds
     [PASS] Pass: 33 Fail: 0 Skip: 0
     <nl>
-    File byexample/parser.py, 27/27 test ran in <...> seconds
-    [PASS] Pass: 27 Fail: 0 Skip: 0
+    File byexample/parser.py, 42/42 test ran in <...> seconds
+    [PASS] Pass: 42 Fail: 0 Skip: 0
     <nl>
-    File byexample/runner.py, 19/19 test ran in <...> seconds
-    [PASS] Pass: 19 Fail: 0 Skip: 0
+    File byexample/runner.py, 35/35 test ran in <...> seconds
+    [PASS] Pass: 35 Fail: 0 Skip: 0
 
 Then, each module (Finder, Parser and Interpreter) provided by ``byexample`` has
 a little documentation.
@@ -69,8 +72,8 @@ can be found under the ``doc`` folder
 
     $ byexample -l $all_languages --skip docs/how_to_extend.rst -- `find docs -name "*.rst"`
     <nl>
-    File docs/usage.rst, 11/11 test ran in <...> seconds
-    [PASS] Pass: 11 Fail: 0 Skip: 0
+    File docs/usage.rst, 13/13 test ran in <...> seconds
+    [PASS] Pass: 13 Fail: 0 Skip: 0
     <nl>
     File docs/languages/cpp.rst, 2/2 test ran in <...> seconds
     [PASS] Pass: 2 Fail: 0 Skip: 0

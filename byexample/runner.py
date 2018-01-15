@@ -258,6 +258,9 @@ class Checker(object):
 
             _mlen = max_len - len(k) + 2 # plus the : and the space
 
+            # remove any newline and replace them by a ^n
+            v = self.NLs.sub('^n', v)
+
             v = self._human(v)
             if len(v) > _mlen:
                 _mlen -= 5 # minus the ' ... '
@@ -407,7 +410,8 @@ class Checker(object):
                   "    ^v: vertical tab   ^r: carriage return  ^f: form feed"
 
     WS  = re.compile(r"[ ]+$", flags=re.MULTILINE)
-    NLs = re.compile(r"\n+\Z", flags=re.MULTILINE)
+    NLs = re.compile(r"\n+",   flags=re.MULTILINE)
+    last_NLs = re.compile(r"\n+\Z", flags=re.MULTILINE)
 
     def _human(self, s):
         ws      = '\t\x0b\x0c\r'
@@ -431,7 +435,7 @@ class Checker(object):
         return s
 
     def _remove_last_empty_lines(self, s):
-        return self.NLs.sub('', s)
+        return self.last_NLs.sub('', s)
 
     def just_print(self, expected, got, use_colors):
         if expected:
