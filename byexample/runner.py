@@ -217,6 +217,13 @@ class Checker(object):
 
         self._diff = []
 
+        # remove the last empty lines. this should improve the
+        # diff when the algorithm is none (just_print)
+        # it should be safe too because expected_regexs should have
+        # a '\n*' regex at the end to match any possible empty line
+        expected = self._remove_last_empty_lines(expected)
+        got      = self._remove_last_empty_lines(got)
+
         if flags['ENHANCE_DIFF']:
             self._write("Notes:\n%s" % self.HUMAN_EXPL)
             expected, got = self._human(expected), self._human(got)
@@ -399,7 +406,8 @@ class Checker(object):
                   "    $: trailing spaces  ?: non-printable    ^t: tab\n" + \
                   "    ^v: vertical tab   ^r: carriage return  ^f: form feed"
 
-    WS = re.compile(r"[ ]+$", flags=re.MULTILINE)
+    WS  = re.compile(r"[ ]+$", flags=re.MULTILINE)
+    NLs = re.compile(r"\n+\Z", flags=re.MULTILINE)
 
     def _human(self, s):
         ws      = '\t\x0b\x0c\r'
@@ -421,6 +429,9 @@ class Checker(object):
         # replace empty line by '<blankline>'
         s = '\n'.join((l if l else '<blankline>') for l in s.split('\n'))
         return s
+
+    def _remove_last_empty_lines(self, s):
+        return self.NLs.sub('', s)
 
     def just_print(self, expected, got, use_colors):
         if expected:
