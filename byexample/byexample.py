@@ -58,9 +58,10 @@ def parse_args():
                         help='select diff algorithm.')
     parser.add_argument("--no-enhance-diff", action='store_false',
                         dest='enhance_diff',
-                        help='by default, some non-printable characters are replaced ' +\
-                             'by printable ones in the diffs to make them easier to spot; ' +\
-                             'this flag disables that.')
+                        help='by default, improves are made so the diff are easier to ' +\
+                             'to understand: non-printable characters are visible; ' +\
+                             'captured string shown, and more; ' +\
+                             'this flag disables all of that.')
     parser.add_argument("-l", "--language", metavar='language',
                         dest='languages',
                         action=CSV,

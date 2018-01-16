@@ -30,9 +30,10 @@ capabilities
                             append a directory for searching modules there.
       -d {none,unified,ndiff,context}, --diff {none,unified,ndiff,context}
                             select diff algorithm.
-      --no-enhance-diff     by default, some non-printable characters are replaced
-                            by printable ones in the diffs to make them easier to
-                            spot; this flag disables that.
+      --no-enhance-diff     by default, improves are made so the diff are easier
+                            to to understand: non-printable characters are
+                            visible; captured string shown, and more; this flag
+                            disables all of that.
       -l language, --language language
                             select which languages to parse and run. Comma
                             separated syntax is also accepted.
