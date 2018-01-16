@@ -357,7 +357,7 @@ class ExampleParser(object):
 
                 if name == self.ellipsis_marker():
                     # capture anything (non-greedy)
-                    regex = r"(.*?)"
+                    regex = r"(?:.*?)"
 
                 else:
                     if name in names_seen:
@@ -392,6 +392,7 @@ class ExampleParser(object):
         # This also is how the different diff algorithms are designed.
         escaped_lines = []
         line_lens = []
+        WSs = []
         for line in literals.split('\n'):
             line_lens.append(len(line))
             if normalize_whitespace:
@@ -400,19 +401,40 @@ class ExampleParser(object):
                 non_ws = re.split(ws_re, line)
                 non_ws_escaped = [re.escape(n) for n in non_ws]
 
+                # it the non_ws list begins or ends with a empty string,
+                # when we join the items with \s+ we will end up with:
+                #   '' join \s+ join X  ==>  \s+X  for the begin
+                #   X  join \s+ join '' ==>  X\s+  for the end
+                begins_with_ws_re = not non_ws[0]
+                ends_with_ws_re = not non_ws[-1]
+
                 escaped_lines.append(ws_re.join(non_ws_escaped))
+                WSs.append((begins_with_ws_re, ends_with_ws_re))
             else:
                 escaped_lines.append(re.escape(line))
+                WSs.append((None, None)) # not used, it is just to simplify the code
 
         # add the escaped lines to the regexs list next with its
-        # position in the the original literal string
+        # position in the original literal string
         regexs.append((escaped_lines[0], charno))
-        for el, llen in zip(escaped_lines[1:], line_lens[:-1]):
+        _, ends_with_ws_re = WSs[0]
+
+        for el, llen, wstuple in zip(escaped_lines[1:], line_lens[:-1], WSs[1:]):
             charno += llen   # due the previous line
 
             if normalize_whitespace:
                 # add a whitespace regex in replace of the literal \n
-                regexs.append((ws_re, charno))
+                # but add it only if the previous regex do not ends with
+                # a ws_re nor the next regex begins with it
+                # otherwise we will end up with something like \s+\s+
+                # which it is a pathological expression (*really* inefficient)
+                begins_with_ws_re, _ = wstuple
+
+                if not begins_with_ws_re and not ends_with_ws_re:
+                    regexs.append((ws_re, charno))
+
+                _, ends_with_ws_re = wstuple
+
             else:
                 # add the literal \n
                 regexs.append((re.escape('\n'), charno))
