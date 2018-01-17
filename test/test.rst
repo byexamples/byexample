@@ -60,10 +60,10 @@ to see the readme
 
 .. code:: sh
 
-    $ byexample -l $all_languages README.rst
+    $ byexample -l $all_languages README.md
     <nl>
-    File README.rst, 20/20 test ran in <...> seconds
-    [PASS] Pass: 17 Fail: 0 Skip: 3
+    File README.md, 14/14 test ran in <...> seconds
+    [PASS] Pass: 11 Fail: 0 Skip: 3
 
 But the readme is just the peak of the icerberg, the rest of the documentation
 can be found under the ``doc`` folder

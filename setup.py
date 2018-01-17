@@ -3,12 +3,16 @@
 
 from setuptools import setup, find_packages
 from codecs import open
-from os import path
+from os import path, system
 
 import sys
 
 here = path.abspath(path.dirname(__file__))
 
+system('''pandoc -o '%(dest_rst)s' '%(src_md)s' ''' % {
+            'dest_rst': path.join(here, 'README.rst'),
+            'src_md':   path.join(here, 'README.md'),
+            })
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 

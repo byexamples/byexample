@@ -11,7 +11,7 @@ all:
 	@echo " - coverage: run the all the tests under differnet envs to measure the coverage."
 	@echo " - dist: make a source and a binary distribution (package)"
 	@echo " - upload: upload the source and the binary distribution to pypi"
-	@echo " - doc: build a pdf file from the documentation"
+	@echo " - deprecated-doc: (deprecated) build a pdf file from the documentation"
 	@echo " - clean: restore the environment"
 	@exit 1
 
@@ -27,7 +27,7 @@ travis-test:
 	@# not supported
 	@$(python_bin) r.py --pretty $(pretty) --ff -l python byexample/*.py
 	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell byexample/modules/*.py
-	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell README.rst
+	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell README.md
 	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell `find docs -name "*.rst"`
 
 coverage:
@@ -40,12 +40,12 @@ coverage:
 	@# Run the rest of the tests with an environment variable to make
 	@# r.py to initialize the coverage too
 	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l python,shell,ruby,gdb,cpp `find docs -name "*.rst"`
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l python,shell,ruby,gdb,cpp README.rst
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l python,shell,ruby,gdb,cpp README.md
 	@#
 	@# Run the another test, again, but with different flags to force the
 	@# execution of different parts of byexample
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -vvv --ff --no-enhance-diff -l python README.rst > /dev/null
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py --pretty none -vvv --ff -l python README.rst > /dev/null
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -vvv --ff --no-enhance-diff -l python README.md > /dev/null
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py --pretty none -vvv --ff -l python README.md > /dev/null
 	@#
 	@# Output the result
 	@coverage report
@@ -58,8 +58,8 @@ dist:
 upload: dist
 	twine upload dist/*.tar.gz dist/*.whl
 
-doc:
-	pandoc -s -o doc.pdf README.rst docs/languages/* docs/how_to_extend.rst
+deprecated-doc:
+	pandoc -s -o doc.pdf README.md docs/languages/* docs/how_to_extend.rst
 
 clean:
 	rm -Rf dist/ build/ *.egg-info
@@ -67,3 +67,4 @@ clean:
 	find . -name "*.pyc" -delete
 	find . -type d -name "__pycache__" -delete
 	rm -f doc.pdf
+	rm -f README.rst
