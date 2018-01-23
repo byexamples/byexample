@@ -3,6 +3,7 @@ from .common import log, build_exception_msg, tohuman
 
 Example = collections.namedtuple('Example', ['interpreter',
                                              'filepath',
+                                             'finder',
                                              'start_lineno', 'end_lineno',
                                              'options', 'indentation',
                                              'source',
@@ -88,7 +89,7 @@ class ExampleParser(object):
         '''
         raise NotImplementedError() # pragma: no cover
 
-    def get_example_from_match(self, options, match, example_str, interpreter, where):
+    def get_example_from_match(self, options, match, example_str, interpreter, finder, where):
         start_lineno, end_lineno, filepath = where
         indent = match.group('indent')
 
@@ -139,6 +140,9 @@ class ExampleParser(object):
 
                           # file from where this example was extracted
                           filepath=filepath,
+
+                          # by whom
+                          finder=finder,
 
                           # start / end line numbers (inclusive) in the file
                           start_lineno=start_lineno, end_lineno=end_lineno,
@@ -679,7 +683,7 @@ class ExampleParser(object):
                           '', expected)
 
         charno = 0
-        names_seen = set()
+        names_seen = []
 
         regexs = []
         charnos = []
@@ -723,7 +727,7 @@ class ExampleParser(object):
 
                     else:
                         # first seen, capture anything (non-greedy)
-                        names_seen.add(name)
+                        names_seen.append(name)
                         regex = r"(?P<%s>.*?)" % name
 
                 # match 'anything' but do not match any leading
@@ -735,6 +739,12 @@ class ExampleParser(object):
 
                     if re.search(r'\A\s', post_capture, re.MULTILINE | re.DOTALL):
                         regex = regex + r'(?<!\s)' # do not end with a whitespace
+
+                if not post_capture:
+                    if normalize_whitespace:
+                        regex = regex + r'(?<!\s)' # do not end with a whitespace
+                    else:
+                        regex = regex + r'(?<!\n)' # do not end with a newline
 
                 regexs.append(regex)
                 charnos.append(charno)
