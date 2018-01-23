@@ -1,3 +1,4 @@
+import pprint
 
 def build_exception_msg(msg, where, parser=None):
     start_lineno, _, filepath = where
@@ -60,22 +61,44 @@ def tohuman(s):
 
     return s
 
-def print_example(example, use_colors):
-    print("*" * 70)
-    for i, field in enumerate(example._fields):
-        if field in ('expected_re', 'match'):
-            continue
+def print_example(example, use_colors, x):
+    if x < 0:
+        return
 
-        if field == 'indentation':
-            print("%s: |%s| (%i bytes)" % (field, example[i],
-                                            len(example[i])))
-            continue
+    print("[Example]" + ":" * 61)
+    print("  Found in: %s by: %s" % (example.filepath, example.finder))
+    print("  Lines from: %s to: %s" % (example.start_lineno, example.end_lineno))
+    print("  Indentation: |%s| (%i bytes)" % (example.indentation,
+                                                len(example.indentation)))
+    print("  Capture Tags: %s" % pprint.pformat(example.captures, width=50))
+    print("  Options: %s" % pprint.pformat(example.options, width=50))
 
-        sep = '\n' if field in ('source', 'expected') else ' '
-        if field == 'source':
-            print("%s:%s%s" % (field, sep, highlight_syntax(example, use_colors)))
-        else:
-            print("%s:%s%s" % (field, sep, example[i]))
+    print("..[Source]" + "." * 60)
+    print(highlight_syntax(example, use_colors))
 
-    print('\n')
+    print("..[Expected]" + "." * 58)
+    _l = 0
+    for e in example.expected.split('\n'):
+        print("% 4i: %s" % (_l, e))
+        _l += len(e) + 1
+
+    print("..[Regexs]" + "." * 60)
+    if len(example.expected_regexs) != len(example.regexs_position_in_expected):
+        print("Error: inconsistent regexs")
+        print("  Regexs: %s" % example.expected_regexs)
+        print("  Positions: %s" % example.regexs_position_in_expected)
+
+    for p, r in zip(example.regexs_position_in_expected, example.expected_regexs):
+        print("% 4i: %s" % (p, repr(r)))
+
+    print("..[Run]" + "." * 63)
+    print("  Interpreter: %s" % example.interpreter)
+
+def print_execution(example, got, x):
+    if x < 0:
+        return
+
+    print("..[Got]" + "." * 63)
+    print(got)
+    print(("." * 70) + '\n')
 

@@ -20,10 +20,9 @@ class ExampleFinder(object):
     :         :      -----------                                      report
                                                                   done by reporter
     '''
-    def __init__(self, allowed_languages, registry, verbosity, use_colors, **unused):
+    def __init__(self, allowed_languages, registry, verbosity, **unused):
         self.allowed_languages = allowed_languages
         self.verbosity = verbosity
-        self.use_colors = use_colors
         self.available_finders = registry['finders'].values()
 
         self.parser_by_language = registry['parsers']
@@ -44,10 +43,6 @@ class ExampleFinder(object):
         # sort the examples in the same order
         # that they were found in the file/string.
         all_examples.sort(key=lambda this: this.start_lineno)
-
-        if self.verbosity >= 2:
-            for e in all_examples:
-                print_example(e, self.use_colors)
 
         return self.check_example_overlap(all_examples, filepath)
 
@@ -89,7 +84,7 @@ class ExampleFinder(object):
             ...    class I: pass    # <- fake interpreter instance
             ...    I.language = language # <- language of the example
             ...    return Example(I,
-            ...                   None,       # <- dummy values
+            ...                   None, None, # <- dummy values
             ...                   start_lineno, end_lineno,
             ...                   *[None]*8)  # <- dummy values
 
@@ -103,7 +98,7 @@ class ExampleFinder(object):
             >>> ex2 = build_example('python', *range2)
 
             >>> f = ExampleFinder([], dict((k, {}) for k in \
-            ...                   ('parsers', 'finders', 'interpreters')), 0, False)
+            ...                   ('parsers', 'finders', 'interpreters')), 0)
 
             >>> f.check_example_overlap([ex1, ex2], 'foo.rst')
             Traceback<...>
@@ -239,7 +234,7 @@ class ExampleFinder(object):
 
             # perfect, we have everything to build an example
             example = parser.get_example_from_match(options, match, example_str,
-                                                    interpreter, where)
+                                                    interpreter, self, where)
 
             examples.append(example)
 

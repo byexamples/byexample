@@ -1,14 +1,15 @@
-from .common import log, build_exception_msg, colored
+from .common import log, build_exception_msg, colored, print_example, print_execution
 import string, re, difflib
 
 class TimeoutException(Exception):
     pass
 
 class ExampleRunner(object):
-    def __init__(self, concerns, checker, verbosity, **unused):
-        self.concerns  = concerns
-        self.checker   = checker
-        self.verbosity = verbosity
+    def __init__(self, concerns, checker, verbosity, use_colors, **unused):
+        self.concerns   = concerns
+        self.checker    = checker
+        self.use_colors = use_colors
+        self.verbosity  = verbosity
 
     def initialize_interpreters(self, interpreters, examples, options):
         log("Initializing %i interpreters..." % len(interpreters),
@@ -43,6 +44,7 @@ class ExampleRunner(object):
                     self.concerns.skip_example(example, options)
                     continue
 
+                print_example(example, True, self.verbosity-3)
                 self.concerns.start_example(example, options)
                 try:
                     got = example.interpreter.run(example, options)
@@ -59,6 +61,8 @@ class ExampleRunner(object):
                 if user_aborted or crashed:    # pragma: no cover
                     failed = True
                     break # always fail fast if the user aborted or code crashed
+
+                print_execution(example, got, self.verbosity-3)
 
                 # We can pass the test regardless of the output
                 # however, a Timeout is always a fail
@@ -95,8 +99,9 @@ class ExampleRunner(object):
         return failed, (user_aborted or crashed)
 
 class Checker(object):
-    def __init__(self, **unused):
+    def __init__(self, verbosity, **unused):
         self._diff = []
+        self.verbosity = verbosity
 
     def check_output(self, example, got, flags):
         m = re.compile(''.join(example.expected_regexs), re.MULTILINE | re.DOTALL)
@@ -126,7 +131,6 @@ class Checker(object):
             one
             tree
             four
-            <blankline>
 
             >>> flags['UDIFF'] = True
             >>> print(output_difference(expected, got, flags, False))
@@ -138,7 +142,6 @@ class Checker(object):
             -three
             +tree
              four
-            <blankline>
 
             >>> flags['UDIFF'] = False
             >>> flags['NDIFF'] = True
@@ -149,10 +152,9 @@ class Checker(object):
             - two
             - three
             ?  -
-            <a-blank-line>
+            <blankline>
             + tree
               four
-            <a-blank-line>
 
             >>> flags['NDIFF'] = False
             >>> flags['CDIFF'] = True
@@ -168,7 +170,6 @@ class Checker(object):
               one
             ! tree
               four
-            <blankline>
 
             >>> expected = 'one\ntwo  \n\n\tthree'
             >>> got      = 'one  \ntwo\n\n    three'
@@ -190,7 +191,7 @@ class Checker(object):
             two
             <blankline>
                 three
-            <a-real-blankline>
+            Nothing captured.
 
         '''
 
@@ -269,8 +270,12 @@ class Checker(object):
 
             return "%s: %s" % (k, v)
 
-        self._write("Captured:\n")
         k_vs = list(replaced_captures.items())
+        if not k_vs:
+            self._write("Nothing captured.")
+            return
+
+        self._write("Captured:\n")
 
         if len(k_vs) % 2 != 0:
             k_vs.append((None, None)) # make the list even
@@ -345,7 +350,11 @@ class Checker(object):
             if regs[i].startswith('('):
                 continue
 
-            if _compile(regs[:i+1]).match(got):
+            m = _compile(regs[:i+1]).match(got)
+            if m:
+                log("Left to Right's best at index % 3i:\nPartial left regex: %s\n% 4i: %s\n" % (
+                    i, repr(''.join(regs[:i+1])), positions[i], m.group(0)),
+                    self.verbosity-4)
                 best_left_index = i
 
         left_side = regs[:best_left_index+1]
@@ -365,7 +374,11 @@ class Checker(object):
                 if regs[i].startswith('('):
                     continue
 
-                if _compile(left_side + [buffer_re] + regs[i:]).match(got):
+                m = _compile(left_side + [buffer_re] + regs[i:]).match(got)
+                if m:
+                    log("Right to Left's best at index % 3i:\nPartial whole regex: %s\n" % (
+                        i, repr(''.join(left_side + [buffer_re] + regs[i:]))),
+                        self.verbosity-4)
                     best_right_index = i
 
             except Exception as e:
@@ -397,6 +410,9 @@ class Checker(object):
         # we cannot keep replacing the capture tags... leave the
         # string as it is: this always was a best-effort algorithm
         middle_part = expected[left_ends_at:right_begin_at]
+
+        log("Incremental Match:\n##Left: %s\n\n##Middle: %s\n\n##Right: %s\n\n##Captured: %s\n\nBuffer: %s" % (
+                got_left, middle_part, got_right, repr(replaced_captures), XXXX), self.verbosity-4)
 
         return got_left + middle_part + got_right, replaced_captures
 
