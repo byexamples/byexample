@@ -9,6 +9,7 @@ Example = collections.namedtuple('Example', ['interpreter',
                                              'source',
                                              'expected', 'expected_regexs',
                                              'regexs_position_in_expected',
+                                             'rcounts_in_expected',
                                              'captures', 'match'])
 
 class ExampleParser(object):
@@ -125,6 +126,9 @@ class ExampleParser(object):
 
                           # where each regex comes from
                           regexs_position_in_expected=positions,
+
+                          # the 'real count' of literals
+                          rcounts_in_expected=rcounts,
 
                           # the names of the capture tags in the expected regex
                           captures=captures,

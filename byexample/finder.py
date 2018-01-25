@@ -86,7 +86,7 @@ class ExampleFinder(object):
             ...    return Example(I,
             ...                   None, None, # <- dummy values
             ...                   start_lineno, end_lineno,
-            ...                   *[None]*8)  # <- dummy values
+            ...                   *[None]*9)  # <- dummy values
 
         For the first case (range1 against range2 or range4) it is
         obvious that those pair of examples overlaps and it is not possible
