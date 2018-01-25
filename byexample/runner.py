@@ -114,7 +114,7 @@ class Checker(object):
 
         Depending of the flags the diff can be returned differently.
             >>> from byexample.runner import Checker
-            >>> output_difference = Checker().output_difference
+            >>> output_difference = Checker(verbosity=0).output_difference
 
             >>> expected = 'one\ntwo\nthree\nfour'
             >>> got      = 'zero\none\ntree\nfour'
@@ -177,21 +177,21 @@ class Checker(object):
             >>> flags['CDIFF'] = False
             >>> flags['ENHANCE_DIFF'] = True
             >>> print(output_difference(expected, got, flags, False))
+            Nothing captured.
             Notes:
-                <blankline>: a blank line
-                $: trailing spaces  ?: non-printable    ^t: tab
+                $: trailing spaces
+                ^n: a blank line    ?: non-printable    ^t: tab
                 ^v: vertical tab   ^r: carriage return  ^f: form feed
             Expected:
             one
             two$$
-            <blankline>
+            ^n
             ^tthree
             Got:
             one$$
             two
-            <blankline>
+            ^n
                 three
-            Nothing captured.
 
         '''
 
@@ -211,6 +211,7 @@ class Checker(object):
                 expected, replaced_captures = self._replace_captures(
                                                 example.expected_regexs,
                                                 example.regexs_position_in_expected,
+                                                example.rcounts_in_expected,
                                                 expected, got)
 
         else:
@@ -226,6 +227,7 @@ class Checker(object):
         got      = self._remove_last_empty_lines(got)
 
         if flags['ENHANCE_DIFF']:
+            self._print_named_captures(replaced_captures)
             self._write("Notes:\n%s" % self.HUMAN_EXPL)
             expected, got = self._human(expected), self._human(got)
 
@@ -242,9 +244,6 @@ class Checker(object):
             self.print_diff(expected, got, diff_type, use_colors)
         else:
             self.just_print(expected, got, use_colors)
-
-        if flags['ENHANCE_DIFF']:
-            self._print_named_captures(replaced_captures)
 
         return ''.join(self._diff)
 
@@ -287,7 +286,7 @@ class Checker(object):
             self._write("    %s%s%s" % (left, " " * space_between, right))
 
 
-    def _replace_captures(self, expected_regexs, positions, expected, got):
+    def _replace_captures(self, expected_regexs, positions, rcounts, expected, got, min_rcount=6):
         r'''
         Try to replace all the capture groups in the expected by
         the strings found in got.
@@ -296,9 +295,10 @@ class Checker(object):
         possible making further diffs easier.
 
             >>> from byexample.runner import Checker
-            >>> _replace_captures = Checker()._replace_captures
+            >>> from functools import partial
+            >>> _replace_captures = Checker(verbosity=0)._replace_captures
 
-        We can only safely replace all the groups at the begin (left) of the
+        We can only "safely" replace all the groups at the begin (left) of the
         string before the first difference and replace all the groups at the
         end (right) after the last difference.
 
@@ -306,14 +306,46 @@ class Checker(object):
             >>> got = r'aaAAbbBBxxxddeeeCCcc'
 
             >>> expected_regexs = ['\A', 'aa', '(.*?)', 'bb', '(.*?)', 'ddd',
-            ...                    '(.*?)', 'eee', '(.*?)', 'cc', r'\n?', '\Z']
-            >>> positions = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32, 32]
+            ...                    '(.*?)', 'eee', '(.*?)', 'cc', r'\n*\Z']
+            >>> positions = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32]
+            >>> rcounts   = [0, 2, 0, 2, 0, 3, 0, 3, 0, 2, 0]
 
-            >>> _replace_captures(expected_regexs, positions, expected, got)[0]    # byexample: -CAPTURE
+            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=1)
+
+            >>> s                               # byexample: -CAPTURE
             'aaAAbb<...>ddd<...>eeeCCcc'
 
             >>> got = r'aaAAbBBxxxddeeeCCcc'
-            >>> _replace_captures(expected_regexs, positions, expected, got)[0]    # byexample: -CAPTURE
+            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=1)
+
+            >>> s                               # byexample: -CAPTURE
+            'aa<...>bb<...>ddd<...>eeeCCcc'
+
+        The definition of "safely" is a little weak. A capture tag may match
+        anything so we could consider it as "safe" if after and before the
+        capture we also match enough literals.
+
+        This can be controlled with the min_rcount parameter (see Parser class)
+
+            >>> expected = r'aa<...>bb<...>ddd<...>eee<...>cc'
+            >>> got = r'aaAAbbBBxxxddeeeCCcc'
+
+        A small value of min_rcount means that we don't need much literals after
+        and before the capture.
+
+            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=1)
+            >>> s                               # byexample: -CAPTURE
+            'aaAAbb<...>ddd<...>eeeCCcc'
+
+            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=2)
+            >>> s                               # byexample: -CAPTURE
+            'aaAAbb<...>ddd<...>eeeCCcc'
+
+        Notice how a value of 3 changes the result because the 'bb' literal,
+        after the capture has only a rcount of 2
+
+            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=3)
+            >>> s                               # byexample: -CAPTURE
             'aa<...>bb<...>ddd<...>eeeCCcc'
 
         Named groups are returned as well:
@@ -323,10 +355,11 @@ class Checker(object):
 
             >>> expected_regexs = ['\A', 'aa', '(?P<foo>.*?)', 'bb',
             ...                     '(?P<bar>.*?)', 'ddd', '(?P<baz>.*?)',
-            ...                     'eee', '(?P<zaz>.*?)', 'cc', r'\n?', '\Z']
-            >>> positions = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32, 32]
+            ...                     'eee', '(?P<zaz>.*?)', 'cc', r'\n*\Z']
+            >>> positions = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32]
+            >>> rcounts   = [0, 2, 0, 2, 0, 3, 0, 3, 0, 2, 0]
 
-            >>> s, c = _replace_captures(expected_regexs, positions, expected, got)
+            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=1)
             >>> s                                                       # byexample: -CAPTURE
             'aaAAbb<bar>ddd<baz>eeeCCcc'
             >>> c
@@ -338,24 +371,33 @@ class Checker(object):
         def _compile(regexs):
             return re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
 
-        assert len(regs) == len(positions)
+        assert len(regs) == len(positions) == len(rcounts)
 
         best_left_index = 0
         best_right_index = len(regs)-1
 
         # from left to right, find the left most regex that match
         # a prefix of got by doing an incremental compile/matching
+        accum = 0
         for i in range(len(regs)):
-            # a grouping regex doesn't count
-            if regs[i].startswith('('):
+            # a regex with 0 rcount doesn't count and worst,
+            # reset our accumulator of consecutive non zero rcounts
+            if rcounts[i] == 0:
+                accum = 0
                 continue
+
+            accum += rcounts[i]
 
             m = _compile(regs[:i+1]).match(got)
             if m:
-                log("Left to Right's best at index % 3i:\nPartial left regex: %s\n% 4i: %s\n" % (
-                    i, repr(''.join(regs[:i+1])), positions[i], m.group(0)),
+                log("Left to Right's best at index % 3i (accum rcount % 3i/%i):\nPartial left regex: %s\n% 4i: %s\n" % (
+                    i, accum, min_rcount,
+                    repr(''.join(regs[:i+1])),
+                    positions[i], m.group(0)),
                     self.verbosity-4)
-                best_left_index = i
+
+                if accum >= min_rcount:
+                    best_left_index = i
 
         left_side = regs[:best_left_index+1]
         r = _compile(left_side)
@@ -369,17 +411,23 @@ class Checker(object):
 
         # now go from the right to the left, add a regex each time
         # to see where the whole regex doesn't match
+        accum = 0
         for i in range(len(regs)-1, best_left_index, -1):
             try:
-                if regs[i].startswith('('):
+                if not rcounts[i]:
+                    accum = 0
                     continue
 
+                accum += rcounts[i]
                 m = _compile(left_side + [buffer_re] + regs[i:]).match(got)
                 if m:
-                    log("Right to Left's best at index % 3i:\nPartial whole regex: %s\n" % (
-                        i, repr(''.join(left_side + [buffer_re] + regs[i:]))),
+                    log("Right to Left's best at index % 3i (accum rcount % 3i/%i):\nPartial whole regex: %s\n" % (
+                        i, accum, min_rcount,
+                        repr(''.join(left_side + [buffer_re] + regs[i:]))),
                         self.verbosity-4)
-                    best_right_index = i
+
+                    if accum >= min_rcount:
+                        best_right_index = i
 
             except Exception as e:
                 if 'unknown group' in str(e):
@@ -405,7 +453,7 @@ class Checker(object):
         right_begin_at = positions[best_right_index]
 
         replaced_captures = m.groupdict()
-        replaced_captures.pop('XXXX')
+        XXXX = replaced_captures.pop('XXXX')
 
         # we cannot keep replacing the capture tags... leave the
         # string as it is: this always was a best-effort algorithm
@@ -421,8 +469,8 @@ class Checker(object):
         if end_with_newline and not s.endswith('\n'):
             self._diff.append('\n')
 
-    HUMAN_EXPL  = "    <blankline>: a blank line\n" + \
-                  "    $: trailing spaces  ?: non-printable    ^t: tab\n" + \
+    HUMAN_EXPL  = "    $: trailing spaces\n" + \
+                  "    ^n: a blank line    ?: non-printable    ^t: tab\n" + \
                   "    ^v: vertical tab   ^r: carriage return  ^f: form feed"
 
     WS  = re.compile(r"[ ]+$", flags=re.MULTILINE)
@@ -446,8 +494,8 @@ class Checker(object):
 
         s = s.translate(tr)
 
-        # replace empty line by '<blankline>'
-        s = '\n'.join((l if l else '<blankline>') for l in s.split('\n'))
+        # replace empty line by '^n'
+        s = '\n'.join((l if l else '^n') for l in s.split('\n'))
         return s
 
     def _remove_last_empty_lines(self, s):
