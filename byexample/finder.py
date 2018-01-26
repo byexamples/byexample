@@ -234,7 +234,7 @@ class ExampleFinder(object):
 
             # perfect, we have everything to build an example
             example = parser.get_example_from_match(options, match, example_str,
-                                                    interpreter, self, where)
+                                                    interpreter, finder, where)
 
             examples.append(example)
 
