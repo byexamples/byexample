@@ -365,6 +365,49 @@ class Checker(object):
             >>> c
             {'foo': 'AA', 'zaz': 'CC'}
 
+
+
+        And the named groups also count as real count with a value of 1 only
+        for the regexs that matches a previous match.
+
+        For example, compare the following two scenarios.
+
+        In this case, we have 2 capture tags and the minimum rcount is 2.
+        Notice how the last part of the expected we couldn't complete it
+        because before <bar> we don't have enough rcounts
+
+            >>> expected = 'aa<foo>bb\ncc\ndd<bar>ee'
+            >>> got = 'aaAAbb\nxx\nxxAAee'
+
+            >>> expected_regexs = ['\A', 'aa', '(?P<foo>.*?)', 'bb\n',
+            ...                     'cc\n', 'dd', '(?P<bar>.*?)',
+            ...                     'ee', r'\n*\Z']
+            >>> positions = [0, 0, 2, 7, 10, 13, 15, 20, 22]
+            >>> rcounts   = [0, 2, 0, 3, 3, 2, 0, 2, 0]
+
+            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=2)
+            >>> s                                                       # byexample: -CAPTURE
+            'aaAAbb\ncc\ndd<bar>ee'
+            >>> c
+            {'foo': 'AA'}
+
+        But if instead of <bar> we reuse <foo>, this second group will count
+        as 1 because we have information from the previous match (but no, we
+        cannot count it as +n, the len of the previous match).
+
+            >>> expected = 'aa<foo>bb\ncc\ndd<foo>ee'
+
+            >>> expected_regexs = ['\A', 'aa', '(?P<foo>.*?)', 'bb\n',
+            ...                     'cc\n', 'dd', '(?P=foo)',
+            ...                     'ee', r'\n*\Z']
+            >>> rcounts   = [0, 2, 0, 3, 3, 2, 1, 2, 0] # notice the +1
+
+            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=2)
+            >>> s                                                       # byexample: -CAPTURE
+            'aaAAbb\ncc\nddAAee'
+            >>> c
+            {'foo': 'AA'}
+
         '''
 
         regs = expected_regexs
@@ -437,7 +480,7 @@ class Checker(object):
                     # we continue moving from the right to the left as it is
                     # possible that the group xxx is in some place in the right
                     # side so this technically is not an error
-                    pass
+                    accum -= rcount[i]
                 else:
                     raise
 
@@ -459,7 +502,7 @@ class Checker(object):
         # string as it is: this always was a best-effort algorithm
         middle_part = expected[left_ends_at:right_begin_at]
 
-        log("Incremental Match:\n##Left: %s\n\n##Middle: %s\n\n##Right: %s\n\n##Captured: %s\n\nBuffer: %s" % (
+        log("Incremental Match:\n##Left: %s\n\n##Middle: %s\n\n##Right: %s\n\n##Captured: %s\n\n##Buffer: %s" % (
                 got_left, middle_part, got_right, repr(replaced_captures), XXXX), self.verbosity-4)
 
         return got_left + middle_part + got_right, replaced_captures

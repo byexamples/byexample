@@ -728,6 +728,8 @@ class ExampleParser(object):
                 name = match.group("name")
                 name = name.replace("-", "_") # uniform the name
 
+                rcount = 0
+
                 if name == self.ellipsis_marker():
                     # capture anything (non-greedy)
                     regex = r"(?:.*?)"
@@ -737,6 +739,7 @@ class ExampleParser(object):
                         # matched the same string that a previous
                         # group matched with that name
                         regex = r"(?P=%s)" % name
+                        rcount = 1
 
                     else:
                         # first seen, capture anything (non-greedy)
@@ -761,7 +764,7 @@ class ExampleParser(object):
 
                 regexs.append(regex)
                 charnos.append(charno)
-                rcounts.append(0)
+                rcounts.append(rcount)
 
                 charno = match.end()
 
