@@ -19,11 +19,11 @@ to start.
     File byexample/options.py, 33/33 test ran in <...> seconds
     [PASS] Pass: 33 Fail: 0 Skip: 0
     <nl>
-    File byexample/parser.py, 42/42 test ran in <...> seconds
-    [PASS] Pass: 42 Fail: 0 Skip: 0
+    File byexample/parser.py, 102/102 test ran in <...> seconds
+    [PASS] Pass: 102 Fail: 0 Skip: 0
     <nl>
-    File byexample/runner.py, 35/35 test ran in <...> seconds
-    [PASS] Pass: 35 Fail: 0 Skip: 0
+    File byexample/runner.py, 48/48 test ran in <...> seconds
+    [PASS] Pass: 48 Fail: 0 Skip: 0
 
 Then, each module (Finder, Parser and Interpreter) provided by ``byexample`` has
 a little documentation.

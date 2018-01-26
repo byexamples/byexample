@@ -15,10 +15,8 @@ capabilities
                 [--timeout TIMEOUT] [-o OPTIONS] [--encoding ENCODING]
                 [--pretty {none,all}] [--interact] [-v | -q]
                 file [file ...]
-    <blankline>
     positional arguments:
       file                  file that have the examples to run.
-    <blankline>
     optional arguments:
       -h, --help            show this help message and exit
       -V, --version         show program's version number and exit
@@ -133,7 +131,6 @@ ignored for you, me, and ``byexample``)
     6
     Got:
     4
-    <...>
     **********************************************************************
     File "synthetic.doc", line 15
     <...>
@@ -160,6 +157,7 @@ Let's run this again but this time I want to show you only the last example
     File "synthetic.doc", line 15
     Failed example:
         print('hi', 'everyone  ')
+    Nothing captured.
     Notes:
         <...>
         $: trailing spaces  ?: non-printable    ^t: tab
@@ -216,15 +214,6 @@ Look at this successful example:
 This is because most of the time an empty new line is added for aesthetics
 purposes in the example or produced by the interpreter as an artifact.
 
-If you want to check them explicitly, use a capture tag:
-
-.. code:: python
-
-    >>> print("bar\n\n")
-    bar
-    <nl>
-    <nl>
-
 
 Diff algorithms
 ---------------
@@ -247,7 +236,6 @@ For large outputs this is an awesome tool
     Differences:
     - 6
     + 4
-    <...>
     **********************************************************************
     File "synthetic.doc", line 15
     Failed example:
