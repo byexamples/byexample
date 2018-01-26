@@ -104,7 +104,7 @@ class Checker(object):
         self.verbosity = verbosity
 
     def check_output(self, example, got, flags):
-        m = re.compile(''.join(example.expected_regexs), re.MULTILINE | re.DOTALL)
+        m = re.compile(''.join(example.expected.regexs), re.MULTILINE | re.DOTALL)
         return m.match(got) is not None
 
     def output_difference(self, example, got, flags, use_colors):
@@ -205,13 +205,13 @@ class Checker(object):
         # get the expected string, and if it is possible (and the
         # user allows this), try to get the captured strings
         if hasattr(example, 'expected'):
-            expected = example.expected
+            expected = example.expected.str
 
             if flags['ENHANCE_DIFF']:
                 expected, replaced_captures = self._replace_captures(
-                                                example.expected_regexs,
-                                                example.regexs_position_in_expected,
-                                                example.rcounts_in_expected,
+                                                example.expected.regexs,
+                                                example.expected.positions,
+                                                example.expected.rcounts,
                                                 expected, got)
 
         else:

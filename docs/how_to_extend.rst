@@ -165,7 +165,6 @@ Let's see if our finder can find the ArnoldC snippet above.
 
     >>> print(match.group('expected'))
         Hello World!
-    <blankline>
 
 Nice...
 
@@ -256,17 +255,15 @@ Let's peek how the parsing is used
      >>> where = (0,1,'docs/how_to_extend.rst')
      >>> interpreter = None # not yet
      >>> example = parser.get_example_from_match(Options(), match, example_str,
-     ...                                         interpreter, where)
+     ...                                         interpreter, finder, where)
 
      >>> print(example.source)
      IT'S SHOWTIME                       # byexample: +awesome
      TALK TO THE HAND "Hello World!"
      YOU HAVE BEEN TERMINATED
-     <blankline>
 
-     >>> print(example.expected)
+     >>> print(example.expected.str)
      Hello World!
-     <blankline>
 
      >>> print(example.options)
      {'awesome': True}
@@ -333,7 +330,7 @@ with them is up to you.
     >>> found
     'Hello World!\n'
 
-    >>> print("PASS" if found == example.expected else "FAIL")
+    >>> print("PASS" if found == example.expected.str else "FAIL")
     PASS
 
 

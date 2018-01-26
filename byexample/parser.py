@@ -7,10 +7,14 @@ Example = collections.namedtuple('Example', ['interpreter',
                                              'start_lineno', 'end_lineno',
                                              'options', 'indentation',
                                              'source',
-                                             'expected', 'expected_regexs',
-                                             'regexs_position_in_expected',
-                                             'rcounts_in_expected',
-                                             'captures', 'match'])
+                                             'expected', 'match'])
+
+Expected = collections.namedtuple('Expected', ['str',
+                                               'regexs',
+                                               'positions',
+                                               'rcounts',
+                                               'captures',
+                                               ])
 
 class ExampleParser(object):
     def __init__(self, verbosity, encoding, **unused):
@@ -116,22 +120,27 @@ class ExampleParser(object):
         if not source.endswith('\n'):
             source += '\n'
 
-        example = Example(
-                          # the source code to execute and the output
-                          # expected.
-                          source=source, expected=expected,
+
+        expected = Expected(
+                          # the output expected
+                          str=expected,
 
                           # expected regex version
-                          expected_regexs=expected_regexs,
+                          regexs=expected_regexs,
 
                           # where each regex comes from
-                          regexs_position_in_expected=positions,
+                          positions=positions,
 
                           # the 'real count' of literals
-                          rcounts_in_expected=rcounts,
+                          rcounts=rcounts,
 
                           # the names of the capture tags in the expected regex
-                          captures=captures,
+                          captures=captures
+                          )
+
+        example = Example(
+                          # the source code to execute and the expected
+                          source=source, expected=expected,
 
                           # the options to customize this example
                           options=options.copy(),

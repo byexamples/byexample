@@ -65,12 +65,12 @@ def print_example(example, use_colors, x):
     if x < 0:
         return
 
-    print("[Example]" + ":" * 61)
+    print("::[Example]" + ":" * 59)
     print("  Found in: %s by: %s" % (example.filepath, example.finder))
     print("  Lines from: %s to: %s" % (example.start_lineno, example.end_lineno))
     print("  Indentation: |%s| (%i bytes)" % (example.indentation,
                                                 len(example.indentation)))
-    print("  Capture Tags: %s" % pprint.pformat(example.captures, width=50))
+    print("  Capture Tags: %s" % pprint.pformat(example.expected.captures, width=50))
     print("  Options: %s" % pprint.pformat(example.options, width=50))
 
     print("..[Source]" + "." * 60)
@@ -78,17 +78,17 @@ def print_example(example, use_colors, x):
 
     print("..[Expected]" + "." * 58)
     _l = 0
-    for e in example.expected.split('\n'):
+    for e in example.expected.str.split('\n'):
         print("% 4i: %s" % (_l, e))
         _l += len(e) + 1
 
     print("..[Regexs]" + "." * 60)
-    if len(example.expected_regexs) != len(example.regexs_position_in_expected):
+    if len(example.expected.regexs) != len(example.expected.positions):
         print("Error: inconsistent regexs")
-        print("  Regexs: %s" % example.expected_regexs)
-        print("  Positions: %s" % example.regexs_position_in_expected)
+        print("  Regexs: %s" % example.expected.regexs)
+        print("  Positions: %s" % example.expected.positions)
 
-    for p, r in zip(example.regexs_position_in_expected, example.expected_regexs):
+    for p, r in zip(example.expected.positions, example.expected.regexs):
         print("% 4i: %s" % (p, repr(r)))
 
     print("..[Run]" + "." * 63)
