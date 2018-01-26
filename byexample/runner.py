@@ -209,6 +209,7 @@ class Checker(object):
 
             if flags['ENHANCE_DIFF']:
                 expected, replaced_captures = self._replace_captures(
+                                                example.expected.captures,
                                                 example.expected.regexs,
                                                 example.expected.positions,
                                                 example.expected.rcounts,
@@ -286,7 +287,7 @@ class Checker(object):
             self._write("    %s%s%s" % (left, " " * space_between, right))
 
 
-    def _replace_captures(self, expected_regexs, positions, rcounts, expected, got, min_rcount=6):
+    def _replace_captures(self, captures, expected_regexs, positions, rcounts, expected, got, min_rcount=6):
         r'''
         Try to replace all the capture groups in the expected by
         the strings found in got.
@@ -310,13 +311,13 @@ class Checker(object):
             >>> positions = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32]
             >>> rcounts   = [0, 2, 0, 2, 0, 3, 0, 3, 0, 2, 0]
 
-            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=1)
+            >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=1)
 
             >>> s                               # byexample: -CAPTURE
             'aaAAbb<...>ddd<...>eeeCCcc'
 
             >>> got = r'aaAAbBBxxxddeeeCCcc'
-            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=1)
+            >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=1)
 
             >>> s                               # byexample: -CAPTURE
             'aa<...>bb<...>ddd<...>eeeCCcc'
@@ -333,18 +334,18 @@ class Checker(object):
         A small value of min_rcount means that we don't need much literals after
         and before the capture.
 
-            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=1)
+            >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=1)
             >>> s                               # byexample: -CAPTURE
             'aaAAbb<...>ddd<...>eeeCCcc'
 
-            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=2)
+            >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=2)
             >>> s                               # byexample: -CAPTURE
             'aaAAbb<...>ddd<...>eeeCCcc'
 
         Notice how a value of 3 changes the result because the 'bb' literal,
         after the capture has only a rcount of 2
 
-            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=3)
+            >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=3)
             >>> s                               # byexample: -CAPTURE
             'aa<...>bb<...>ddd<...>eeeCCcc'
 
@@ -359,7 +360,8 @@ class Checker(object):
             >>> positions = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32]
             >>> rcounts   = [0, 2, 0, 2, 0, 3, 0, 3, 0, 2, 0]
 
-            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=1)
+            >>> s, c = _replace_captures(['foo', 'bar', 'baz', 'zaz'],
+            ...                          expected_regexs, positions, rcounts, expected, got, min_rcount=1)
             >>> s                                                       # byexample: -CAPTURE
             'aaAAbb<bar>ddd<baz>eeeCCcc'
             >>> c
@@ -385,7 +387,8 @@ class Checker(object):
             >>> positions = [0, 0, 2, 7, 10, 13, 15, 20, 22]
             >>> rcounts   = [0, 2, 0, 3, 3, 2, 0, 2, 0]
 
-            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=2)
+            >>> s, c = _replace_captures(['foo', 'bar'], expected_regexs,
+            ...                          positions, rcounts, expected, got, min_rcount=2)
             >>> s                                                       # byexample: -CAPTURE
             'aaAAbb\ncc\ndd<bar>ee'
             >>> c
@@ -402,7 +405,7 @@ class Checker(object):
             ...                     'ee', r'\n*\Z']
             >>> rcounts   = [0, 2, 0, 3, 3, 2, 1, 2, 0] # notice the +1
 
-            >>> s, c = _replace_captures(expected_regexs, positions, rcounts, expected, got, min_rcount=2)
+            >>> s, c = _replace_captures(['foo'], expected_regexs, positions, rcounts, expected, got, min_rcount=2)
             >>> s                                                       # byexample: -CAPTURE
             'aaAAbb\ncc\nddAAee'
             >>> c
@@ -450,7 +453,16 @@ class Checker(object):
 
         # a 'capture anything' regex between the left and the right side
         # to hold all the rest of the string
-        buffer_re = '(?P<XXXX>.*?)'
+        buffer_tag_name = 'buffer%06i'
+        i = 0
+        while (buffer_tag_name % i) in captures:
+            i += 1
+
+        buffer_tag_name = buffer_tag_name % i
+        if buffer_tag_name in captures:
+            raise Exception("Invalid state. Weird....")
+
+        buffer_re = '(?P<%s>.*?)' % buffer_tag_name
 
         # now go from the right to the left, add a regex each time
         # to see where the whole regex doesn't match
@@ -491,19 +503,19 @@ class Checker(object):
         # buffer in the middle
         r = _compile(left_side + [buffer_re] + right_side)
         m = r.match(got)
-        got_right = m.group(0)[m.end('XXXX'):]
+        got_right = m.group(0)[m.end(buffer_tag_name):]
 
         right_begin_at = positions[best_right_index]
 
         replaced_captures = m.groupdict()
-        XXXX = replaced_captures.pop('XXXX')
+        buffer_captured = replaced_captures.pop(buffer_tag_name)
 
         # we cannot keep replacing the capture tags... leave the
         # string as it is: this always was a best-effort algorithm
         middle_part = expected[left_ends_at:right_begin_at]
 
         log("Incremental Match:\n##Left: %s\n\n##Middle: %s\n\n##Right: %s\n\n##Captured: %s\n\n##Buffer: %s" % (
-                got_left, middle_part, got_right, repr(replaced_captures), XXXX), self.verbosity-4)
+                got_left, middle_part, got_right, repr(replaced_captures), buffer_captured), self.verbosity-4)
 
         return got_left + middle_part + got_right, replaced_captures
 
