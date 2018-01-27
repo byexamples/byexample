@@ -422,6 +422,8 @@ class Checker(object):
         best_left_index = 0
         best_right_index = len(regs)-1
 
+        log("Partial Matching:\nGot string to target:\n%s\n" % repr(got),
+                self.verbosity-4)
         # from left to right, find the left most regex that match
         # a prefix of got by doing an incremental compile/matching
         accum = 0
@@ -434,11 +436,15 @@ class Checker(object):
 
             accum += rcounts[i]
 
+            log("|-->  | best at index % 3i (accum rcount % 3i/%i):\nTrying partial left regex: %s" % (
+                i, accum, min_rcount,
+                repr(''.join(regs[:i+1]))),
+                self.verbosity-4)
+
+
             m = _compile(regs[:i+1]).match(got)
             if m:
-                log("Left to Right's best at index % 3i (accum rcount % 3i/%i):\nPartial left regex: %s\n% 4i: %s\n" % (
-                    i, accum, min_rcount,
-                    repr(''.join(regs[:i+1])),
+                log("Match\n% 4i: %s\n" % (
                     positions[i], m.group(0)),
                     self.verbosity-4)
 
@@ -474,11 +480,16 @@ class Checker(object):
                     continue
 
                 accum += rcounts[i]
+
+                log("|  <--| best at index % 3i (accum rcount % 3i/%i):\nTrying partial regex: %s" % (
+                    i, accum, min_rcount,
+                    repr(''.join(left_side + [buffer_re] + regs[i:]))),
+                    self.verbosity-4)
+
                 m = _compile(left_side + [buffer_re] + regs[i:]).match(got)
                 if m:
-                    log("Right to Left's best at index % 3i (accum rcount % 3i/%i):\nPartial whole regex: %s\n" % (
-                        i, accum, min_rcount,
-                        repr(''.join(left_side + [buffer_re] + regs[i:]))),
+                    log("Matched; Buffer between left and right:\n%s\n" % (
+                        m.group(buffer_tag_name)),
                         self.verbosity-4)
 
                     if accum >= min_rcount:
@@ -492,7 +503,7 @@ class Checker(object):
                     # we continue moving from the right to the left as it is
                     # possible that the group xxx is in some place in the right
                     # side so this technically is not an error
-                    accum -= rcount[i]
+                    accum -= rcounts[i]
                 else:
                     raise
 
