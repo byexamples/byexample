@@ -127,6 +127,12 @@ The following is a valid example for Python 2.x and 3.x as well.
     {'aaaaaaaa': {'bbbbbbbbbb': 'asasaaaaaaaaaaaaaasasa',
                   'c': 'asaaaaaaaaaaaaaaaaaaaaa'}}
 
+    >>> b'b'
+    'b'
+
+    >>> u'u'
+    'u'
+
 If it is really important to show the type of the string I would recommend to
 make an explicit check or using ``repr``
 

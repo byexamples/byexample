@@ -74,38 +74,37 @@ class PythonInterpreter(Interpreter, PexepctMixin):
         PS2 = r'/byexample/py/ps2> '
 
         change_prompts = r'''
-import sys, pprint
+import sys
+import pprint as _byexample_pprint
 
 # change the prompts
 sys.ps1="%s"
 sys.ps2="%s"
 
-class __Printer(pprint.PrettyPrinter):
-    def __init__(self, *args, **kargs):
-        import pprint, re
-        pprint.PrettyPrinter.__init__(self, *args, **kargs)
-        r = r"(\W|^)[uUbB]([rR]?[" + "\\" + chr(39) + r"\"])"
-        self.ub_marker_re = re.compile(r, re.UNICODE)
+# patch the pprint _safe_repr function
+def patch_pprint_safe_repr():
+    import re
+    ub_marker_re = re.compile(r"^[uUbB]([rR]?[" + "\\" + chr(39) + r"\"])", re.UNICODE)
+    orig_repr = _byexample_pprint._safe_repr
+    def patched_repr(object, *args, **kargs):
+        orepr, readable, recursive = orig_repr(object, *args, **kargs)
 
-    def format(self, object, context, maxlevels, level):
-        import pprint, re
-        parent_format = pprint.PrettyPrinter.format
-        orepr, readable, recursive = parent_format(self, object, context,
-                                                  maxlevels, level)
+        _repr = ub_marker_re.sub(r"\1", orepr)
+        readable = False if _repr != orepr else readable
 
-        repr = re.sub(self.ub_marker_re, r"\1\2", orepr)
-        readable = False if repr != orepr else readable
+        return _repr, readable, recursive
+    _byexample_pprint._safe_repr = patched_repr
 
-        return repr, readable, recursive
+patch_pprint_safe_repr() # patch!
 
 # change the displayhook to use pprint instead of repr
 sys.displayhook = lambda s: (
                     None if s is None
-                    else __Printer(indent=1, width=80, depth=None).pprint(s))
+                    else _byexample_pprint.PrettyPrinter(indent=1, width=80, depth=None).pprint(s))
 
-# remove the introduced names
+# remove introduced symbols
 del sys
-del pprint
+del patch_pprint_safe_repr
 ''' % (PS1, PS2)
 
         PexepctMixin.__init__(self,
