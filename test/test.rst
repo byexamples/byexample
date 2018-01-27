@@ -22,8 +22,8 @@ to start.
     File byexample/parser.py, 102/102 test ran in <...> seconds
     [PASS] Pass: 102 Fail: 0 Skip: 0
     <nl>
-    File byexample/runner.py, 48/48 test ran in <...> seconds
-    [PASS] Pass: 48 Fail: 0 Skip: 0
+    File byexample/runner.py, 62/62 test ran in <...> seconds
+    [PASS] Pass: 62 Fail: 0 Skip: 0
 
 Then, each module (Finder, Parser and Interpreter) provided by ``byexample`` has
 a little documentation.
@@ -72,8 +72,8 @@ can be found under the ``doc`` folder
 
     $ byexample -l $all_languages --skip docs/how_to_extend.rst -- `find docs -name "*.rst"`
     <nl>
-    File docs/usage.rst, 13/13 test ran in <...> seconds
-    [PASS] Pass: 13 Fail: 0 Skip: 0
+    File docs/usage.rst, 12/12 test ran in <...> seconds
+    [PASS] Pass: 12 Fail: 0 Skip: 0
     <nl>
     File docs/languages/cpp.rst, 2/2 test ran in <...> seconds
     [PASS] Pass: 2 Fail: 0 Skip: 0
@@ -84,8 +84,8 @@ can be found under the ``doc`` folder
     File docs/languages/gdb.rst, 9/9 test ran in <...> seconds
     [PASS] Pass: 9 Fail: 0 Skip: 0
     <nl>
-    File docs/languages/python.rst, 17/17 test ran in <...> seconds
-    [PASS] Pass: 17 Fail: 0 Skip: 0
+    File docs/languages/python.rst, 19/19 test ran in <...> seconds
+    [PASS] Pass: 19 Fail: 0 Skip: 0
     <nl>
     File docs/languages/ruby.rst, 9/9 test ran in <...> seconds
     [PASS] Pass: 9 Fail: 0 Skip: 0

@@ -538,7 +538,14 @@ class ExampleParser(object):
             >>> regexs, positions, rcounts, names = _as_regexs(expected, False, True, where)
 
             >>> regexs
-            ['\\A', 'a\\\n', '(?P<foo>.*?)', 'bcd\\\n', 'efg', '(?P<bar>.*?)', 'hi', '\\n*\\Z']
+            ['\\A',
+             'a\\\n',
+             '(?P<foo>.*?)',
+             'bcd\\\n',
+             'efg',
+             '(?P<bar>.*?)',
+             'hi',
+             '\\n*\\Z']
 
         Notice also how the capture tags don't count as 'real counts' (zero).
         The first and the last regex either.
