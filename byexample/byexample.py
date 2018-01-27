@@ -3,7 +3,8 @@ import sys, argparse, os, pkgutil, inspect, pprint
 from .options import Options
 from .interpreter import Interpreter
 from .finder import ExampleFinder, MatchFinder
-from .runner import ExampleRunner, Checker
+from .runner import ExampleRunner
+from .checker import Checker
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
 from .common import log, build_exception_msg
