@@ -1,4 +1,4 @@
-import collections
+import collections, argparse
 
 class Options(collections.MutableMapping):
     r'''
@@ -94,6 +94,17 @@ class Options(collections.MutableMapping):
         <...>
         IndexError: list index out of range
 
+    Even you can push argparse.Namespace objects
+
+        >>> from argparse import Namespace
+        >>> opt.up(Namespace(foo=2, bar=2))
+
+        >>> sorted(list(opt))
+        ['bar', 'foo']
+
+        >>> [opt[x] for x in sorted(list(opt))]
+        [2, 2]
+
     '''
 
     def __init__(self, *args, **kwargs):
@@ -129,6 +140,9 @@ class Options(collections.MutableMapping):
     def up(self, other_mapping=None):
         if isinstance(other_mapping, Options):
             other_mapping = other_mapping.as_dict()
+
+        if isinstance(other_mapping, argparse.Namespace):
+            other_mapping = vars(other_mapping)
 
         self.top = other_mapping if other_mapping is not None else {}
         self.stack.insert(0, self.top)
