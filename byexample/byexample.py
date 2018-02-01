@@ -3,11 +3,11 @@ from .init import init
 
 def main(args=None):
     args = parse_args(args)
-    testfiles, finder, runner, options = init(args)
+    testfiles, finder, runner, optparser, options = init(args)
 
     exit_status = 0
     for filename in testfiles:
-        examples = finder.get_examples_from_file(options, filename)
+        examples = finder.get_examples_from_file(optparser, options, filename)
         if args.dry:
             continue
 

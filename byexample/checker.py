@@ -22,7 +22,7 @@ class Checker(object):
             >>> expected = 'one\ntwo\nthree\nfour'
             >>> got      = 'zero\none\ntree\nfour'
 
-            >>> flags = dict((k, False) for k in ('ENHANCE_DIFF', 'UDIFF', 'NDIFF', 'CDIFF'))
+            >>> flags = {'ENHANCE_DIFF': False, 'DIFF': 'none'}
             >>> print(output_difference(expected, got, flags, False))
             Expected:
             one
@@ -35,7 +35,7 @@ class Checker(object):
             tree
             four
 
-            >>> flags['UDIFF'] = True
+            >>> flags['DIFF'] = 'unified'
             >>> print(output_difference(expected, got, flags, False))
             Differences:
             @@ -1,4 +1,4 @@
@@ -46,8 +46,7 @@ class Checker(object):
             +tree
              four
 
-            >>> flags['UDIFF'] = False
-            >>> flags['NDIFF'] = True
+            >>> flags['DIFF'] = 'ndiff'
             >>> print(output_difference(expected, got, flags, False))
             Differences:
             + zero
@@ -59,8 +58,7 @@ class Checker(object):
             + tree
               four
 
-            >>> flags['NDIFF'] = False
-            >>> flags['CDIFF'] = True
+            >>> flags['DIFF'] = 'context'
             >>> print(output_difference(expected, got, flags, False))
             Differences:
             *** 1,4 ****
@@ -77,7 +75,7 @@ class Checker(object):
             >>> expected = 'one\ntwo  \n\n\tthree'
             >>> got      = 'one  \ntwo\n\n    three'
 
-            >>> flags['CDIFF'] = False
+            >>> flags['DIFF'] = 'none'
             >>> flags['ENHANCE_DIFF'] = True
             >>> print(output_difference(expected, got, flags, False))
             Nothing captured.
@@ -135,16 +133,9 @@ class Checker(object):
             self._write("Notes:\n%s" % self.HUMAN_EXPL)
             expected, got = self._human(expected), self._human(got)
 
-        if flags['UDIFF']:
-            diff_type = 'unified'
-        elif flags['NDIFF']:
-            diff_type = 'ndiff'
-        elif flags['CDIFF']:
-            diff_type = 'context'
-        else:
-            diff_type = None
+        diff_type = flags['DIFF']
 
-        if diff_type:
+        if diff_type is not 'none':
             self.print_diff(expected, got, diff_type, use_colors)
         else:
             self.just_print(expected, got, use_colors)

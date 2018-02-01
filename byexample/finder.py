@@ -28,16 +28,16 @@ class ExampleFinder(object):
         self.parser_by_language = registry['parsers']
         self.interpreter_by_language = registry['interpreters']
 
-    def get_examples_from_file(self, options, filepath):
+    def get_examples_from_file(self, optparser, options, filepath):
         with open(filepath, 'rtU') as f:
             string = f.read()
 
-        return self.get_examples_from_string(options, string, filepath)
+        return self.get_examples_from_string(optparser, options, string, filepath)
 
-    def get_examples_from_string(self, options, string, filepath='<string>'):
+    def get_examples_from_string(self, optparser, options, string, filepath='<string>'):
         all_examples = []
         for finder in self.available_finders:
-            examples = self.get_examples_using(finder, options, string, filepath)
+            examples = self.get_examples_using(finder, optparser, options, string, filepath)
             all_examples.extend(examples)
 
         # sort the examples in the same order
@@ -193,10 +193,11 @@ class ExampleFinder(object):
         log(build_exception_msg("Dropped example: " + reason, where, self),
                 self.verbosity-2)
 
-    def get_examples_using(self, finder, options, string, filepath='<string>'):
+    def get_examples_using(self, finder, optparser, options, string, filepath='<string>'):
         charno = 0
         start_lineno = 1  # humans tend to count from 1
         examples = []
+
         for match in finder.get_matches(string):
             example_str = string[match.start():match.end()]
 
@@ -233,7 +234,8 @@ class ExampleFinder(object):
                 continue # TODO should be an error?
 
             # perfect, we have everything to build an example
-            example = parser.get_example_from_match(options, match, example_str,
+            example = parser.get_example_from_match(optparser, options, match,
+                                                    example_str,
                                                     interpreter, finder, where)
 
             examples.append(example)

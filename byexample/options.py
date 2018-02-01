@@ -1,4 +1,4 @@
-import collections, argparse
+import collections, argparse, shlex
 
 class Options(collections.MutableMapping):
     r'''
@@ -180,3 +180,30 @@ class Options(collections.MutableMapping):
         return clone
 
 
+class OptionParser(argparse.ArgumentParser):
+    def __init__(self):
+        argparse.ArgumentParser.__init__(self, prefix_chars='-+')
+
+    def add_flag(self, name, **kw):
+        g = self.add_mutually_exclusive_group()
+        g.add_argument("+" + name, action='store_true', **kw)
+        g.add_argument("-" + name, action='store_false')
+
+        return self
+
+    def defaults(self):
+        return self.parse(None)
+
+    def parse(self, source):
+        try:
+            source = shlex.split(source)
+        except:
+            pass
+
+        if not source:
+            source = []
+
+        if not isinstance(source, list):
+            raise ValueError("The source for the OptionParser is neither a string nor a list but it is '%s'." % type(source)) 
+
+        return Options(vars(self.parse_known_args(source)[0]))

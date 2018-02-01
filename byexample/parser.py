@@ -1,4 +1,4 @@
-import collections, re
+import collections, re, shlex, argparse
 from .common import log, build_exception_msg, tohuman
 
 Example = collections.namedtuple('Example', ['interpreter',
@@ -40,36 +40,31 @@ class ExampleParser(object):
         '''
         raise NotImplementedError() # pragma: no cover
 
-    def example_option_regex(self):
+    def example_options_as_list(self, string):
         '''
-        Return a regular expressions to extract the options from the
-        string returned by 'example_options_string_regex' method.
+        Return a list of tokens from the string that was captured by
+        the regex of example_options_string_regex.
 
-        This regex will be used several times to extract all the
-        options from the string.
-
-        It must have two exclusive groups:
-         - add: if non empty, the option is meant to be enabled
-         - del: if non empty, the option is meant to be disabled
-        and an additional mandatory group:
-         - name: the name of the option
-
-        An optional group 'val' can be set which matching string will be
-        the value of the option, true/false otherwise if the add/del are
-        present.
-         - val: if non empty, this is the value of the option
-
-        Examples:
-          +WS           'add' the 'WS' option
-          -CAPTURE      'remove' the 'CAPTURE' option
-          +TIMEOUT=10   'set' the 'TIMEOUT' to the 'value' of 10
+        For example:
+         '-foo a +bar "1 2 3"' should yield [-foo, a, +bar, "1 2 3"]
         '''
-        return re.compile(r'''
-                (?:(?P<add>\+) | (?P<del>-))   #  + or - followed by
-                (?P<name>\w+)                  # the name of the option and
-                (?:=(?P<val>\w+))?             # optionally, = and its value
+        return shlex.split(string)
 
-                ''', re.MULTILINE | re.VERBOSE)
+    def extend_option_parser(self, parent_parser):
+        '''
+        Return an instance of argparse.ArgumentParser that will be in
+        charge of parsing the options list returned by example_options_as_list.
+
+        Basically you need to see the options of an examples as if they were
+        options and flags in a command line.
+
+        Because some of the options are implemented by byexample directly,
+        those are parsed with parent_parser.
+        It is wise to add this parser as a parent parser of yours.
+
+        You must not modify parent_parser in any way.
+        '''
+        return parent_parser
 
     def capture_tag_regex(self):
         '''
@@ -94,7 +89,8 @@ class ExampleParser(object):
         '''
         raise NotImplementedError() # pragma: no cover
 
-    def get_example_from_match(self, options, match, example_str, interpreter, finder, where):
+    def get_example_from_match(self, optparser, options, match, example_str,
+                                     interpreter, finder, where):
         start_lineno, end_lineno, filepath = where
         indent = match.group('indent')
 
@@ -108,12 +104,12 @@ class ExampleParser(object):
         if not expected:
             expected = ''   # make sure that it is a string
 
-        options.up(self.extract_options(snippet, where))
+        options.up(self.extract_options(snippet, optparser, where))
 
         expected_regexs, positions, rcounts, captures = self.expected_as_regexs(
                                                 expected,
-                                                options.get('WS', False),
-                                                options.get('CAPTURE', True),
+                                                options['WS'],
+                                                options['CAPTURE'],
                                                 where)
 
         source = self.source_from_snippet(snippet)
@@ -164,6 +160,7 @@ class ExampleParser(object):
                           interpreter=interpreter)
 
         options.down()
+
         return example
 
     def check_and_remove_ident(self, example_str, indent, where):
@@ -792,35 +789,24 @@ class ExampleParser(object):
 
         return regexs, charnos, rcounts, names_seen
 
-    def extract_options(self, snippet, where):
+    def extract_options(self, snippet, optparser, where):
         start_lineno, _, filepath = where
-        optstring_re = self.example_options_string_regex()
-        opt_re = self.example_option_regex()
+        optstring_match = self.example_options_string_regex().search(snippet)
 
-        match = optstring_re.search(snippet)
-        if not match:
-            return {}
+        if not optstring_match:
+            optlist = []
 
-        optstring = match.group(1)
+        else:
+            optlist = self.example_options_as_list(optstring_match.group(1))
 
-        options = {}
-        for match in opt_re.finditer(optstring):
-            name = match.group("name")
+        if not isinstance(optlist, list):
+            raise ValueError("The option list returned by the parser is not a list!. This probably means that there is a bug in the parser %s." % str(self))
 
-            add  = match.group("add")
-            del_ = match.group("del")
+        optparser_extended = self.extend_option_parser(optparser)
+        if not isinstance(optparser_extended, argparse.ArgumentParser):
+            raise ValueError("The option parser is not an instance of ArgumentParser!.  This probably means that there is a bug in the parser %s." % str(self))
 
-            if (add and del_) or (not add and not del_):
-                msg = "Ambiguous option: do you expected to add or delete it? " +\
-                      "Offending example at line %i in %s: %s"
-                msg = msg % (start_lineno, filepath, match.group(0))
-                raise ValueError(build_exception_msg(msg, where, self))
-
-            if add:
-                val  = match.group("val")
-                options[name] = val if val else True
-            else:
-                options[name] = False    # del
-
-        return options
+        # TODO handle errors here
+        options, remain = optparser_extended.parse_known_args(optlist)
+        return vars(options)
 

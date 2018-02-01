@@ -1,6 +1,6 @@
 import sys, pkgutil, inspect, pprint
 
-from .options import Options
+from .options import Options, OptionParser
 from .interpreter import Interpreter
 from .finder import ExampleFinder, MatchFinder
 from .runner import ExampleRunner
@@ -99,6 +99,22 @@ def get_encoding(encoding, verbosity):
     log("Encoding: %s." % encoding, verbosity-2)
     return encoding
 
+def get_default_options_parser(cmdline_args):
+    options_parser = OptionParser()
+    options_parser.add_flag("FAIL-FAST", default=cmdline_args.fail_fast)
+    options_parser.add_flag("WS", default=False)
+    options_parser.add_flag("PASS", default=False)
+    options_parser.add_flag("SKIP", default=False)
+    options_parser.add_flag("CAPTURE", default=True)
+    options_parser.add_flag("ENHANCE-DIFF", default=cmdline_args.enhance_diff)
+    options_parser.add_flag("INTERACT", default=cmdline_args.interact)
+    options_parser.add_argument("+TIMEOUT", type=int,
+                                default=cmdline_args.timeout)
+    options_parser.add_argument("+DIFF", choices=['none', 'unified', 'ndiff', 'context'],
+                                default=cmdline_args.diff)
+
+    return options_parser
+
 def init(args):
     encoding = get_encoding(args.encoding, args.verbosity)
 
@@ -128,21 +144,30 @@ def init(args):
     log("Configuration:\n%s." % pprint.pformat(cfg), cfg['verbosity']-2)
     log("Registry:\n%s." % pprint.pformat(registry), cfg['verbosity']-2)
 
+    optparser = get_default_options_parser(args)
+
     concerns = ConcernComposite(registry, **cfg)
 
     checker  = Checker(**cfg)
-    options  = Options(FAIL_FAST=args.fail_fast, WS=False, PASS=False,
-                       SKIP=False, ENHANCE_DIFF=args.enhance_diff,
-                       TIMEOUT=args.timeout,
-                       UDIFF=args.diff=='unified',
-                       NDIFF=args.diff=='ndiff',
-                       CDIFF=args.diff=='context',
-                       INTERACT=args.interact
-                       )
-
-    options.up(args.options)
 
     finder = ExampleFinder(allowed_languages, registry, **cfg)
     runner = ExampleRunner(concerns, checker, **cfg)
 
-    return testfiles, finder, runner, options
+    # we parse the argument 'options' to allow the user to change
+    # some options.
+    # the options_parser should have a set of default values based
+    # on the flags and values from the command line.
+    #
+    # this argument 'options' will be parsed again later by a parser to
+    # extract options that may be more language-specific
+    #
+    # In order words, the order of preference for a given option is:
+    #
+    #  scope | preference | source
+    #  global  [lowest]     byexample's own default
+    #  global    :::        command line
+    #  global    :::        argument 'options'
+    #  example [highest]    example's options (to be done in the Parser instances)
+    options = optparser.parse(args.options)
+
+    return testfiles, finder, runner, optparser, options
