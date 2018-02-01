@@ -11,7 +11,7 @@ def main(args=None):
         if args.dry:
             continue
 
-        result = runner.run(examples, options, filename)
+        result = runner.run(examples, filename)
         failed, aborted_or_crashed = result
 
         if failed:

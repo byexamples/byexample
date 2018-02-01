@@ -4,11 +4,13 @@ class TimeoutException(Exception):
     pass
 
 class ExampleRunner(object):
-    def __init__(self, concerns, checker, verbosity, use_colors, **unused):
+    def __init__(self, concerns, checker, verbosity, use_colors, options, **unused):
         self.concerns   = concerns
         self.checker    = checker
         self.use_colors = use_colors
         self.verbosity  = verbosity
+
+        self.options = options
 
     def initialize_interpreters(self, interpreters, examples, options):
         log("Initializing %i interpreters..." % len(interpreters),
@@ -24,7 +26,8 @@ class ExampleRunner(object):
             log(" - %s" % str(interpreter), self.verbosity-1)
             interpreter.shutdown()
 
-    def run(self, examples, options, filepath):
+    def run(self, examples, filepath):
+        options = self.options
         interpreters = list(set(e.interpreter for e in examples))
 
         self.initialize_interpreters(interpreters, examples, options)
