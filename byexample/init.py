@@ -126,6 +126,7 @@ def init(args):
             'encoding':   encoding,
             'output':     sys.stdout,
             'interact':   args.interact,
+            'opts_from_cmdline': args.options,
             }
 
     # if the output is not atty, disable the color anyways

@@ -17,9 +17,11 @@ Expected = collections.namedtuple('Expected', ['str',
                                                ])
 
 class ExampleParser(object):
-    def __init__(self, verbosity, encoding, **unused):
+    def __init__(self, verbosity, encoding, opts_from_cmdline, **unused):
         self.verbosity = verbosity
         self.encoding = encoding
+
+        self.opts_from_cmdline = opts_from_cmdline
 
     def __repr__(self):
         return '%s Parser' % tohuman(self.language)
@@ -168,7 +170,7 @@ class ExampleParser(object):
         Given an example string, remove its indent, including a possible empty
         line at the end.
             >>> from byexample.parser import ExampleParser
-            >>> parser = ExampleParser(0, 'utf8'); parser.language = 'python'
+            >>> parser = ExampleParser(0, 'utf8', ""); parser.language = 'python'
             >>> check_and_remove_ident = parser.check_and_remove_ident
             >>> check_and_remove_ident('  >>> 1 + 2\n  3\n ', '  ', (1, 2, 'foo.rst'))
             '>>> 1 + 2\n3'
@@ -221,7 +223,7 @@ class ExampleParser(object):
             >>> from byexample.parser import ExampleParser
             >>> import re
 
-            >>> parser = ExampleParser(0, 'utf8'); parser.language = 'python'
+            >>> parser = ExampleParser(0, 'utf8', ""); parser.language = 'python'
             >>> check_and_remove_ident = parser.check_and_remove_ident
             >>> check_keep_matching    = parser.check_keep_matching
 
@@ -280,7 +282,7 @@ class ExampleParser(object):
         regex per line.
 
             >>> from byexample.parser import ExampleParser
-            >>> parser = ExampleParser(0, 'utf8'); parser.language = 'python'
+            >>> parser = ExampleParser(0, 'utf8', ""); parser.language = 'python'
             >>> _safe = parser._as_safe_regexs
 
         A empty string doesn't yield anything useful
@@ -492,7 +494,7 @@ class ExampleParser(object):
         a list of rcounts and a list of capture tag names seen.
 
             >>> from byexample.parser import ExampleParser
-            >>> parser = ExampleParser(0, 'utf8'); parser.language = 'python'
+            >>> parser = ExampleParser(0, 'utf8', ""); parser.language = 'python'
             >>> _as_regexs = parser.expected_as_regexs
             >>> where = (1, 2, 'foo.rst')
 
@@ -806,7 +808,13 @@ class ExampleParser(object):
         if not isinstance(optparser_extended, argparse.ArgumentParser):
             raise ValueError("The option parser is not an instance of ArgumentParser!.  This probably means that there is a bug in the parser %s." % str(self))
 
+        # now we can re-parse this argument 'options' from the command line
+        # this will enable the user to set some options for a specific language
+        opts = optparser_extended.parse(self.opts_from_cmdline)
+
         # TODO handle errors here
-        options, remain = optparser_extended.parse_known_args(optlist)
-        return vars(options)
+        # then, we parse the example's options
+        opts.up(optparser_extended.parse(optlist))
+
+        return opts
 
