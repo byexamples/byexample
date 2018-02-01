@@ -115,6 +115,37 @@ def get_default_options_parser(cmdline_args):
 
     return options_parser
 
+
+def get_options(args, cfg):
+    # the options_parser should have a set of default values based
+    # on the flags and values from the command line.
+    optparser = get_default_options_parser(args)
+
+    # we parse the argument 'options' to allow the user to change
+    # some options.
+    #
+    # this argument 'options' will be parsed again later by a parser to
+    # extract options that may be more language-specific
+    #
+    # for this reason we parse this string in a non-strict way as it is
+    # possible that the string contains language-specific flags
+    options = optparser.parse(args.options, strict=False)
+
+    # In order words, the order of preference for a given option is:
+    #
+    #  scope | preference | source
+    #  global  [lowest]     byexample's own default
+    #  global    :::        command line
+    #  global    :::        argument 'options'
+    #  example [highest]    example's options (to be done in the Parser instances)
+    #
+    # Because this, we pass these to the rest of the system to be used and
+    # completed later
+    cfg['optparser'] = optparser
+    cfg['options']= options
+
+    return options
+
 def init(args):
     encoding = get_encoding(args.encoding, args.verbosity)
 
@@ -129,26 +160,7 @@ def init(args):
             'opts_from_cmdline': args.options,
             }
 
-    # we parse the argument 'options' to allow the user to change
-    # some options.
-    # the options_parser should have a set of default values based
-    # on the flags and values from the command line.
-    #
-    # this argument 'options' will be parsed again later by a parser to
-    # extract options that may be more language-specific
-    #
-    # In order words, the order of preference for a given option is:
-    #
-    #  scope | preference | source
-    #  global  [lowest]     byexample's own default
-    #  global    :::        command line
-    #  global    :::        argument 'options'
-    #  example [highest]    example's options (to be done in the Parser instances)
-    optparser = get_default_options_parser(args)
-
-    options = optparser.parse(args.options)
-    cfg['optparser'] = optparser
-    cfg['options']= options
+    options = get_options(args, cfg)
 
     # if the output is not atty, disable the color anyways
     cfg['use_colors'] &= cfg['output'].isatty()

@@ -810,11 +810,20 @@ class ExampleParser(object):
 
         # now we can re-parse this argument 'options' from the command line
         # this will enable the user to set some options for a specific language
-        opts = optparser_extended.parse(self.opts_from_cmdline)
+        #
+        # we parse this non-strictly because the 'options' string from the
+        # command line may contain language-specific options for other
+        # languages than this parser (self) is targeting.
+        opts = optparser_extended.parse(self.opts_from_cmdline, strict=False)
 
-        # TODO handle errors here
         # then, we parse the example's options
-        opts.up(optparser_extended.parse(optlist))
+        # in this case we parse it strictly because the example's options
+        # must contain options standard of byexample and/or standard for this
+        # parser (self)
+        # any other options is treated as an error
+        #
+        # TODO handle errors here: we check this but we don't do anything useful
+        opts.up(optparser_extended.parse(optlist, strict=True))
 
         return opts
 

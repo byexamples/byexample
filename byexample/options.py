@@ -194,7 +194,7 @@ class OptionParser(argparse.ArgumentParser):
     def defaults(self):
         return self.parse(None)
 
-    def parse(self, source):
+    def parse(self, source, strict):
         try:
             source = shlex.split(source)
         except:
@@ -204,6 +204,11 @@ class OptionParser(argparse.ArgumentParser):
             source = []
 
         if not isinstance(source, list):
-            raise ValueError("The source for the OptionParser is neither a string nor a list but it is '%s'." % type(source)) 
+            raise ValueError("The source for the OptionParser is neither a string nor a list but it is '%s'." % type(source))
 
-        return Options(vars(self.parse_known_args(source)[0]))
+        if strict:
+            args = self.parse_args(source)
+        else:
+            args = self.parse_known_args(source)[0]
+
+        return Options(vars(args))
