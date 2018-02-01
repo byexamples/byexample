@@ -33,7 +33,7 @@ class ExampleRunner(object):
         self.initialize_interpreters(interpreters, examples, options)
         self.concerns.start_run(examples, interpreters, filepath)
 
-        fail_fast = options['FAIL_FAST']
+        fail_fast = options['fail_fast']
 
         failed = False
         user_aborted = False
@@ -42,7 +42,7 @@ class ExampleRunner(object):
         for example in examples:
             options.up(example.options)
             try:
-                if options['SKIP']:
+                if options['skip']:
                     self.concerns.skip_example(example, options)
                     continue
 
@@ -68,7 +68,7 @@ class ExampleRunner(object):
 
                 # We can pass the test regardless of the output
                 # however, a Timeout is always a fail
-                force_pass = options['PASS']
+                force_pass = options['pass']
                 if not timedout and \
                         (force_pass or self.checker.check_output(example, got, options)):
                     self.concerns.success(example, got, self.checker)
@@ -78,7 +78,7 @@ class ExampleRunner(object):
 
                     # start an interactive session if the example failes
                     # and the user wanted this
-                    if options['INTERACT'] and not timedout:
+                    if options['interact'] and not timedout:
                         self.concerns.start_interact(example, options)
                         ex = None
                         try:

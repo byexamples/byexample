@@ -20,7 +20,7 @@ def main(args=None):
         if aborted_or_crashed:
             exit_status = max(exit_status, 2)
 
-        if (failed or aborted_or_crashed) and options['FAIL_FAST']:
+        if (failed or aborted_or_crashed) and options['fail_fast']:
             break
 
     return exit_status

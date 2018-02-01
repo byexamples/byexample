@@ -86,7 +86,7 @@ class ShellInterpreter(Interpreter, PexepctMixin):
             self._spawn_new_shell('/usr/bin/env sh')
 
         return self._exec_and_wait(example.source,
-                                    timeout=int(flags['TIMEOUT']))
+                                    timeout=int(flags['timeout']))
 
     def interact(self, example, options):
         PexepctMixin.interact(self)

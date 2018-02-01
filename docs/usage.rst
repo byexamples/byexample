@@ -9,7 +9,7 @@ capabilities
     $ # ignore this
     $ alias byexample=python\ r.py
 
-    $ byexample -h                      # byexample: +WS
+    $ byexample -h                      # byexample: +norm-ws
     usage: r.py [-h] [-V] [--ff] [--dry] [--skip file [file ...]] [-m dir]
                 [-d {none,unified,ndiff,context}] [--no-enhance-diff] -l language
                 [--timeout TIMEOUT] [-o OPTIONS] [--encoding ENCODING]
@@ -86,7 +86,7 @@ Now we just run ``byexample`` selecting ``python`` as the language target
 
 .. code:: sh
 
-    $ byexample --pretty none -l python synthetic.doc       # byexample: +WS
+    $ byexample --pretty none -l python synthetic.doc       # byexample: +norm-ws
     <...>
     File synthetic.doc, 4/4 test ran in <...> seconds
     [FAIL] Pass: 2 Fail: 2 Skip: 0
@@ -94,7 +94,7 @@ Now we just run ``byexample`` selecting ``python`` as the language target
 At the end of the execution a summary shows how many examples were executed,
 how many passed, failed or where skipped.
 
-A skipped example means that the example has a ``+SKIP`` option and it was not
+A skipped example means that the example has a ``+skip`` option and it was not
 executed.
 
 In normal circumstances there are two possible status: ``PASS`` and ``FAIL``.
@@ -107,7 +107,7 @@ example: *fail fast*
 
 .. code:: sh
 
-    $ byexample --ff --pretty none -l python synthetic.doc       # byexample: +WS
+    $ byexample --ff --pretty none -l python synthetic.doc       # byexample: +norm-ws
     <...>
     File synthetic.doc, 3/4 test ran in <...> seconds
     [FAIL] Pass: 2 Fail: 1 Skip: 0
@@ -120,7 +120,7 @@ ignored for you, me, and ``byexample``)
 
 .. code:: sh
 
-    $ byexample --pretty none -l python synthetic.doc       # byexample: +WS
+    $ byexample --pretty none -l python synthetic.doc       # byexample: +norm-ws
     <...>
     **********************************************************************
     File "synthetic.doc", line 10
@@ -152,7 +152,7 @@ Let's run this again but this time I want to show you only the last example
 
 .. code:: sh
 
-    $ byexample --pretty none -l python synthetic.doc       # byexample: +WS
+    $ byexample --pretty none -l python synthetic.doc       # byexample: +norm-ws
     <...>
     File "synthetic.doc", line 15
     Failed example:
@@ -185,7 +185,7 @@ You can disable this:
 
 .. code:: sh
 
-    $ byexample --pretty none --no-enhance-diff -l python synthetic.doc  # byexample: +WS
+    $ byexample --pretty none --no-enhance-diff -l python synthetic.doc  # byexample: +norm-ws
     <...>
     File "synthetic.doc", line 15
     Failed example:
@@ -226,7 +226,7 @@ For large outputs this is an awesome tool
 
 .. code:: sh
 
-    $ byexample --pretty none --diff ndiff -l python synthetic.doc  # byexample: +WS
+    $ byexample --pretty none --diff ndiff -l python synthetic.doc  # byexample: +norm-ws
     <...>
     **********************************************************************
     File "synthetic.doc", line 10
@@ -253,7 +253,7 @@ This is a summary of the three diff algorithms plus the default method:
 ::
 
     ===========  ==============  ==============  ==============
-      default      UDIFF flag      NDIFF flag      CDIFF flag
+       none          udiff           ndiff           cdiff
     ===========  ==============  ==============  ==============
     Expected:     Differences:    Differences:    Differences:
     one           +zero           + zero          *** 1,4 ****

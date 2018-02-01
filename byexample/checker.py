@@ -22,7 +22,7 @@ class Checker(object):
             >>> expected = 'one\ntwo\nthree\nfour'
             >>> got      = 'zero\none\ntree\nfour'
 
-            >>> flags = {'ENHANCE_DIFF': False, 'DIFF': 'none'}
+            >>> flags = {'enhance_diff': False, 'diff': 'none'}
             >>> print(output_difference(expected, got, flags, False))
             Expected:
             one
@@ -35,7 +35,7 @@ class Checker(object):
             tree
             four
 
-            >>> flags['DIFF'] = 'unified'
+            >>> flags['diff'] = 'unified'
             >>> print(output_difference(expected, got, flags, False))
             Differences:
             @@ -1,4 +1,4 @@
@@ -46,7 +46,7 @@ class Checker(object):
             +tree
              four
 
-            >>> flags['DIFF'] = 'ndiff'
+            >>> flags['diff'] = 'ndiff'
             >>> print(output_difference(expected, got, flags, False))
             Differences:
             + zero
@@ -58,7 +58,7 @@ class Checker(object):
             + tree
               four
 
-            >>> flags['DIFF'] = 'context'
+            >>> flags['diff'] = 'context'
             >>> print(output_difference(expected, got, flags, False))
             Differences:
             *** 1,4 ****
@@ -75,8 +75,8 @@ class Checker(object):
             >>> expected = 'one\ntwo  \n\n\tthree'
             >>> got      = 'one  \ntwo\n\n    three'
 
-            >>> flags['DIFF'] = 'none'
-            >>> flags['ENHANCE_DIFF'] = True
+            >>> flags['diff'] = 'none'
+            >>> flags['enhance_diff'] = True
             >>> print(output_difference(expected, got, flags, False))
             Nothing captured.
             Notes:
@@ -108,7 +108,7 @@ class Checker(object):
         if hasattr(example, 'expected'):
             expected = example.expected.str
 
-            if flags['ENHANCE_DIFF']:
+            if flags['enhance_diff']:
                 expected, replaced_captures = self._replace_captures(
                                                 example.expected.captures,
                                                 example.expected.regexs,
@@ -128,12 +128,12 @@ class Checker(object):
         expected = self._remove_last_empty_lines(expected)
         got      = self._remove_last_empty_lines(got)
 
-        if flags['ENHANCE_DIFF']:
+        if flags['enhance_diff']:
             self._print_named_captures(replaced_captures)
             self._write("Notes:\n%s" % self.HUMAN_EXPL)
             expected, got = self._human(expected), self._human(got)
 
-        diff_type = flags['DIFF']
+        diff_type = flags['diff']
 
         if diff_type is not 'none':
             self.print_diff(expected, got, diff_type, use_colors)
@@ -207,13 +207,13 @@ class Checker(object):
 
             >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=1)
 
-            >>> s                               # byexample: -CAPTURE
+            >>> s                               # byexample: -capture
             'aaAAbb<...>ddd<...>eeeCCcc'
 
             >>> got = r'aaAAbBBxxxddeeeCCcc'
             >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=1)
 
-            >>> s                               # byexample: -CAPTURE
+            >>> s                               # byexample: -capture
             'aa<...>bb<...>ddd<...>eeeCCcc'
 
         The definition of "safely" is a little weak. A capture tag may match
@@ -229,18 +229,18 @@ class Checker(object):
         and before the capture.
 
             >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=1)
-            >>> s                               # byexample: -CAPTURE
+            >>> s                               # byexample: -capture
             'aaAAbb<...>ddd<...>eeeCCcc'
 
             >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=2)
-            >>> s                               # byexample: -CAPTURE
+            >>> s                               # byexample: -capture
             'aaAAbb<...>ddd<...>eeeCCcc'
 
         Notice how a value of 3 changes the result because the 'bb' literal,
         after the capture has only a rcount of 2
 
             >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=3)
-            >>> s                               # byexample: -CAPTURE
+            >>> s                               # byexample: -capture
             'aa<...>bb<...>ddd<...>eeeCCcc'
 
         Named groups are returned as well:
@@ -256,7 +256,7 @@ class Checker(object):
 
             >>> s, c = _replace_captures(['foo', 'bar', 'baz', 'zaz'],
             ...                          expected_regexs, positions, rcounts, expected, got, min_rcount=1)
-            >>> s                                                       # byexample: -CAPTURE
+            >>> s                                                       # byexample: -capture
             'aaAAbb<bar>ddd<baz>eeeCCcc'
             >>> c
             {'foo': 'AA', 'zaz': 'CC'}
@@ -283,7 +283,7 @@ class Checker(object):
 
             >>> s, c = _replace_captures(['foo', 'bar'], expected_regexs,
             ...                          positions, rcounts, expected, got, min_rcount=2)
-            >>> s                                                       # byexample: -CAPTURE
+            >>> s                                                       # byexample: -capture
             'aaAAbb\ncc\ndd<bar>ee'
             >>> c
             {'foo': 'AA'}
@@ -300,7 +300,7 @@ class Checker(object):
             >>> rcounts   = [0, 2, 0, 3, 3, 2, 1, 2, 0] # notice the +1
 
             >>> s, c = _replace_captures(['foo'], expected_regexs, positions, rcounts, expected, got, min_rcount=2)
-            >>> s                                                       # byexample: -CAPTURE
+            >>> s                                                       # byexample: -capture
             'aaAAbb\ncc\nddAAee'
             >>> c
             {'foo': 'AA'}

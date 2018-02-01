@@ -110,8 +110,8 @@ class ExampleParser(object):
 
         expected_regexs, positions, rcounts, captures = self.expected_as_regexs(
                                                 expected,
-                                                options['WS'],
-                                                options['CAPTURE'],
+                                                options['norm_ws'],
+                                                options['capture'],
                                                 where)
 
         source = self.source_from_snippet(snippet)

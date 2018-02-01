@@ -37,8 +37,8 @@ Install and run it against any source file(s), like this README.
 All the snippets will be collected, executed and checked.
 
 ```shell
-$ pip install --user byexample                # install it # byexample: +SKIP
-$ byexample -l python,ruby,shell README.rst   # run it     # byexample: +SKIP
+$ pip install --user byexample                # install it # byexample: +skip
+$ byexample -l python,ruby,shell README.rst   # run it     # byexample: +skip
 ................
 File README.rst, 20/20 test ran in <...> seconds
 [PASS] Pass: 17 Fail: 0 Skip: 3
@@ -155,7 +155,7 @@ out:
 But in the following, both numbers are different and the example will fail
 
 ```python
-[1, X, 2, 4]                                    # byexample: +PASS
+[1, X, 2, 4]                                    # byexample: +pass
 
 out:
 [1, <random-number>, 2, <random-number>]
@@ -176,7 +176,7 @@ Replace any sequence of whitespace by a single one. This makes the test
 more robust against small differences (trailing spaces, space/tab mismatch)
 
 ```python
-print(list(range(20)))				# byexample: +WS
+print(list(range(20)))				# byexample: +norm-ws
 
 out:
 [0,   1,  2,  3,  4,  5,  6,  7,  8,  9,
@@ -186,12 +186,12 @@ out:
 
 #### Skip and Pass
 
-``SKIP`` will skip the example completely while ``PASS`` will execute it
+``skip`` will skip the example completely while ``pass`` will execute it
 normally but it will not check the output.
 
 ```python
 a = 1
-a = 2       # this assignment will not be executed # byexample: +SKIP
+a = 2       # this assignment will not be executed # byexample: +skip
 a
 
 out:
@@ -203,7 +203,7 @@ def f():
     print("Choosing a random number...")
     return 42
 
-a = f()     # execute the code but ignore the output # byexample: +PASS
+a = f()     # execute the code but ignore the output # byexample: +pass
 a
 
 out:
@@ -218,7 +218,7 @@ a flag
 
 ```python
 import time
-time.sleep(2.5) # simulates a slow operation # byexample: +TIMEOUT=3
+time.sleep(2.5) # simulates a slow operation # byexample: +timeout=3
 
 ```
 

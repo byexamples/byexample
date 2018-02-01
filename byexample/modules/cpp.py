@@ -63,7 +63,7 @@ class CPPInterpreter(Interpreter, PexepctMixin):
 
     def run(self, example, flags):
         return self._exec_and_wait(example.source,
-                                    int(flags['TIMEOUT']))
+                                    int(flags['timeout']))
 
     def interact(self, example, options):
         PexepctMixin.interact(self)

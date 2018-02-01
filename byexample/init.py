@@ -101,16 +101,16 @@ def get_encoding(encoding, verbosity):
 
 def get_default_options_parser(cmdline_args):
     options_parser = OptionParser()
-    options_parser.add_flag("FAIL-FAST", default=cmdline_args.fail_fast)
-    options_parser.add_flag("WS", default=False)
-    options_parser.add_flag("PASS", default=False)
-    options_parser.add_flag("SKIP", default=False)
-    options_parser.add_flag("CAPTURE", default=True)
-    options_parser.add_flag("ENHANCE-DIFF", default=cmdline_args.enhance_diff)
-    options_parser.add_flag("INTERACT", default=cmdline_args.interact)
-    options_parser.add_argument("+TIMEOUT", type=int,
+    options_parser.add_flag("fail-fast", default=cmdline_args.fail_fast)
+    options_parser.add_flag("norm-ws", default=False)
+    options_parser.add_flag("pass", default=False)
+    options_parser.add_flag("skip", default=False)
+    options_parser.add_flag("capture", default=True)
+    options_parser.add_flag("enhance-diff", default=cmdline_args.enhance_diff)
+    options_parser.add_flag("interact", default=cmdline_args.interact)
+    options_parser.add_argument("+timeout", type=int,
                                 default=cmdline_args.timeout)
-    options_parser.add_argument("+DIFF", choices=['none', 'unified', 'ndiff', 'context'],
+    options_parser.add_argument("+diff", choices=['none', 'unified', 'ndiff', 'context'],
                                 default=cmdline_args.diff)
 
     return options_parser

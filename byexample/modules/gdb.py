@@ -78,7 +78,7 @@ class GDBInterpreter(Interpreter, PexepctMixin):
         if example.source.endswith('\n'):
             source = example.source[:-1]
 
-        return self._exec_and_wait(source, timeout=int(flags['TIMEOUT']))
+        return self._exec_and_wait(source, timeout=int(flags['timeout']))
 
     def interact(self, example, options):
         PexepctMixin.interact(self)
