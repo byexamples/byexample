@@ -129,6 +129,27 @@ def init(args):
             'opts_from_cmdline': args.options,
             }
 
+    # we parse the argument 'options' to allow the user to change
+    # some options.
+    # the options_parser should have a set of default values based
+    # on the flags and values from the command line.
+    #
+    # this argument 'options' will be parsed again later by a parser to
+    # extract options that may be more language-specific
+    #
+    # In order words, the order of preference for a given option is:
+    #
+    #  scope | preference | source
+    #  global  [lowest]     byexample's own default
+    #  global    :::        command line
+    #  global    :::        argument 'options'
+    #  example [highest]    example's options (to be done in the Parser instances)
+    optparser = get_default_options_parser(args)
+
+    options = optparser.parse(args.options)
+    cfg['optparser'] = optparser
+    cfg['options']= options
+
     # if the output is not atty, disable the color anyways
     cfg['use_colors'] &= cfg['output'].isatty()
 
@@ -145,8 +166,6 @@ def init(args):
     log("Configuration:\n%s." % pprint.pformat(cfg), cfg['verbosity']-2)
     log("Registry:\n%s." % pprint.pformat(registry), cfg['verbosity']-2)
 
-    optparser = get_default_options_parser(args)
-
     concerns = ConcernComposite(registry, **cfg)
 
     checker  = Checker(**cfg)
@@ -154,21 +173,4 @@ def init(args):
     finder = ExampleFinder(allowed_languages, registry, **cfg)
     runner = ExampleRunner(concerns, checker, **cfg)
 
-    # we parse the argument 'options' to allow the user to change
-    # some options.
-    # the options_parser should have a set of default values based
-    # on the flags and values from the command line.
-    #
-    # this argument 'options' will be parsed again later by a parser to
-    # extract options that may be more language-specific
-    #
-    # In order words, the order of preference for a given option is:
-    #
-    #  scope | preference | source
-    #  global  [lowest]     byexample's own default
-    #  global    :::        command line
-    #  global    :::        argument 'options'
-    #  example [highest]    example's options (to be done in the Parser instances)
-    options = optparser.parse(args.options)
-
-    return testfiles, finder, runner, optparser, options
+    return testfiles, finder, runner, options

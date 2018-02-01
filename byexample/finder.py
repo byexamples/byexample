@@ -20,7 +20,8 @@ class ExampleFinder(object):
     :         :      -----------                                      report
                                                                   done by reporter
     '''
-    def __init__(self, allowed_languages, registry, verbosity, **unused):
+    def __init__(self, allowed_languages, registry, verbosity,
+                        optparser, options, **unused):
         self.allowed_languages = allowed_languages
         self.verbosity = verbosity
         self.available_finders = registry['finders'].values()
@@ -28,16 +29,19 @@ class ExampleFinder(object):
         self.parser_by_language = registry['parsers']
         self.interpreter_by_language = registry['interpreters']
 
-    def get_examples_from_file(self, optparser, options, filepath):
+        self.optparser = optparser
+        self.options = options
+
+    def get_examples_from_file(self, filepath):
         with open(filepath, 'rtU') as f:
             string = f.read()
 
-        return self.get_examples_from_string(optparser, options, string, filepath)
+        return self.get_examples_from_string(string, filepath)
 
-    def get_examples_from_string(self, optparser, options, string, filepath='<string>'):
+    def get_examples_from_string(self, string, filepath='<string>'):
         all_examples = []
         for finder in self.available_finders:
-            examples = self.get_examples_using(finder, optparser, options, string, filepath)
+            examples = self.get_examples_using(finder, string, filepath)
             all_examples.extend(examples)
 
         # sort the examples in the same order
@@ -98,7 +102,7 @@ class ExampleFinder(object):
             >>> ex2 = build_example('python', *range2)
 
             >>> f = ExampleFinder([], dict((k, {}) for k in \
-            ...                   ('parsers', 'finders', 'interpreters')), 0)
+            ...                   ('parsers', 'finders', 'interpreters')), 0, None, None)
 
             >>> f.check_example_overlap([ex1, ex2], 'foo.rst')
             Traceback<...>
@@ -193,7 +197,7 @@ class ExampleFinder(object):
         log(build_exception_msg("Dropped example: " + reason, where, self),
                 self.verbosity-2)
 
-    def get_examples_using(self, finder, optparser, options, string, filepath='<string>'):
+    def get_examples_using(self, finder, string, filepath='<string>'):
         charno = 0
         start_lineno = 1  # humans tend to count from 1
         examples = []
@@ -212,7 +216,7 @@ class ExampleFinder(object):
             where = Where(start_lineno, end_lineno, filepath)
 
             # let's find what language is about
-            language = finder.get_language_of(options, match, where)
+            language = finder.get_language_of(self.options, match, where)
             if not language:
                 self._log_drop('language undefined', where)
                 continue
@@ -234,7 +238,7 @@ class ExampleFinder(object):
                 continue # TODO should be an error?
 
             # perfect, we have everything to build an example
-            example = parser.get_example_from_match(optparser, options, match,
+            example = parser.get_example_from_match(self.optparser, self.options, match,
                                                     example_str,
                                                     interpreter, finder, where)
 
