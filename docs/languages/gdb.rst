@@ -17,7 +17,7 @@ To show you this, let's first create a program to debug:
     > }
     > EOF
 
-    $ gcc -o test.bin -ggdb -O0 test.c  # byexample: +TIMEOUT=5
+    $ gcc -o test.bin -ggdb -O0 test.c  # byexample: +timeout=5
 
 The program is quite simple, it just prints its parameters in reverse order
 
