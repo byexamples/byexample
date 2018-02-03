@@ -181,8 +181,11 @@ class Options(collections.MutableMapping):
 
 
 class OptionParser(argparse.ArgumentParser):
-    def __init__(self):
-        argparse.ArgumentParser.__init__(self, prefix_chars='-+')
+    def __init__(self, **kw):
+        if 'prefix_chars' not in kw:
+            kw['prefix_chars'] = '-+'
+
+        argparse.ArgumentParser.__init__(self, **kw)
 
     def add_flag(self, name, **kw):
         g = self.add_mutually_exclusive_group()

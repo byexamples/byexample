@@ -100,7 +100,7 @@ def get_encoding(encoding, verbosity):
     return encoding
 
 def get_default_options_parser(cmdline_args):
-    options_parser = OptionParser()
+    options_parser = OptionParser(add_help=False)
     options_parser.add_flag("fail-fast", default=cmdline_args.fail_fast)
     options_parser.add_flag("norm-ws", default=False)
     options_parser.add_flag("pass", default=False)

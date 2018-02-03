@@ -1,5 +1,6 @@
 import collections, re, shlex, argparse
 from .common import log, build_exception_msg, tohuman
+from .options import OptionParser
 
 Example = collections.namedtuple('Example', ['interpreter',
                                              'filepath',
@@ -66,7 +67,7 @@ class ExampleParser(object):
 
         You must not modify parent_parser in any way.
         '''
-        return parent_parser
+        return OptionParser(parents=[parent_parser])
 
     def capture_tag_regex(self):
         '''
