@@ -92,8 +92,13 @@ class ExampleParser(object):
         '''
         raise NotImplementedError() # pragma: no cover
 
+    def expected_from_match(self, match):
+        return match.group("expected")
+
     def get_example_from_match(self, optparser, options, match, example_str,
                                      interpreter, finder, where):
+        self.options = options
+
         start_lineno, end_lineno, filepath = where
         indent = match.group('indent')
 
@@ -102,12 +107,13 @@ class ExampleParser(object):
         match = self.check_keep_matching(example_str, match, where)
 
         snippet  = match.group("snippet")
-        expected = match.group("expected")
+        options.up(self.extract_options(snippet, optparser, where))
+
+        expected = self.expected_from_match(match)
 
         if not expected:
             expected = ''   # make sure that it is a string
 
-        options.up(self.extract_options(snippet, optparser, where))
 
         expected_regexs, positions, rcounts, captures = self.expected_as_regexs(
                                                 expected,
@@ -164,6 +170,7 @@ class ExampleParser(object):
 
         options.down()
 
+        del self.options
         return example
 
     def check_and_remove_ident(self, example_str, indent, where):
