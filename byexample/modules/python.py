@@ -22,7 +22,6 @@ Example:
 
 import re, pexpect, sys, time
 from byexample.common import log, build_exception_msg
-from byexample.options import OptionParser
 from byexample.parser import ExampleParser
 from byexample.finder import MatchFinder
 from byexample.interpreter import Interpreter, PexepctMixin
@@ -68,20 +67,18 @@ class PythonParser(ExampleParser):
         return re.compile(r'#\s*%s:\s*([^\n\'"]*)$' % keyword,
                                                     re.MULTILINE)
 
-    def extend_option_parser(self, parent_parser):
-        options_parser = OptionParser(parents=[parent_parser])
-
-        options_parser.add_flag("pydoctest", default=False)
+    def extend_option_parser(self, parser):
+        parser.add_flag("pydoctest", default=False)
 
         if self.compatibility_mode:
-            options_parser.add_flag("NORMALIZE_WHITESPACE", default=False)
-            options_parser.add_flag("SKIP", default=False)
-            options_parser.add_flag("ELLIPSIS", default=False)
-            options_parser.add_flag("DONT_ACCEPT_BLANKLINE", default=False)
-            options_parser.add_flag("DONT_ACCEPT_TRUE_FOR_1", default=False)
-            options_parser.add_flag("IGNORE_EXCEPTION_DETAIL", default=False)
+            parser.add_flag("NORMALIZE_WHITESPACE", default=False)
+            parser.add_flag("SKIP", default=False)
+            parser.add_flag("ELLIPSIS", default=False)
+            parser.add_flag("DONT_ACCEPT_BLANKLINE", default=False)
+            parser.add_flag("DONT_ACCEPT_TRUE_FOR_1", default=False)
+            parser.add_flag("IGNORE_EXCEPTION_DETAIL", default=False)
 
-        return options_parser
+        return parser
 
     def extract_options(self, snippet, optparser, where):
         # let's force a compatibility mode before parsing,

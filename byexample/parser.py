@@ -53,21 +53,15 @@ class ExampleParser(object):
         '''
         return shlex.split(string)
 
-    def extend_option_parser(self, parent_parser):
+    def extend_option_parser(self, parser):
         '''
-        Return an instance of argparse.ArgumentParser that will be in
+        Extend the the instance of OptionParser that will be in
         charge of parsing the options list returned by example_options_as_list.
 
         Basically you need to see the options of an examples as if they were
         options and flags in a command line.
-
-        Because some of the options are implemented by byexample directly,
-        those are parsed with parent_parser.
-        It is wise to add this parser as a parent parser of yours.
-
-        You must not modify parent_parser in any way.
         '''
-        return OptionParser(parents=[parent_parser])
+        return parser
 
     def capture_tag_regex(self):
         '''
@@ -812,7 +806,10 @@ class ExampleParser(object):
         if not isinstance(optlist, list):
             raise ValueError("The option list returned by the parser is not a list!. This probably means that there is a bug in the parser %s." % str(self))
 
-        optparser_extended = self.extend_option_parser(optparser)
+        optparser_extended = OptionParser(parents=[optparser],
+                                            prog='byexample',
+                                            add_help=True)
+        self.extend_option_parser(optparser_extended)
         if not isinstance(optparser_extended, argparse.ArgumentParser):
             raise ValueError("The option parser is not an instance of ArgumentParser!.  This probably means that there is a bug in the parser %s." % str(self))
 
