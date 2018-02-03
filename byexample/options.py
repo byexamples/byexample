@@ -179,6 +179,8 @@ class Options(collections.MutableMapping):
 
         return clone
 
+class UnrecognizedOption(Exception):
+    pass
 
 class OptionParser(argparse.ArgumentParser):
     def __init__(self, **kw):
@@ -215,3 +217,6 @@ class OptionParser(argparse.ArgumentParser):
             args = self.parse_known_args(source)[0]
 
         return Options(vars(args))
+
+    def error(self, message):
+        raise UnrecognizedOption(message)

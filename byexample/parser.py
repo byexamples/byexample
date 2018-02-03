@@ -1,6 +1,6 @@
 import collections, re, shlex, argparse
 from .common import log, build_exception_msg, tohuman
-from .options import OptionParser
+from .options import OptionParser, UnrecognizedOption
 
 Example = collections.namedtuple('Example', ['interpreter',
                                              'filepath',
@@ -828,7 +828,10 @@ class ExampleParser(object):
         # any other options is treated as an error
         #
         # TODO handle errors here: we check this but we don't do anything useful
-        opts.up(optparser_extended.parse(optlist, strict=True))
+        try:
+          opts.up(optparser_extended.parse(optlist, strict=True))
+        except UnrecognizedOption as e:
+            raise ValueError(build_exception_msg(str(e), where, self))
 
         return opts
 
