@@ -21,6 +21,8 @@ Example:
 """
 
 import re, pexpect, sys, time
+from byexample.common import log, build_exception_msg
+from byexample.options import OptionParser
 from byexample.parser import ExampleParser
 from byexample.finder import MatchFinder
 from byexample.interpreter import Interpreter, PexepctMixin
@@ -50,12 +52,104 @@ class PythonPromptFinder(MatchFinder):
 class PythonParser(ExampleParser):
     language = 'python'
 
+    def __init__(self, *args, **kw):
+        ExampleParser.__init__(self, *args, **kw)
+        self.enabled_compatibility_mode_from_example = False
+        self.disabled_compatibility_mode_from_example = False
+
     def example_options_string_regex(self):
         # anything of the form:
         #   #  byexample:  +FOO -BAR +ZAZ=42
-        return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
+        if self.compatibility_mode:
+            keyword = r'(?:doctest|byexample)'
+        else:
+            keyword = r'byexample'
+
+        return re.compile(r'#\s*%s:\s*([^\n\'"]*)$' % keyword,
                                                     re.MULTILINE)
 
+    def extend_option_parser(self, parent_parser):
+        options_parser = OptionParser(parents=[parent_parser])
+
+        options_parser.add_flag("pydoctest", default=False)
+
+        if self.compatibility_mode:
+            options_parser.add_flag("NORMALIZE_WHITESPACE", default=False)
+            options_parser.add_flag("SKIP", default=False)
+            options_parser.add_flag("ELLIPSIS", default=False)
+            options_parser.add_flag("DONT_ACCEPT_BLANKLINE", default=False)
+            options_parser.add_flag("DONT_ACCEPT_TRUE_FOR_1", default=False)
+            options_parser.add_flag("IGNORE_EXCEPTION_DETAIL", default=False)
+
+        return options_parser
+
+    def extract_options(self, snippet, optparser, where):
+        # let's force a compatibility mode before parsing,
+        # the compatibility mode uses a parser that it is a superset of the
+        # parser in non-compatibility mode so we should be safe
+        self.compatibility_mode = True
+        options = ExampleParser.extract_options(self, snippet, optparser, where)
+
+        if options['pydoctest']:
+            # okay, the user really wanted to be in compatibility mode
+            pass
+        else:
+            # ups, the user don't want this mode, re parse the options
+            # in non-compatibility mode
+            self.compatibility_mode = False
+            options = ExampleParser.extract_options(self, snippet, optparser, where)
+
+        if options['pydoctest']:
+            # map the following doctest's options to byexample's ones
+            if options['NORMALIZE_WHITESPACE']:
+                options['norm_ws'] = True
+
+            if options['SKIP']:
+                options['skip'] = True
+
+            # do not capture by default, force this
+            options['capture'] = False
+            if options['ELLIPSIS']:
+                # enable it if ELLIPSIS but see also expected_from_match
+                # as this byexample's option is not equivalent to doctest's one
+                options['capture'] = True
+
+            # the following are not supported: ignore them and print a note
+            # somewhere
+            if options['DONT_ACCEPT_TRUE_FOR_1']:
+                log(build_exception_msg("[Note] DONT_ACCEPT_TRUE_FOR_1 flag is not supported.", where, self),
+                        self.verbosity-2)
+
+            if options['IGNORE_EXCEPTION_DETAIL']:
+                log(build_exception_msg("[Note] IGNORE_EXCEPTION_DETAIL flag is not supported.", where, self),
+                        self.verbosity-2)
+
+        else:
+            # no doctest's flags are allowed (this should never happen)
+            assert all(f not in options for f in ('SKIP', 'ELLIPSIS',
+                        'IGNORE_EXCEPTION_DETAIL', 'DONT_ACCEPT_TRUE_FOR_1',
+                        'DONT_ACCEPT_BLANKLINE', 'NORMALIZE_WHITESPACE'))
+
+        return options
+
+    def expected_from_match(self, match):
+        expected_str = ExampleParser.expected_from_match(self, match)
+
+        options = self.options
+        if options['pydoctest']:
+            if not options['DONT_ACCEPT_BLANKLINE']:
+                expected_str = re.sub(r'^<blankline>$', '', expected_str,
+                                        flags=re.MULTILINE|re.DOTALL)
+
+            if options['ELLIPSIS']:
+                if self.capture_tag_regex().search(expected_str):
+                    log(build_exception_msg("[Warn] The expected strings has <label> strings that will not be considered literal but as capture tags.", where, self),
+                            self.verbosity)
+
+                ellipsis_tag = '<%s>' % self.ellipsis_marker()
+                expected_str = expected_str.replace('...', ellipsis_tag)
+
+        return expected_str
 
     def source_from_snippet(self, snippet):
         lines = snippet.split("\n")
@@ -115,7 +209,7 @@ del patch_pprint_safe_repr
 
     def run(self, example, flags):
         return self._exec_and_wait(example.source,
-                                    timeout=int(flags['TIMEOUT']))
+                                    timeout=int(flags['timeout']))
 
     def interact(self, example, options):
         PexepctMixin.interact(self)

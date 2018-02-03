@@ -3,56 +3,79 @@ Python support
 
 ``byexample`` is inspired by the Python's ``doctest`` module. I borrowed a
 few ideas from it and I also tried to overcome its issues.
+
 This makes a Python example to look very similar to a doctest but it is not
 fully compatible with it.
 
-Differences with ``doctest``
-----------------------------
+To make it fully compatible, you need to pass the '+pydoctest' flag to
+``byexample`` in the command line.
 
-The first is that the options are enabled using the ``byexample`` keyword
-instead of ``doctest``
+In the following examples I will pass this flag in the examples themselves.
+
+Compatibility with ``doctest``
+------------------------------
+
+If you enabled the compatibility from the command line, nothing needs to be
+changed: you can still using the ``doctest`` keyword to change the options
+of the example.
+
+But because I'm enabling it form the example itself, I need use the
+``byexample`` keyword instead of ``doctest``
 
 .. code:: python
 
-    >>> [1, 2, 3]   # use byexample, not doctest --> # byexample: +WS
+    >>> [1, 2, 3]   # use byexample, not doctest --> # byexample: +pydoctest  +NORMALIZE_WHITESPACE
     [1,   2,   3]
 
-As you can see ``byexample`` uses a different set of options. Here
-is a summary:
 
-====================  ==========================  ============================
-``byexample``         ``doctest``                 Observations
-====================  ==========================  ============================
-``WS``                ``NORMALIZE_WHITESPACE``    Same functionality.
-*not supported*       ``DONT_ACCEPT_TRUE_FOR_1``  Only useful for Python 2.3.
-``CAPTURE``           ``ELLIPSIS``                ``doctests`` uses ``...``; ``byexample`` uses ``<...>``
-``SKIP``              ``SKIP``                    Same functionality.
-``PASS``              *not supported*             Execute but do not check.
-*better alternative*  ``IGNORE_EXCEPTION_DETAIL`` Use the more general ``CAPTURE`` flag.
-*better alternative*  ``DONT_ACCEPT_BLANKLINE``   Use the more general ``CAPTURE`` flag.
-====================  =========================== ============================
+As you can see ``NORMALIZE_WHITESPACE`` is supported.
+
+We support ``SKIP``, ``DONT_ACCEPT_BLANKLINE`` flags and the  ``<blankline>``
+tags:
+
+.. code:: python
+
+    >>> True   # byexample: +pydoctest +SKIP
+    False
+
+    >>> print("foo\n<blankline>\nbar")   # byexample: +pydoctest +DONT_ACCEPT_BLANKLINE
+    foo
+    <blankline>
+    bar
+
+    >>> print("foo\n\nbar")   # byexample: +pydoctest
+    foo
+    <blankline>
+    bar
+
+As you may guess, the ``byexample``'s cature tags feature are disabled in this
+compatibility mode.
+
+But in the other hand, you can use the ``ELLIPSIS`` flag as usual.
+
+.. code:: python
+
+    >>> print("fooxxxbar")   # byexample: +pydoctest +ELLIPSIS
+    foo...bar
+
+
+Compatibility overview
+......................
+
+==========================  ============================
+``doctest``                 Observations
+==========================  ============================
+``NORMALIZE_WHITESPACE``    Supported
+``DONT_ACCEPT_TRUE_FOR_1``  Ignored
+``ELLIPSIS``                Supported
+``SKIP``                    Supported
+``IGNORE_EXCEPTION_DETAIL`` Ignored
+``DONT_ACCEPT_BLANKLINE``   Supported
+=========================== ============================
 
 ``DONT_ACCEPT_TRUE_FOR_1`` is not supported as it was implemented in ``doctest``
 as a workaround for the result of a comparison in Python 2.3: in that time
 Python returned 1 and 0 instead of ``True`` and ``False``.
-
-``DONT_ACCEPT_BLANKLINE`` and ``IGNORE_EXCEPTION_DETAIL`` are used to ignore
-some pieces of the output. The ``CAPTURE`` flag of ``byexample`` should cover
-those cases.
-
-Ellipsis
-........
-
-By default, if the expected text has the ``<...>`` marker, that
-will match for any string.
-
-This is different from ``doctest`` where the marker is ``...`` and needs
-to be enabled with the ``+ELLIPSIS`` option but the net effect is the same.
-
-.. code:: python
-
-    >>> print(list(range(20)))
-    [0, 1, <...>, 18, 19]
 
 
 Exceptions
@@ -65,24 +88,50 @@ This is different from ``doctest`` where the exceptions are captured and handled
 different from other outputs. This enables ``doctest`` to know when an
 exception was raised but in the practice is not critical.
 
+If you didn't enabled the compatibility with ``doctest``, the ``<...>`` is
+enabled by default.
+If you did, you need to disable it for the particular example
+
 .. code:: python
 
-    >>> raise Exception('oh no!')
+    >>> raise Exception('oh no!')  # byexample: -pydoctest
     Traceback <...>
     Exception: oh no!
 
-    >>> non_existent_var
+    >>> non_existent_var  # no compatibility, <...> capture enabled by default
     Traceback <...>
     NameError: name 'non_existent_var' is not defined
 
 
-Syntax errors are also captured.
+A difference with ``doctest``, syntax errors are also captured.
 
 .. code:: python
 
     >>> f(]        # invalid syntax
       File<...>
     SyntaxError: invalid syntax
+
+Migration to the ``byexample``'s way
+------------------------------------
+
+As you can see ``byexample`` uses a different set of options. Here
+is a summary of the equivalent options:
+
+====================  ==========================  ============================
+``byexample``         ``doctest``                 Observations
+====================  ==========================  ============================
+``norm-ws``           ``NORMALIZE_WHITESPACE``    Same functionality.
+*not supported*       ``DONT_ACCEPT_TRUE_FOR_1``  Only useful for Python 2.3.
+``capture``           ``ELLIPSIS``                More powerful than ``doctest`` version
+``skip``              ``SKIP``                    Same functionality.
+``pass``              *not supported*             Execute but do not check.
+*better alternative*  ``IGNORE_EXCEPTION_DETAIL`` Use the more general ``capture`` flag.
+*better alternative*  ``DONT_ACCEPT_BLANKLINE``   Use the more general ``capture`` flag.
+====================  =========================== ============================
+
+``DONT_ACCEPT_BLANKLINE`` and ``IGNORE_EXCEPTION_DETAIL`` are used to ignore
+some pieces of the output. The ``capture`` flag of ``byexample`` should cover
+those cases and even more.
 
 
 Bytes/Unicode marker
@@ -127,10 +176,10 @@ The following is a valid example for Python 2.x and 3.x as well.
     {'aaaaaaaa': {'bbbbbbbbbb': 'asasaaaaaaaaaaaaaasasa',
                   'c': 'asaaaaaaaaaaaaaaaaaaaaa'}}
 
-    >>> b'b'
+    >>> b'b'            # byexample: +pydoctest
     'b'
 
-    >>> u'u'
+    >>> u'u'            # byexample: +pydoctest
     'u'
 
 If it is really important to show the type of the string I would recommend to
