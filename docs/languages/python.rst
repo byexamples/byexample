@@ -7,7 +7,7 @@ few ideas from it and I also tried to overcome its issues.
 This makes a Python example to look very similar to a doctest but it is not
 fully compatible with it.
 
-To make it (almost) fully compatible, you need to pass the '+pydoctest' flag to
+To make it (almost) fully compatible, you need to pass the '+py-doctest' flag to
 ``byexample`` in the command line.
 
 In the following examples I will pass this flag in the examples themselves.
@@ -24,7 +24,7 @@ But because I'm enabling it form the example itself, I need use the
 
 .. code:: python
 
-    >>> [1, 2, 3]   # use byexample, not doctest --> # byexample: +pydoctest  +NORMALIZE_WHITESPACE
+    >>> [1, 2, 3]   # use byexample, not doctest --> # byexample: +py-doctest  +NORMALIZE_WHITESPACE
     [1,   2,   3]
 
 
@@ -35,15 +35,15 @@ tags:
 
 .. code:: python
 
-    >>> True   # byexample: +pydoctest +SKIP
+    >>> True   # byexample: +py-doctest +SKIP
     False
 
-    >>> print("foo\n<blankline>\nbar")   # byexample: +pydoctest +DONT_ACCEPT_BLANKLINE
+    >>> print("foo\n<blankline>\nbar")   # byexample: +py-doctest +DONT_ACCEPT_BLANKLINE
     foo
     <blankline>
     bar
 
-    >>> print("foo\n\nbar")   # byexample: +pydoctest
+    >>> print("foo\n\nbar")   # byexample: +py-doctest
     foo
     <blankline>
     bar
@@ -55,7 +55,7 @@ But in the other hand, you can use the ``ELLIPSIS`` flag as usual.
 
 .. code:: python
 
-    >>> print("fooxxxbar")   # byexample: +pydoctest +ELLIPSIS
+    >>> print("fooxxxbar")   # byexample: +py-doctest +ELLIPSIS
     foo...bar
 
 
@@ -94,7 +94,7 @@ If you did, you need to disable it for the particular example
 
 .. code:: python
 
-    >>> raise Exception('oh no!')  # byexample: -pydoctest
+    >>> raise Exception('oh no!')  # byexample: -py-doctest
     Traceback <...>
     Exception: oh no!
 
@@ -176,10 +176,10 @@ The following is a valid example for Python 2.x and 3.x as well.
     {'aaaaaaaa': {'bbbbbbbbbb': 'asasaaaaaaaaaaaaaasasa',
                   'c': 'asaaaaaaaaaaaaaaaaaaaaa'}}
 
-    >>> b'b'            # byexample: +pydoctest
+    >>> b'b'            # byexample: +py-doctest
     'b'
 
-    >>> u'u'            # byexample: +pydoctest
+    >>> u'u'            # byexample: +py-doctest
     'u'
 
 If it is really important to show the type of the string I would recommend to
@@ -192,7 +192,7 @@ make an explicit check or using ``repr``
 
 The pretty print is disabled if you are in compatibility mode with doctest.
 If you find it useful but you cannot leave the compatibility mode, you can set
-the ``+pyprettyprint`` flag to enable it.
+the ``+py-pretty-print`` flag to enable it.
 
 
 Custom prompt

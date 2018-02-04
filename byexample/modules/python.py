@@ -63,8 +63,8 @@ class PythonParser(ExampleParser):
                                                     re.MULTILINE)
 
     def extend_option_parser(self, parser):
-        parser.add_flag("pydoctest", default=False)
-        parser.add_flag("pyprettyprint", default=False)
+        parser.add_flag("py-doctest", default=False)
+        parser.add_flag("py-pretty-print", default=False)
 
         if self.compatibility_mode:
             parser.add_flag("NORMALIZE_WHITESPACE", default=False)
@@ -77,7 +77,7 @@ class PythonParser(ExampleParser):
         return parser
 
     def _map_doctest_opts_to_byexample_opts(self, options):
-        if options['pydoctest']:
+        if options['py_doctest']:
             # map the following doctest's options to byexample's ones
             if options['NORMALIZE_WHITESPACE']:
                 options['norm_ws'] = True
@@ -115,7 +115,7 @@ class PythonParser(ExampleParser):
         self.compatibility_mode = True
         options = parse_method(*args, **kwargs)
 
-        if options['pydoctest']:
+        if options['py_doctest']:
             # okay, the user really wanted to be in compatibility mode
             pass
         else:
@@ -142,7 +142,7 @@ class PythonParser(ExampleParser):
         expected_str = ExampleParser.expected_from_match(self, match)
 
         options = self.options
-        if options['pydoctest']:
+        if options['py_doctest']:
             if not options['DONT_ACCEPT_BLANKLINE']:
                 expected_str = re.sub(r'^<blankline>$', '', expected_str,
                                         flags=re.MULTILINE|re.DOTALL)
@@ -224,8 +224,8 @@ del patch_pprint_safe_repr
         PexepctMixin.interact(self)
 
     def initialize(self, examples, options):
-        pretty_print = (options['pydoctest'] and options['pyprettyprint']) \
-                        or not options['pydoctest']
+        pretty_print = (options['py_doctest'] and options['py_pretty_print']) \
+                        or not options['py_doctest']
 
         # set the final command
         self.cmd = self._get_cmd(pretty_print)
