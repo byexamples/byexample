@@ -12,7 +12,7 @@ capabilities
     $ byexample -h                      # byexample: +norm-ws
     usage: r.py [-h] [-V] [--ff] [--dry] [--skip file [file ...]] [-m dir]
                 [-d {none,unified,ndiff,context}] [--no-enhance-diff] -l language
-                [--timeout TIMEOUT] [-o OPTIONS] [--encoding ENCODING]
+                [--timeout TIMEOUT] [-o OPTIONS_STR] [--encoding ENCODING]
                 [--pretty {none,all}] [--interact] [-v | -q]
                 file [file ...]
     positional arguments:
@@ -38,8 +38,8 @@ capabilities
       --timeout TIMEOUT     timeout in seconds to complete each example (2 by
                             default); this can be changed per example with TIMEOUT
                             option.
-      -o OPTIONS, --option OPTIONS
-                            add additional options of the form key=val.
+      -o OPTIONS_STR, --options OPTIONS_STR
+                            add additional options.
       --encoding ENCODING   select the encoding (supported in Python 3 only, use
                             the same encoding of stdout by default)
       --pretty {none,all}   control how to pretty print the output.
