@@ -51,11 +51,6 @@ class PythonPromptFinder(MatchFinder):
 class PythonParser(ExampleParser):
     language = 'python'
 
-    def __init__(self, *args, **kw):
-        ExampleParser.__init__(self, *args, **kw)
-        self.enabled_compatibility_mode_from_example = False
-        self.disabled_compatibility_mode_from_example = False
-
     def example_options_string_regex(self):
         # anything of the form:
         #   #  byexample:  +FOO -BAR +ZAZ=42
@@ -80,22 +75,7 @@ class PythonParser(ExampleParser):
 
         return parser
 
-    def extract_options(self, snippet, optparser, where):
-        # let's force a compatibility mode before parsing,
-        # the compatibility mode uses a parser that it is a superset of the
-        # parser in non-compatibility mode so we should be safe
-        self.compatibility_mode = True
-        options = ExampleParser.extract_options(self, snippet, optparser, where)
-
-        if options['pydoctest']:
-            # okay, the user really wanted to be in compatibility mode
-            pass
-        else:
-            # ups, the user don't want this mode, re parse the options
-            # in non-compatibility mode
-            self.compatibility_mode = False
-            options = ExampleParser.extract_options(self, snippet, optparser, where)
-
+    def _map_doctest_opts_to_byexample_opts(self, options):
         if options['pydoctest']:
             # map the following doctest's options to byexample's ones
             if options['NORMALIZE_WHITESPACE']:
@@ -127,7 +107,35 @@ class PythonParser(ExampleParser):
                         'IGNORE_EXCEPTION_DETAIL', 'DONT_ACCEPT_TRUE_FOR_1',
                         'DONT_ACCEPT_BLANKLINE', 'NORMALIZE_WHITESPACE'))
 
+    def _double_parse(self, parse_method, args, kwargs):
+        # let's force a compatibility mode before parsing,
+        # the compatibility mode uses a parser that it is a superset of the
+        # parser in non-compatibility mode so we should be safe
+        self.compatibility_mode = True
+        options = parse_method(*args, **kwargs)
+
+        if options['pydoctest']:
+            # okay, the user really wanted to be in compatibility mode
+            pass
+        else:
+            # ups, the user don't want this mode, re parse the options
+            # in non-compatibility mode
+            self.compatibility_mode = False
+            options = parse_method(*args, **kwargs)
+
+        self._map_doctest_opts_to_byexample_opts(options)
         return options
+
+    def extract_cmdline_options(self, opts_from_cmdline):
+        return self._double_parse(ExampleParser.extract_cmdline_options,
+                                    args=(self, opts_from_cmdline),
+                                    kwargs={})
+
+
+    def extract_options(self, snippet, where):
+        return self._double_parse(ExampleParser.extract_options,
+                                    args=(self, snippet, where),
+                                    kwargs={})
 
     def expected_from_match(self, match):
         expected_str = ExampleParser.expected_from_match(self, match)
