@@ -21,7 +21,7 @@ class ExampleFinder(object):
                                                                   done by reporter
     '''
     def __init__(self, allowed_languages, registry, verbosity,
-                        optparser, options, **unused):
+                        options, **unused):
         self.allowed_languages = allowed_languages
         self.verbosity = verbosity
         self.available_finders = registry['finders'].values()
@@ -29,7 +29,6 @@ class ExampleFinder(object):
         self.parser_by_language = registry['parsers']
         self.interpreter_by_language = registry['interpreters']
 
-        self.optparser = optparser
         self.options = options
 
     def get_examples_from_file(self, filepath):
@@ -102,7 +101,7 @@ class ExampleFinder(object):
             >>> ex2 = build_example('python', *range2)
 
             >>> f = ExampleFinder([], dict((k, {}) for k in \
-            ...                   ('parsers', 'finders', 'interpreters')), 0, None, None)
+            ...                   ('parsers', 'finders', 'interpreters')), 0, None)
 
             >>> f.check_example_overlap([ex1, ex2], 'foo.rst')
             Traceback<...>
@@ -238,7 +237,7 @@ class ExampleFinder(object):
                 continue # TODO should be an error?
 
             # perfect, we have everything to build an example
-            example = parser.get_example_from_match(self.optparser, self.options, match,
+            example = parser.get_example_from_match(match,
                                                     example_str,
                                                     interpreter, finder, where)
 

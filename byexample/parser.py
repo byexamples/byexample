@@ -18,11 +18,11 @@ Expected = collections.namedtuple('Expected', ['str',
                                                ])
 
 class ExampleParser(object):
-    def __init__(self, verbosity, encoding, opts_from_cmdline, **unused):
+    def __init__(self, verbosity, encoding, optparser, options, **unused):
         self.verbosity = verbosity
-        self.encoding = encoding
-
-        self.opts_from_cmdline = opts_from_cmdline
+        self.encoding  = encoding
+        self.optparser = optparser
+        self.options   = options
 
     def __repr__(self):
         return '%s Parser' % tohuman(self.language)
@@ -89,10 +89,9 @@ class ExampleParser(object):
     def expected_from_match(self, match):
         return match.group("expected")
 
-    def get_example_from_match(self, optparser, options, match, example_str,
+    def get_example_from_match(self, match, example_str,
                                      interpreter, finder, where):
-        self.options = options
-
+        options = self.options
         start_lineno, end_lineno, filepath = where
         indent = match.group('indent')
 
@@ -101,7 +100,7 @@ class ExampleParser(object):
         match = self.check_keep_matching(example_str, match, where)
 
         snippet  = match.group("snippet")
-        options.up(self.extract_options(snippet, optparser, where))
+        options.up(self.extract_options(snippet, where))
 
         expected = self.expected_from_match(match)
 
@@ -163,8 +162,6 @@ class ExampleParser(object):
                           interpreter=interpreter)
 
         options.down()
-
-        del self.options
         return example
 
     def check_and_remove_ident(self, example_str, indent, where):
@@ -172,7 +169,7 @@ class ExampleParser(object):
         Given an example string, remove its indent, including a possible empty
         line at the end.
             >>> from byexample.parser import ExampleParser
-            >>> parser = ExampleParser(0, 'utf8', ""); parser.language = 'python'
+            >>> parser = ExampleParser(0, 'utf8', "", None); parser.language = 'python'
             >>> check_and_remove_ident = parser.check_and_remove_ident
             >>> check_and_remove_ident('  >>> 1 + 2\n  3\n ', '  ', (1, 2, 'foo.rst'))
             '>>> 1 + 2\n3'
@@ -225,7 +222,7 @@ class ExampleParser(object):
             >>> from byexample.parser import ExampleParser
             >>> import re
 
-            >>> parser = ExampleParser(0, 'utf8', ""); parser.language = 'python'
+            >>> parser = ExampleParser(0, 'utf8', "", None); parser.language = 'python'
             >>> check_and_remove_ident = parser.check_and_remove_ident
             >>> check_keep_matching    = parser.check_keep_matching
 
@@ -284,7 +281,7 @@ class ExampleParser(object):
         regex per line.
 
             >>> from byexample.parser import ExampleParser
-            >>> parser = ExampleParser(0, 'utf8', ""); parser.language = 'python'
+            >>> parser = ExampleParser(0, 'utf8', "", None); parser.language = 'python'
             >>> _safe = parser._as_safe_regexs
 
         A empty string doesn't yield anything useful
@@ -496,7 +493,7 @@ class ExampleParser(object):
         a list of rcounts and a list of capture tag names seen.
 
             >>> from byexample.parser import ExampleParser
-            >>> parser = ExampleParser(0, 'utf8', ""); parser.language = 'python'
+            >>> parser = ExampleParser(0, 'utf8', "", None); parser.language = 'python'
             >>> _as_regexs = parser.expected_as_regexs
             >>> where = (1, 2, 'foo.rst')
 
