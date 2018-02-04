@@ -20,7 +20,7 @@ def parse_args(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('-V', '--version', action='version',
                         version='%(prog)s {version}'.format(version=__version__))
-    parser.add_argument("files", nargs='+', metavar='file',
+    parser.add_argument("files", nargs='*', metavar='file',
                         help="file that have the examples to run.")
     parser.add_argument("--ff", "--fail-fast", action='store_true',
                         dest='fail_fast',
