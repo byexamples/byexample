@@ -7,7 +7,7 @@ few ideas from it and I also tried to overcome its issues.
 This makes a Python example to look very similar to a doctest but it is not
 fully compatible with it.
 
-To make it fully compatible, you need to pass the '+pydoctest' flag to
+To make it (almost) fully compatible, you need to pass the '+pydoctest' flag to
 ``byexample`` in the command line.
 
 In the following examples I will pass this flag in the examples themselves.
@@ -189,6 +189,10 @@ make an explicit check or using ``repr``
 
     >>> isinstance(b, bytes)
     True
+
+The pretty print is disabled if you are in compatibility mode with doctest.
+If you find it useful but you cannot leave the compatibility mode, you can set
+the ``+pyprettyprint`` flag to enable it.
 
 
 Custom prompt
