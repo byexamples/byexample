@@ -63,16 +63,17 @@ class PythonParser(ExampleParser):
                                                     re.MULTILINE)
 
     def extend_option_parser(self, parser):
-        parser.add_flag("py-doctest", default=False)
-        parser.add_flag("py-pretty-print", default=False)
+        parser.add_flag("py-doctest", default=False, help="enable the compatibility with doctest.")
+        parser.add_flag("py-pretty-print", default=False, help="enable the pretty print enhancement.")
+        parser.add_argument("-pypy", type=int, default=0)
 
-        if self.compatibility_mode:
-            parser.add_flag("NORMALIZE_WHITESPACE", default=False)
-            parser.add_flag("SKIP", default=False)
-            parser.add_flag("ELLIPSIS", default=False)
-            parser.add_flag("DONT_ACCEPT_BLANKLINE", default=False)
-            parser.add_flag("DONT_ACCEPT_TRUE_FOR_1", default=False)
-            parser.add_flag("IGNORE_EXCEPTION_DETAIL", default=False)
+        if getattr(self, 'compatibility_mode', True):
+            parser.add_flag("NORMALIZE_WHITESPACE", default=False, help="[doctest] alias for +norm-ws.")
+            parser.add_flag("SKIP", default=False, help="[doctest] alias for +skip.")
+            parser.add_flag("ELLIPSIS", default=False, help="[doctest] enables the ... capture.")
+            parser.add_flag("DONT_ACCEPT_BLANKLINE", default=False, help="[doctest] take <blankline> as literal.")
+            parser.add_flag("DONT_ACCEPT_TRUE_FOR_1", default=False, help="[doctest] ignored.")
+            parser.add_flag("IGNORE_EXCEPTION_DETAIL", default=False, help="[doctest] ignored.")
 
         return parser
 

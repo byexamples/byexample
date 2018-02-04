@@ -100,16 +100,17 @@ def get_encoding(encoding, verbosity):
     return encoding
 
 def get_default_options_parser(cmdline_args):
-    options_parser = OptionParser(add_help=False, prog='byexample')
-    options_parser.add_flag("fail-fast")
-    options_parser.add_flag("norm-ws")
-    options_parser.add_flag("pass")
-    options_parser.add_flag("skip")
-    options_parser.add_flag("capture")
-    options_parser.add_flag("enhance-diff")
-    options_parser.add_flag("interact")
-    options_parser.add_argument("+timeout", type=int)
-    options_parser.add_argument("+diff", choices=['none', 'unified', 'ndiff', 'context'])
+    options_parser = OptionParser()
+    options_parser.add_flag("fail-fast", help="if an example fails, fail and stop all the execution.")
+    options_parser.add_flag("norm-ws", help="ignore the amount of whitespaces.")
+    options_parser.add_flag("pass", help="run the example but do not check its output.")
+    options_parser.add_flag("skip", help="do not run the example.")
+    options_parser.add_flag("capture", help="enable the capture tags <...>.")
+    options_parser.add_flag("enhance-diff", help="improve how the diff are shown.")
+    options_parser.add_flag("interact", help="interact with the interpreter manually if an example fails.")
+    options_parser.add_argument("+timeout", type=int, help="timeout in seconds to complete the example.")
+    options_parser.add_argument("+diff", choices=['none', 'unified', 'ndiff', 'context'],
+                                        help="select diff algorithm.")
 
     return options_parser
 
@@ -158,6 +159,20 @@ def get_options(args, cfg):
     log("Options (cmdline + --options): %s" % options, cfg['verbosity']-2)
     return options
 
+def show_options(cfg, registry, allowed_languages):
+    parsers = [p for p in registry['parsers'].values()
+               if p.language in allowed_languages]
+
+    def _title(t):
+        print(t)
+        print("-" * len(t))
+
+    _title("byexample's options")
+    cfg['optparser'].print_help()
+    for parser in parsers:
+        _title("%s's specific options" % parser.language)
+        parser.get_extended_option_parser(parent_parser=None).print_help()
+
 def extend_options_with_language_specific(cfg, registry, allowed_languages):
     parsers = [p for p in registry['parsers'].values()
                if p.language in allowed_languages]
@@ -194,6 +209,10 @@ def init(args):
 
     allowed_files = set(args.files) - set(args.skip)
     testfiles = [f for f in args.files if f in allowed_files]
+
+    if args.show_options:
+        show_options(cfg, registry, allowed_languages)
+        sys.exit(0)
 
     # now that we know what languages are allowed, extend the options
     # for them

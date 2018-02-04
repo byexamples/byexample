@@ -53,7 +53,7 @@ class ShellParser(ExampleParser):
                                                     re.MULTILINE)
 
     def extend_option_parser(self, parser):
-        parser.add_argument("+shell")
+        parser.add_argument("+shell", help='change the underlying shell to use.')
 
     def source_from_snippet(self, snippet):
         lines = snippet.split("\n")

@@ -57,7 +57,9 @@ def parse_args(args=None):
     parser.add_argument("-o", "--options",
                         dest='options_str',
                         default="",
-                        help='add additional options.')
+                        help='add additional options; see --show-options to list them.')
+    parser.add_argument("--show-options", action='store_true',
+                        help="show the available options for the selected languages (with -l)")
     parser.add_argument("--encoding",
                         default=sys.stdout.encoding,
                         help='select the encoding (supported in Python 3 only, ' + \
