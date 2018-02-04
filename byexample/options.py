@@ -184,22 +184,30 @@ class UnrecognizedOption(Exception):
 
 class OptionParser(argparse.ArgumentParser):
     def __init__(self, **kw):
-        if 'prefix_chars' not in kw:
-            kw['prefix_chars'] = '-+'
+        # allow the +flag/-flag semantics
+        kw.setdefault('prefix_chars', '-+')
 
-        if 'argument_default' not in kw:
-            # if an option is not explicitly set, and it has no
-            # a default value, do not create an entry for it
-            kw['argument_default'] = argparse.SUPPRESS
+        # if an option is not explicitly set, and it has no
+        # a default value, do not create an entry for it
+        kw.setdefault('argument_default', argparse.SUPPRESS)
+
+        # do not show any usage?
+        kw.setdefault('usage', argparse.SUPPRESS)
+
+        # do not show any program
+        kw.setdefault('prog', "")
+
+        # do not add -h/--help options
+        kw.setdefault('add_help', False)
 
         argparse.ArgumentParser.__init__(self, **kw)
 
-    def add_flag(self, name, **kw):
-        g = self.add_mutually_exclusive_group()
+    def add_flag(self, name, group_required=False, **kw):
+        g = self.add_mutually_exclusive_group(required=group_required)
         g.add_argument("+" + name, action='store_true', **kw)
-        g.add_argument("-" + name, action='store_false')
+        g.add_argument("-" + name, action='store_false', help=argparse.SUPPRESS)
 
-        return self
+        return g
 
     def defaults(self):
         return self.parse(None)
