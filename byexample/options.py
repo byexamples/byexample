@@ -187,6 +187,11 @@ class OptionParser(argparse.ArgumentParser):
         if 'prefix_chars' not in kw:
             kw['prefix_chars'] = '-+'
 
+        if 'argument_default' not in kw:
+            # if an option is not explicitly set, and it has no
+            # a default value, do not create an entry for it
+            kw['argument_default'] = argparse.SUPPRESS
+
         argparse.ArgumentParser.__init__(self, **kw)
 
     def add_flag(self, name, **kw):

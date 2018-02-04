@@ -101,24 +101,35 @@ def get_encoding(encoding, verbosity):
 
 def get_default_options_parser(cmdline_args):
     options_parser = OptionParser(add_help=False, prog='byexample')
-    options_parser.add_flag("fail-fast", default=cmdline_args.fail_fast)
-    options_parser.add_flag("norm-ws", default=False)
-    options_parser.add_flag("pass", default=False)
-    options_parser.add_flag("skip", default=False)
-    options_parser.add_flag("capture", default=True)
-    options_parser.add_flag("enhance-diff", default=cmdline_args.enhance_diff)
-    options_parser.add_flag("interact", default=cmdline_args.interact)
-    options_parser.add_argument("+timeout", type=int,
-                                default=cmdline_args.timeout)
-    options_parser.add_argument("+diff", choices=['none', 'unified', 'ndiff', 'context'],
-                                default=cmdline_args.diff)
+    options_parser.add_flag("fail-fast")
+    options_parser.add_flag("norm-ws")
+    options_parser.add_flag("pass")
+    options_parser.add_flag("skip")
+    options_parser.add_flag("capture")
+    options_parser.add_flag("enhance-diff")
+    options_parser.add_flag("interact")
+    options_parser.add_argument("+timeout", type=int)
+    options_parser.add_argument("+diff", choices=['none', 'unified', 'ndiff', 'context'])
 
     return options_parser
 
 
 def get_options(args, cfg):
-    # the options_parser should have a set of default values based
+    # the options object should have a set of default values based
     # on the flags and values from the command line.
+    options = Options({ 'fail_fast': args.fail_fast,
+                        'norm_ws': False,
+                        'pass': False,
+                        'skip': False,
+                        'capture': True,
+                        'enhance_diff': args.enhance_diff,
+                        'interact': args.interact,
+                        'timeout': args.timeout,
+                        'diff': args.diff,
+                        })
+    log("Options (cmdline): %s" % options, cfg['verbosity']-2)
+
+    # create a parser for the rest og the options.
     optparser = get_default_options_parser(args)
 
     # we parse the argument 'options' to allow the user to change
@@ -129,7 +140,7 @@ def get_options(args, cfg):
     #
     # for this reason we parse this string in a non-strict way as it is
     # possible that the string contains language-specific flags
-    options = optparser.parse(args.options_str, strict=False)
+    options.up(optparser.parse(args.options_str, strict=False))
 
     # In order words, the order of preference for a given option is:
     #
@@ -144,6 +155,7 @@ def get_options(args, cfg):
     cfg['optparser'] = optparser
     cfg['options']= options
 
+    log("Options (cmdline + --options): %s" % options, cfg['verbosity']-2)
     return options
 
 def extend_options_with_language_specific(cfg, registry, allowed_languages):
@@ -153,6 +165,9 @@ def extend_options_with_language_specific(cfg, registry, allowed_languages):
     for parser in parsers:
         opts = parser.extract_cmdline_options(cfg['opts_from_cmdline'])
         cfg['options'].update(opts)
+
+    log("Options (cmdline + --options + language specific): %s" % cfg['options'],
+            cfg['verbosity']-2)
 
 def init(args):
     encoding = get_encoding(args.encoding, args.verbosity)
