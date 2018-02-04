@@ -72,11 +72,11 @@ semicolons. It is easy to get confused with this weird effect.
     => nil
 
 An alternative could be group all the expression and run the example
-with the ``PASS`` option to ignore the intermediate results.
+with the ``pass`` option to ignore the intermediate results.
 
 .. code:: ruby
 
-    >> a = 1       # byexample: +PASS
+    >> a = 1       # byexample: +pass
     >> b = 2
 
     >> a + b

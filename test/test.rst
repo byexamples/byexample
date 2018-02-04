@@ -13,14 +13,14 @@ to start.
 
     $ byexample -l python byexample/*.py
     <nl>
-    File byexample/checker.py, 62/62 test ran in <...> seconds
-    [PASS] Pass: 62 Fail: 0 Skip: 0
+    File byexample/checker.py, 60/60 test ran in <...> seconds
+    [PASS] Pass: 60 Fail: 0 Skip: 0
     <nl>
     File byexample/finder.py, 26/26 test ran in <...> seconds
     [PASS] Pass: 26 Fail: 0 Skip: 0
     <nl>
-    File byexample/options.py, 33/33 test ran in <...> seconds
-    [PASS] Pass: 33 Fail: 0 Skip: 0
+    File byexample/options.py, 37/37 test ran in <...> seconds
+    [PASS] Pass: 37 Fail: 0 Skip: 0
     <nl>
     File byexample/parser.py, 102/102 test ran in <...> seconds
     [PASS] Pass: 102 Fail: 0 Skip: 0
@@ -75,6 +75,9 @@ can be found under the ``doc`` folder
     File docs/usage.rst, 12/12 test ran in <...> seconds
     [PASS] Pass: 12 Fail: 0 Skip: 0
     <nl>
+    File docs/options.rst, 7/7 test ran in <...> seconds
+    [PASS] Pass: 7 Fail: 0 Skip: 0
+    <nl>
     File docs/languages/cpp.rst, 2/2 test ran in <...> seconds
     [PASS] Pass: 2 Fail: 0 Skip: 0
     <nl>
@@ -84,8 +87,8 @@ can be found under the ``doc`` folder
     File docs/languages/gdb.rst, 9/9 test ran in <...> seconds
     [PASS] Pass: 9 Fail: 0 Skip: 0
     <nl>
-    File docs/languages/python.rst, 19/19 test ran in <...> seconds
-    [PASS] Pass: 19 Fail: 0 Skip: 0
+    File docs/languages/python.rst, 22/22 test ran in <...> seconds
+    [PASS] Pass: 21 Fail: 0 Skip: 1
     <nl>
     File docs/languages/ruby.rst, 9/9 test ran in <...> seconds
     [PASS] Pass: 9 Fail: 0 Skip: 0
