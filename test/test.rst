@@ -13,6 +13,9 @@ to start.
 
     $ byexample -l python byexample/*.py
     <nl>
+    File byexample/checker.py, 62/62 test ran in <...> seconds
+    [PASS] Pass: 62 Fail: 0 Skip: 0
+    <nl>
     File byexample/finder.py, 26/26 test ran in <...> seconds
     [PASS] Pass: 26 Fail: 0 Skip: 0
     <nl>
@@ -21,9 +24,6 @@ to start.
     <nl>
     File byexample/parser.py, 102/102 test ran in <...> seconds
     [PASS] Pass: 102 Fail: 0 Skip: 0
-    <nl>
-    File byexample/runner.py, 62/62 test ran in <...> seconds
-    [PASS] Pass: 62 Fail: 0 Skip: 0
 
 Then, each module (Finder, Parser and Interpreter) provided by ``byexample`` has
 a little documentation.

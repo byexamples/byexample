@@ -9,14 +9,14 @@ There are three different ways in which ``byexample`` can be extended:
 
 ``byexample`` uses the concept of modules: a python file with some classes
 defined there.
-What classes will depend of what you want to extend or cutomize.
+What classes will depend of what you want to extend or customize.
 
 To load a set of modules you can use the ``--modules <dir>`` parameter:
 all the python files will be loaded and the classes with the correct interface
 will be added.
 
 Let's show this by example. Imagine that we want to write examples in
-the mytical language ``ArnoldC``, a programming language which its
+the mythical language ``ArnoldC``, a programming language which its
 instruction set are phrases of the actor Arnold.
 
 What do we need?
@@ -30,7 +30,7 @@ example.
 ``byexample`` already has a generic finder, the fenced code block finder.
 
 But just for fun, let's imagine that we want to do something different.
-Let's say that our examples are encloded by the ``~~~`` strings: anything
+Let's say that our examples are enclosed by the ``~~~`` strings: anything
 between two ``~~~`` will be considered a ``ArnoldC`` example.
 
 Here is what I mean
@@ -121,8 +121,8 @@ For our purposes let's say that anything between ``~~~`` is always an
 The Finder class
 ----------------
 
-Now we ensample all the pieces together.
-We need to create a class, inheret from ``MatchFinder``,
+Now we ensemble all the pieces together.
+We need to create a class, inherit from ``MatchFinder``,
 define a ``target`` attribute and implement two methods:
 
 .. code:: python
@@ -181,7 +181,7 @@ Option regular expressions
 --------------------------
 
 An option or options can be of any form and be in any place.
-Tipically we can write the options in the comments of the code which obviously
+Typically we can write the options in the comments of the code which obviously
 will depend of the language.
 
 If the comments in ``ArnoldC`` starts with a ``#``, we can say that every comment
@@ -195,32 +195,30 @@ This regular expression should capture that:
     ...                                                re.MULTILINE)
 
 The unnamed group should capture the option or options. How to extract
-each individual option is a task for another regular expression.
+each individual option is a task for parser more complex than a regex.
 
-This last one needs to support:
+``byexample`` will create a parser for us to parse all the common options (the
+ones that ``byexample`` supports by default).
+It is our job to extend this parser adding more flags or arguments to parse our
+specific options.
 
- - if the 'add' group is present, add an option (aka set to it to True)
- - if the 'del' group is present, delete an option (aka set to it to False)
- - if the 'val' group is present, use it as the value of the option
-
-In addition to those three named group, the regular expression needs to
-define an another one: the 'name' group to capture the name of the option.
 
 .. code:: python
 
-    >>> opt_re = re.compile(r'''
-    ...     (?:(?P<add>\+) | (?P<del>-))   #  + or - followed by
-    ...     (?P<name>\w+)                  # the name of the option and
-    ...     (?:=(?P<val>\w+))?             # optionally, = and its value
-    ...
-    ...     ''', re.MULTILINE | re.VERBOSE)
+    >>> def extend_option_parser(parser):
+    ...     parser.add_flag("awesome")
+    ...     parser.add_flag("norm-ws", default=False)
+    ...     parser.add_flag("capture", default=True)
+
+See the documentation of ``byexample.options.OptionParser`` for more
+information.
 
 The Parser class
 ----------------
 
-Now we ensample all the pieces together.
-We need to create a class, inheret from ``ExampleParser``,
-define a ``language`` attribute and implement the missing  methods:
+Now we ensemble all the pieces together.
+We need to create a class, inherit from ``ExampleParser``,
+define a ``language`` attribute and implement the missing methods:
 
 .. code:: python
 
@@ -238,6 +236,9 @@ define a ``language`` attribute and implement the missing  methods:
     ...     
     ...     def source_from_snippet(self, snippet):
     ...         return snippet
+    ...     
+    ...     def extend_option_parser(self, parser):
+    ...         return extend_option_parser(parser)
 
 The user can select which languages should be parsed and executed and which
 should not: the ``language`` attribute is used for that purpose.
@@ -248,13 +249,13 @@ Let's peek how the parsing is used
 
 .. code:: python
 
-     >>> from byexample.options import Options
-     >>> parser = ArnoldCParser(0, 'utf-8')
+     >>> from byexample.options import Options, OptionParser
+     >>> parser = ArnoldCParser(0, 'utf-8', OptionParser(add_help=False), Options())
 
      >>> example_str = match.group(0)
      >>> where = (0,1,'docs/how_to_extend.rst')
      >>> interpreter = None # not yet
-     >>> example = parser.get_example_from_match(Options(), match, example_str,
+     >>> example = parser.get_example_from_match(match, example_str,
      ...                                         interpreter, finder, where)
 
      >>> print(example.source)
@@ -266,7 +267,7 @@ Let's peek how the parsing is used
      Hello World!
 
      >>> print(example.options)
-     {'awesome': True}
+     {'norm_ws': False, 'capture': True, 'awesome': True}
 
 
 The Interpreter class
@@ -293,7 +294,7 @@ you do not need to install a real ``ArnoldC`` compiler.
     ...     
     ...     return '\n'.join(output)
 
-Now we ensample the Interpreter class
+Now we ensemble the Interpreter class
 
 .. code:: python
 
