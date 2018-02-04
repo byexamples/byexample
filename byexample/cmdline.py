@@ -10,27 +10,6 @@ class _CSV(argparse.Action):
         values = values.split(',')
         getattr(namespace, self.dest).extend(values)
 
-
-class _DictExtend(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        assert isinstance(values, dict)
-        getattr(namespace, self.dest).update(values)
-
-def _key_val_type(item):
-    try:
-        key, val = [i.strip() for i in item.split("=", 1)]
-        option = {key: val}
-    except:
-        raise argparse.ArgumentTypeError(
-                "Invalid option format '%s'. Use key=val instead." % item)
-
-    if not key or not val:
-        raise argparse.ArgumentTypeError(
-                "Neither the key nor the value of the option can be empty in '%s'." % item)
-
-    return option
-
-
 def parse_args(args=None):
     '''Parse the arguments args and return the them.
        If args is None, parse the sys.argv[1:].
@@ -75,12 +54,10 @@ def parse_args(args=None):
                         type=int,
                         help='timeout in seconds to complete each example (2 by default); ' + \
                              'this can be changed per example with TIMEOUT option.')
-    parser.add_argument("-o", "--option",
-                        dest='options',
-                        action=_DictExtend,
-                        type=_key_val_type,
-                        default={},
-                        help='add additional options of the form key=val.')
+    parser.add_argument("-o", "--options",
+                        dest='options_str',
+                        default="",
+                        help='add additional options.')
     parser.add_argument("--encoding",
                         default=sys.stdout.encoding,
                         help='select the encoding (supported in Python 3 only, ' + \

@@ -129,7 +129,7 @@ def get_options(args, cfg):
     #
     # for this reason we parse this string in a non-strict way as it is
     # possible that the string contains language-specific flags
-    options = optparser.parse(args.options, strict=False)
+    options = optparser.parse(args.options_str, strict=False)
 
     # In order words, the order of preference for a given option is:
     #
@@ -157,7 +157,7 @@ def init(args):
             'encoding':   encoding,
             'output':     sys.stdout,
             'interact':   args.interact,
-            'opts_from_cmdline': args.options,
+            'opts_from_cmdline': args.options_str,
             }
 
     options = get_options(args, cfg)
