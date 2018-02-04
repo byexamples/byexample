@@ -64,6 +64,7 @@ class PythonParser(ExampleParser):
 
     def extend_option_parser(self, parser):
         parser.add_flag("pydoctest", default=False)
+        parser.add_flag("pyprettyprint", default=False)
 
         if self.compatibility_mode:
             parser.add_flag("NORMALIZE_WHITESPACE", default=False)
@@ -169,9 +170,15 @@ class PythonInterpreter(Interpreter, PexepctMixin):
     def __init__(self, verbosity, encoding, **unused):
         self.encoding = encoding
 
-        PS1 = r'/byexample/py/ps1> '
-        PS2 = r'/byexample/py/ps2> '
+        self._PS1 = r'/byexample/py/ps1> '
+        self._PS2 = r'/byexample/py/ps2> '
 
+        PexepctMixin.__init__(self,
+                                cmd=None, # patchme later
+                                PS1_re = self._PS1,
+                                any_PS_re = r'/byexample/py/ps\d> ')
+
+    def _get_cmd(self, pretty_print):
         change_prompts = r'''
 import sys
 import pprint as _byexample_pprint
@@ -194,23 +201,20 @@ def patch_pprint_safe_repr():
         return _repr, readable, recursive
     _byexample_pprint._safe_repr = patched_repr
 
-patch_pprint_safe_repr() # patch!
+if %s:
+    patch_pprint_safe_repr() # patch!
 
-# change the displayhook to use pprint instead of repr
-sys.displayhook = lambda s: (
+    # change the displayhook to use pprint instead of repr
+    sys.displayhook = lambda s: (
                     None if s is None
                     else _byexample_pprint.PrettyPrinter(indent=1, width=80, depth=None).pprint(s))
 
 # remove introduced symbols
 del sys
 del patch_pprint_safe_repr
-''' % (PS1, PS2)
+''' % (self._PS1, self._PS2, pretty_print)
 
-        PexepctMixin.__init__(self,
-                                cmd="/usr/bin/env python -i -c '%s'" % change_prompts,
-                                PS1_re = PS1,
-                                any_PS_re = r'/byexample/py/ps\d> ')
-
+        return "/usr/bin/env python -i -c '%s'" % change_prompts
 
     def run(self, example, flags):
         return self._exec_and_wait(example.source,
@@ -220,6 +224,13 @@ del patch_pprint_safe_repr
         PexepctMixin.interact(self)
 
     def initialize(self, examples, options):
+        pretty_print = (options['pydoctest'] and options['pyprettyprint']) \
+                        or not options['pydoctest']
+
+        # set the final command
+        self.cmd = self._get_cmd(pretty_print)
+
+        # run!
         self._spawn_interpreter()
 
     def shutdown(self):
