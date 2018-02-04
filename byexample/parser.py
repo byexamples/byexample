@@ -790,10 +790,10 @@ class ExampleParser(object):
 
         return regexs, charnos, rcounts, names_seen
 
-    def get_extended_option_parser(self):
-        optparser_extended = OptionParser(parents=[self.optparser],
-                                            prog='byexample',
-                                            add_help=True)
+    def get_extended_option_parser(self, parent_parser, **kw):
+        parents = [parent_parser] if parent_parser else []
+
+        optparser_extended = OptionParser(parents=parents, **kw)
         self.extend_option_parser(optparser_extended)
         if not isinstance(optparser_extended, argparse.ArgumentParser):
             raise ValueError("The option parser is not an instance of ArgumentParser!.  This probably means that there is a bug in the parser %s." % str(self))
@@ -808,7 +808,7 @@ class ExampleParser(object):
         # we parse this non-strictly because the 'options' string from the
         # command line may contain language-specific options for other
         # languages than this parser (self) is targeting.
-        optparser_extended = self.get_extended_option_parser()
+        optparser_extended = self.get_extended_option_parser(self.optparser)
         return optparser_extended.parse(opts_from_cmdline, strict=False)
 
     def extract_options(self, snippet, where):
@@ -832,7 +832,7 @@ class ExampleParser(object):
         # any other options is an error
         #
         # TODO handle errors here: we check this but we don't do anything useful
-        optparser_extended = self.get_extended_option_parser()
+        optparser_extended = self.get_extended_option_parser(self.optparser)
         try:
           opts = optparser_extended.parse(optlist, strict=True)
         except UnrecognizedOption as e:
