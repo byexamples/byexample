@@ -52,6 +52,8 @@ class ShellParser(ExampleParser):
         return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
 
+    def extend_option_parser(self, parser):
+        parser.add_argument("+shell")
 
     def source_from_snippet(self, snippet):
         lines = snippet.split("\n")
@@ -80,9 +82,9 @@ class ShellInterpreter(Interpreter, PexepctMixin):
 
 
     def run(self, example, flags):
-        if flags.get('bash', False):
+        if flags.get('shell', False) == 'bash':
             self._spawn_new_shell('/usr/bin/env bash --norc -i')
-        elif flags.get('sh', False):
+        elif flags.get('shell', False) == 'sh':
             self._spawn_new_shell('/usr/bin/env sh')
 
         return self._exec_and_wait(example.source,

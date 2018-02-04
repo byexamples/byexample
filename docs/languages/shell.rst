@@ -61,18 +61,18 @@ Using other shells (short story)
 --------------------------------
 
 ``byexample`` already has a shortcut to use a different shell.
-Use the ``+bash`` option like this:
+Use the ``+shell=`` option like this:
 
 .. code:: sh
 
     $ echo $0
     sh
 
-    $ # byexample: +bash
+    $ # byexample: +shell=bash
     $ echo $0
     bash
 
-    $ # byexample: +sh
+    $ # byexample: +shell=sh
     $ echo $0
     sh
 
