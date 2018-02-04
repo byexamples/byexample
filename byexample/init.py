@@ -146,6 +146,14 @@ def get_options(args, cfg):
 
     return options
 
+def extend_options_with_language_specific(cfg, registry, allowed_languages):
+    parsers = [p for p in registry['parsers'].values()
+               if p.language in allowed_languages]
+
+    for parser in parsers:
+        opts = parser.extract_cmdline_options(cfg['opts_from_cmdline'])
+        cfg['options'].update(opts)
+
 def init(args):
     encoding = get_encoding(args.encoding, args.verbosity)
 
@@ -171,6 +179,10 @@ def init(args):
 
     allowed_files = set(args.files) - set(args.skip)
     testfiles = [f for f in args.files if f in allowed_files]
+
+    # now that we know what languages are allowed, extend the options
+    # for them
+    extend_options_with_language_specific(cfg, registry, allowed_languages)
 
     if cfg['quiet']:
         registry['concerns'].pop('progress', None)

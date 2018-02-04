@@ -793,7 +793,28 @@ class ExampleParser(object):
 
         return regexs, charnos, rcounts, names_seen
 
-    def extract_options(self, snippet, optparser, where):
+    def get_extended_option_parser(self):
+        optparser_extended = OptionParser(parents=[self.optparser],
+                                            prog='byexample',
+                                            add_help=True)
+        self.extend_option_parser(optparser_extended)
+        if not isinstance(optparser_extended, argparse.ArgumentParser):
+            raise ValueError("The option parser is not an instance of ArgumentParser!.  This probably means that there is a bug in the parser %s." % str(self))
+
+        return optparser_extended
+
+
+    def extract_cmdline_options(self, opts_from_cmdline):
+        # now we can re-parse this argument 'options' from the command line
+        # this will enable the user to set some options for a specific language
+        #
+        # we parse this non-strictly because the 'options' string from the
+        # command line may contain language-specific options for other
+        # languages than this parser (self) is targeting.
+        optparser_extended = self.get_extended_option_parser()
+        return optparser_extended.parse(opts_from_cmdline, strict=False)
+
+    def extract_options(self, snippet, where):
         start_lineno, _, filepath = where
         optstring_match = self.example_options_string_regex().search(snippet)
 
@@ -806,30 +827,17 @@ class ExampleParser(object):
         if not isinstance(optlist, list):
             raise ValueError("The option list returned by the parser is not a list!. This probably means that there is a bug in the parser %s." % str(self))
 
-        optparser_extended = OptionParser(parents=[optparser],
-                                            prog='byexample',
-                                            add_help=True)
-        self.extend_option_parser(optparser_extended)
-        if not isinstance(optparser_extended, argparse.ArgumentParser):
-            raise ValueError("The option parser is not an instance of ArgumentParser!.  This probably means that there is a bug in the parser %s." % str(self))
-
-        # now we can re-parse this argument 'options' from the command line
-        # this will enable the user to set some options for a specific language
-        #
-        # we parse this non-strictly because the 'options' string from the
-        # command line may contain language-specific options for other
-        # languages than this parser (self) is targeting.
-        opts = optparser_extended.parse(self.opts_from_cmdline, strict=False)
-
-        # then, we parse the example's options
-        # in this case we parse it strictly because the example's options
-        # must contain options standard of byexample and/or standard for this
+        # we parse the example's options
+        # in this case, at difference with extract_cmdline_options,
+        # we parse it strictly because the example's options
+        # must contain options standard of byexample and/or standard of this
         # parser (self)
-        # any other options is treated as an error
+        # any other options is an error
         #
         # TODO handle errors here: we check this but we don't do anything useful
+        optparser_extended = self.get_extended_option_parser()
         try:
-          opts.up(optparser_extended.parse(optlist, strict=True))
+          opts = optparser_extended.parse(optlist, strict=True)
         except UnrecognizedOption as e:
             raise ValueError(build_exception_msg(str(e), where, self))
 
