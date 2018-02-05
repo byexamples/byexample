@@ -111,16 +111,23 @@ class Options(collections.MutableMapping):
         self.top = dict()
         self.stack = [self.top] # [top, ...., bottom]
 
-        self.cache = None
+        self.lower_levels_cached = {}
 
         self.update(dict(*args, **kwargs))  # use the free update to set keys
 
     def __getitem__(self, key):
-        for d in self.stack:
-            if key in d:
-                return d[key]
+        if key in self.top:
+            return self.top[key]
 
-        return self.top[key] # KeyError
+        if self.lower_levels_cached is None:
+            for d in self.stack[1:-1]:
+                if key in d:
+                    return d[key]
+
+            return self.stack[-1][key] # found or KeyError
+        else:
+            return self.lower_levels_cached[key] # found or KeyError
+
 
     def __setitem__(self, key, value):
         self.top[key] = value
@@ -141,43 +148,88 @@ class Options(collections.MutableMapping):
         if isinstance(other_mapping, Options):
             other_mapping = other_mapping.as_dict()
 
-        if isinstance(other_mapping, argparse.Namespace):
+        elif isinstance(other_mapping, argparse.Namespace):
             other_mapping = vars(other_mapping)
+
+        elif other_mapping is not None:
+            other_mapping = other_mapping.copy()
+
+        if self.lower_levels_cached is not None:
+            self.lower_levels_cached.update(self.top)
 
         self.top = other_mapping if other_mapping is not None else {}
         self.stack.insert(0, self.top)
-        if self.top:
-            self.cache = None
 
     def down(self):
-        if self.top:
-            self.cache = None
-
         del self.stack[0]
         self.top = self.stack[0]
 
+        self.lower_levels_cached = None if len(self.stack) > 1 else {}
+
     def as_dict(self):
-        if len(self.stack) > 1 and self.cache is not None:
-            collapsed = self.cache.copy()
-        elif len(self.stack) == 1:
-            collapsed = {}
-        else:
+        r'''
+        Return a copy of this Options in form of a dictionary.
+
+            >>> from byexample.options import Options
+            >>> opt = Options()
+
+            >>> opt.as_dict()
+            {}
+
+            >>> opt.up({'foo': 1, 'bar': 2})
+            >>> opt.as_dict()
+            {'bar': 2, 'foo': 1}
+
+            >>> opt.up({})
+            >>> opt.as_dict()
+            {'bar': 2, 'foo': 1}
+
+            >>> opt.up({'foo': 3, 'baz': 4})
+            >>> opt.as_dict()
+            {'bar': 2, 'baz': 4, 'foo': 3}
+
+        '''
+        if self.lower_levels_cached is None:
             collapsed = self.stack[-1].copy()
             for d in reversed(self.stack[1:-1]):
                 collapsed.update(d)
 
-            self.cache = collapsed.copy()
+            self.lower_levels_cached = collapsed.copy()
+        else:
+            collapsed = self.lower_levels_cached.copy()
 
         collapsed.update(self.top)
+
         return collapsed
 
     def copy(self):
-        clone = Options()
-        clone.stack = list(self.stack) # copy
-        clone.cache = self.cache       # do not copy
-        clone.top = clone.stack[0]
+        r'''
+        Return a copy:
+
+            >>> from byexample.options import Options
+            >>> opt = Options()
+
+            >>> opt.copy()['foo'] = 42
+            >>> opt.as_dict()
+            {}
+
+            >>> opt.up({'foo': 1, 'bar': 2})
+            >>> opt.copy()['foo'] = 42
+            >>> opt.as_dict()
+            {'bar': 2, 'foo': 1}
+
+            >>> opt.copy()
+            {'bar': 2, 'foo': 1}
+
+        '''
+        clone = Options(self.stack[-1]) # bottom
+
+        # clone pushing up
+        for s in reversed(self.stack[:-1]):
+            clone.up(s)
 
         return clone
+
 
 class UnrecognizedOption(Exception):
     pass
