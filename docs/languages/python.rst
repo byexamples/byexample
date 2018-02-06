@@ -120,6 +120,33 @@ and the stacktrace are ignored.
     Traceback (most recent call last):
     Exception: oh no!
 
+
+Also note that we will relax the check of the prefix of the exception message.
+In Python 2.x it was common to print only the exception class name but in
+Python 3.x, the default is to print the full exception name (a dotted name
+including its modules)
+
+Testing this it is hard in ``doctest``. One option is ignore the exception's
+details but this also disables the check of the whole exception message
+defeating the purpose of checking an exception.
+The other was to use ``...`` but ``doctest`` doesn't allow to use it at the
+begin of a line.
+
+Because of this, add a ``<...>`` at the begin of the message to avoid these
+quirks.
+
+As a side effect, we can check loosely the name of an exception:
+
+.. code:: python
+
+    >>> raise ValueError('oh no!')       # byexample: +py-doctest
+    Traceback (most recent call last):
+    Error: oh no!
+
+    >>> raise IndexError('oh no!')       # byexample: +py-doctest
+    Traceback (most recent call last):
+    Error: oh no!
+
 Migration to the ``byexample``'s way
 ------------------------------------
 
