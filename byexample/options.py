@@ -1,4 +1,4 @@
-import collections, argparse, shlex
+import collections, argparse, shlex, pprint
 
 class Options(collections.MutableMapping):
     r'''
@@ -78,16 +78,16 @@ class Options(collections.MutableMapping):
         >>> sorted(list(opt))
         ['bar', 'baz', 'foo']
 
-        >>> [opt[x] for x in sorted(list(opt))]
-        [2, 3, 3]
+        >>> opt
+        {'bar': 2, 'baz': 3, 'foo': 3}
 
         >>> opt.down()
-        >>> [opt[x] for x in sorted(list(opt))]
-        [2, 2]
+        >>> opt
+        {'bar': 2, 'foo': 2}
 
         >>> opt.down()
-        >>> [opt[x] for x in sorted(list(opt))]
-        [1]
+        >>> opt
+        {'foo': 1}
 
         >>> opt.down()
         Traceback (most recent call last):
@@ -134,11 +134,8 @@ class Options(collections.MutableMapping):
         >>> from argparse import Namespace
         >>> opt.up(Namespace(foo=2, bar=2))
 
-        >>> sorted(list(opt))
-        ['bar', 'foo']
-
-        >>> [opt[x] for x in sorted(list(opt))]
-        [2, 2]
+        >>> opt
+        {'bar': 2, 'foo': 2}
 
     '''
 
@@ -184,7 +181,7 @@ class Options(collections.MutableMapping):
         return len(self.as_dict())
 
     def __repr__(self):
-        return repr(self.as_dict())
+        return pprint.pformat(self.as_dict())
 
     def up(self, other_mapping=None):
         if isinstance(other_mapping, Options):
@@ -258,12 +255,12 @@ class Options(collections.MutableMapping):
             >>> opt = Options()
 
             >>> opt.copy()['foo'] = 42
-            >>> opt.as_dict()
+            >>> opt
             {}
 
             >>> opt.up({'foo': 1, 'bar': 2})
             >>> opt.copy()['foo'] = 42
-            >>> opt.as_dict()
+            >>> opt
             {'bar': 2, 'foo': 1}
 
             >>> opt.copy()
