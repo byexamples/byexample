@@ -176,10 +176,10 @@ The following is a valid example for Python 2.x and 3.x as well.
     {'aaaaaaaa': {'bbbbbbbbbb': 'asasaaaaaaaaaaaaaasasa',
                   'c': 'asaaaaaaaaaaaaaaaaaaaaa'}}
 
-    >>> b'b'            # byexample: +py-doctest
+    >>> b'b'
     'b'
 
-    >>> u'u'            # byexample: +py-doctest
+    >>> u'u'
     'u'
 
 If it is really important to show the type of the string I would recommend to

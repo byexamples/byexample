@@ -63,35 +63,49 @@ class PythonParser(ExampleParser):
                                                     re.MULTILINE)
 
     def extend_option_parser(self, parser):
-        parser.add_flag("py-doctest", default=False, help="enable the compatibility with doctest.")
-        parser.add_flag("py-pretty-print", default=False, help="enable the pretty print enhancement.")
-        parser.add_argument("-pypy", type=int, default=0)
+        '''
+        Add a few extra options and if self.compatibility_mode is True,
+        add all the Python doctest's options.
+        '''
+        parser.add_flag("py-doctest", help="enable the compatibility with doctest.")
+        parser.add_flag("py-pretty-print", help="enable the pretty print enhancement.")
 
-        if getattr(self, 'compatibility_mode', True):
-            parser.add_flag("NORMALIZE_WHITESPACE", default=False, help="[doctest] alias for +norm-ws.")
-            parser.add_flag("SKIP", default=False, help="[doctest] alias for +skip.")
-            parser.add_flag("ELLIPSIS", default=False, help="[doctest] enables the ... capture.")
-            parser.add_flag("DONT_ACCEPT_BLANKLINE", default=False, help="[doctest] take <blankline> as literal.")
-            parser.add_flag("DONT_ACCEPT_TRUE_FOR_1", default=False, help="[doctest] ignored.")
-            parser.add_flag("IGNORE_EXCEPTION_DETAIL", default=False, help="[doctest] ignored.")
+        if self.compatibility_mode:
+            parser.add_flag("NORMALIZE_WHITESPACE", help="[doctest] alias for +norm-ws.")
+            parser.add_flag("SKIP", help="[doctest] alias for +skip.")
+            parser.add_flag("ELLIPSIS", help="[doctest] enables the ... capture.")
+            parser.add_flag("DONT_ACCEPT_BLANKLINE", help="[doctest] take <blankline> as literal.")
+            parser.add_flag("DONT_ACCEPT_TRUE_FOR_1", help="[doctest] ignored.")
+            parser.add_flag("IGNORE_EXCEPTION_DETAIL", help="[doctest] ignored.")
 
         return parser
 
-    def _map_doctest_opts_to_byexample_opts(self, options):
+    def _map_doctest_opts_to_byexample_opts(self):
+        '''
+        In compatibility mode, take all the Python doctest's options and flags
+        and map them to a byexample option if possible.
+        Otherwise log a message.
+
+        Also, in compatibility mode, disable any "capture" unless the ELLIPSIS
+        flag is present.
+
+        Return a dictionary with the mapped flags; self.options is unchanged.
+        '''
+        options = self.options
+        options.mask_default(False)
+        mapped = {}
         if options['py_doctest']:
             # map the following doctest's options to byexample's ones
             if options['NORMALIZE_WHITESPACE']:
-                options['norm_ws'] = True
+                mapped['norm_ws'] = True
 
             if options['SKIP']:
-                options['skip'] = True
+                mapped['skip'] = True
 
-            # do not capture by default, force this
-            options['capture'] = False
             if options['ELLIPSIS']:
-                # enable it if ELLIPSIS but see also expected_from_match
+                # enable the capture if ELLIPSIS but see also expected_from_match
                 # as this byexample's option is not equivalent to doctest's one
-                options['capture'] = True
+                mapped['capture'] = True
 
             # the following are not supported: ignore them and print a note
             # somewhere
@@ -103,20 +117,37 @@ class PythonParser(ExampleParser):
                 log(build_exception_msg("[Note] IGNORE_EXCEPTION_DETAIL flag is not supported.", where, self),
                         self.verbosity-2)
 
-        else:
-            # no doctest's flags are allowed (this should never happen)
-            assert all(f not in options for f in ('SKIP', 'ELLIPSIS',
-                        'IGNORE_EXCEPTION_DETAIL', 'DONT_ACCEPT_TRUE_FOR_1',
-                        'DONT_ACCEPT_BLANKLINE', 'NORMALIZE_WHITESPACE'))
+        # in compatibility mode, do not capture by default [force this]
+        if self.options['py_doctest'] and 'capture' not in mapped:
+            mapped['capture'] = False
+
+        options.unmask_default()
+        return mapped
 
     def _double_parse(self, parse_method, args, kwargs):
+        '''
+        Call parse_method at most twice.
+        The first call is under compatibility mode.
+
+        If the options parsed (in union with the options before) say that
+        the compatibility mode is not ON, parse them again under
+        non-compatibility mode.
+
+        Finally, map any doctest option to a byexample option.
+
+        Return the options parsed and mapped; self.options is unchanged.
+        '''
         # let's force a compatibility mode before parsing,
         # the compatibility mode uses a parser that it is a superset of the
         # parser in non-compatibility mode so we should be safe
         self.compatibility_mode = True
         options = parse_method(*args, **kwargs)
 
-        if options['py_doctest']:
+        # temporally, merge the new options found (options) with the
+        # the obtained previously (self.options)
+        self.options.up(options)
+
+        if self.options.get('py_doctest', False):
             # okay, the user really wanted to be in compatibility mode
             pass
         else:
@@ -125,7 +156,16 @@ class PythonParser(ExampleParser):
             self.compatibility_mode = False
             options = parse_method(*args, **kwargs)
 
-        self._map_doctest_opts_to_byexample_opts(options)
+        # take the self.options and see if there are doctest flags
+        # to be mapped to byexample's options
+        mapped = self._map_doctest_opts_to_byexample_opts()
+
+        # revert the merge
+        self.options.down()
+
+        # take the original options parsed, update them with the mapped options,
+        # and return them
+        options.update(mapped)
         return options
 
     def extract_cmdline_options(self, opts_from_cmdline):
@@ -143,6 +183,7 @@ class PythonParser(ExampleParser):
         expected_str = ExampleParser.expected_from_match(self, match)
 
         options = self.options
+        options.mask_default(False)
         if options['py_doctest']:
             if not options['DONT_ACCEPT_BLANKLINE']:
                 expected_str = re.sub(r'^<blankline>$', '', expected_str,
@@ -156,6 +197,7 @@ class PythonParser(ExampleParser):
                 ellipsis_tag = '<%s>' % self.ellipsis_marker()
                 expected_str = expected_str.replace('...', ellipsis_tag)
 
+        options.unmask_default()
         return expected_str
 
     def source_from_snippet(self, snippet):
@@ -225,8 +267,10 @@ del patch_pprint_safe_repr
         PexepctMixin.interact(self)
 
     def initialize(self, examples, options):
-        pretty_print = (options['py_doctest'] and options['py_pretty_print']) \
-                        or not options['py_doctest']
+        py_doctest = options.get('py_doctest', False)
+        py_pretty_print = options.get('py_pretty_print', False)
+        pretty_print = (py_doctest and py_pretty_print) \
+                        or not py_doctest
 
         # set the final command
         self.cmd = self._get_cmd(pretty_print)
