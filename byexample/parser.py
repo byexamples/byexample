@@ -86,7 +86,7 @@ class ExampleParser(object):
         '''
         raise NotImplementedError() # pragma: no cover
 
-    def expected_from_match(self, match):
+    def expected_from_match(self, match, where):
         return match.group("expected")
 
     def get_example_from_match(self, match, example_str,
@@ -102,7 +102,7 @@ class ExampleParser(object):
         snippet  = match.group("snippet")
         options.up(self.extract_options(snippet, where))
 
-        expected = self.expected_from_match(match)
+        expected = self.expected_from_match(match, where)
 
         if not expected:
             expected = ''   # make sure that it is a string

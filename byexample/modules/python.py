@@ -80,7 +80,7 @@ class PythonParser(ExampleParser):
 
         return parser
 
-    def _map_doctest_opts_to_byexample_opts(self):
+    def _map_doctest_opts_to_byexample_opts(self, where):
         '''
         In compatibility mode, take all the Python doctest's options and flags
         and map them to a byexample option if possible.
@@ -124,7 +124,7 @@ class PythonParser(ExampleParser):
         options.unmask_default()
         return mapped
 
-    def _double_parse(self, parse_method, args, kwargs):
+    def _double_parse(self, parse_method, args, kwargs, where):
         '''
         Call parse_method at most twice.
         The first call is under compatibility mode.
@@ -158,7 +158,7 @@ class PythonParser(ExampleParser):
 
         # take the self.options and see if there are doctest flags
         # to be mapped to byexample's options
-        mapped = self._map_doctest_opts_to_byexample_opts()
+        mapped = self._map_doctest_opts_to_byexample_opts(where)
 
         # revert the merge
         self.options.down()
@@ -171,16 +171,18 @@ class PythonParser(ExampleParser):
     def extract_cmdline_options(self, opts_from_cmdline):
         return self._double_parse(ExampleParser.extract_cmdline_options,
                                     args=(self, opts_from_cmdline),
-                                    kwargs={})
+                                    kwargs={},
+                                    where=None)
 
 
     def extract_options(self, snippet, where):
         return self._double_parse(ExampleParser.extract_options,
                                     args=(self, snippet, where),
-                                    kwargs={})
+                                    kwargs={},
+                                    where=where)
 
-    def expected_from_match(self, match):
-        expected_str = ExampleParser.expected_from_match(self, match)
+    def expected_from_match(self, match, where):
+        expected_str = ExampleParser.expected_from_match(self, match, where)
 
         options = self.options
         options.mask_default(False)

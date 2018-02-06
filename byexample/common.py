@@ -1,9 +1,15 @@
 import pprint
 
-def build_exception_msg(msg, where, parser=None):
-    start_lineno, _, filepath = where
-    who = "" if parser is None else (", [%s]" % str(parser))
-    return 'File "%s", line %i%s\n%s' % (filepath, start_lineno, who, msg)
+def build_exception_msg(msg, where, owner=None):
+    who = "" if owner is None else (", [%s]" % str(owner))
+    if where:
+        start_lineno, _, filepath = where
+        return 'File "%s", line %i%s\n%s' % (filepath, start_lineno, who, msg)
+
+    if who:
+        return '%s\n%s' % (who, msg)
+
+    return msg
 
 
 def log(msg, x):
