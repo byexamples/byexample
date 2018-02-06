@@ -94,6 +94,41 @@ class Options(collections.MutableMapping):
         <...>
         IndexError: list index out of range
 
+    If a key is not found, as any dictionary like, we will raise a KeyError
+    exception.
+    However it is possible to set a default value if a key is missing.
+
+        >>> opt = Options({'foo': 1})
+        >>> opt.mask_default(42)
+
+        >>> opt['foo'], opt['bar']
+        (1, 42)
+
+    The 'mask_default' adds a mask layer with a default value. It is possible
+    to stack several layers calling mask_default again.
+
+        >>> opt.mask_default(64)
+        >>> opt['foo'], opt['bar']
+        (1, 64)
+
+    This mask layering is independent of the stack of dictionaries:
+
+        >>> opt.up({'foo': 2, 'bar': 2})
+        >>> opt['foo'], opt['bar'], opt['baz']
+        (2, 2, 64)
+
+    And like any other layer, the default layer can be removed
+
+        >>> opt.unmask_default()
+        >>> opt['foo'], opt['bar'], opt['baz']
+        (2, 2, 42)
+
+        >>> opt.unmask_default()
+        >>> opt['foo'], opt['bar'], opt['baz']
+        Traceback (most recent call last):
+        <...>
+        KeyError: 'baz'
+
     Even you can push argparse.Namespace objects
 
         >>> from argparse import Namespace
@@ -114,6 +149,7 @@ class Options(collections.MutableMapping):
         self.lower_levels_cached = {}
 
         self.update(dict(*args, **kwargs))  # use the free update to set keys
+        self.default_values = []
 
     def __getitem__(self, key):
         if key in self.top:
@@ -124,9 +160,15 @@ class Options(collections.MutableMapping):
                 if key in d:
                     return d[key]
 
-            return self.stack[-1][key] # found or KeyError
+            if self.default_values:
+                return self.stack[-1].get(key, self.default_values[-1])
+            else:
+                return self.stack[-1][key] # found or KeyError
         else:
-            return self.lower_levels_cached[key] # found or KeyError
+            if self.default_values:
+                return self.lower_levels_cached.get(key, self.default_values[-1])
+            else:
+                return self.lower_levels_cached[key] # found or KeyError
 
 
     def __setitem__(self, key, value):
@@ -165,6 +207,12 @@ class Options(collections.MutableMapping):
         self.top = self.stack[0]
 
         self.lower_levels_cached = None if len(self.stack) > 1 else {}
+
+    def mask_default(self, val):
+        self.default_values.append(val)
+
+    def unmask_default(self):
+        self.default_values.pop()
 
     def as_dict(self):
         r'''
@@ -228,6 +276,7 @@ class Options(collections.MutableMapping):
         for s in reversed(self.stack[:-1]):
             clone.up(s)
 
+        clone.default_values = list(self.default_values)
         return clone
 
 
