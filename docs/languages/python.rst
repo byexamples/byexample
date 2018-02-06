@@ -30,7 +30,7 @@ But because I'm enabling it form the example itself, I need use the
 
 As you can see ``NORMALIZE_WHITESPACE`` is supported.
 
-We support ``SKIP``, ``DONT_ACCEPT_BLANKLINE`` flags and the  ``<blankline>``
+We support ``SKIP``, ``DONT_ACCEPT_BLANKLINE`` flags and the  ``<BLANKLINE>``
 tags:
 
 .. code:: python
@@ -38,14 +38,14 @@ tags:
     >>> True   # byexample: +py-doctest +SKIP
     False
 
-    >>> print("foo\n<blankline>\nbar")   # byexample: +py-doctest +DONT_ACCEPT_BLANKLINE
+    >>> print("foo\n<BLANKLINE>\nbar")   # byexample: +py-doctest +DONT_ACCEPT_BLANKLINE
     foo
-    <blankline>
+    <BLANKLINE>
     bar
 
     >>> print("foo\n\nbar")   # byexample: +py-doctest
     foo
-    <blankline>
+    <BLANKLINE>
     bar
 
 As you may guess, the ``byexample``'s cature tags feature are disabled in this

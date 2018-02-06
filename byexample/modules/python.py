@@ -130,7 +130,7 @@ class PythonParser(ExampleParser):
             parser.add_flag("NORMALIZE_WHITESPACE", help="[doctest] alias for +norm-ws.")
             parser.add_flag("SKIP", help="[doctest] alias for +skip.")
             parser.add_flag("ELLIPSIS", help="[doctest] enables the ... capture.")
-            parser.add_flag("DONT_ACCEPT_BLANKLINE", help="[doctest] take <blankline> as literal.")
+            parser.add_flag("DONT_ACCEPT_BLANKLINE", help="[doctest] take <BLANKLINE> as literal.")
             parser.add_flag("DONT_ACCEPT_TRUE_FOR_1", help="[doctest] ignored.")
             parser.add_flag("IGNORE_EXCEPTION_DETAIL", help="[doctest] ignored.")
 
@@ -244,7 +244,7 @@ class PythonParser(ExampleParser):
         options.mask_default(False)
         if options['py_doctest']:
             if not options['DONT_ACCEPT_BLANKLINE']:
-                expected_str = re.sub(r'^<blankline>$', '', expected_str,
+                expected_str = re.sub(r'^<BLANKLINE>$', '', expected_str,
                                         flags=re.MULTILINE|re.DOTALL)
 
             m = _EXCEPTION_RE.match(expected_str)
