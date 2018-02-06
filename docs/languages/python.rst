@@ -90,15 +90,14 @@ exception was raised but in the practice is not critical.
 
 If you didn't enabled the compatibility with ``doctest``, the ``<...>`` is
 enabled by default.
-If you did, you need to disable it for the particular example
 
 .. code:: python
 
-    >>> raise Exception('oh no!')  # byexample: -py-doctest
+    >>> raise Exception('oh no!')
     Traceback <...>
     Exception: oh no!
 
-    >>> non_existent_var  # no compatibility, <...> capture enabled by default
+    >>> non_existent_var
     Traceback <...>
     NameError: name 'non_existent_var' is not defined
 
@@ -110,6 +109,16 @@ A difference with ``doctest``, syntax errors are also captured.
     >>> f(]        # invalid syntax
       File<...>
     SyntaxError: invalid syntax
+
+If you enabled the compatibility mode, any output that it looks like an
+exception will be captured and mangled like doctest does: the traceback header
+and the stacktrace are ignored.
+
+.. code:: python
+
+    >>> raise Exception('oh no!')       # byexample: +py-doctest
+    Traceback (most recent call last):
+    Exception: oh no!
 
 Migration to the ``byexample``'s way
 ------------------------------------
