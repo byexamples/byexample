@@ -30,13 +30,19 @@ But because I'm enabling it form the example itself, I need use the
 
 As you can see ``NORMALIZE_WHITESPACE`` is supported.
 
-We support ``SKIP``, ``DONT_ACCEPT_BLANKLINE`` flags and the  ``<BLANKLINE>``
-tags:
+We support ``SKIP``, ``IGNORE_EXCEPTION_DETAIL``, ``DONT_ACCEPT_BLANKLINE``
+flags and the  ``<BLANKLINE>`` marker:
 
 .. code:: python
 
     >>> True   # byexample: +py-doctest +SKIP
     False
+
+    >>> raise Exception("foo")   # byexample: +py-doctest +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+     -- stack trace
+     -- ignored
+    module.ignored.Exception: -- this will be ignored --
 
     >>> print("foo\n<BLANKLINE>\nbar")   # byexample: +py-doctest +DONT_ACCEPT_BLANKLINE
     foo
@@ -47,6 +53,8 @@ tags:
     foo
     <BLANKLINE>
     bar
+
+And also the report flags: ``REPORT_UDIFF``, ``REPORT_CDIFF`` and ``REPORT_NDIFF``
 
 As you may guess, the ``byexample``'s cature tags feature are disabled in this
 compatibility mode.
@@ -69,8 +77,11 @@ Compatibility overview
 ``DONT_ACCEPT_TRUE_FOR_1``  Ignored
 ``ELLIPSIS``                Supported
 ``SKIP``                    Supported
-``IGNORE_EXCEPTION_DETAIL`` Ignored
+``IGNORE_EXCEPTION_DETAIL`` Supported
 ``DONT_ACCEPT_BLANKLINE``   Supported
+``REPORT_UDIFF``            Supported
+``REPORT_CDIFF``            Supported
+``REPORT_NDIFF``            Supported
 =========================== ============================
 
 ``DONT_ACCEPT_TRUE_FOR_1`` is not supported as it was implemented in ``doctest``
@@ -118,6 +129,8 @@ and the stacktrace are ignored.
 
     >>> raise Exception('oh no!')       # byexample: +py-doctest
     Traceback (most recent call last):
+     -- stack trace
+     -- ignored
     Exception: oh no!
 
 
@@ -163,6 +176,9 @@ is a summary of the equivalent options:
 ``pass``              *not supported*             Execute but do not check.
 *better alternative*  ``IGNORE_EXCEPTION_DETAIL`` Use the more general ``capture`` flag.
 *better alternative*  ``DONT_ACCEPT_BLANKLINE``   Use the more general ``capture`` flag.
+``diff``              ``REPORT_UDIFF``            With ``unified`` as argument.
+``diff``              ``REPORT_CDIFF``            With ``context`` as argument.
+``diff``              ``REPORT_NDIFF``            With ``ndiff`` as argument.
 ====================  =========================== ============================
 
 ``DONT_ACCEPT_BLANKLINE`` and ``IGNORE_EXCEPTION_DETAIL`` are used to ignore

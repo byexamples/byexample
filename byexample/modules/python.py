@@ -132,7 +132,10 @@ class PythonParser(ExampleParser):
             parser.add_flag("ELLIPSIS", help="[doctest] enables the ... capture.")
             parser.add_flag("DONT_ACCEPT_BLANKLINE", help="[doctest] take <BLANKLINE> as literal.")
             parser.add_flag("DONT_ACCEPT_TRUE_FOR_1", help="[doctest] ignored.")
-            parser.add_flag("IGNORE_EXCEPTION_DETAIL", help="[doctest] ignored.")
+            parser.add_flag("IGNORE_EXCEPTION_DETAIL", help="[doctest] ignore the exception details.")
+            parser.add_flag("REPORT_UDIFF", help="[doctest] alias for +diff unified.")
+            parser.add_flag("REPORT_CDIFF", help="[doctest] alias for +diff context.")
+            parser.add_flag("REPORT_NDIFF", help="[doctest] alias for +diff ndiff.")
 
         return parser
 
@@ -163,14 +166,19 @@ class PythonParser(ExampleParser):
                 # as this byexample's option is not equivalent to doctest's one
                 mapped['capture'] = True
 
+            if options['REPORT_UDIFF']:
+                mapped['diff'] = 'unified'
+
+            if options['REPORT_CDIFF']:
+                mapped['diff'] = 'context'
+
+            if options['REPORT_NDIFF']:
+                mapped['diff'] = 'ndiff'
+
             # the following are not supported: ignore them and print a note
             # somewhere
             if options['DONT_ACCEPT_TRUE_FOR_1']:
                 log(build_exception_msg("[Note] DONT_ACCEPT_TRUE_FOR_1 flag is not supported.", where, self),
-                        self.verbosity-2)
-
-            if options['IGNORE_EXCEPTION_DETAIL']:
-                log(build_exception_msg("[Note] IGNORE_EXCEPTION_DETAIL flag is not supported.", where, self),
                         self.verbosity-2)
 
         # in compatibility mode, do not capture by default [force this]
@@ -268,9 +276,16 @@ class PythonParser(ExampleParser):
                 ellipsis_tag = '<%s>' % self.ellipsis_marker()
 
                 msg = m.group('msg')
+                if options['IGNORE_EXCEPTION_DETAIL']:
+                    # we assume, like doctest does, that the first : is at
+                    # the end of the class name of the exception.
+                    full_class_name = msg.split(":", 1)[0]
+                    class_name = full_class_name.rsplit(".", 1)[-1]
+                    msg = class_name + ":"
+
                 expected_str = '\n'.join([
                                     # a Traceback header
-                                    'Traceback' + ellipsis_tag,
+                                    'Traceback ' + ellipsis_tag,
 
                                     # the stack trace (ignored)
                                     ellipsis_tag,
@@ -283,7 +298,8 @@ class PythonParser(ExampleParser):
                                     # this breaks almost all the exception
                                     # checks in doctest so this should be a nice
                                     # improvement.
-                                    ellipsis_tag + msg,
+                                    ellipsis_tag + msg + \
+                                        (ellipsis_tag if options['IGNORE_EXCEPTION_DETAIL'] else ""),
                                     ])
 
                 # enable the capture, this should affect to this example only
