@@ -163,11 +163,11 @@ def show_options(cfg, registry, allowed_languages):
     parsers = [p for p in registry['parsers'].values()
                if p.language in allowed_languages]
 
-    def _title(t):
-        print(t)
+    def _title(t, nl=True):
+        print(('\n' + t) if nl else t)
         print("-" * len(t))
 
-    _title("byexample's options")
+    _title("byexample's options", nl=False)
     cfg['optparser'].print_help()
     for parser in parsers:
         _title("%s's specific options" % parser.language)
