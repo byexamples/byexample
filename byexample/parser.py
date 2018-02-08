@@ -96,7 +96,7 @@ class ExampleParser(object):
         indent = match.group('indent')
 
         # update the example string and the match removing any indentation
-        example_str = self.check_and_remove_ident(example_str, indent, where)
+        example_str = self.check_and_remove_indent(example_str, indent, where)
         match = self.check_keep_matching(example_str, match, where)
 
         snippet  = match.group("snippet")
@@ -164,20 +164,20 @@ class ExampleParser(object):
         options.down()
         return example
 
-    def check_and_remove_ident(self, example_str, indent, where):
+    def check_and_remove_indent(self, example_str, indent, where):
         r'''
         Given an example string, remove its indent, including a possible empty
         line at the end.
             >>> from byexample.parser import ExampleParser
             >>> parser = ExampleParser(0, 'utf8', "", None); parser.language = 'python'
-            >>> check_and_remove_ident = parser.check_and_remove_ident
-            >>> check_and_remove_ident('  >>> 1 + 2\n  3\n ', '  ', (1, 2, 'foo.rst'))
+            >>> check_and_remove_indent = parser.check_and_remove_indent
+            >>> check_and_remove_indent('  >>> 1 + 2\n  3\n ', '  ', (1, 2, 'foo.rst'))
             '>>> 1 + 2\n3'
 
         If the string contains a line with a lower level of indentation,
         raise an exception.
 
-            >>> check_and_remove_ident('  >>> 1 + 2\n3\n', '  ', (1, 2, 'foo.rst'))
+            >>> check_and_remove_indent('  >>> 1 + 2\n3\n', '  ', (1, 2, 'foo.rst'))
             Traceback (most recent call last):
             <...>
             ValueError: File "foo.rst", line 1, [Python Parser]
@@ -186,7 +186,7 @@ class ExampleParser(object):
             002 3
 
         The only exception to this are the empty lines
-            >>> check_and_remove_ident('  >>> 1 + 2\n\n  3\n ', '  ', (1, 2, 'foo.rst'))
+            >>> check_and_remove_indent('  >>> 1 + 2\n\n  3\n ', '  ', (1, 2, 'foo.rst'))
             '>>> 1 + 2\n\n3'
 
         '''
@@ -221,19 +221,19 @@ class ExampleParser(object):
         r'''
         Given an example string, try to apply the match again.
         This is a health-check intended to be used after a call to
-        'check_and_remove_ident'
+        'check_and_remove_indent'
 
             >>> from byexample.parser import ExampleParser
             >>> import re
 
             >>> parser = ExampleParser(0, 'utf8', "", None); parser.language = 'python'
-            >>> check_and_remove_ident = parser.check_and_remove_ident
+            >>> check_and_remove_indent = parser.check_and_remove_indent
             >>> check_keep_matching    = parser.check_keep_matching
 
             >>> code = '  >>> 1 + 2'
             >>> match = re.match(r'[ ]*>>> [^\n]*', code)
 
-            >>> code_i = check_and_remove_ident(code, '  ', (1, 2, 'foo.rst'))
+            >>> code_i = check_and_remove_indent(code, '  ', (1, 2, 'foo.rst'))
             >>> code_i != code
             True
             >>> new_match = check_keep_matching(code_i, match, (1, 2, 'foo.rst'))
