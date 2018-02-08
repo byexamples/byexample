@@ -265,3 +265,94 @@ executed and with the output returned by the interpreter.
     >>> sys
     Traceback <...>
     NameError: name 'sys' is not defined
+
+Empty lines
+-----------
+
+Consider the following function definition. It is obvious for a human beign
+that the ``return`` statetment belongs to the function definition.
+
+.. code:: python
+
+    >>> def foo():
+    ...   a = 42
+    ...
+    ...
+    ...   return a
+
+
+But Python interprets the empty line between ``a = 42`` and ``return a`` as the
+end of the definition.
+
+``byexample`` removes any empty line that it is followed by an indented
+line so the whole example makes sense to Python.
+
+.. code:: python
+
+    >>> i = 0
+    >>> for j in range(2):
+    ...   i += j
+    ...
+    ...
+    ... print(i)
+    1
+
+Keep in mind that "empty line" means that, if it is not working for you double
+check for any trailing whitespace.
+
+We can disable this fix with ``-py-remove-empty-lines``
+
+.. code:: python
+
+    >>> def foo():      # byexample: -py-remove-empty-lines
+    ...   a = 42
+    ...
+    ...
+    ...   return a
+      File <...>
+        return a
+        ^
+    IndentationError: unexpected indent
+
+You may ask why if the ``byexample`` fix works, why anyone would like to disable
+it. Well, the fix comes with some side effects.
+
+See the following multiline string definition
+
+.. code:: python
+
+    >>> blob = '''
+    ...
+    ...   foo
+    ... '''
+
+How many lines it has? 4 right? well....
+
+.. code:: python
+
+    >>> blob
+    '\n  foo\n'
+
+    >>> len(blob.split('\n'))
+    3
+
+It has actually 4 but ``byexample`` suppress the empty line because it is
+followed by a indented line ``foo`` so we got 3.
+
+In my personal experience, I didn't find an issue with this in the field but if
+you need to disable it, you can
+
+.. code:: python
+
+    >>> # byexample: -py-remove-empty-lines
+    ... blob = '''
+    ...
+    ...   foo
+    ... '''
+
+    >>> blob
+    '\n\n  foo\n'
+
+    >>> len(blob.split('\n'))
+    4
+

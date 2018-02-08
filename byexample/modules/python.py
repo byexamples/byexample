@@ -125,6 +125,7 @@ class PythonParser(ExampleParser):
         '''
         parser.add_flag("py-doctest", help="enable the compatibility with doctest.")
         parser.add_flag("py-pretty-print", help="enable the pretty print enhancement.")
+        parser.add_flag("py-remove-empty-lines", help="enable the deletion of empty lines (enabled by default).")
 
         if getattr(self, 'compatibility_mode', True):
             parser.add_flag("NORMALIZE_WHITESPACE", help="[doctest] alias for +norm-ws.")
@@ -310,10 +311,36 @@ class PythonParser(ExampleParser):
 
     def source_from_snippet(self, snippet):
         lines = snippet.split("\n")
-        if lines and lines[0].startswith(">>> "):
-            return '\n'.join(line[4:] for line in lines)
+        if lines and lines[0].startswith(">>>"):
+            # all the lines starts with a prompt
+            ok = all(l.startswith(">>>") or l.startswith("...") for l in lines)
+            if not ok:
+                raise ValueError("Incorrect prompts")
 
-        return snippet
+            # a space follows a prompt except when the line is just a prompt
+            ok = all(l[3] == ' ' for l in lines if len(l) >= 4)
+            if not ok:
+                raise ValueError("Missing space after the prompt")
+
+            # remove the prompts
+            lines = (l[4:] for l in lines)
+
+        if self.options.get('py_remove_empty_lines', True):
+            # remove the empty lines if they are followed by indented lines
+            # if they are followed by non-indented lines, the empty lines means
+            # "end the block" of code and they should not be removed or we will
+            # have SyntaxError
+            filtered = []
+            lines = list(lines)
+            for i, line in enumerate(lines[:-1]):
+                if line or (not lines[i+1].startswith(" ") and lines[i+1]):
+                    filtered.append(line)
+
+            filtered.append(lines[-1])
+            lines = filtered
+
+        out = '\n'.join(lines)
+        return out
 
 class PythonInterpreter(Interpreter, PexepctMixin):
     language = 'python'
