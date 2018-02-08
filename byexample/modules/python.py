@@ -126,7 +126,7 @@ class PythonParser(ExampleParser):
         parser.add_flag("py-doctest", help="enable the compatibility with doctest.")
         parser.add_flag("py-pretty-print", help="enable the pretty print enhancement.")
 
-        if self.compatibility_mode:
+        if getattr(self, 'compatibility_mode', True):
             parser.add_flag("NORMALIZE_WHITESPACE", help="[doctest] alias for +norm-ws.")
             parser.add_flag("SKIP", help="[doctest] alias for +skip.")
             parser.add_flag("ELLIPSIS", help="[doctest] enables the ... capture.")
