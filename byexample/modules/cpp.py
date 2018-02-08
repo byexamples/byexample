@@ -2,23 +2,23 @@
 Example:
   ```cpp
   #include <iostream>
-  
+
   const char *hello = "hello bla world";
   std::cout << hello << std::endl;
-  
+
   out:
   hello<...>world
   ```
 
   ```cpp
   int i, j = 2;
-  
+
   for (i = 0; i < 4; ++i) {
      j += i;
   }
-  
+
   j + 3
-  
+
   out:
   (int) 11
   ```

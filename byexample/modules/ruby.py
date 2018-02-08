@@ -8,14 +8,14 @@ Example:
   => "hello<...>world"
 
   ```ruby
-  
+
   j = 2;
   (0..3).each do |i|
     j += i;
   end;
-  
+
   j + 3
-  
+
   out:
   => 11
   ```

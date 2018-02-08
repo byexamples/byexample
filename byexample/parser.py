@@ -95,7 +95,7 @@ class ExampleParser(object):
         start_lineno, end_lineno, filepath = where
         indent = match.group('indent')
 
-        # update the example string and the match removin any indentation
+        # update the example string and the match removing any indentation
         example_str = self.check_and_remove_ident(example_str, indent, where)
         match = self.check_keep_matching(example_str, match, where)
 
@@ -185,6 +185,10 @@ class ExampleParser(object):
             001   >>> 1 + 2
             002 3
 
+        The only exception to this are the empty lines
+            >>> check_and_remove_ident('  >>> 1 + 2\n\n  3\n ', '  ', (1, 2, 'foo.rst'))
+            '>>> 1 + 2\n\n3'
+
         '''
         start_lineno, _, filepath = where
 
@@ -195,7 +199,7 @@ class ExampleParser(object):
 
         indent_stripped = []
         for lineno, line in enumerate(lines):
-            if not line.startswith(indent):
+            if not line.startswith(indent) and line:
                 msg = 'The line %i is misaligned (wrong indentation). ' +\
                       'Expected at least %i spaces.\n%s'
 

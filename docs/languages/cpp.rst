@@ -18,12 +18,12 @@ All the variable are global and can be accessed by other examples
     ```cpp
     double radio = 2.0;
     double sup = 3.14 * (radio * radio);
-    
+
     sup
-    
+
     out:
     (double) 12.56<...>
-    
+
     ```
 
 The last expression with out ending by ';' is interpreted by ``cling`` as the
@@ -39,12 +39,12 @@ and check the output later:
 
     ```cpp
     #include <iostream>
-    
+
     int i;
     for (i = 0; i < 3; ++i) {
         std::cout << i << std::endl;
     }
-    
+
     out:
     0
     1
