@@ -8,7 +8,7 @@ Example = collections.namedtuple('Example', ['interpreter',
                                              'start_lineno', 'end_lineno',
                                              'options', 'indentation',
                                              'source',
-                                             'expected', 'match'])
+                                             'expected'])
 
 Expected = collections.namedtuple('Expected', ['str',
                                                'regexs',
@@ -77,47 +77,41 @@ class ExampleParser(object):
     def ellipsis_marker(self):
         return '...'
 
-    def source_from_snippet(self, snippet):
+    def process_snippet_and_expected(self, snippet, expected, where):
+        r'''
+        Process the snippet code and the expected output.
+
+        Take this opportunity to do any processing after the parsing of
+        the example (in particular, after the extraction of the options)
+
+        By default, the snippet will end with a new line: most of the
+        interpreters use this to flush and execute the code.
         '''
-        Remove the prompts from the snippet and any other thing that
-        should not be sent to the interpreter.
-        The resulting source code must be executable.
-        The given snippet is already aligned and with its indentation removed.
-        '''
-        raise NotImplementedError() # pragma: no cover
-
-    def expected_from_match(self, match, where):
-        return match.group("expected")
-
-    def get_example_from_match(self, match, example_str,
-                                     interpreter, finder, where):
-        options = self.options
-        start_lineno, end_lineno, filepath = where
-        indent = match.group('indent')
-
-        # update the example string and the match removing any indentation
-        example_str = self.check_and_remove_indent(example_str, indent, where)
-        match = self.check_keep_matching(example_str, match, where)
-
-        snippet  = match.group("snippet")
-        options.up(self.extract_options(snippet, where))
-
-        expected = self.expected_from_match(match, where)
 
         if not expected:
-            expected = ''   # make sure that it is a string
+            expected = ''   # make sure that it is an empty string
 
+        if not snippet.endswith('\n'):
+            snippet += '\n' # make sure that we end the code with a newline
+                            # most of the interpreters use this to flush and
+                            # execute the code
+
+        return snippet, expected
+
+    def build_example(self, snippet, expected, indent,
+                                     interpreter, finder, where):
+        start_lineno, end_lineno, filepath = where
+        options = self.options
+
+        options.up(self.extract_options(snippet, where))
+
+        snippet, expected = self.process_snippet_and_expected(snippet, expected, where)
 
         expected_regexs, positions, rcounts, captures = self.expected_as_regexs(
                                                 expected,
                                                 options['norm_ws'],
                                                 options['capture'],
                                                 where)
-
-        source = self.source_from_snippet(snippet)
-        if not source.endswith('\n'):
-            source += '\n'
-
 
         expected = Expected(
                           # the output expected
@@ -138,13 +132,10 @@ class ExampleParser(object):
 
         example = Example(
                           # the source code to execute and the expected
-                          source=source, expected=expected,
+                          source=snippet, expected=expected,
 
                           # the options to customize this example
                           options=options.copy(),
-
-                          # full match of this example (without indentation)
-                          match=match,
 
                           # the original indentation of the example
                           indentation=indent,
@@ -163,121 +154,6 @@ class ExampleParser(object):
 
         options.down()
         return example
-
-    def check_and_remove_indent(self, example_str, indent, where):
-        r'''
-        Given an example string, remove its indent, including a possible empty
-        line at the end.
-            >>> from byexample.parser import ExampleParser
-            >>> parser = ExampleParser(0, 'utf8', "", None); parser.language = 'python'
-            >>> check_and_remove_indent = parser.check_and_remove_indent
-            >>> check_and_remove_indent('  >>> 1 + 2\n  3\n ', '  ', (1, 2, 'foo.rst'))
-            '>>> 1 + 2\n3'
-
-        If the string contains a line with a lower level of indentation,
-        raise an exception.
-
-            >>> check_and_remove_indent('  >>> 1 + 2\n3\n', '  ', (1, 2, 'foo.rst'))
-            Traceback (most recent call last):
-            <...>
-            ValueError: File "foo.rst", line 1, [Python Parser]
-            The line 2 is misaligned (wrong indentation). Expected at least 2 spaces.
-            001   >>> 1 + 2
-            002 3
-
-        The only exception to this are the empty lines
-            >>> check_and_remove_indent('  >>> 1 + 2\n\n  3\n ', '  ', (1, 2, 'foo.rst'))
-            '>>> 1 + 2\n\n3'
-
-        '''
-        start_lineno, _, filepath = where
-
-        lines = example_str.split('\n')
-
-        if not lines[-1].strip():
-            lines = lines[:-1]  # remove last whitespace-only line
-
-        indent_stripped = []
-        for lineno, line in enumerate(lines):
-            if not line.startswith(indent) and line:
-                msg = 'The line %i is misaligned (wrong indentation). ' +\
-                      'Expected at least %i spaces.\n%s'
-
-                radio = 2
-                context = lines[max(lineno-radio, 0):lineno+radio+1]
-                context = [("%03i " % (i + start_lineno)) + l
-                            for i, l in enumerate(context, max(lineno-radio, 0))]
-
-                msg = msg % (start_lineno + lineno,
-                                len(indent),
-                                '\n'.join(context))
-                raise ValueError(build_exception_msg(msg, where, self))
-
-            indent_stripped.append(line[len(indent):])
-
-        return '\n'.join(indent_stripped)
-
-    def check_keep_matching(self, example_str, match, where):
-        r'''
-        Given an example string, try to apply the match again.
-        This is a health-check intended to be used after a call to
-        'check_and_remove_indent'
-
-            >>> from byexample.parser import ExampleParser
-            >>> import re
-
-            >>> parser = ExampleParser(0, 'utf8', "", None); parser.language = 'python'
-            >>> check_and_remove_indent = parser.check_and_remove_indent
-            >>> check_keep_matching    = parser.check_keep_matching
-
-            >>> code = '  >>> 1 + 2'
-            >>> match = re.match(r'[ ]*>>> [^\n]*', code)
-
-            >>> code_i = check_and_remove_indent(code, '  ', (1, 2, 'foo.rst'))
-            >>> code_i != code
-            True
-            >>> new_match = check_keep_matching(code_i, match, (1, 2, 'foo.rst'))
-
-        This should not happen but if for some reason the regex doesn't match
-        the full string, raise an exception:
-
-            >>> x_code = 'x' + code_i
-            >>> check_keep_matching(x_code, match, (1, 2, 'foo.rst'))
-            Traceback (most recent call last):
-            <...>
-            ValueError: <...>
-
-            >>> code_x = code_i + '\nx'
-            >>> check_keep_matching(code_x, match, (1, 2, 'foo.rst'))
-            Traceback (most recent call last):
-            <...>
-            ValueError: <...>
-
-        '''
-        start_lineno, _, filepath = where
-
-        new_match = match.re.match(example_str)
-        if not new_match:
-            msg = 'The regex does not match the example after ' +\
-                  'removing the indentation. '
-
-            raise ValueError(build_exception_msg(msg, where, self))
-
-        if new_match.start() != 0 or new_match.end() != len(example_str):
-            msg = '%i bytes were left out after removing the indentation. ' +\
-                  'Dropped bytes at the %s of example:\n%s\n'
-
-            if new_match.start() != 0:
-                dropped = example_str[:new_match.start()]
-                at = 'begin'
-            else:
-                dropped = example_str[new_match.end():]
-                at = 'end'
-
-            msg = msg % (len(dropped), at, dropped)
-            raise ValueError(build_exception_msg(msg, where, self))
-
-        return new_match
 
     def _as_safe_regexs(self, literals, charno, normalize_whitespace):
         r'''
@@ -497,6 +373,8 @@ class ExampleParser(object):
         a list of rcounts and a list of capture tag names seen.
 
             >>> from byexample.parser import ExampleParser
+            >>> import re
+
             >>> parser = ExampleParser(0, 'utf8', "", None); parser.language = 'python'
             >>> _as_regexs = parser.expected_as_regexs
             >>> where = (1, 2, 'foo.rst')

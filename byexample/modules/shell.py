@@ -45,6 +45,16 @@ class ShellPromptFinder(MatchFinder):
     def get_language_of(self, *args, **kargs):
         return 'shell'
 
+    def get_snippet_and_expected(self, match, where):
+        snippet, expected = MatchFinder.get_snippet_and_expected(self, match, where)
+
+        snippet = self._remove_prompts(snippet, where)
+        return snippet, expected
+
+    def _remove_prompts(self, snippet, where):
+        lines = snippet.split("\n")
+        return '\n'.join(line[2:] for line in lines)
+
 class ShellParser(ExampleParser):
     language = 'shell'
 
@@ -54,13 +64,6 @@ class ShellParser(ExampleParser):
 
     def extend_option_parser(self, parser):
         parser.add_argument("+shell", help='change the underlying shell to use.')
-
-    def source_from_snippet(self, snippet):
-        lines = snippet.split("\n")
-        if lines and lines[0].startswith("$ "):
-            return '\n'.join(line[2:] for line in lines)
-
-        return snippet
 
 class ShellInterpreter(Interpreter, PexepctMixin):
     language = 'shell'

@@ -48,6 +48,30 @@ class PythonPromptFinder(MatchFinder):
     def get_language_of(self, *args, **kargs):
         return 'python'
 
+    def get_snippet_and_expected(self, match, where):
+        snippet, expected = MatchFinder.get_snippet_and_expected(self, match, where)
+
+        snippet = self._remove_prompts(snippet, where)
+        return snippet, expected
+
+    def _remove_prompts(self, snippet, where):
+        lines = snippet.split("\n")
+
+        # all the lines starts with a prompt
+        ok = all(l.startswith(">>>") or l.startswith("...") for l in lines)
+        if not ok:
+            raise ValueError("Incorrect prompts")
+
+        # a space follows a prompt except when the line is just a prompt
+        ok = all(l[3] == ' ' for l in lines if len(l) >= 4)
+        if not ok:
+            raise ValueError("Missing space after the prompt")
+
+        # remove the prompts
+        lines = (l[4:] for l in lines)
+
+        return '\n'.join(lines)
+
 
 ###############################################################################
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : #
@@ -246,9 +270,16 @@ class PythonParser(ExampleParser):
                                     kwargs={},
                                     where=where)
 
-    def expected_from_match(self, match, where):
-        expected_str = ExampleParser.expected_from_match(self, match, where)
+    def process_snippet_and_expected(self, snippet, expected, where):
+        snippet, expected = ExampleParser.process_snippet_and_expected(self,
+                                            snippet, expected, where)
 
+        expected = self._mutate_expected_based_on_doctest_flags(expected, where)
+        snippet = self._remove_empty_line_if_enabled(snippet)
+
+        return snippet, expected
+
+    def _mutate_expected_based_on_doctest_flags(self, expected_str, where):
         options = self.options
         options.mask_default(False)
         if options['py_doctest']:
@@ -309,29 +340,14 @@ class PythonParser(ExampleParser):
         options.unmask_default()
         return expected_str
 
-    def source_from_snippet(self, snippet):
-        lines = snippet.split("\n")
-        if lines and lines[0].startswith(">>>"):
-            # all the lines starts with a prompt
-            ok = all(l.startswith(">>>") or l.startswith("...") for l in lines)
-            if not ok:
-                raise ValueError("Incorrect prompts")
-
-            # a space follows a prompt except when the line is just a prompt
-            ok = all(l[3] == ' ' for l in lines if len(l) >= 4)
-            if not ok:
-                raise ValueError("Missing space after the prompt")
-
-            # remove the prompts
-            lines = (l[4:] for l in lines)
-
+    def _remove_empty_line_if_enabled(self, snippet):
         if self.options.get('py_remove_empty_lines', True):
             # remove the empty lines if they are followed by indented lines
             # if they are followed by non-indented lines, the empty lines means
             # "end the block" of code and they should not be removed or we will
             # have SyntaxError
             filtered = []
-            lines = list(lines)
+            lines = snippet.split("\n")
             for i, line in enumerate(lines[:-1]):
                 if line or (not lines[i+1].startswith(" ") and lines[i+1]):
                     filtered.append(line)
@@ -339,8 +355,8 @@ class PythonParser(ExampleParser):
             filtered.append(lines[-1])
             lines = filtered
 
-        out = '\n'.join(lines)
-        return out
+            return '\n'.join(lines)
+        return snippet
 
 class PythonInterpreter(Interpreter, PexepctMixin):
     language = 'python'

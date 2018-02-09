@@ -89,7 +89,7 @@ class ExampleFinder(object):
             ...    return Example(I,
             ...                   None, None, # <- dummy values
             ...                   start_lineno, end_lineno,
-            ...                   *[None]*5)  # <- dummy values
+            ...                   *[None]*4)  # <- dummy values
 
         For the first case (range1 against range2 or range4) it is
         obvious that those pair of examples overlaps and it is not possible
@@ -236,9 +236,21 @@ class ExampleFinder(object):
                 self._log_drop('no interpreter found for %s language' % language, where)
                 continue # TODO should be an error?
 
+
+            # update the example_str removing any indentation;
+            indent = match.group('indent')
+            example_str = finder.check_and_remove_indent(example_str, indent, where)
+
+            # check that we still can find the example
+            # (allow to generate a new match)
+            match = finder.check_keep_matching(example_str, match, where)
+
+            # then, get the snippet (runneable code) and the expected (the string)
+            # from the example_str
+            snippet, expected = finder.get_snippet_and_expected(match, where)
+
             # perfect, we have everything to build an example
-            example = parser.get_example_from_match(match,
-                                                    example_str,
+            example = parser.build_example(snippet, expected, indent,
                                                     interpreter, finder, where)
 
             examples.append(example)
@@ -248,6 +260,7 @@ class ExampleFinder(object):
                                             self.verbosity-1)
 
         return examples
+
 
 class MatchFinder(object):
     def __init__(self, verbosity, encoding, **unused):
@@ -265,4 +278,129 @@ class MatchFinder(object):
 
     def __repr__(self):
         return '%s Finder' % tohuman(self.target)
+
+    def check_and_remove_indent(self, example_str, indent, where):
+        r'''
+        Given an example string, remove its indent, including a possible empty
+        line at the end.
+            >>> from byexample.finder import MatchFinder
+            >>> mfinder = MatchFinder(0, 'utf8'); mfinder.target = 'python-prompt'
+            >>> check_and_remove_indent = mfinder.check_and_remove_indent
+            >>> check_and_remove_indent('  >>> 1 + 2\n  3\n ', '  ', (1, 2, 'foo.rst'))
+            '>>> 1 + 2\n3'
+
+        If the string contains a line with a lower level of indentation,
+        raise an exception.
+
+            >>> check_and_remove_indent('  >>> 1 + 2\n3\n', '  ', (1, 2, 'foo.rst'))
+            Traceback (most recent call last):
+            <...>
+            ValueError: File "foo.rst", line 1, [Python Prompt Finder]
+            The line 2 is misaligned (wrong indentation). Expected at least 2 spaces.
+            001   >>> 1 + 2
+            002 3
+
+        The only exception to this are the empty lines
+            >>> check_and_remove_indent('  >>> 1 + 2\n\n  3\n ', '  ', (1, 2, 'foo.rst'))
+            '>>> 1 + 2\n\n3'
+
+        '''
+        start_lineno, _, filepath = where
+
+        lines = example_str.split('\n')
+
+        if not lines[-1].strip():
+            lines = lines[:-1]  # remove last whitespace-only line
+
+        indent_stripped = []
+        for lineno, line in enumerate(lines):
+            if not line.startswith(indent) and line:
+                msg = 'The line %i is misaligned (wrong indentation). ' +\
+                      'Expected at least %i spaces.\n%s'
+
+                radio = 2
+                context = lines[max(lineno-radio, 0):lineno+radio+1]
+                context = [("%03i " % (i + start_lineno)) + l
+                            for i, l in enumerate(context, max(lineno-radio, 0))]
+
+                msg = msg % (start_lineno + lineno,
+                                len(indent),
+                                '\n'.join(context))
+                raise ValueError(build_exception_msg(msg, where, self))
+
+            indent_stripped.append(line[len(indent):])
+
+        return '\n'.join(indent_stripped)
+
+    def check_keep_matching(self, example_str, match, where):
+        r'''
+        Given an example string, try to apply the match again.
+        This is a health-check intended to be used after a call to
+        'check_and_remove_indent'
+
+            >>> from byexample.finder import MatchFinder
+            >>> import re
+
+            >>> mfinder = MatchFinder(0, 'utf8'); mfinder.target = 'python-prompt'
+            >>> check_and_remove_indent = mfinder.check_and_remove_indent
+            >>> check_keep_matching     = mfinder.check_keep_matching
+
+            >>> code = '  >>> 1 + 2'
+            >>> match = re.match(r'[ ]*>>> [^\n]*', code)
+
+            >>> code_i = check_and_remove_indent(code, '  ', (1, 2, 'foo.rst'))
+            >>> code_i != code
+            True
+            >>> new_match = check_keep_matching(code_i, match, (1, 2, 'foo.rst'))
+
+        This should not happen but if for some reason the regex doesn't match
+        the full string, raise an exception:
+
+            >>> x_code = 'x' + code_i
+            >>> check_keep_matching(x_code, match, (1, 2, 'foo.rst'))
+            Traceback (most recent call last):
+            <...>
+            ValueError: <...>
+
+            >>> code_x = code_i + '\nx'
+            >>> check_keep_matching(code_x, match, (1, 2, 'foo.rst'))
+            Traceback (most recent call last):
+            <...>
+            ValueError: <...>
+
+        '''
+        start_lineno, _, filepath = where
+
+        new_match = match.re.match(example_str)
+        if not new_match:
+            msg = 'The regex does not match the example after ' +\
+                  'removing the indentation. '
+
+            raise ValueError(build_exception_msg(msg, where, self))
+
+        if new_match.start() != 0 or new_match.end() != len(example_str):
+            msg = '%i bytes were left out after removing the indentation. ' +\
+                  'Dropped bytes at the %s of example:\n%s\n'
+
+            if new_match.start() != 0:
+                dropped = example_str[:new_match.start()]
+                at = 'begin'
+            else:
+                dropped = example_str[new_match.end():]
+                at = 'end'
+
+            msg = msg % (len(dropped), at, dropped)
+            raise ValueError(build_exception_msg(msg, where, self))
+
+        return new_match
+
+    def get_snippet_and_expected(self, match, where):
+        r'''
+        Given the match object, retrieve the snippet code to be executed
+        and the expected output to compare against it.
+
+        Take this opportunity to clean up the snippet and the expected
+        before the parsing phase takes place.
+        '''
+        return match.group('snippet'), match.group('expected')
 
