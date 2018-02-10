@@ -23,10 +23,10 @@ Example:
 import re, pexpect, sys, time
 from byexample.common import log, build_exception_msg
 from byexample.parser import ExampleParser
-from byexample.finder import MatchFinder
-from byexample.interpreter import Interpreter, PexepctMixin
+from byexample.finder import ExampleFinder
+from byexample.interpreter import ExampleRunner, PexepctMixin
 
-class PythonPromptFinder(MatchFinder):
+class PythonPromptFinder(ExampleFinder):
     target = 'python-prompt'
 
     def example_regex(self):
@@ -49,7 +49,7 @@ class PythonPromptFinder(MatchFinder):
         return 'python'
 
     def get_snippet_and_expected(self, match, where):
-        snippet, expected = MatchFinder.get_snippet_and_expected(self, match, where)
+        snippet, expected = ExampleFinder.get_snippet_and_expected(self, match, where)
 
         snippet = self._remove_prompts(snippet, where)
         return snippet, expected
@@ -358,7 +358,7 @@ class PythonParser(ExampleParser):
             return '\n'.join(lines)
         return snippet
 
-class PythonInterpreter(Interpreter, PexepctMixin):
+class PythonInterpreter(ExampleRunner, PexepctMixin):
     language = 'python'
 
     def __init__(self, verbosity, encoding, **unused):

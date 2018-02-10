@@ -36,7 +36,7 @@ try:
 
         try:
             # we want to use colors, let's try to find a valid lexer
-            language = example.interpreter.language
+            language = example.runner.language
             lexer = pygments.lexers.get_lexer_by_name(language)
 
             # we want the output to be valid for a terminal...
@@ -103,7 +103,7 @@ def print_example(example, use_colors, x):
         print("% 4i: %s" % (p, repr(r)))
 
     print("..[Run]" + "." * 63)
-    print("  Interpreter: %s" % example.interpreter)
+    print("  Runner: %s" % example.runner)
 
 def print_execution(example, got, x):
     if x < 0:

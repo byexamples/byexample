@@ -3,7 +3,7 @@ from .common import log, build_exception_msg, print_example, print_execution
 class TimeoutException(Exception):
     pass
 
-class ExampleRunner(object):
+class FileExecutor(object):
     def __init__(self, concerns, checker, verbosity, use_colors, options, **unused):
         self.concerns   = concerns
         self.checker    = checker
@@ -12,26 +12,26 @@ class ExampleRunner(object):
 
         self.options = options
 
-    def initialize_interpreters(self, interpreters, examples, options):
-        log("Initializing %i interpreters..." % len(interpreters),
+    def initialize_runners(self, runners, examples, options):
+        log("Initializing %i runners..." % len(runners),
                                                     self.verbosity-1)
-        for interpreter in interpreters:
-            log(" - %s" % str(interpreter), self.verbosity-1)
-            interpreter.initialize(examples, options)
+        for runner in runners:
+            log(" - %s" % str(runner), self.verbosity-1)
+            runner.initialize(examples, options)
 
-    def shutdown_interpreters(self, interpreters):
-        log("Shutting down %i interpreters..." % len(interpreters),
+    def shutdown_runners(self, runners):
+        log("Shutting down %i runners..." % len(runners),
                                                     self.verbosity-1)
-        for interpreter in interpreters:
-            log(" - %s" % str(interpreter), self.verbosity-1)
-            interpreter.shutdown()
+        for runner in runners:
+            log(" - %s" % str(runner), self.verbosity-1)
+            runner.shutdown()
 
-    def run(self, examples, filepath):
+    def execute(self, examples, filepath):
         options = self.options
-        interpreters = list(set(e.interpreter for e in examples))
+        runners = list(set(e.runner for e in examples))
 
-        self.initialize_interpreters(interpreters, examples, options)
-        self.concerns.start_run(examples, interpreters, filepath)
+        self.initialize_runners(runners, examples, options)
+        self.concerns.start_run(examples, runners, filepath)
 
         fail_fast = options['fail_fast']
 
@@ -49,7 +49,7 @@ class ExampleRunner(object):
                 print_example(example, True, self.verbosity-3)
                 self.concerns.start_example(example, options)
                 try:
-                    got = example.interpreter.run(example, options)
+                    got = example.runner.run(example, options)
                 except TimeoutException as e:  # pragma: no cover
                     got = "**Execution timed out**\n" + str(e)
                     timedout = True
@@ -82,7 +82,7 @@ class ExampleRunner(object):
                         self.concerns.start_interact(example, options)
                         ex = None
                         try:
-                            example.interpreter.interact(example, options)
+                            example.runner.interact(example, options)
                         except Exception as e:
                             ex = e
 
@@ -96,7 +96,7 @@ class ExampleRunner(object):
                 options.down()
 
         self.concerns.end_run(failed, user_aborted, crashed)
-        self.shutdown_interpreters(interpreters)
+        self.shutdown_runners(runners)
 
         return failed, (user_aborted or crashed)
 

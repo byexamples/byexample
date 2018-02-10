@@ -122,13 +122,13 @@ The Finder class
 ----------------
 
 Now we ensemble all the pieces together.
-We need to create a class, inherit from ``MatchFinder``,
+We need to create a class, inherit from ``ExampleFinder``,
 define a ``target`` attribute and implement two methods:
 
 .. code:: python
 
-    >>> from byexample.finder import MatchFinder
-    >>> class ArnoldCFinder(MatchFinder):
+    >>> from byexample.finder import ExampleFinder
+    >>> class ArnoldCFinder(ExampleFinder):
     ...     target = 'ArnoldC-session'
     ...
     ...     def example_regex(self):
@@ -183,8 +183,8 @@ The PythonFinder will find and match Python examples that starts with the prompt
 ``>>>``; later, it extends ``get_snippet_and_expected`` to remove the prompts
 from the snippet to return a valid Python code.
 
-How to support new languages: the Parser and the Interpreter
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+How to support new languages: the Parser and the Runner
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To support new languages we need to be able to parse the code in the first place
 and then, to execute it later.
@@ -257,9 +257,9 @@ Let's peek how the parsing is used
      >>> from byexample.options import Options, OptionParser
      >>> parser = ArnoldCParser(0, 'utf-8', OptionParser(add_help=False), Options())
 
-     >>> interpreter = None # not yet
+     >>> runner = None # not yet
      >>> example = parser.build_example(snippet, expected, indent, # from finder
-     ...                                interpreter, finder, where)
+     ...                                runner, finder, where)
 
      >>> print(example.source)
      IT'S SHOWTIME                       # byexample: +awesome
@@ -288,12 +288,13 @@ Other useful example is ``PythonParser`` (``byexample/modules/python.py``), he m
 heavily the expected string to support a compatibility mode with ``doctest``
 
 
-The Interpreter class
----------------------
+The Runner class
+----------------
 
-The Interpreter is who will execute the code. It is not necessary a real
-interpreter, for almost all the languages you want to use a real official
-interpreter: your Interpreter class will be just a proxy.
+The Runner is who will execute the code.
+
+Most of the times it is a proxy to a real interpreter but it can be a mix
+of compiler/runner depending of the underlying language.
 
 To see how this 'proxy' class can interact with another program, check the
 implementation of the Python and Ruby Interpreters of ``byexample``
@@ -312,12 +313,12 @@ you do not need to install a real ``ArnoldC`` compiler.
     ...
     ...     return '\n'.join(output)
 
-Now we ensemble the Interpreter class
+Now we ensemble the ExampleRunner class
 
 .. code:: python
 
-    >>> from byexample.interpreter import Interpreter
-    >>> class ArnoldCInterpreter(Interpreter):
+    >>> from byexample.interpreter import ExampleRunner
+    >>> class ArnoldCRunner(ExampleRunner):
     ...     language = 'python'
     ...
     ...     def run(self, example, options):
@@ -332,21 +333,22 @@ Now we ensemble the Interpreter class
 The ``initialize`` and ``shutdown`` methods are called before and after the
 execution of all the tests. It can be used to set up the real interpreter
 or to perform some off-line task (like compiling).
-You may want to change how to setup the interpreter based on the examples that
-it will execute or in the options passed from the command line.
-
-It is in the ``run`` method where the magic happen. Its task is to execute
-the given source and to return the output, if any.
+You may want to change how to setup the interpreter or the compiler based on
+the examples that it will execute or in the options passed from the command
+line.
 
 The ``options`` parameter are the parsed options (plus the options that
 come from the command line).
+
+It is in the ``run`` method where the magic happen. Its task is to execute
+the given source and to return the output, if any.
 
 What to do with them is up to you.
 
 .. code:: python
 
-    >>> interpreter = ArnoldCInterpreter(0, 'utf-8')
-    >>> found = interpreter.run(example, example.options)
+    >>> runner = ArnoldCRunner(0, 'utf-8')
+    >>> found = runner.run(example, example.options)
 
     >>> found
     'Hello World!\n'

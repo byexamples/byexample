@@ -5,12 +5,12 @@ Where = collections.namedtuple('Where', ['start_lineno',
                                          'end_lineno',
                                          'filepath'])
 
-class ExampleFinder(object):
+class ExampleHarvest(object):
     '''
           Finding process    Parsing process         Run process
     ----------\                           example
     | foo     |     example match    ............ . . .
-    |         |      -----------     : > 1 + 2 } snippet  =>  1 + 2 --> interpreter
+    |         |      -----------     : > 1 + 2 } snippet  =>  1 + 2 ----> runner
     | > 1 + 2 |      | > 1 + 2 |     :                                      |
     | 3       |  =>  | 3       |  => : 3 } expected       =>  3 == ?? <-- output
     |         |      -----------     :.......... .. . .       compare
@@ -27,7 +27,7 @@ class ExampleFinder(object):
         self.available_finders = registry['finders'].values()
 
         self.parser_by_language = registry['parsers']
-        self.interpreter_by_language = registry['interpreters']
+        self.runner_by_language = registry['runners']
 
         self.options = options
 
@@ -84,9 +84,9 @@ class ExampleFinder(object):
             >>> # helper function to create examples
             >>> from byexample.parser import Example
             >>> def build_example(language, start_lineno, end_lineno):
-            ...    class I: pass    # <- fake interpreter instance
-            ...    I.language = language # <- language of the example
-            ...    return Example(I,
+            ...    class R: pass    # <- fake runner instance
+            ...    R.language = language # <- language of the example
+            ...    return Example(R,
             ...                   None, None, # <- dummy values
             ...                   start_lineno, end_lineno,
             ...                   *[None]*4)  # <- dummy values
@@ -95,13 +95,13 @@ class ExampleFinder(object):
         obvious that those pair of examples overlaps and it is not possible
         to distinguish which is correct.
 
-            >>> from byexample.finder import ExampleFinder
+            >>> from byexample.finder import ExampleHarvest
 
             >>> ex1 = build_example('python', *range1)
             >>> ex2 = build_example('python', *range2)
 
-            >>> f = ExampleFinder([], dict((k, {}) for k in \
-            ...                   ('parsers', 'finders', 'interpreters')), 0, None)
+            >>> f = ExampleHarvest([], dict((k, {}) for k in \
+            ...                   ('parsers', 'finders', 'runners')), 0, None)
 
             >>> f.check_example_overlap([ex1, ex2], 'foo.rst')
             Traceback<...>
@@ -168,7 +168,7 @@ class ExampleFinder(object):
                                 example.end_lineno <= prev.end_lineno and \
                                 not collision_type_3)
 
-            same_language = example.interpreter.language == prev.interpreter.language
+            same_language = example.runner.language == prev.runner.language
 
             if collision_type_2 or (collision_type_3 and same_language):
                 # If we have an example inside another example or
@@ -184,8 +184,8 @@ class ExampleFinder(object):
                 msg = "In %s, examples at line %i (found by %s) and " +\
                       "at line %i (found by %s) overlap each other."
                 msg = msg % (filepath, example.start_lineno,
-                             example.interpreter, prev.start_lineno,
-                             prev.interpreter)
+                             example.runner, prev.start_lineno,
+                             prev.runner)
                 raise ValueError(msg)
 
             prev = example
@@ -231,9 +231,9 @@ class ExampleFinder(object):
                 continue # TODO should be an error?
 
             # who can execute it?
-            interpreter = self.interpreter_by_language.get(language)
-            if not interpreter:
-                self._log_drop('no interpreter found for %s language' % language, where)
+            runner = self.runner_by_language.get(language)
+            if not runner:
+                self._log_drop('no runner found for %s language' % language, where)
                 continue # TODO should be an error?
 
             # save the indentation here
@@ -245,7 +245,7 @@ class ExampleFinder(object):
 
             # perfect, we have everything to build an example
             example = parser.build_example(snippet, expected, indent,
-                                                    interpreter, finder, where)
+                                                    runner, finder, where)
 
             examples.append(example)
 
@@ -256,7 +256,7 @@ class ExampleFinder(object):
         return examples
 
 
-class MatchFinder(object):
+class ExampleFinder(object):
     def __init__(self, verbosity, encoding, **unused):
         self.verbosity = verbosity
         self.encoding = encoding
@@ -277,8 +277,8 @@ class MatchFinder(object):
         r'''
         Given an example string, remove its indentation
 
-            >>> from byexample.finder import MatchFinder
-            >>> mfinder = MatchFinder(0, 'utf8'); mfinder.target = 'python-prompt'
+            >>> from byexample.finder import ExampleFinder
+            >>> mfinder = ExampleFinder(0, 'utf8'); mfinder.target = 'python-prompt'
             >>> check_and_remove_indent = mfinder.check_and_remove_indent
             >>> check_and_remove_indent('  >>> 1 + 2\n  3', '  ', (1, 2, 'foo.rst'))
             '>>> 1 + 2\n3'
@@ -329,10 +329,10 @@ class MatchFinder(object):
         This is a health-check intended to be used after a call to
         'check_and_remove_indent'
 
-            >>> from byexample.finder import MatchFinder
+            >>> from byexample.finder import ExampleFinder
             >>> import re
 
-            >>> mfinder = MatchFinder(0, 'utf8'); mfinder.target = 'python-prompt'
+            >>> mfinder = ExampleFinder(0, 'utf8'); mfinder.target = 'python-prompt'
             >>> check_and_remove_indent = mfinder.check_and_remove_indent
             >>> check_keep_matching     = mfinder.check_keep_matching
 

@@ -2,7 +2,7 @@ import collections, re, shlex, argparse
 from .common import log, build_exception_msg, tohuman
 from .options import OptionParser, UnrecognizedOption
 
-Example = collections.namedtuple('Example', ['interpreter',
+Example = collections.namedtuple('Example', ['runner',
                                              'filepath',
                                              'finder',
                                              'start_lineno', 'end_lineno',
@@ -85,7 +85,7 @@ class ExampleParser(object):
         the example (in particular, after the extraction of the options)
 
         By default, the snippet will end with a new line: most of the
-        interpreters use this to flush and execute the code.
+        runners use this to flush and execute the code.
         '''
 
         if not expected:
@@ -93,13 +93,13 @@ class ExampleParser(object):
 
         if not snippet.endswith('\n'):
             snippet += '\n' # make sure that we end the code with a newline
-                            # most of the interpreters use this to flush and
+                            # most of the runners use this to flush and
                             # execute the code
 
         return snippet, expected
 
     def build_example(self, snippet, expected, indent,
-                                     interpreter, finder, where):
+                                     runner, finder, where):
         start_lineno, end_lineno, filepath = where
         options = self.options
 
@@ -149,8 +149,8 @@ class ExampleParser(object):
                           # start / end line numbers (inclusive) in the file
                           start_lineno=start_lineno, end_lineno=end_lineno,
 
-                          # the interpreter for this example
-                          interpreter=interpreter)
+                          # the runner for this example
+                          runner=runner)
 
         options.down()
         return example

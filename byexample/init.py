@@ -1,9 +1,9 @@
 import sys, pkgutil, inspect, pprint
 
 from .options import Options, OptionParser
-from .interpreter import Interpreter
-from .finder import ExampleFinder, MatchFinder
-from .runner import ExampleRunner
+from .interpreter import ExampleRunner
+from .finder import ExampleHarvest, ExampleFinder
+from .runner import FileExecutor
 from .checker import Checker
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
@@ -26,7 +26,7 @@ def is_a(target_class, key_attr):
 
 def load_modules(dirnames, cfg):
     verbosity = cfg['verbosity']
-    registry = {'interpreters': {},
+    registry = {'runners': {},
                 'finders': {},
                 'parsers': {},
                 'concerns': {},
@@ -44,9 +44,9 @@ def load_modules(dirnames, cfg):
             continue
 
         log("From '%s' loaded '%s'" % (path, name), verbosity-1)
-        for klass, key, what in [(Interpreter, 'language', 'interpreters'),
+        for klass, key, what in [(ExampleRunner, 'language', 'runners'),
                                  (ExampleParser, 'language', 'parsers'),
-                                 (MatchFinder, 'target', 'finders'),
+                                 (ExampleFinder, 'target', 'finders'),
                                  (Concern, 'target', 'concerns')]:
 
             # we are interested in any class that is a subclass of 'klass'
@@ -75,7 +75,7 @@ def load_modules(dirnames, cfg):
     return registry
 
 def get_allowed_languages(registry, selected):
-    available = set([obj.language for obj in registry['interpreters'].values()] + \
+    available = set([obj.language for obj in registry['runners'].values()] + \
                       [obj.language for obj in registry['parsers'].values()])
 
     selected = set(selected)
@@ -107,7 +107,7 @@ def get_default_options_parser(cmdline_args):
     options_parser.add_flag("skip", help="do not run the example.")
     options_parser.add_flag("capture", help="enable the capture tags <...>.")
     options_parser.add_flag("enhance-diff", help="improve how the diff are shown.")
-    options_parser.add_flag("interact", help="interact with the interpreter manually if an example fails.")
+    options_parser.add_flag("interact", help="interact with the runner/interpreter manually if an example fails.")
     options_parser.add_argument("+timeout", type=int, help="timeout in seconds to complete the example.")
     options_parser.add_argument("+diff", choices=['none', 'unified', 'ndiff', 'context'],
                                         help="select diff algorithm.")
@@ -228,7 +228,7 @@ def init(args):
 
     checker  = Checker(**cfg)
 
-    finder = ExampleFinder(allowed_languages, registry, **cfg)
-    runner = ExampleRunner(concerns, checker, **cfg)
+    harvester = ExampleHarvest(allowed_languages, registry, **cfg)
+    executor  = FileExecutor(concerns, checker, **cfg)
 
-    return testfiles, finder, runner, options
+    return testfiles, harvester, executor, options

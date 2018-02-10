@@ -46,8 +46,8 @@ capabilities
       --encoding ENCODING   select the encoding (supported in Python 3 only, use
                             the same encoding of stdout by default)
       --pretty {none,all}   control how to pretty print the output.
-      --interact, --debug   interact with the interpreter manually if an example
-                            fails.
+      --interact, --debug   interact with the runner/interpreter manually if an
+                            example fails.
       -v                    verbosity level, add more flags to increase the level.
       -q, --quiet           quiet mode, do not print anything even if an example
                             fails; supress the progress output.
@@ -103,7 +103,7 @@ executed.
 In normal circumstances there are two possible status: ``PASS`` and ``FAIL``.
 
 If something strange happen like the user pressed ``ctrl-c`` or the underlying
-interpreter crashed, the status will be ``ABORT``.
+runner crashed, the status will be ``ABORT``.
 
 For quick regression you may want to stop ``byexample`` at the first failing
 example: *fail fast*
@@ -215,7 +215,7 @@ Look at this successful example:
     bar
 
 This is because most of the time an empty new line is added for aesthetics
-purposes in the example or produced by the interpreter as an artifact.
+purposes in the example or produced by the runner/interpreter as an artifact.
 
 
 Diff algorithms

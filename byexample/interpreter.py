@@ -2,13 +2,13 @@ import re, pexpect, sys, time, termios, operator
 from .runner import TimeoutException
 from .common import tohuman
 
-class Interpreter(object):
+class ExampleRunner(object):
     def __init__(self, verbosity, encoding, **unused):
         self.verbosity = verbosity
         self.encoding = encoding
 
     def __repr__(self):
-        return '%s Interpreter' % tohuman(self.language)
+        return '%s Runner' % tohuman(self.language)
 
     def run(self, example, options):
         '''
@@ -30,32 +30,32 @@ class Interpreter(object):
         has.
 
         The parameter 'options' configure some aspects of the execution.
-        For example, the option 'TIMEOUT' set for how long an execution
+        For example, the option 'timeout' set for how long an execution
         should be running.
         If time out, raise an exception of type TimeoutException.
 
-        See the code of the default interpreters of ``byexample`` like
+        See the code of the default runners of ``byexample`` like
         PythonInterpreter and RubyInterpreter to get more information.
         '''
         raise NotImplementedError() # pragma: no cover
 
     def interact(self, example, options):
         '''
-        Connect the current interpreter session to the byexample's console
+        Connect the current runner/interpreter session to the byexample's console
         allowing the user to manually interact with the interpreter.
         '''
         raise NotImplementedError() # pragma: no cover
 
     def initialize(self):
         '''
-        Hook to initialize the interpreter. This method will be called
+        Hook to initialize the runner. This method will be called
         before running any example.
         '''
         raise NotImplementedError() # pragma: no cover
 
     def shutdown(self):
         '''
-        Hook to shutdown the interpreter. This method will be called
+        Hook to shutdown the runner. This method will be called
         after running all the examples.
         '''
         raise NotImplementedError() # pragma: no cover

@@ -27,7 +27,7 @@ Example:
 
 import re, pexpect, sys, time
 from byexample.parser import ExampleParser
-from byexample.interpreter import Interpreter, PexepctMixin
+from byexample.interpreter import ExampleRunner, PexepctMixin
 
 class CPPParser(ExampleParser):
     language = 'cpp'
@@ -46,7 +46,7 @@ class CPPParser(ExampleParser):
                                                     re.MULTILINE|re.VERBOSE)
 
 
-class CPPInterpreter(Interpreter, PexepctMixin):
+class CPPInterpreter(ExampleRunner, PexepctMixin):
     language = 'cpp'
 
     def __init__(self, verbosity, encoding, **unused):

@@ -1,7 +1,7 @@
 import re
-from byexample.finder import MatchFinder
+from byexample.finder import ExampleFinder
 
-class FencedMatchFinder(MatchFinder):
+class FencedMatchFinder(ExampleFinder):
     target = 'markdown-fenced-code'
 
     def example_regex(self):

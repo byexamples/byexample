@@ -22,17 +22,17 @@ class Concern(object):
     def __repr__(self):
         return '%s Concern' % tohuman(self.target)
 
-    def start_run(self, examples, interpreters, filepath):
+    def start_run(self, examples, runners, filepath):
         '''
         Called at the begin of the execution of the given examples
-        found in the specific filepath with the given interpreters.
+        found in the specific filepath with the given runners.
 
-        The interpreters are already initialized but no example
+        The runners are already initialized but no example
         was executed yet.
 
         You could use this opportunity to alter the examples, or
         even alter the example list (the parameter) in place.
-        Or you could inject some code to the given interpreters
+        Or you could inject some code to the given runners
         before running any example.
         '''
         pass    # pragma: no cover
@@ -45,12 +45,12 @@ class Concern(object):
         The parameters say if the run execution failed or not
         and if it was aborted by the user or crashed.
 
-        The interpreters given in start_run are still up and running
+        The runners given in start_run are still up and running
         but may not be in a consistent state if the user aborted the
-        execution or if the interpreter crashed.
+        execution or if the runner crashed.
 
         You could perform some clean up task injecting some code
-        in the interpreters.
+        in the runners.
         '''
         pass    # pragma: no cover
 
@@ -83,10 +83,10 @@ class Concern(object):
     def start_interact(self, example, options):
         '''
         Called before the user start an interactive session with the
-        example's interpreter.
+        example's runner/interpreter.
 
         You may use this opportunity to perform some maintance tasks
-        in the interpreter to make the user life easier.
+        in the runner/interpreter to make the user life easier.
         '''
         pass    # pragma: no cover
 
@@ -106,13 +106,13 @@ class Concern(object):
 
     def crashed(self, example, exception):
         '''
-        The given example crashed. More formally, the example's interpreter
+        The given example crashed. More formally, the example's runner
         crashed.
 
         The given exception is a Python exception object.
 
-        You could use this to try to debug why the interpreter crashed.
-        Most probably is due a bug in the interpreter or in byexample (sorry).
+        You could use this to try to debug why the runner crashed.
+        Most probably is due a bug in the runner or in byexample (sorry).
         '''
         pass    # pragma: no cover
 

@@ -23,10 +23,10 @@ Example:
 
 import re, pexpect, sys, time
 from byexample.parser import ExampleParser
-from byexample.finder import MatchFinder
-from byexample.interpreter import Interpreter, PexepctMixin
+from byexample.finder import ExampleFinder
+from byexample.interpreter import ExampleRunner, PexepctMixin
 
-class RubyPromptFinder(MatchFinder):
+class RubyPromptFinder(ExampleFinder):
     target = 'ruby-prompt'
 
     def example_regex(self):
@@ -48,7 +48,7 @@ class RubyPromptFinder(MatchFinder):
         return 'ruby'
 
     def get_snippet_and_expected(self, match, where):
-        snippet, expected = MatchFinder.get_snippet_and_expected(self, match, where)
+        snippet, expected = ExampleFinder.get_snippet_and_expected(self, match, where)
 
         snippet = self._remove_prompts(snippet, where)
         return snippet, expected
@@ -64,7 +64,7 @@ class RubyParser(ExampleParser):
         return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
 
-class RubyInterpreter(Interpreter, PexepctMixin):
+class RubyInterpreter(ExampleRunner, PexepctMixin):
     language = 'ruby'
 
     def __init__(self, verbosity, encoding, **unused):

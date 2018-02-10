@@ -225,7 +225,7 @@ time.sleep(2.5) # simulates a slow operation # byexample: +timeout=3
 ## Extend ``byexample``
 
 It is possible to extend ``byexample`` adding new ways to find examples in a
-document and/or to parse and interpret a new language or adding hooks to be
+document and/or to parse and run/interpret a new language or adding hooks to be
 called regardless of the language/interpreter.
 
 The ``doc/how_to_extend.rst`` is a quick tutorial that shows exactly that.

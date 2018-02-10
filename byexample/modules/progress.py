@@ -48,7 +48,7 @@ class SimpleReporter(Concern):
     def _update(self, x):
         pass
 
-    def start_run(self, examples, interpreters, filepath):
+    def start_run(self, examples, runners, filepath):
         self.examples = examples
         self.num_examples = len(examples)
         self.examplenro = 0
@@ -172,8 +172,8 @@ class ProgressBarReporter(SimpleReporter):
     def _update(self, x):
         self.bar.update(x)
 
-    def start_run(self, examples, interpreters, filepath):
-        SimpleReporter.start_run(self, examples, interpreters, filepath)
+    def start_run(self, examples, runners, filepath):
+        SimpleReporter.start_run(self, examples, runners, filepath)
 
         bar_format = '{desc} |{bar}| [{n_fmt}/{total_fmt}{postfix}]'
         self.bar = tqdm(total=len(examples), file=self.output,

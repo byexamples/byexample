@@ -68,7 +68,7 @@ def parse_args(args=None):
                         default='all',
                         help="control how to pretty print the output.")
     parser.add_argument("--interact", "--debug", action='store_true',
-                        help="interact with the interpreter manually if an example fails.")
+                        help="interact with the runner/interpreter manually if an example fails.")
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", action='count', dest='verbosity', default=0,
