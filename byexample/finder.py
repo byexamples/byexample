@@ -143,7 +143,7 @@ class ExampleFinder(object):
         syntax (>>>).
         In this case, the following example will be found by both finders
         for the same Python language:
-          ```python
+          ```apython
           >>> i = 1
           
           ```
