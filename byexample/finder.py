@@ -281,18 +281,18 @@ class MatchFinder(object):
 
     def check_and_remove_indent(self, example_str, indent, where):
         r'''
-        Given an example string, remove its indent, including a possible empty
-        line at the end.
+        Given an example string, remove its indentation
+
             >>> from byexample.finder import MatchFinder
             >>> mfinder = MatchFinder(0, 'utf8'); mfinder.target = 'python-prompt'
             >>> check_and_remove_indent = mfinder.check_and_remove_indent
-            >>> check_and_remove_indent('  >>> 1 + 2\n  3\n ', '  ', (1, 2, 'foo.rst'))
+            >>> check_and_remove_indent('  >>> 1 + 2\n  3', '  ', (1, 2, 'foo.rst'))
             '>>> 1 + 2\n3'
 
         If the string contains a line with a lower level of indentation,
         raise an exception.
 
-            >>> check_and_remove_indent('  >>> 1 + 2\n3\n', '  ', (1, 2, 'foo.rst'))
+            >>> check_and_remove_indent('  >>> 1 + 2\n3', '  ', (1, 2, 'foo.rst'))
             Traceback (most recent call last):
             <...>
             ValueError: File "foo.rst", line 1, [Python Prompt Finder]
@@ -301,16 +301,13 @@ class MatchFinder(object):
             002 3
 
         The only exception to this are the empty lines
-            >>> check_and_remove_indent('  >>> 1 + 2\n\n  3\n ', '  ', (1, 2, 'foo.rst'))
+            >>> check_and_remove_indent('  >>> 1 + 2\n\n  3', '  ', (1, 2, 'foo.rst'))
             '>>> 1 + 2\n\n3'
 
         '''
         start_lineno, _, filepath = where
 
         lines = example_str.split('\n')
-
-        if not lines[-1].strip():
-            lines = lines[:-1]  # remove last whitespace-only line
 
         indent_stripped = []
         for lineno, line in enumerate(lines):
