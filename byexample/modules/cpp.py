@@ -27,7 +27,7 @@ Example:
 
 import re, pexpect, sys, time
 from byexample.parser import ExampleParser
-from byexample.interpreter import ExampleRunner, PexepctMixin
+from byexample.runner import ExampleRunner, PexepctMixin
 
 class CPPParser(ExampleParser):
     language = 'cpp'

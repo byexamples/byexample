@@ -317,7 +317,7 @@ Now we ensemble the ExampleRunner class
 
 .. code:: python
 
-    >>> from byexample.interpreter import ExampleRunner
+    >>> from byexample.runner import ExampleRunner
     >>> class ArnoldCRunner(ExampleRunner):
     ...     language = 'python'
     ...

@@ -1,9 +1,9 @@
 import sys, pkgutil, inspect, pprint
 
 from .options import Options, OptionParser
-from .interpreter import ExampleRunner
+from .runner import ExampleRunner
 from .finder import ExampleHarvest, ExampleFinder
-from .runner import FileExecutor
+from .executor import FileExecutor
 from .checker import Checker
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite

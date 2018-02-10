@@ -24,7 +24,7 @@ import re, pexpect, sys, time
 from byexample.common import log, build_exception_msg
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
-from byexample.interpreter import ExampleRunner, PexepctMixin
+from byexample.runner import ExampleRunner, PexepctMixin
 
 class PythonPromptFinder(ExampleFinder):
     target = 'python-prompt'
