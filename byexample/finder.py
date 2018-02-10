@@ -236,14 +236,8 @@ class ExampleFinder(object):
                 self._log_drop('no interpreter found for %s language' % language, where)
                 continue # TODO should be an error?
 
-
-            # update the example_str removing any indentation;
+            # save the indentation here
             indent = match.group('indent')
-            example_str = finder.check_and_remove_indent(example_str, indent, where)
-
-            # check that we still can find the example
-            # (allow to generate a new match)
-            match = finder.check_keep_matching(example_str, match, where)
 
             # then, get the snippet (runneable code) and the expected (the string)
             # from the example_str
@@ -399,5 +393,16 @@ class MatchFinder(object):
         Take this opportunity to clean up the snippet and the expected
         before the parsing phase takes place.
         '''
-        return match.group('snippet'), match.group('expected')
 
+        indent = match.group('indent')
+        example_str = match.group(0)
+
+        # update the example_str removing any indentation;
+        example_str = self.check_and_remove_indent(example_str, indent, where)
+
+        # check that we still can find the example
+        # (allow to generate a new match)
+        match = self.check_keep_matching(example_str, match, where)
+
+        # finally, return the updated snippet and expected strings
+        return match.group('snippet'), match.group('expected')
