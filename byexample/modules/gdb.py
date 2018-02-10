@@ -11,7 +11,7 @@ from byexample.parser import ExampleParser
 from byexample.finder import MatchFinder
 from byexample.interpreter import Interpreter, PexepctMixin
 
-class PythonPromptFinder(MatchFinder):
+class GDBPromptFinder(MatchFinder):
     target = 'gdb-prompt'
 
     def example_regex(self):
@@ -32,6 +32,14 @@ class PythonPromptFinder(MatchFinder):
     def get_language_of(self, *args, **kargs):
         return 'gdb'
 
+    def get_snippet_and_expected(self, match, where):
+        snippet, expected = MatchFinder.get_snippet_and_expected(self, match, where)
+
+        snippet = self._remove_prompts(snippet, where)
+        return snippet, expected
+
+    def _remove_prompts(self, snippet, where):
+        return snippet[6:]     # remove the (gdb) prompt
 
 class GDBParser(ExampleParser):
     language = 'gdb'
@@ -42,16 +50,14 @@ class GDBParser(ExampleParser):
         return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
 
-    def source_from_snippet(self, snippet):
+    def process_snippet_and_expected(self, snippet, expected, where):
+        snippet, expected = ExampleParser.process_snippet_and_expected(self,
+                                            snippet, expected, where)
         # remove any option string, gdb does not support
         # comments. If we do not do this, gdb will complain
         snippet = self.example_options_string_regex().sub('', snippet)
 
-        if snippet and not snippet.startswith("(gdb) "):
-            raise ValueError("Missing '(gdb)' prompt")
-
-        snippet = snippet[6:]     # remove the (gdb) prompt
-        return snippet
+        return snippet, expected
 
 
 class GDBInterpreter(Interpreter, PexepctMixin):

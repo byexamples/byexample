@@ -45,9 +45,6 @@ class CPPParser(ExampleParser):
                                )''',
                                                     re.MULTILINE|re.VERBOSE)
 
-    def source_from_snippet(self, snippet):
-        return snippet
-
 
 class CPPInterpreter(Interpreter, PexepctMixin):
     language = 'cpp'

@@ -151,6 +151,8 @@ Let's see if our finder can find the ArnoldC snippet above.
 .. code:: python
 
     >>> finder = ArnoldCFinder(0, 'utf-8')
+
+    >>> where = (0,1,'docs/how_to_extend.rst')
     >>> matches = finder.get_matches(open('docs/how_to_extend.rst', 'r').read())
     >>> matches = list(matches)
 
@@ -158,15 +160,28 @@ Let's see if our finder can find the ArnoldC snippet above.
     1
 
     >>> match = matches[0]
-    >>> print(match.group('snippet'))
-        IT'S SHOWTIME                       # byexample: +awesome
-        TALK TO THE HAND "Hello World!"
-        YOU HAVE BEEN TERMINATED
 
-    >>> print(match.group('expected'))
-        Hello World!
+    >>> indent = match.group('indent')
+    >>> len(indent)
+    4
 
-Nice...
+    >>> snippet, expected = finder.get_snippet_and_expected(match, where)
+    >>> print(snippet)
+    IT'S SHOWTIME                       # byexample: +awesome
+    TALK TO THE HAND "Hello World!"
+    YOU HAVE BEEN TERMINATED
+
+    >>> print(expected)
+    Hello World!
+
+The ``get_snippet_and_expected`` by default get the ``snippet`` and the
+``expected`` groups from the match. But you can extend this to post-process
+the strings.
+
+Take a look of the implementation of PythonFinder (in byexample/modules/python.py)
+The PythonFinder will find and match Python examples that starts with the prompt
+``>>>``; later, it extends ``get_snippet_and_expected`` to remove the prompts
+from the snippet to return a valid Python code.
 
 How to support new languages: the Parser and the Interpreter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -202,7 +217,6 @@ ones that ``byexample`` supports by default).
 It is our job to extend this parser adding more flags or arguments to parse our
 specific options.
 
-
 .. code:: python
 
     >>> def extend_option_parser(parser):
@@ -230,20 +244,11 @@ define a ``language`` attribute and implement the missing methods:
     ...         global opts_string_re
     ...         return opts_string_re
     ...
-    ...     def example_option_regex(self):
-    ...         global opt_re
-    ...         return opt_re
-    ...
-    ...     def source_from_snippet(self, snippet):
-    ...         return snippet
-    ...
     ...     def extend_option_parser(self, parser):
     ...         return extend_option_parser(parser)
 
 The user can select which languages should be parsed and executed and which
 should not: the ``language`` attribute is used for that purpose.
-
-The ``source_from_snippet`` is the last chance to change the source code.
 
 Let's peek how the parsing is used
 
@@ -252,11 +257,9 @@ Let's peek how the parsing is used
      >>> from byexample.options import Options, OptionParser
      >>> parser = ArnoldCParser(0, 'utf-8', OptionParser(add_help=False), Options())
 
-     >>> example_str = match.group(0)
-     >>> where = (0,1,'docs/how_to_extend.rst')
      >>> interpreter = None # not yet
-     >>> example = parser.get_example_from_match(match, example_str,
-     ...                                         interpreter, finder, where)
+     >>> example = parser.build_example(snippet, expected, indent, # from finder
+     ...                                interpreter, finder, where)
 
      >>> print(example.source)
      IT'S SHOWTIME                       # byexample: +awesome
@@ -267,7 +270,22 @@ Let's peek how the parsing is used
      Hello World!
 
      >>> print(example.options)
-     {'norm_ws': False, 'capture': True, 'awesome': True}
+     {'awesome': True, 'capture': True, 'norm_ws': False}
+
+The ``process_snippet_and_expected`` method can be extended to perform the last
+minute changed to the snippet and the expected strings, after the parsing of the
+options.
+
+.. code:: python
+
+    >>> hasattr(ExampleParser, 'process_snippet_and_expected')
+    True
+
+See ``GDBParser`` (``byexample/modules/gdb.py``), he extends the method to remove any
+comment on the snippet because ``GDB`` doesn't support them.
+
+Other useful example is ``PythonParser`` (``byexample/modules/python.py``), he modify
+heavily the expected string to support a compatibility mode with ``doctest``
 
 
 The Interpreter class
@@ -311,7 +329,7 @@ Now we ensemble the Interpreter class
     ...     def shutdown(self):
     ...         pass
 
-The ``initialize`` and ``shutdown`` method are called before and after the
+The ``initialize`` and ``shutdown`` methods are called before and after the
 execution of all the tests. It can be used to set up the real interpreter
 or to perform some off-line task (like compiling).
 You may want to change how to setup the interpreter based on the examples that
@@ -320,8 +338,10 @@ it will execute or in the options passed from the command line.
 It is in the ``run`` method where the magic happen. Its task is to execute
 the given source and to return the output, if any.
 
-The ``options`` parameter are the parsed options (a dictionary). What to do
-with them is up to you.
+The ``options`` parameter are the parsed options (plus the options that
+come from the command line).
+
+What to do with them is up to you.
 
 .. code:: python
 
