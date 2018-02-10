@@ -7,24 +7,6 @@ class Interpreter(object):
         self.verbosity = verbosity
         self.encoding = encoding
 
-    def get_example_match_finders(self):
-        '''
-        Return a list of MatchFinders, objects that will find
-        examples in a given file/string.
-        See the doc of MatchFinder for more information.
-
-        If the list is empty, no example will be find (nor executed)
-        unless the generic 'FencedMatchFinder' find the examples
-        for this interpreter.
-
-        In general, if your language support a prompt-like session, like
-        Python or Ruby, you probably want to add a custom finder.
-
-        If you add multiple finders, make sure that two finders will not find
-        the same example. This will be considered an error.
-        '''
-        return [] # pragma: no cover
-
     def __repr__(self):
         return '%s Interpreter' % tohuman(self.language)
 
