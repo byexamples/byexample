@@ -32,22 +32,22 @@ travis-test:
 
 coverage:
 	@rm -f .coverage
-	@# Run the byexample's tests with the Python interpreter.
-	@# to start the coverage, use a hook in test/ to initialize the coverage
-	@# engine at the begin of the execution (and to finalize it at the end)
+	@echo "Run the byexample's tests with the Python interpreter."
+	@echo "to start the coverage, use a hook in test/ to initialize the coverage"
+	@echo "engine at the begin of the execution (and to finalize it at the end)"
 	@$(python_bin) r.py --modules test/ -q --ff -l python byexample/*.py
-	@#
-	@# Run the rest of the tests with an environment variable to make
-	@# r.py to initialize the coverage too
+	@echo
+	@echo "Run the rest of the tests with an environment variable to make"
+	@echo "r.py to initialize the coverage too"
 	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l python,shell,ruby,gdb,cpp `find docs -name "*.rst"`
 	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l python,shell,ruby,gdb,cpp README.md
-	@#
-	@# Run the another test, again, but with different flags to force the
-	@# execution of different parts of byexample
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -vvv --ff --no-enhance-diff -l python README.md > /dev/null
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py --pretty none -vvv --ff -l python README.md > /dev/null
-	@#
-	@# Output the result
+	@echo
+	@echo "Run again, but with different flags to force the"
+	@echo "execution of different parts of byexample"
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -vvvvvvvvvvvv --ff --no-enhance-diff -l python,shell README.md > /dev/null
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py --pretty none -vvvvvvvvvvvv --ff -l python,shell README.md > /dev/null
+	@echo
+	@echo "Results:"
 	@coverage report
 
 dist:
