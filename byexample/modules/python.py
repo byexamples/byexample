@@ -131,6 +131,8 @@ _EXCEPTION_RE = re.compile(r"""
 class PythonParser(ExampleParser):
     language = 'python'
 
+    _blankline_tag_re = re.compile(r'^<BLANKLINE>$', re.MULTILINE|re.DOTALL)
+
     def example_options_string_regex(self):
         # anything of the form:
         #   #  byexample:  +FOO -BAR +ZAZ=42
@@ -284,8 +286,7 @@ class PythonParser(ExampleParser):
         options.mask_default(False)
         if options['py_doctest']:
             if not options['DONT_ACCEPT_BLANKLINE']:
-                expected_str = re.sub(r'^<BLANKLINE>$', '', expected_str,
-                                        flags=re.MULTILINE|re.DOTALL)
+                expected_str = self._blankline_tag_re.sub('', expected_str)
 
             m = _EXCEPTION_RE.match(expected_str)
             if options['ELLIPSIS'] or m:
