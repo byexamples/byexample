@@ -16,16 +16,16 @@ to start.
     File byexample/checker.py, 60/60 test ran in <...> seconds
     [PASS] Pass: 60 Fail: 0 Skip: 0
     <nl>
-    File byexample/finder.py, 26/26 test ran in <...> seconds
-    [PASS] Pass: 26 Fail: 0 Skip: 0
+    File byexample/finder.py, 56/56 test ran in <...> seconds
+    [PASS] Pass: 56 Fail: 0 Skip: 0
     <nl>
-    File byexample/options.py, 37/37 test ran in <...> seconds
-    [PASS] Pass: 37 Fail: 0 Skip: 0
+    File byexample/options.py, 64/64 test ran in <...> seconds
+    [PASS] Pass: 64 Fail: 0 Skip: 0
     <nl>
-    File byexample/parser.py, 102/102 test ran in <...> seconds
-    [PASS] Pass: 102 Fail: 0 Skip: 0
+    File byexample/parser.py, 84/84 test ran in <...> seconds
+    [PASS] Pass: 84 Fail: 0 Skip: 0
 
-Then, each module (Finder, Parser and Interpreter) provided by ``byexample`` has
+Then, each module (Finder, Parser and Runner) provided by ``byexample`` has
 a little documentation.
 
 .. code:: sh
@@ -87,8 +87,8 @@ can be found under the ``doc`` folder
     File docs/languages/gdb.rst, 9/9 test ran in <...> seconds
     [PASS] Pass: 9 Fail: 0 Skip: 0
     <nl>
-    File docs/languages/python.rst, 22/22 test ran in <...> seconds
-    [PASS] Pass: 21 Fail: 0 Skip: 1
+    File docs/languages/python.rst, 36/36 test ran in <...> seconds
+    [PASS] Pass: 35 Fail: 0 Skip: 1
     <nl>
     File docs/languages/ruby.rst, 9/9 test ran in <...> seconds
     [PASS] Pass: 9 Fail: 0 Skip: 0
@@ -96,7 +96,7 @@ can be found under the ``doc`` folder
 I left out the ``how_to_extend`` doc. It is not something that you will need
 everyday.
 
-But if you want to create your own modules (Finder, Parser, Interpreter) and
+But if you want to create your own modules (Finder, Parser, Runner) and
 contrib with the community, this doc is for you.
 Go ahead!!
 
@@ -104,6 +104,6 @@ Go ahead!!
 
     $ byexample -l python docs/how_to_extend.rst
     <nl>
-    File docs/how_to_extend.rst, 33/33 test ran in <...> seconds
-    [PASS] Pass: 33 Fail: 0 Skip: 0
+    File docs/how_to_extend.rst, 36/36 test ran in <...> seconds
+    [PASS] Pass: 36 Fail: 0 Skip: 0
 
