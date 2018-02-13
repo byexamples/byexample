@@ -3,6 +3,7 @@ from byexample.finder import ExampleFinder
 
 class FencedMatchFinder(ExampleFinder):
     target = 'markdown-fenced-code'
+    specific = False
 
     def example_regex(self):
         return re.compile(r'''

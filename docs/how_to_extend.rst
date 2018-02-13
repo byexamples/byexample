@@ -130,6 +130,7 @@ define a ``target`` attribute and implement two methods:
     >>> from byexample.finder import ExampleFinder
     >>> class ArnoldCFinder(ExampleFinder):
     ...     target = 'ArnoldC-session'
+    ...     specific = True
     ...
     ...     def example_regex(self):
     ...         global example_re
@@ -145,6 +146,10 @@ If two Finders try to find the same target, one will override the other.
 
 This is useful if you want to use a different Finder in replacement for
 an already created one: just create a class with the same ``target``.
+
+The other special attribute is ``specific``. If it is True, the finder is
+specific to a language, like in this case.
+If not, it is a generic Finder.
 
 Let's see if our finder can find the ArnoldC snippet above.
 

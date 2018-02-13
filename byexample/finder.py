@@ -58,139 +58,228 @@ class ExampleHarvest(object):
         start_lineno attribute. In case of two examples with the same
         start_lineno, they must be sorted in reverse order by their end_lineno
 
-        Given that precondition, there are three possible collisions or
-        overlaps:
+        Before going deeper, let's create a helper function to build examples:
+
+            >>> # helper function to create examples
+            >>> from byexample.parser import Example
+            >>> def build_example(source, expected, language, start_lineno, specific=False):
+            ...    class R: pass    # <- fake runner instance
+            ...    R.language = language # <- language of the example
+            ...
+            ...    class F: pass    # <- fake finder instance
+            ...    F.specific = specific # <- is finder specific?
+            ...
+            ...    end_lineno = start_lineno
+            ...    end_lineno += (source + '\n' + expected).count('\n') + 1
+            ...    return Example(R,
+            ...                   None, F,
+            ...                   start_lineno, end_lineno,
+            ...                   None, None,
+            ...                   source, expected)
+
+        And we create a harvester to play with it:
+
+            >>> from byexample.finder import ExampleHarvest
+            >>> f = ExampleHarvest([], dict((k, {}) for k in \
+            ...                   ('parsers', 'finders', 'runners')), 0, None)
+
+        Okay, back to the check_example_overlap documentation,
+        given the examples sorted in that way, a collision is detected if
+        the span lines of one example intersect with the span lines of other.
 
                   Collision 1            Collision 2         Collision 3
 
               1...........5.....7       1...........5       1...........5
-              |    ex1    |             |    ex1    |       |    ex1    |
-              |        ex4      |           |  ex2 |        |    ex5    |
-                 |      ex2     |       1..2......4         1...........5
+              |  example  |             |  example  |       |  example  |
+              |     example     |           |  ex  |        |  example  |
+                 |   example    |       1..2......4         1...........5
               1..2..............7
 
-              A intersect B > 0         A contains B           A == B
-              A not contains B
+        What do we do will depend of the content of the examples, not only of
+        the type of collision:
 
-            >>> range1 = (1, 5)
-            >>> range2 = (2, 7)
-            >>> range3 = (2, 4)
-            >>> range4 = (1, 7) # same start_lineno than ex1
-            >>> range5 = (1, 5) # same start_lineno and end_lineno than ex1
+         - if both examples have the same language and one example is contained
+           inside the other (Collision 2 or Collision 3), we drop the example
+           found by a generic finder.
 
-        Before going into those cases, let's create a helper function to
-        build examples:
+           This scenario can happen when a generic finder like FencedMatchFinder
+           finds a interpreter-session-like for the same language.
+           For example, the following FencedMatchFinder example collides with
+           example found by PythonPromptFinder.
+                ```python
+                >>> 1 + 2
+                3
 
-            >>> # helper function to create examples
-            >>> from byexample.parser import Example
-            >>> def build_example(language, start_lineno, end_lineno):
-            ...    class R: pass    # <- fake runner instance
-            ...    R.language = language # <- language of the example
-            ...    return Example(R,
-            ...                   None, None, # <- dummy values
-            ...                   start_lineno, end_lineno,
-            ...                   *[None]*4)  # <- dummy values
+                ```
+           So we remove the example of the generic finder (FencedMatchFinder) as
+           we assume that it may have more precise information (the correct
+           source code and the correct expected string)
 
-        For the first case (range1 against range2 or range4) it is
-        obvious that those pair of examples overlaps and it is not possible
-        to distinguish which is correct.
+           >>> A = build_example('>>> 1 + 2', '3', 'python', start_lineno=1)
+           >>> B = build_example('1 + 2', '3', 'python', start_lineno=1, specific=True)
 
-            >>> from byexample.finder import ExampleHarvest
+           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           >>> len(examples)
+           1
 
-            >>> ex1 = build_example('python', *range1)
-            >>> ex2 = build_example('python', *range2)
-
-            >>> f = ExampleHarvest([], dict((k, {}) for k in \
-            ...                   ('parsers', 'finders', 'runners')), 0, None)
-
-            >>> f.check_example_overlap([ex1, ex2], 'foo.rst')
-            Traceback<...>
-            ValueError: In foo.rst, examples at line 2 (found by <...>) and at line 1 (found by <...>) overlap each other.
-
-            >>> # the same happen with ex4 (checking the 'lt'/'le' condition)
-            >>> ex4 = build_example('python', *range4)
-            >>> f.check_example_overlap([ex1, ex4], 'foo.rst')
-            Traceback<...>
-            ValueError: In foo.rst, examples at line 1 (found by <...>) and at line 1 (found by <...>) overlap each other.
-
-        The other possible overlap (collision 2) is when one example is
-        inside the other.
-
-        We *assume* that the outer example is the correct and the inner
-        example can be discarded correctly.
-
-            >>> ex1 = build_example('python', *range1)
-            >>> ex3 = build_example('ruby',   *range3)
-
-            >>> f.check_example_overlap([ex1, ex3], 'foo.rst')
-            [Example(<...>start_lineno=1, end_lineno=5<...>)]
+           >>> examples
+           [Example(<...> source='1 + 2', <...>)]
 
 
-        In the third case, both examples are sharing the same spot.
-        If the two examples have different we cannot know which is correct:
+         - if both examples have the same source code, expected string and
+           language, those both examples are equivalent, even if the span
+           lines are not the same (like in Collision 1 or Collision 2).
+           Therefore we will drop the second found
 
-            >>> ex1 = build_example('python', *range1)
-            >>> ex5 = build_example('ruby',   *range5)
-            >>> f.check_example_overlap([ex1, ex5], 'foo.rst')
-            Traceback<...>
-            ValueError: In foo.rst, examples at line 1 (found by <...>) and at line 1 (found by <...>) overlap each other.
+           >>> A = build_example('1 + 2', '3', 'python', start_lineno=1)
+           >>> B = build_example('1 + 2', '3', 'python', start_lineno=2)
 
-        But if both examples have the same language we *assume* that this is not
-        an error but two finders found 'the same' example.
+           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           >>> len(examples)
+           1
 
-        For example, this could happen for the FencedMatchFinder, based on
-        the Markdown syntax (```), and PythonFinder, based on the interpreter
-        syntax (>>>).
-        In this case, the following example will be found by both finders
-        for the same Python language:
-          ```apython
-          >>> i = 1
-          
-          ```
+           >>> examples
+           [Example(<...>start_lineno=1, end_lineno=3<...>)]
 
-            >>> ex1 = build_example('python', *range1)
-            >>> ex5 = build_example('python', *range5)
+         - if the example A has a source code that contains the example B's
+           source code and all the B's code is inside in A's one, we will
+           assume that the example A is the correct and B was a false positive
+           of the finder.
 
-            >>> f.check_example_overlap([ex1, ex5], 'foo.rst')
-            [Example(<...>start_lineno=1, end_lineno=5<...>)]
+           The idea is that it is hard to find an example's source by mistake,
+           given A and B, it is harder to find A's code therefore it is more
+           unlikely to be a false positive.
+
+           For example, when a Python comment that starts with # is confused
+           with a Shell root session that also starts with #.
+
+           >>> A = build_example('# python comment\n1 + 2', '3', 'python', start_lineno=1)
+           >>> B = build_example('# python comment', '1 + 2\n3', 'shell', start_lineno=1)
+
+           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           >>> len(examples)
+           1
+
+           >>> examples
+           [Example(<...> source='# python comment\n1 + 2', <...>)]
+
+           The border case is when both examples have the same source code but
+           are examples of two different languages.
+           It is too ambiguo so we fail
+
+           >>> A = build_example('# python comment', '', 'python', start_lineno=1)
+           >>> B = build_example('# python comment', '', 'shell', start_lineno=1)
+
+           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           Traceback<...>
+           ValueError: In foo.rst, examples at line 1 (found by <...>) and at line 1 (found by <...>) overlap each other.
+
+        - in any other case, we fail too
+
+          For a Collision 1:
+
+           >>> A = build_example('a\nb\nc', '', 'sh', start_lineno=1)   # span 3
+           >>> B = build_example('d\ne', '', 'sh', start_lineno=1)      # span 2
+
+           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           Traceback<...>
+           ValueError: In foo.rst, examples at line 1 (found by <...>) and at line 1 (found by <...>) overlap each other.
+
+           >>> A = build_example('a\nb', '', 'sh', start_lineno=1)      # span 2
+           >>> B = build_example('b\nc', '', 'sh', start_lineno=2)      # span 2
+
+           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           Traceback<...>
+           ValueError: In foo.rst, examples at line 2 (found by <...>) and at line 1 (found by <...>) overlap each other.
+
+          For a Collision 2:
+
+           >>> A = build_example('a\nb\nc', '', 'sh', start_lineno=1)   # span 3
+           >>> B = build_example('d', '', 'sh', start_lineno=2)         # span 1
+
+           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           Traceback<...>
+           ValueError: In foo.rst, examples at line 2 (found by <...>) and at line 1 (found by <...>) overlap each other.
+
+          For a Collision 3:
+
+           >>> A = build_example('a\nb', '', 'sh1', start_lineno=1)     # span 2
+           >>> B = build_example('a\nb', '', 'sh2', start_lineno=1)     # span 2
+
+           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           Traceback<...>
+           ValueError: In foo.rst, examples at line 1 (found by <...>) and at line 1 (found by <...>) overlap each other.
 
         '''
 
-        if not examples:
-            return examples # pragma: no cover
+        collision_free = False
+        while not collision_free:
+            collision_free = True
+            if not examples:
+                return examples # pragma: no cover
 
-        prev = examples[0]
-        for i, example in enumerate(examples[1:], 1):
-            collision_type_1 = prev.end_lineno >= example.start_lineno
-            collision_type_3 = prev.end_lineno == example.end_lineno and \
-                                prev.start_lineno == example.start_lineno
-            collision_type_2 = (collision_type_1 and \
-                                example.end_lineno <= prev.end_lineno and \
-                                not collision_type_3)
+            prev = examples[0]
+            for i, example in enumerate(examples[1:], 1):
+                collision_type_1 = prev.end_lineno >= example.start_lineno
+                collision_type_3 = prev.end_lineno == example.end_lineno and \
+                                    prev.start_lineno == example.start_lineno
+                collision_type_2 = (collision_type_1 and \
+                                    example.end_lineno <= prev.end_lineno and \
+                                    not collision_type_3)
 
-            same_language = example.runner.language == prev.runner.language
+                any_collision = collision_type_1 or collision_type_2 or collision_type_3
 
-            if collision_type_2 or (collision_type_3 and same_language):
-                # If we have an example inside another example or
-                # both example are of the same length and both
-                # are about the same language, assume that the outer
-                # example is the correct
-                where = Where(example.start_lineno, example.end_lineno, filepath)
-                self._log_drop("Inner example detected.", where)
+                if not any_collision:
+                    prev = example
+                    continue
 
-                examples[i] = None # to be removed later
+                collision_free = not any_collision
+                same_language = example.runner.language == prev.runner.language
+                curr_where = Where(example.start_lineno, example.end_lineno, filepath)
+                prev_where = Where(prev.start_lineno, prev.end_lineno, filepath)
 
-            elif collision_type_1 or collision_type_2 or collision_type_3:
+                if same_language:
+                    if collision_type_2 or collision_type_3:
+                        if example.finder.specific != prev.finder.specific:
+                            if example.finder.specific:
+                                del examples[i-1]
+                                _where = prev_where
+                            else:
+                                del examples[i]
+                                _where = curr_where
+
+                            self._log_drop("generic/specific overlap", _where)
+                            break
+
+                    if example.source == prev.source and \
+                            example.expected == prev.expected:
+
+                        del examples[i]
+                        self._log_drop("duplicated examples", curr_where)
+                        break
+
+                else:
+                    if example.source == prev.source:
+                        pass # too ambiguous
+
+                    elif example.source in prev.source:
+                        del examples[i]
+                        self._log_drop("inner example", curr_where)
+                        break
+
+                    elif prev.source in example.source:
+                        del examples[i-1]
+                        self._log_drop("inner example", prev_where)
+                        break
+
                 msg = "In %s, examples at line %i (found by %s) and " +\
                       "at line %i (found by %s) overlap each other."
                 msg = msg % (filepath, example.start_lineno,
-                             example.runner, prev.start_lineno,
-                             prev.runner)
+                             example.finder, prev.start_lineno,
+                             prev.finder)
                 raise ValueError(msg)
 
-            prev = example
-
-        return list(filter(None, examples))
+        return examples
 
     def _log_drop(self, reason, where):
         log(build_exception_msg("Dropped example: " + reason, where, self),
@@ -257,6 +346,8 @@ class ExampleHarvest(object):
 
 
 class ExampleFinder(object):
+    specific = True
+
     def __init__(self, verbosity, encoding, **unused):
         self.verbosity = verbosity
         self.encoding = encoding
