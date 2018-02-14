@@ -1,5 +1,5 @@
 import sys, argparse, os
-from . import __version__
+from . import __version__, __doc__, _author, _license, _url
 
 class _CSV(argparse.Action):
     r'''Transform an argument of the form 'a,b' into a list
@@ -10,6 +10,34 @@ class _CSV(argparse.Action):
         values = values.split(',')
         getattr(namespace, self.dest).extend(values)
 
+
+class _Print(argparse.Action):
+    r'''Print a given message bypassing the formatting rules of
+        argparse, then, exit.'''
+    def __init__(self, *args, **kargs):
+        self.message = kargs.pop('message')
+        argparse.Action.__init__(self, *args, **kargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        parser.exit(message=self.message)
+
+
+license_disclaimer = r'''Copyright (C) {author} - {url}
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+'''
+
 def parse_args(args=None):
     '''Parse the arguments args and return the them.
        If args is None, parse the sys.argv[1:].
@@ -18,8 +46,17 @@ def parse_args(args=None):
     search_default = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modules')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-V', '--version', action='version',
-                        version='%(prog)s {version}'.format(version=__version__))
+    parser.add_argument('-V', '--version', nargs=0, action=_Print,
+            message='{prog} {version} - {license}\n\n{doc}'
+                    '\n\n{license_disclaimer}'.format(
+                                prog=parser.prog,
+                                doc=__doc__,
+                                version=__version__,
+                                license=_license,
+                                license_disclaimer=license_disclaimer.format(
+                                        author=_author,
+                                        url=_url)),
+                        help='show %(prog)s\'s version and license, then exit')
     parser.add_argument("files", nargs='*', metavar='file',
                         help="file that have the examples to run.")
     parser.add_argument("--ff", "--fail-fast", action='store_true',

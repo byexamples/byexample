@@ -19,7 +19,7 @@ capabilities
       file                  file that have the examples to run.
     optional arguments:
       -h, --help            show this help message and exit
-      -V, --version         show program's version number and exit
+      -V, --version         show r.py's version and license, then exit
       --ff, --fail-fast     if an example fails, fail and stop all the execution.
       --dry                 do not run any example, only parse them.
       --skip file [file ...]

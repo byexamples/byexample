@@ -16,7 +16,7 @@ system('''pandoc -o '%(dest_rst)s' '%(src_md)s' ''' % {
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-# load __version__ and __doc__
+# load __version__, __doc__, _author, _license and _url
 exec(open(path.join(here, 'byexample', '__init__.py')).read())
 
 # the following are the required dependencies
@@ -50,13 +50,13 @@ setup(
     description=__doc__,
     long_description=long_description,
 
-    url='https://github.com/eldipa/byexample',
+    url=_url,
 
     # Author details
-    author='Di Paola Martin',
+    author=_author,
     author_email='use-github-issues@example.com',
 
-    license='GNU GPLv3',
+    license=_license,
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
