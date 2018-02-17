@@ -1,10 +1,13 @@
-import traceback, time
+import traceback, time, os
 from byexample.common import colored, highlight_syntax
 from byexample.concern import Concern
 from doctest import _indent
 
 try:
     from tqdm import tqdm
+    if os.environ.get('BYEXAMPLE_PROGRESS_ASCII'):
+        raise ImportError() # fake error
+
 except ImportError:
     class tqdm(object):
         def __init__(self, file, *args, **kargs):
