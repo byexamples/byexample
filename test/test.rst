@@ -87,8 +87,8 @@ can be found under the ``doc`` folder
     File docs/languages/gdb.rst, 9/9 test ran in <...> seconds
     [PASS] Pass: 9 Fail: 0 Skip: 0
     <nl>
-    File docs/languages/python.rst, 36/36 test ran in <...> seconds
-    [PASS] Pass: 35 Fail: 0 Skip: 1
+    File docs/languages/python.rst, 39/39 test ran in <...> seconds
+    [PASS] Pass: 38 Fail: 0 Skip: 1
     <nl>
     File docs/languages/ruby.rst, 9/9 test ran in <...> seconds
     [PASS] Pass: 9 Fail: 0 Skip: 0

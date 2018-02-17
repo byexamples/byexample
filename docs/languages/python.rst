@@ -186,6 +186,43 @@ some pieces of the output. The ``capture`` flag of ``byexample`` should cover
 those cases and even more.
 
 
+Pretty print display hook
+-------------------------
+
+By default, ``byexample`` uses a custom display hook based on the Python's
+``pprint`` module.
+
+The custom display hook will pretty print the object instead of using ``repr``
+
+>>> l = ["foo bar %i" % i for i in range(10)]
+>>> l
+['foo bar 0',
+ 'foo bar 1',
+ 'foo bar 2',
+ 'foo bar 3',
+ 'foo bar 4',
+ 'foo bar 5',
+ 'foo bar 6',
+ 'foo bar 7',
+ 'foo bar 8',
+ 'foo bar 9']
+
+If we don't do this, long and complex structures could be hard to print:
+
+>>> print(repr(l))
+['foo bar 0', 'foo bar 1', <...>, 'foo bar 8', 'foo bar 9']
+
+This feature is disabled if you enabled the ``doctest`` compatibility mode but
+it can be reenabled with ``+py-pretty-print``.
+
+Note that ``byexample`` uses the ``pprint`` module of the Python interpreter
+running the example.
+``pprint`` doesn't warranty that its output will be stable between Python
+versions. Keep that in mind.
+
+In the future, ``byexample`` may provide a different ``pprint`` stable
+implementation.
+
 Bytes/Unicode marker
 --------------------
 

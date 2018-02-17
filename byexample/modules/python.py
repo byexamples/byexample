@@ -374,6 +374,8 @@ class PythonInterpreter(ExampleRunner, PexepctMixin):
                                 any_PS_re = r'/byexample/py/ps\d> ')
 
     def _get_cmd(self, pretty_print):
+        # Important: do not use a single quote ' in the following python code
+        # it will break it in real hard ways to debug.
         change_prompts = r'''
 import sys
 import pprint as _byexample_pprint
@@ -382,31 +384,53 @@ import pprint as _byexample_pprint
 sys.ps1="%s"
 sys.ps2="%s"
 
-# patch the pprint _safe_repr function
-def patch_pprint_safe_repr():
-    import re
-    ub_marker_re = re.compile(r"^[uUbB]([rR]?[" + "\\" + chr(39) + r"\"])", re.UNICODE)
-    orig_repr = _byexample_pprint._safe_repr
-    def patched_repr(object, *args, **kargs):
-        orepr, readable, recursive = orig_repr(object, *args, **kargs)
-
-        _repr = ub_marker_re.sub(r"\1", orepr)
-        readable = False if _repr != orepr else readable
-
-        return _repr, readable, recursive
-    _byexample_pprint._safe_repr = patched_repr
-
 if %s:
-    patch_pprint_safe_repr() # patch!
+    class __ByexamplePrettyPrint(_byexample_pprint.PrettyPrinter):
+        def __init__(self, *args, **kargs):
+            import sys, re
+            if sys.version_info[0] == 2:
+                import __builtin__
+                self.builtins_module = __builtin__
+                self.orig_repr = __builtin__.repr
+            else:
+                import builtins
+                self.builtins_module = builtins
+                self.orig_repr = builtins.repr
+
+            ub_marker_re = re.compile(r"^[uUbB]([rR]?[" + "\\" + chr(39) + r"\"])", re.UNICODE)
+
+            def patched_repr(object, *args, **kargs):
+                orepr = self.orig_repr(object, *args, **kargs)
+
+                return ub_marker_re.sub(r"\1", orepr)
+
+            self.patched_repr = patched_repr
+            self.super = _byexample_pprint.PrettyPrinter
+            self.super.__init__(self, *args, **kargs)
+
+        def pprint(self, *args, **kargs):
+            # this pprint implementation does not support recursive calls
+            assert self.builtins_module.repr == self.orig_repr, "pprint recursive call detected"
+
+            # patch the builtin repr functions
+            self.builtins_module.repr = self.patched_repr
+            try:
+                return self.super.pprint(self, *args, **kargs)
+            finally:
+                # unpatch
+                self.builtins_module.repr = self.orig_repr
+
+    __byexample_pretty_print = __ByexamplePrettyPrint(indent=1, width=80, depth=None)
+    del __ByexamplePrettyPrint
 
     # change the displayhook to use pprint instead of repr
     sys.displayhook = lambda s: (
                     None if s is None
-                    else _byexample_pprint.PrettyPrinter(indent=1, width=80, depth=None).pprint(s))
+                    else __byexample_pretty_print.pprint(s))
 
 # remove introduced symbols
 del sys
-del patch_pprint_safe_repr
+del _byexample_pprint
 ''' % (self._PS1, self._PS2, pretty_print)
 
         return "/usr/bin/env python -i -c '%s'" % change_prompts
