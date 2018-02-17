@@ -1,7 +1,10 @@
 Python support
 ==============
 
-``byexample`` is inspired by the Python's ``doctest`` module. I borrowed a
+``byexample`` supports the standard `Python <https://www.python.org/downloads/>`_
+interpreter (you need to have it installed first).
+
+In fact, ``byexample`` is inspired by the Python's ``doctest`` module. I borrowed a
 few ideas from it and I also tried to overcome its issues.
 
 This makes a Python example to look very similar to a doctest but it is not

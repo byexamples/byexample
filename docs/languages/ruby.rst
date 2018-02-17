@@ -1,7 +1,8 @@
 Ruby support
 ============
 
-``byexample`` can execute Ruby code using the default interpreter ``irb``.
+``byexample`` can execute `Ruby <https://www.ruby-lang.org/en/downloads/>`_ code
+using the default interpreter ``irb`` (you need to have it installed first).
 
 Find interactive examples
 -------------------------

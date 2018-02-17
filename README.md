@@ -9,11 +9,11 @@ showing how a piece of software works or it can be used *by example*.
 
 Currently we support:
 
- - C++
- - Python
+ - Python (compatible with ``doctest``)
  - Ruby
- - Shell (sh and bash)
- - GDB (the GNU Debugger)
+ - Shell (``sh`` and ``bash``)
+ - GDB (the [GNU Debugger](https://www.gnu.org/software/gdb/download/))
+ - C++ (using [cling](https://github.com/root-project/cling) - *experimental*)
 
 The documentation of each one can be found in ``docs/languages/``.
 

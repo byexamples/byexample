@@ -3,8 +3,10 @@ C++
 
 To support C++, ``byexample`` relays in the ``cling`` interpreter.
 
-It is still an experimental feature that works pretty well but it is not
-inmune to bugs, quirks nor crashes.
+You need to have `cling <https://github.com/root-project/cling>`_ installed first.
+
+It is still an **experimental** feature that works pretty well but it is not
+immune to bugs, quirks nor crashes.
 
 Don't forget to send your feedback to the ``cling`` community.
 

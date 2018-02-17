@@ -1,7 +1,8 @@
 GDB the GNU debugger
 ====================
 
-``byexample`` can interpret and run examples for a GDB session.
+``byexample`` can interpret and run examples for a `GDB <https://www.gnu.org/software/gdb/download/>`_ session.
+(but you need to have GDB installed first)
 
 To show you this, let's first create a program to debug:
 
