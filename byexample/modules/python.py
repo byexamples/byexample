@@ -452,7 +452,7 @@ del _byexample_pprint
         self.cmd = self._get_cmd(pretty_print)
 
         # run!
-        self._spawn_interpreter()
+        self._spawn_interpreter(delaybeforesend=options['delaybeforesend'])
 
     def shutdown(self):
         self._shutdown_interpreter()

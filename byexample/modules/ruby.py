@@ -83,7 +83,7 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         PexepctMixin.interact(self)
 
     def initialize(self, examples, options):
-        self._spawn_interpreter()
+        self._spawn_interpreter(delaybeforesend=options['delaybeforesend'])
 
     def shutdown(self):
         self._shutdown_interpreter()

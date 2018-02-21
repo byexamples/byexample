@@ -97,7 +97,8 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
         PexepctMixin.interact(self)
 
     def initialize(self, examples, options):
-        self._spawn_interpreter(wait_first_prompt=False)
+        self._spawn_interpreter(wait_first_prompt=False,
+                                delaybeforesend=options['delaybeforesend'])
 
         self._exec_and_wait(
 '''export PS1="/byexample/sh/ps1> "

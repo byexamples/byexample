@@ -90,7 +90,7 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
         PexepctMixin.interact(self)
 
     def initialize(self, examples, options):
-        self._spawn_interpreter()
+        self._spawn_interpreter(delaybeforesend=options['delaybeforesend'])
 
         # gdb will not print the address of a variable by default
         self._exec_and_wait('set print address off\n', timeout=1)
