@@ -151,7 +151,7 @@ class PexepctMixin(object):
 
         # remove any other 'prompt' if any
         if self.any_PS_re:
-            out = re.sub(self.any_PS_re, '', out)
+            out = self.any_PS_re.sub('', out)
 
         # uniform the new line endings (aka universal new lines)
         out = self._universal_new_lines(out)

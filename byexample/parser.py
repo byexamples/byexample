@@ -74,6 +74,24 @@ class ExampleParser(object):
     def whitespace_non_compiled_regex(self):
         return r'\s+'
 
+    def leading_optional_whitespace_regex(self):
+        return re.compile(r'\A\s*', re.MULTILINE | re.DOTALL)
+
+    def leading_single_whitespace_regex(self):
+        return re.compile(r'\A\s', re.MULTILINE | re.DOTALL)
+
+    def one_or_more_whitespace_regex(self):
+        return re.compile(r'\s+', re.MULTILINE | re.DOTALL)
+
+    def trailing_whitespace_regex(self):
+        return re.compile(r'\s+\Z', re.MULTILINE | re.DOTALL)
+
+    def trailing_single_whitespace_regex(self):
+        return re.compile(r'\s\Z', re.MULTILINE | re.DOTALL)
+
+    def trailing_newlines_regex(self):
+        return re.compile(r'\n+\Z', re.MULTILINE | re.DOTALL)
+
     def ellipsis_marker(self):
         return '...'
 
@@ -287,7 +305,7 @@ class ExampleParser(object):
             # By doing this, we need to re calculate their charnos too
             _es = [exprs[0]]
             _cs = [charnos[0]]
-            leading_ws_re = re.compile(r'\A\s*', re.MULTILINE | re.DOTALL)
+            leading_ws_re = self.leading_optional_whitespace_regex()
             for c, e in zip(charnos[1:], exprs[1:]):
                 olen = len(e)
                 lstripped = leading_ws_re.sub('', e)
@@ -311,7 +329,7 @@ class ExampleParser(object):
             # them by a \s+ regex
             # Because we will be mixing regexs with literals, it is time
             # to build safe literals and count the 'real counts'
-            any_ws_re = re.compile(r'\s+', re.MULTILINE | re.DOTALL)
+            any_ws_re = self.one_or_more_whitespace_regex()
 
             _rcs = []
             _es = []
@@ -579,8 +597,9 @@ class ExampleParser(object):
         # posible empty line at the end later
         # when normalize_whitespace == True, ignore remove all trailing
         # whitespaces
-        expected = re.sub(r'\s+\Z' if normalize_whitespace else r'\n+\Z',
-                          '', expected)
+        trailing_re = self.trailing_whitespace_regex() if normalize_whitespace \
+                      else self.trailing_newlines_regex()
+        expected = trailing_re.sub('', expected)
 
         charno = 0
         names_seen = []
@@ -637,10 +656,10 @@ class ExampleParser(object):
                 # space if the previous regex already matches that
                 # do the same for the trailing space and next regex
                 if normalize_whitespace:
-                    if re.search(r'\s\Z', pre_capture, re.MULTILINE | re.DOTALL):
+                    if self.trailing_single_whitespace_regex().search(pre_capture):
                         regex = r'(?!\s)' + regex  # do not begin with a whitespace
 
-                    if re.search(r'\A\s', post_capture, re.MULTILINE | re.DOTALL):
+                    if self.leading_single_whitespace_regex().search(post_capture):
                         regex = regex + r'(?<!\s)' # do not end with a whitespace
 
                 if not post_capture:
