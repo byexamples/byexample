@@ -159,13 +159,7 @@ class PexepctMixin(object):
         return out
 
     def _universal_new_lines(self, out):
-        out = re.sub(r'\r\n', r'\n', out)
-
-        # TODO: is this ok?
-        if out and not out.endswith('\n'):
-            out += '\n'
-
-        return out
+        return out.replace('\r\n', '\n').replace('\r', '\n')
 
     def _set_cooked_mode(self, state): # pragma: no cover
         # code borrowed from ptyprocess/ptyprocess.py, _setecho, and
