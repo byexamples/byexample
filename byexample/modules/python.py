@@ -129,21 +129,30 @@ _EXCEPTION_RE = re.compile(r"""
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : #
 ###############################################################################
 
+def _example_options_string_regex_for(compatibility_mode):
+    # anything of the form:
+    if compatibility_mode:
+        #   #  doctest:  +FOO -BAR +ZAZ=42
+        # or
+        #   #  byexample:  +FOO -BAR +ZAZ=42
+        keyword = r'(?:doctest|byexample)'
+    else:
+        #   #  byexample:  +FOO -BAR +ZAZ=42
+        keyword = r'byexample'
+
+    return re.compile(r'#\s*%s:\s*([^\n\'"]*)$' % keyword,
+                                                re.MULTILINE)
 class PythonParser(ExampleParser):
     language = 'python'
 
+    # make this to cache the regexs
     _blankline_tag_re = re.compile(r'^<BLANKLINE>$', re.MULTILINE|re.DOTALL)
+    _opts_re_for_noncomp = _example_options_string_regex_for(False)
+    _opts_re_for_comp = _example_options_string_regex_for(True)
 
     def example_options_string_regex(self):
-        # anything of the form:
-        #   #  byexample:  +FOO -BAR +ZAZ=42
-        if self.compatibility_mode:
-            keyword = r'(?:doctest|byexample)'
-        else:
-            keyword = r'byexample'
-
-        return re.compile(r'#\s*%s:\s*([^\n\'"]*)$' % keyword,
-                                                    re.MULTILINE)
+        return self._opts_re_for_comp if self.compatibility_mode \
+                else self._opts_re_for_noncomp
 
     def extend_option_parser(self, parser):
         '''
