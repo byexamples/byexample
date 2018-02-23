@@ -71,9 +71,6 @@ class ExampleParser(object):
         '''
         return re.compile(r"<(?P<name>(?:\w|-|\.)+)>")
 
-    def whitespace_non_compiled_regex(self):
-        return r'\s+'
-
     def leading_optional_whitespace_regex(self):
         return re.compile(r'\A\s*', re.MULTILINE | re.DOTALL)
 
@@ -94,6 +91,24 @@ class ExampleParser(object):
 
     def ellipsis_marker(self):
         return '...'
+
+    def do_not_begin_with_whitespace_regex_str(self):
+        return r'(?!\s)'
+
+    def do_not_end_with_whitespace_regex_str(self):
+        return r'(?<!\s)'
+
+    def do_not_end_with_newline_regex_str(self):
+        return r'(?<!\n)'
+
+    def trailing_optional_whitespace_regex_str(self):
+        return r"\s*\Z"
+
+    def trailing_optional_newline_regex_str(self):
+        return r'\n*\Z'
+
+    def non_capture_anything_regex_str(self):
+        return r"(?:.*?)"
 
     def process_snippet_and_expected(self, snippet, expected, where):
         r'''
@@ -638,7 +653,7 @@ class ExampleParser(object):
 
                 if name == self.ellipsis_marker():
                     # capture anything (non-greedy)
-                    regex = r"(?:.*?)"
+                    regex = self.non_capture_anything_regex_str()
 
                 else:
                     if name in names_seen:
@@ -657,16 +672,20 @@ class ExampleParser(object):
                 # do the same for the trailing space and next regex
                 if normalize_whitespace:
                     if self.trailing_single_whitespace_regex().search(pre_capture):
-                        regex = r'(?!\s)' + regex  # do not begin with a whitespace
+                        regex = self.do_not_begin_with_whitespace_regex_str() + \
+                                regex
 
                     if self.leading_single_whitespace_regex().search(post_capture):
-                        regex = regex + r'(?<!\s)' # do not end with a whitespace
+                        regex = regex + \
+                                self.do_not_end_with_whitespace_regex_str()
 
                 if not post_capture:
                     if normalize_whitespace:
-                        regex = regex + r'(?<!\s)' # do not end with a whitespace
+                        regex = regex + \
+                                self.do_not_end_with_whitespace_regex_str()
                     else:
-                        regex = regex + r'(?<!\n)' # do not end with a newline
+                        regex = regex + \
+                                self.do_not_end_with_newline_regex_str()
 
                 regexs.append(regex)
                 charnos.append(charno)
@@ -685,7 +704,10 @@ class ExampleParser(object):
 
         # the end: ignore any trailing new line (trailing whitespace if
         # normalize_whitespace == True)
-        regexs.append(r"\s*\Z" if normalize_whitespace else r'\n*\Z')
+        trailing_re_str = self.trailing_optional_whitespace_regex_str() \
+                               if normalize_whitespace \
+                               else self.trailing_optional_newline_regex_str()
+        regexs.append(trailing_re_str)
         charnos.append(charno)
         rcounts.append(0)
 
