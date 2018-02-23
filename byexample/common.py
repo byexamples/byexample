@@ -113,3 +113,14 @@ def print_execution(example, got, x):
     print(got)
     print(("." * 70) + '\n')
 
+def constant(argumentless_method):
+    placeholder = '_saved_constant_result_of_%s' % argumentless_method.__name__
+    def wrapped(self):
+        try:
+            return getattr(self, placeholder)
+        except AttributeError:
+            val = argumentless_method(self)
+            setattr(self, placeholder, val)
+            return val
+
+    return wrapped

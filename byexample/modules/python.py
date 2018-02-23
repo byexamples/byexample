@@ -21,7 +21,7 @@ Example:
 """
 
 import re, pexpect, sys, time
-from byexample.common import log, build_exception_msg
+from byexample.common import log, build_exception_msg, constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin
@@ -29,6 +29,7 @@ from byexample.runner import ExampleRunner, PexepctMixin
 class PythonPromptFinder(ExampleFinder):
     target = 'python-prompt'
 
+    @constant
     def example_regex(self):
         return re.compile(r'''
             # Snippet consists of a PS1 line >>>

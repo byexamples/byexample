@@ -7,6 +7,7 @@ Example:
 """
 
 import re, pexpect, sys, time
+from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin
@@ -14,6 +15,7 @@ from byexample.runner import ExampleRunner, PexepctMixin
 class GDBPromptFinder(ExampleFinder):
     target = 'gdb-prompt'
 
+    @constant
     def example_regex(self):
         return re.compile(r'''
             # Snippet consists of a single prompt line (gdb)
@@ -44,6 +46,7 @@ class GDBPromptFinder(ExampleFinder):
 class GDBParser(ExampleParser):
     language = 'gdb'
 
+    @constant
     def example_options_string_regex(self):
         # anything of the form:
         #   #  byexample:  +FOO -BAR +ZAZ=42

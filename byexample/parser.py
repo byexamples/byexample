@@ -1,5 +1,5 @@
 import collections, re, shlex, argparse
-from .common import log, build_exception_msg, tohuman
+from .common import log, build_exception_msg, tohuman, constant
 from .options import OptionParser, UnrecognizedOption
 
 Example = collections.namedtuple('Example', ['runner',
@@ -63,6 +63,7 @@ class ExampleParser(object):
         '''
         return parser
 
+    @constant
     def capture_tag_regex(self):
         '''
         Return a regular expression to match a 'capture tag'.
@@ -71,21 +72,27 @@ class ExampleParser(object):
         '''
         return re.compile(r"<(?P<name>(?:\w|-|\.)+)>")
 
+    @constant
     def leading_optional_whitespace_regex(self):
         return re.compile(r'\A\s*', re.MULTILINE | re.DOTALL)
 
+    @constant
     def leading_single_whitespace_regex(self):
         return re.compile(r'\A\s', re.MULTILINE | re.DOTALL)
 
+    @constant
     def one_or_more_whitespace_regex(self):
         return re.compile(r'\s+', re.MULTILINE | re.DOTALL)
 
+    @constant
     def trailing_whitespace_regex(self):
         return re.compile(r'\s+\Z', re.MULTILINE | re.DOTALL)
 
+    @constant
     def trailing_single_whitespace_regex(self):
         return re.compile(r'\s\Z', re.MULTILINE | re.DOTALL)
 
+    @constant
     def trailing_newlines_regex(self):
         return re.compile(r'\n+\Z', re.MULTILINE | re.DOTALL)
 

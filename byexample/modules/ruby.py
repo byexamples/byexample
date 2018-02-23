@@ -22,6 +22,7 @@ Example:
 """
 
 import re, pexpect, sys, time
+from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin
@@ -29,6 +30,7 @@ from byexample.runner import ExampleRunner, PexepctMixin
 class RubyPromptFinder(ExampleFinder):
     target = 'ruby-prompt'
 
+    @constant
     def example_regex(self):
         return re.compile(r'''
             # Snippet consists of one or more PS1 lines >>
@@ -60,6 +62,7 @@ class RubyPromptFinder(ExampleFinder):
 class RubyParser(ExampleParser):
     language = 'ruby'
 
+    @constant
     def example_options_string_regex(self):
         return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)

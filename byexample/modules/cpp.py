@@ -26,12 +26,14 @@ Example:
 """
 
 import re, pexpect, sys, time
+from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.runner import ExampleRunner, PexepctMixin
 
 class CPPParser(ExampleParser):
     language = 'cpp'
 
+    @constant
     def example_options_string_regex(self):
         # anything of the form:
         #   /*  byexample:  +FOO -BAR +ZAZ=42  */
