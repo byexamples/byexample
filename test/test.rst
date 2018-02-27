@@ -22,8 +22,8 @@ to start.
     File byexample/options.py, 64/64 test ran in <...> seconds
     [PASS] Pass: 64 Fail: 0 Skip: 0
     <nl>
-    File byexample/parser.py, 84/84 test ran in <...> seconds
-    [PASS] Pass: 84 Fail: 0 Skip: 0
+    File byexample/parser.py, 83/83 test ran in <...> seconds
+    [PASS] Pass: 83 Fail: 0 Skip: 0
 
 Then, each module (Finder, Parser and Runner) provided by ``byexample`` has
 a little documentation.
