@@ -1,5 +1,6 @@
 import collections, re
-from .common import log, build_exception_msg, tohuman, print_example
+from .common import log, build_where_msg, tohuman, print_example, \
+                    enhance_exceptions
 
 Where = collections.namedtuple('Where', ['start_lineno',
                                          'end_lineno',
@@ -282,7 +283,7 @@ class ExampleHarvest(object):
         return examples
 
     def _log_drop(self, reason, where):
-        log(build_exception_msg(where, self, "Dropped example: " + reason),
+        log(build_where_msg(where, self, "Dropped example: " + reason),
                 self.verbosity-2)
 
     def get_examples_using(self, finder, string, filepath='<string>'):

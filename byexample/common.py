@@ -1,6 +1,6 @@
 import pprint, traceback, contextlib, sys
 
-def build_exception_msg(where, owner, msg=None):
+def build_where_msg(where, owner, msg=None):
     try:
         where = 'File "%s", line %i' % (where.filepath, where.start_lineno)
     except:
