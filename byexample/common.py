@@ -156,3 +156,14 @@ def human_exceptions(where_default, verbosity, quiet, exitcode):
 
             print("{where}\n{msg}".format(where=where, msg=msg))
         sys.exit(exitcode)
+
+@contextlib.contextmanager
+def enhance_exceptions(where, owner):
+    where = build_where_msg(where, owner)
+    try:
+        yield
+    except Exception as e:
+        if not hasattr(e, 'where'):
+            e.where = where
+        raise e
+
