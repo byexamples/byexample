@@ -1,5 +1,5 @@
 import collections, re, shlex, argparse
-from .common import log, build_exception_msg, tohuman, constant
+from .common import log, tohuman, constant
 from .options import OptionParser, UnrecognizedOption
 
 Example = collections.namedtuple('Example', ['runner',
@@ -639,7 +639,7 @@ class ExampleParser(object):
                 if charno == match.start() and charno > 0:
                     msg = "Two consecutive capture tags were found. " +\
                           "This is ambiguous."
-                    raise ValueError(build_exception_msg(msg, where, self))
+                    raise ValueError(msg)
 
                 literals = expected[charno:match.start()]
                 if literals:
@@ -766,7 +766,7 @@ class ExampleParser(object):
         try:
           opts = optparser_extended.parse(optlist, strict=True)
         except UnrecognizedOption as e:
-            raise ValueError(build_exception_msg(str(e), where, self))
+            raise ValueError(str(e))
 
         return opts
 

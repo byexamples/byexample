@@ -21,7 +21,7 @@ Example:
 """
 
 import re, pexpect, sys, time
-from byexample.common import log, build_exception_msg, constant
+from byexample.common import log, constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin
@@ -215,7 +215,7 @@ class PythonParser(ExampleParser):
             # the following are not supported: ignore them and print a note
             # somewhere
             if options['DONT_ACCEPT_TRUE_FOR_1']:
-                log(build_exception_msg("[Note] DONT_ACCEPT_TRUE_FOR_1 flag is not supported.", where, self),
+                log("[Note] DONT_ACCEPT_TRUE_FOR_1 flag is not supported.",
                         self.verbosity-2)
 
         # in compatibility mode, do not capture by default [force this]
@@ -304,7 +304,7 @@ class PythonParser(ExampleParser):
                 # contains strings like <label> that may confuse byexample and
                 # or the user
                 if self.capture_tag_regex().search(expected_str):
-                    log(build_exception_msg("[Warn] The expected strings has <label> strings that will not be considered literal but as capture tags.", where, self),
+                    log("[Warn] The expected strings has <label> strings that will not be considered literal but as capture tags.",
                             self.verbosity)
 
             if options['ELLIPSIS']:

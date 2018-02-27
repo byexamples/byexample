@@ -1,15 +1,20 @@
 import pprint, traceback, contextlib, sys
 
-def build_exception_msg(msg, where, owner=None):
-    who = "" if owner is None else (", [%s]" % str(owner))
-    if where:
-        start_lineno, _, filepath = where
-        return 'File "%s", line %i%s\n%s' % (filepath, start_lineno, who, msg)
+def build_exception_msg(where, owner, msg=None):
+    try:
+        where = 'File "%s", line %i' % (where.filepath, where.start_lineno)
+    except:
+        if where:
+            where = str(where)
 
-    if who:
-        return '%s\n%s' % (who, msg)
+    if owner:
+        owner = "[%s]" % str(owner)
+        where = ', '.join([where, owner]) if where else owner
 
-    return msg
+    if msg:
+        where += '\n' + msg
+
+    return where
 
 
 def log(msg, x):

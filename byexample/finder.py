@@ -282,7 +282,7 @@ class ExampleHarvest(object):
         return examples
 
     def _log_drop(self, reason, where):
-        log(build_exception_msg("Dropped example: " + reason, where, self),
+        log(build_exception_msg(where, self, "Dropped example: " + reason),
                 self.verbosity-2)
 
     def get_examples_using(self, finder, string, filepath='<string>'):
@@ -380,8 +380,7 @@ class ExampleFinder(object):
             >>> check_and_remove_indent('  >>> 1 + 2\n3', '  ', (1, 2, 'foo.rst'))
             Traceback (most recent call last):
             <...>
-            ValueError: File "foo.rst", line 1, [Python Prompt Finder]
-            The line 2 is misaligned (wrong indentation). Expected at least 2 spaces.
+            ValueError: The line 2 is misaligned (wrong indentation). Expected at least 2 spaces.
             001   >>> 1 + 2
             002 3
 
@@ -390,7 +389,7 @@ class ExampleFinder(object):
             '>>> 1 + 2\n\n3'
 
         '''
-        start_lineno, _, filepath = where
+        start_lineno, _, _ = where
 
         lines = example_str.split('\n')
 
@@ -408,7 +407,7 @@ class ExampleFinder(object):
                 msg = msg % (start_lineno + lineno,
                                 len(indent),
                                 '\n'.join(context))
-                raise ValueError(build_exception_msg(msg, where, self))
+                raise ValueError(msg)
 
             indent_stripped.append(line[len(indent):])
 
@@ -451,14 +450,12 @@ class ExampleFinder(object):
             ValueError: <...>
 
         '''
-        start_lineno, _, filepath = where
-
         new_match = match.re.match(example_str)
         if not new_match:
             msg = 'The regex does not match the example after ' +\
                   'removing the indentation. '
 
-            raise ValueError(build_exception_msg(msg, where, self))
+            raise ValueError(msg)
 
         if new_match.start() != 0 or new_match.end() != len(example_str):
             msg = '%i bytes were left out after removing the indentation. ' +\
@@ -472,7 +469,7 @@ class ExampleFinder(object):
                 at = 'end'
 
             msg = msg % (len(dropped), at, dropped)
-            raise ValueError(build_exception_msg(msg, where, self))
+            raise ValueError(msg)
 
         return new_match
 
