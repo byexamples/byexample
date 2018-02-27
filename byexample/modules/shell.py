@@ -50,10 +50,10 @@ class ShellPromptFinder(ExampleFinder):
     def get_snippet_and_expected(self, match, where):
         snippet, expected = ExampleFinder.get_snippet_and_expected(self, match, where)
 
-        snippet = self._remove_prompts(snippet, where)
+        snippet = self._remove_prompts(snippet)
         return snippet, expected
 
-    def _remove_prompts(self, snippet, where):
+    def _remove_prompts(self, snippet):
         lines = snippet.split("\n")
         return '\n'.join(line[2:] for line in lines)
 

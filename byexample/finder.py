@@ -414,7 +414,7 @@ class ExampleFinder(object):
 
         return '\n'.join(indent_stripped)
 
-    def check_keep_matching(self, example_str, match, where):
+    def check_keep_matching(self, example_str, match):
         r'''
         Given an example string, try to apply the match again.
         This is a health-check intended to be used after a call to
@@ -433,19 +433,19 @@ class ExampleFinder(object):
             >>> code_i = check_and_remove_indent(code, '  ', (1, 2, 'foo.rst'))
             >>> code_i != code
             True
-            >>> new_match = check_keep_matching(code_i, match, (1, 2, 'foo.rst'))
+            >>> new_match = check_keep_matching(code_i, match)
 
         This should not happen but if for some reason the regex doesn't match
         the full string, raise an exception:
 
             >>> x_code = 'x' + code_i
-            >>> check_keep_matching(x_code, match, (1, 2, 'foo.rst'))
+            >>> check_keep_matching(x_code, match)
             Traceback (most recent call last):
             <...>
             ValueError: <...>
 
             >>> code_x = code_i + '\nx'
-            >>> check_keep_matching(code_x, match, (1, 2, 'foo.rst'))
+            >>> check_keep_matching(code_x, match)
             Traceback (most recent call last):
             <...>
             ValueError: <...>
@@ -491,7 +491,7 @@ class ExampleFinder(object):
 
         # check that we still can find the example
         # (allow to generate a new match)
-        match = self.check_keep_matching(example_str, match, where)
+        match = self.check_keep_matching(example_str, match)
 
         # finally, return the updated snippet and expected strings
         return match.group('snippet'), match.group('expected')

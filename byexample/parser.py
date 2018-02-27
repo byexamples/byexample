@@ -117,7 +117,7 @@ class ExampleParser(object):
     def non_capture_anything_regex_str(self):
         return r"(?:.*?)"
 
-    def process_snippet_and_expected(self, snippet, expected, where):
+    def process_snippet_and_expected(self, snippet, expected):
         r'''
         Process the snippet code and the expected output.
 
@@ -143,15 +143,14 @@ class ExampleParser(object):
         start_lineno, end_lineno, filepath = where
         options = self.options
 
-        options.up(self.extract_options(snippet, where))
+        options.up(self.extract_options(snippet))
 
-        snippet, expected = self.process_snippet_and_expected(snippet, expected, where)
+        snippet, expected = self.process_snippet_and_expected(snippet, expected)
 
         expected_regexs, positions, rcounts, captures = self.expected_as_regexs(
                                                 expected,
                                                 options['norm_ws'],
-                                                options['capture'],
-                                                where)
+                                                options['capture'])
 
         expected = Expected(
                           # the output expected
@@ -402,7 +401,7 @@ class ExampleParser(object):
         return exprs, charnos, rcounts
 
 
-    def expected_as_regexs(self, expected, normalize_whitespace, capture, where):
+    def expected_as_regexs(self, expected, normalize_whitespace, capture):
         r'''
         From the expected string create a list of regular expressions that
         joined with the flags re.MULTILINE | re.DOTALL, matches
@@ -417,10 +416,9 @@ class ExampleParser(object):
 
             >>> parser = ExampleParser(0, 'utf8', "", None); parser.language = 'python'
             >>> _as_regexs = parser.expected_as_regexs
-            >>> where = (1, 2, 'foo.rst')
 
             >>> expected = 'a<foo>b<bar>c'
-            >>> regexs, positions, rcounts, names = _as_regexs(expected, False, True, where)
+            >>> regexs, positions, rcounts, names = _as_regexs(expected, False, True)
 
         We return the names of the named capture groups
 
@@ -455,7 +453,7 @@ class ExampleParser(object):
         (match the whole regex matching one regex at time)
 
             >>> expected = 'a\n<foo>bcd\nefg<bar>hi'
-            >>> regexs, positions, rcounts, names = _as_regexs(expected, False, True, where)
+            >>> regexs, positions, rcounts, names = _as_regexs(expected, False, True)
 
             >>> regexs
             ['\\A',
@@ -481,7 +479,7 @@ class ExampleParser(object):
            the spaces in the expected, the regexp will ignore that.
            However we preserve the new line as 'regex's boundaries'
 
-            >>> r, p, c, _ = _as_regexs('a  \n   b  \t\vc', True, True, where)
+            >>> r, p, c, _ = _as_regexs('a  \n   b  \t\vc', True, True)
 
             >>> r
             ['\\A', 'a\\s+', 'b\\s+c', '\\s*\\Z']
@@ -498,7 +496,7 @@ class ExampleParser(object):
 
          - if capture is true, replace the literals capture tags by regexs.
 
-            >>> r, p, _, n = _as_regexs('a<foo>b<bar>c', False, True, where)
+            >>> r, p, _, n = _as_regexs('a<foo>b<bar>c', False, True)
             >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
             >>> m.match('axxbyyyc').groups()
             ('xx', 'yyy')
@@ -507,14 +505,14 @@ class ExampleParser(object):
            we will raise an exception as this is ambiguous:
 
             >>> # but here? foo is 'x' and bar 'xyyy'?, '' and 'xxyyy', or ....
-            >>> _as_regexs('a<foo><bar>c', False, True, where)
+            >>> _as_regexs('a<foo><bar>c', False, True)
             Traceback (most recent call last):
             <...>
             ValueError: <...>
 
          - if the capture flag is False, all the <...> tags are taken literally.
 
-            >>> r, p, _, _ = _as_regexs('a<foo>b<bar>c', False, False, where)
+            >>> r, p, _, _ = _as_regexs('a<foo>b<bar>c', False, False)
             >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
             >>> m.match('axxbyyyc') is None # don't matched as <foo> is not xx
             True
@@ -529,7 +527,7 @@ class ExampleParser(object):
         the begin or end of the match, always
 
             >>> expected = 'a<foo>b'
-            >>> regexs, positions, _, names = _as_regexs(expected, False, True, where)
+            >>> regexs, positions, _, names = _as_regexs(expected, False, True)
 
             >>> regexs
             ['\\A', 'a', '(?P<foo>.*?)', 'b', '\\n*\\Z']
@@ -545,7 +543,7 @@ class ExampleParser(object):
         normalize_whitespace was false
 
             >>> expected = 'a<foo>b'
-            >>> regexs, positions, _, names = _as_regexs(expected, True, True, where)
+            >>> regexs, positions, _, names = _as_regexs(expected, True, True)
 
             >>> regexs
             ['\\A', 'a', '(?P<foo>.*?)', 'b', '\\s*\\Z']
@@ -557,7 +555,7 @@ class ExampleParser(object):
         But if we add some whitespace
 
             >>> expected = 'a <foo>b'
-            >>> regexs, positions, _, names = _as_regexs(expected, True, True, where)
+            >>> regexs, positions, _, names = _as_regexs(expected, True, True)
 
             >>> regexs
             ['\\A', 'a\\s+', '(?!\\s)(?P<foo>.*?)', 'b', '\\s*\\Z']
@@ -567,7 +565,7 @@ class ExampleParser(object):
             ('123\n\n ',)
 
             >>> expected = 'a<foo> b'
-            >>> regexs, positions, _, names = _as_regexs(expected, True, True, where)
+            >>> regexs, positions, _, names = _as_regexs(expected, True, True)
 
             >>> regexs
             ['\\A', 'a', '(?P<foo>.*?)(?<!\\s)', '\\s+b', '\\s*\\Z']
@@ -580,7 +578,7 @@ class ExampleParser(object):
         just add a whitespace around it
 
             >>> expected = 'a\n<foo>\tb'
-            >>> regexs, positions, _, names = _as_regexs(expected, True, True, where)
+            >>> regexs, positions, _, names = _as_regexs(expected, True, True)
 
             >>> regexs
             ['\\A', 'a\\s+', '(?!\\s)(?P<foo>.*?)(?<!\\s)', '\\s+b', '\\s*\\Z']
@@ -593,7 +591,7 @@ class ExampleParser(object):
         True, any trailing whitespace.
 
             >>> expected = '<foo>\n\n\n'
-            >>> regexs, positions, _, names = _as_regexs(expected, False, True, where)
+            >>> regexs, positions, _, names = _as_regexs(expected, False, True)
 
             >>> regexs
             ['\\A', '(?P<foo>.*?)(?<!\\n)', '\\n*\\Z']
@@ -603,7 +601,7 @@ class ExampleParser(object):
             ('   123  ',)
 
             >>> expected = '<foo>  \n\n'
-            >>> regexs, positions, _, names = _as_regexs(expected, True, True, where)
+            >>> regexs, positions, _, names = _as_regexs(expected, True, True)
 
             >>> regexs
             ['\\A', '(?P<foo>.*?)(?<!\\s)', '\\s*\\Z']
@@ -613,8 +611,6 @@ class ExampleParser(object):
             ('   123',)
 
         '''
-        start_lineno, _, filepath = where
-
         # remove any trailing new lines, we will add a regex to match any
         # posible empty line at the end later
         # when normalize_whitespace == True, ignore remove all trailing
@@ -741,8 +737,7 @@ class ExampleParser(object):
         optparser_extended = self.get_extended_option_parser(self.optparser)
         return optparser_extended.parse(opts_from_cmdline, strict=False)
 
-    def extract_options(self, snippet, where):
-        start_lineno, _, filepath = where
+    def extract_options(self, snippet):
         optstring_match = self.example_options_string_regex().search(snippet)
 
         if not optstring_match:

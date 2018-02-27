@@ -37,10 +37,10 @@ class GDBPromptFinder(ExampleFinder):
     def get_snippet_and_expected(self, match, where):
         snippet, expected = ExampleFinder.get_snippet_and_expected(self, match, where)
 
-        snippet = self._remove_prompts(snippet, where)
+        snippet = self._remove_prompts(snippet)
         return snippet, expected
 
-    def _remove_prompts(self, snippet, where):
+    def _remove_prompts(self, snippet):
         return snippet[6:]     # remove the (gdb) prompt
 
 class GDBParser(ExampleParser):
@@ -53,9 +53,9 @@ class GDBParser(ExampleParser):
         return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
 
-    def process_snippet_and_expected(self, snippet, expected, where):
+    def process_snippet_and_expected(self, snippet, expected):
         snippet, expected = ExampleParser.process_snippet_and_expected(self,
-                                            snippet, expected, where)
+                                            snippet, expected)
         # remove any option string, gdb does not support
         # comments. If we do not do this, gdb will complain
         snippet = self.example_options_string_regex().sub('', snippet)

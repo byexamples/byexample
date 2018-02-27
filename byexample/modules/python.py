@@ -52,10 +52,10 @@ class PythonPromptFinder(ExampleFinder):
     def get_snippet_and_expected(self, match, where):
         snippet, expected = ExampleFinder.get_snippet_and_expected(self, match, where)
 
-        snippet = self._remove_prompts(snippet, where)
+        snippet = self._remove_prompts(snippet)
         return snippet, expected
 
-    def _remove_prompts(self, snippet, where):
+    def _remove_prompts(self, snippet):
         lines = snippet.split("\n")
 
         # all the lines starts with a prompt
@@ -176,7 +176,7 @@ class PythonParser(ExampleParser):
 
         return parser
 
-    def _map_doctest_opts_to_byexample_opts(self, where):
+    def _map_doctest_opts_to_byexample_opts(self):
         '''
         In compatibility mode, take all the Python doctest's options and flags
         and map them to a byexample option if possible.
@@ -225,7 +225,7 @@ class PythonParser(ExampleParser):
         options.unmask_default()
         return mapped
 
-    def _double_parse(self, parse_method, args, kwargs, where):
+    def _double_parse(self, parse_method, args, kwargs):
         '''
         Call parse_method at most twice.
         The first call is under compatibility mode.
@@ -259,7 +259,7 @@ class PythonParser(ExampleParser):
 
         # take the self.options and see if there are doctest flags
         # to be mapped to byexample's options
-        mapped = self._map_doctest_opts_to_byexample_opts(where)
+        mapped = self._map_doctest_opts_to_byexample_opts()
 
         # revert the merge
         self.options.down()
@@ -272,26 +272,24 @@ class PythonParser(ExampleParser):
     def extract_cmdline_options(self, opts_from_cmdline):
         return self._double_parse(ExampleParser.extract_cmdline_options,
                                     args=(self, opts_from_cmdline),
-                                    kwargs={},
-                                    where=None)
+                                    kwargs={})
 
 
-    def extract_options(self, snippet, where):
+    def extract_options(self, snippet):
         return self._double_parse(ExampleParser.extract_options,
-                                    args=(self, snippet, where),
-                                    kwargs={},
-                                    where=where)
+                                    args=(self, snippet),
+                                    kwargs={})
 
-    def process_snippet_and_expected(self, snippet, expected, where):
+    def process_snippet_and_expected(self, snippet, expected):
         snippet, expected = ExampleParser.process_snippet_and_expected(self,
-                                            snippet, expected, where)
+                                            snippet, expected)
 
-        expected = self._mutate_expected_based_on_doctest_flags(expected, where)
+        expected = self._mutate_expected_based_on_doctest_flags(expected)
         snippet = self._remove_empty_line_if_enabled(snippet)
 
         return snippet, expected
 
-    def _mutate_expected_based_on_doctest_flags(self, expected_str, where):
+    def _mutate_expected_based_on_doctest_flags(self, expected_str):
         options = self.options
         options.mask_default(False)
         if options['py_doctest']:
