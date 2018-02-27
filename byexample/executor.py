@@ -26,6 +26,9 @@ class FileExecutor(object):
             log(" - %s" % str(runner), self.verbosity-1)
             runner.shutdown()
 
+    def __repr__(self):
+        return 'File Executor'
+
     def execute(self, examples, filepath):
         options = self.options
         runners = list(set(e.runner for e in examples))
