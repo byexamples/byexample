@@ -360,7 +360,7 @@ class Checker(object):
 
         buffer_tag_name = buffer_tag_name % i
         if buffer_tag_name in captures:
-            raise Exception("Invalid state. Weird....")
+            raise Exception("Invalid state. Weird.... After several tries, the buffer tag is still not uniq. Last try was '%s'" % buffer_tag_name)
 
         buffer_re = '(?P<%s>.*?)' % buffer_tag_name
 
