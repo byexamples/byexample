@@ -1,4 +1,4 @@
-import pprint
+import pprint, traceback, contextlib, sys
 
 def build_exception_msg(msg, where, owner=None):
     who = "" if owner is None else (", [%s]" % str(owner))
@@ -124,3 +124,30 @@ def constant(argumentless_method):
             return val
 
     return wrapped
+
+
+@contextlib.contextmanager
+def human_exceptions(where_default, verbosity, quiet, exitcode):
+    ''' Print to stdout the message of the exception (if any)
+        suppressing its traceback.
+         - if verbosity is greather than zero, print the traceback.
+         - if quiet is True, do not print anything.
+
+        To enhance the print, print the 'where' attribute of the
+        exception (if it has one) or the 'where_default'.
+
+        Finally, exit the process with exitcode.
+    '''
+    try:
+        yield
+    except Exception as e:
+        if quiet:
+            pass
+        else:
+            where = getattr(e, 'where', where_default)
+            msg = str(e)
+            if verbosity >= 1:
+                msg = traceback.format_exc()
+
+            print("{where}\n{msg}".format(where=where, msg=msg))
+        sys.exit(exitcode)
