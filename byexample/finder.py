@@ -457,12 +457,12 @@ class ExampleFinder(object):
         new_match = match.re.match(example_str)
         if not new_match:
             msg = 'The regex does not match the example after ' +\
-                  'removing the indentation. '
+                  'removing the indentation (check_and_remove_indent). '
 
             raise ValueError(msg)
 
         if new_match.start() != 0 or new_match.end() != len(example_str):
-            msg = '%i bytes were left out after removing the indentation. ' +\
+            msg = '%i bytes were left out after removing the indentation (check_and_remove_indent). ' +\
                   'Dropped bytes at the %s of example:\n%s\n'
 
             if new_match.start() != 0:

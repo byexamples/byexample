@@ -633,9 +633,9 @@ class ExampleParser(object):
         if capture:
             for match in self.capture_tag_regex().finditer(expected):
                 if charno == match.start() and charno > 0:
-                    msg = "Two consecutive capture tags were found. " +\
+                    msg = "Two consecutive capture tags were found at %ith character. " +\
                           "This is ambiguous."
-                    raise ValueError(msg)
+                    raise ValueError(msg % charno)
 
                 literals = expected[charno:match.start()]
                 if literals:
@@ -755,8 +755,6 @@ class ExampleParser(object):
         # must contain options standard of byexample and/or standard of this
         # parser (self)
         # any other options is an error
-        #
-        # TODO handle errors here: we check this but we don't do anything useful
         optparser_extended = self.get_extended_option_parser(self.optparser)
         try:
           opts = optparser_extended.parse(optlist, strict=True)
