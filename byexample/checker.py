@@ -135,7 +135,7 @@ class Checker(object):
 
         diff_type = flags['diff']
 
-        if diff_type is not 'none':
+        if diff_type != 'none':
             self.print_diff(expected, got, diff_type, use_colors)
         else:
             self.just_print(expected, got, use_colors)
