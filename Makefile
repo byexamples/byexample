@@ -20,6 +20,7 @@ deps:
 
 test:
 	@$(python_bin) r.py --timeout 60 --pretty $(pretty) --ff -l shell test/test.rst
+	@make -s clean_test
 
 travis-test:
 	@# run the test separately so we can control which languages will
@@ -29,6 +30,7 @@ travis-test:
 	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell byexample/modules/*.py
 	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell README.md
 	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell `find docs -name "*.rst"`
+	@make -s clean_test
 
 coverage:
 	@rm -f .coverage
@@ -49,6 +51,7 @@ coverage:
 	@echo
 	@echo "Results:"
 	@coverage report
+	@make -s clean_test
 
 dist:
 	rm -Rf dist/ build/ *.egg-info
@@ -61,7 +64,11 @@ upload: dist
 deprecated-doc:
 	pandoc -s -o doc.pdf README.md docs/languages/* docs/how_to_extend.rst
 
-clean:
+clean_test:
+	rm -f file1 file2 file3
+	rm -f synthetic.doc
+
+clean: clean_test
 	rm -Rf dist/ build/ *.egg-info
 	rm -Rf build/ *.egg-info
 	find . -name "*.pyc" -delete

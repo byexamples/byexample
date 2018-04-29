@@ -72,6 +72,9 @@ can be found under the ``doc`` folder
 
     $ byexample -l $all_languages --skip docs/how_to_extend.rst -- `find docs -name "*.rst"`
     <nl>
+    File docs/huff/usage.rst, 13/13 test ran in <...> seconds
+    [PASS] Pass: 13 Fail: 0 Skip: 0
+    <nl>
     File docs/usage.rst, 12/12 test ran in <...> seconds
     [PASS] Pass: 12 Fail: 0 Skip: 0
     <nl>
