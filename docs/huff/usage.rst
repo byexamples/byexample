@@ -126,7 +126,7 @@ Diff algorithms
     Differences found between files 'file1' and 'file2':
     <...>
     Differences:
-    @@ -1 +1 @@
+    @@ -1<...> +1<...> @@
     -Fooo
     +Foao
 
