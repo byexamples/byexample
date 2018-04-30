@@ -50,7 +50,7 @@ coverage:
 	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py --pretty none -vvvvvvvvvvvv --ff -l python,shell README.md > /dev/null
 	@echo
 	@echo "Results:"
-	@coverage report
+	@coverage report --omit=byexample/huff.py
 	@make -s clean_test
 
 dist:
