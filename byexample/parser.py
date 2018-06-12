@@ -114,8 +114,11 @@ class ExampleParser(object):
     def trailing_optional_newline_regex_str(self):
         return r'\n*\Z'
 
-    def non_capture_anything_regex_str(self):
-        return r"(?:.*?)"
+    def non_capture_anything_regex_str(self, name):
+        if name:
+            return r"(?P<%s>.*?)" % name
+        else:
+            return r"(?:.*?)"
 
     def process_snippet_and_expected(self, snippet, expected):
         r'''
@@ -656,7 +659,7 @@ class ExampleParser(object):
 
                 if name == self.ellipsis_marker():
                     # capture anything (non-greedy)
-                    regex = self.non_capture_anything_regex_str()
+                    regex = self.non_capture_anything_regex_str(None)
 
                 else:
                     if name in names_seen:
@@ -668,7 +671,7 @@ class ExampleParser(object):
                     else:
                         # first seen, capture anything (non-greedy)
                         names_seen.append(name)
-                        regex = r"(?P<%s>.*?)" % name
+                        regex = self.non_capture_anything_regex_str(name)
 
                 # match 'anything' but do not match any leading
                 # space if the previous regex already matches that
