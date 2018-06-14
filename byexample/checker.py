@@ -7,8 +7,57 @@ class Checker(object):
         self.verbosity = verbosity
 
     def check_output(self, example, got, flags):
-        m = re.compile(''.join(example.expected.regexs), re.MULTILINE | re.DOTALL)
-        return m.match(got) is not None
+        if example.expected.advanced_captures:
+            return self._check_advanced_expected(example, got, flags)
+
+        else:
+            return self._check_simple_expected(example, got, flags)
+
+    def _check_simple_expected(self, example, got, flags):
+        ''' Assume that all (if any) example's capture tags are regex
+            of the form '.*'.
+            If that's true, then the example will pass if all the literal
+            regexs of the example's expected match the got strings.
+
+            This is correct because the regex between the literal ones
+            are capture tags and if we assume that those are .*, matching
+            the literal regexs in order is like matching the whole thing
+            with .* regexs in the middle.
+
+            However this is a safer implementation that prevents pathological
+            regexs
+
+            For example matching 'aa.*bb.*cc' could be too expensive but
+            matching ['aa', 'bb', 'cc'] is the same and faster.
+
+            '''
+
+        prev = 0
+        literals = []
+        regexs = example.expected.regexs
+        capture_idxs = example.expected.capture_idxs
+        for capture_idx in capture_idxs + [len(regexs)]:
+            literal = ''.join(regexs[prev:capture_idx])
+            prev = capture_idx + 1
+            if literal:
+                literals.append(literal)
+
+        pos = 0
+        for literal in literals:
+            r = re.compile(literal, re.MULTILINE | re.DOTALL)
+            m = r.search(got, pos)
+
+            if not m:
+                return False
+
+            pos = m.end()
+
+        return True
+
+
+    def _check_advanced_expected(self, example, got, flags):
+        r = re.compile(''.join(example.expected.regexs), re.MULTILINE | re.DOTALL)
+        return r.match(got) is not None
 
     def output_difference(self, example, got, flags, use_colors):
         r'''
