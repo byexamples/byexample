@@ -155,7 +155,8 @@ class ExampleParser(object):
         expected_regexs, positions, rcounts, captures, capture_idxs, adv = self.expected_as_regexs(
                                                 expected,
                                                 options['norm_ws'],
-                                                options['capture'])
+                                                options['capture'],
+                                                options['XXXXX'])
 
         expected = Expected(
                           # the output expected
@@ -412,7 +413,7 @@ class ExampleParser(object):
         return exprs, charnos, rcounts
 
 
-    def expected_as_regexs(self, expected, normalize_whitespace, capture):
+    def expected_as_regexs(self, expected, normalize_whitespace, capture, XXXXX):
         r'''
         From the expected string create a list of regular expressions that
         joined with the flags re.MULTILINE | re.DOTALL, matches
@@ -432,7 +433,7 @@ class ExampleParser(object):
             >>> _as_regexs = parser.expected_as_regexs
 
             >>> expected = 'a<foo>b<bar>c'
-            >>> regexs, positions, rcounts, names, capture_idxs, adv = _as_regexs(expected, False, True)
+            >>> regexs, positions, rcounts, names, capture_idxs, adv = _as_regexs(expected, False, True, True)
 
         We return the names of the named capture groups
 
@@ -479,7 +480,7 @@ class ExampleParser(object):
         (match the whole regex matching one regex at time)
 
             >>> expected = 'a\n<foo>bcd\nefg<bar>hi'
-            >>> regexs, _, rcounts, _, _, _ = _as_regexs(expected, False, True)
+            >>> regexs, _, rcounts, _, _, _ = _as_regexs(expected, False, True, True)
 
             >>> regexs
             ['\\A',
@@ -505,7 +506,7 @@ class ExampleParser(object):
            the spaces in the expected, the regexp will ignore that.
            However we preserve the new line as 'regex's boundaries'
 
-            >>> r, p, c, _, _, _ = _as_regexs('a  \n   b  \t\vc', True, True)
+            >>> r, p, c, _, _, _ = _as_regexs('a  \n   b  \t\vc', True, True, True)
 
             >>> r
             ['\\A', 'a\\s+', 'b\\s+c', '\\s*\\Z']
@@ -522,7 +523,7 @@ class ExampleParser(object):
 
          - if capture is true, replace the literals capture tags by regexs.
 
-            >>> r, p, _, n, _, _ = _as_regexs('a<foo>b<bar>c', False, True)
+            >>> r, p, _, n, _, _ = _as_regexs('a<foo>b<bar>c', False, True, True)
             >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
             >>> m.match('axxbyyyc').groups()
             ('xx', 'yyy')
@@ -531,14 +532,14 @@ class ExampleParser(object):
            we will raise an exception as this is ambiguous:
 
             >>> # but here? foo is 'x' and bar 'xyyy'?, '' and 'xxyyy', or ....
-            >>> _as_regexs('a<foo><bar>c', False, True)
+            >>> _as_regexs('a<foo><bar>c', False, True, True)
             Traceback (most recent call last):
             <...>
             ValueError: <...>
 
          - if the capture flag is False, all the <...> tags are taken literally.
 
-            >>> r, p, _, _, _, _ = _as_regexs('a<foo>b<bar>c', False, False)
+            >>> r, p, _, _, _, _ = _as_regexs('a<foo>b<bar>c', False, False, True)
             >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
             >>> m.match('axxbyyyc') is None # don't matched as <foo> is not xx
             True
@@ -546,10 +547,10 @@ class ExampleParser(object):
             >>> m.match('a<foo>b<bar>c') is None # the strings <foo> <bar> are literals
             False
 
-         - if a named capture is repeated we assume that all but first must
-           match the value of the first captured:
+         - if the XXXXX is True when a named capture is repeated we assume that
+           all but first must match the value of the first captured:
 
-            >>> r, p, _, _, _, adv = _as_regexs('a<foo>b<foo>c', False, True)
+            >>> r, p, _, _, _, adv = _as_regexs('a<foo>b<foo>c', False, True, True)
             >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
             >>> m.match('axxbyyyc') is None # don't matched as <foo>=xx is not yy
             True
@@ -560,6 +561,14 @@ class ExampleParser(object):
             >>> adv
             True
 
+           Otherwise we will fail:
+
+            >>> _as_regexs('a<foo>b<foo>c', False, True, False)
+            Traceback (most recent call last):
+            <...>
+            ValueError: <...>
+
+
         The capture will behave differently if normalize_whitespace is true or false.
 
         In the default, normalize_whitespace == False, case, a capture will
@@ -567,7 +576,7 @@ class ExampleParser(object):
         the begin or end of the match, always
 
             >>> expected = 'a<foo>b'
-            >>> regexs, _, _, names, _, _ = _as_regexs(expected, False, True)
+            >>> regexs, _, _, names, _, _ = _as_regexs(expected, False, True, True)
 
             >>> regexs
             ['\\A', 'a', '(?P<foo>.*?)', 'b', '\\n*\\Z']
@@ -583,7 +592,7 @@ class ExampleParser(object):
         normalize_whitespace was false
 
             >>> expected = 'a<foo>b'
-            >>> regexs, _, _, names, _, _ = _as_regexs(expected, True, True)
+            >>> regexs, _, _, names, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', 'a', '(?P<foo>.*?)', 'b', '\\s*\\Z']
@@ -595,7 +604,7 @@ class ExampleParser(object):
         But if we add some whitespace
 
             >>> expected = 'a <foo>b'
-            >>> regexs, _, _, names, _, _ = _as_regexs(expected, True, True)
+            >>> regexs, _, _, names, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', 'a\\s+', '(?!\\s)(?P<foo>.*?)', 'b', '\\s*\\Z']
@@ -605,7 +614,7 @@ class ExampleParser(object):
             ('123\n\n ',)
 
             >>> expected = 'a<foo> b'
-            >>> regexs, _, _, names, _, _ = _as_regexs(expected, True, True)
+            >>> regexs, _, _, names, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', 'a', '(?P<foo>.*?)(?<!\\s)', '\\s+b', '\\s*\\Z']
@@ -618,7 +627,7 @@ class ExampleParser(object):
         just add a whitespace around it
 
             >>> expected = 'a\n<foo>\tb'
-            >>> regexs, _, _, names, _, _ = _as_regexs(expected, True, True)
+            >>> regexs, _, _, names, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', 'a\\s+', '(?!\\s)(?P<foo>.*?)(?<!\\s)', '\\s+b', '\\s*\\Z']
@@ -631,7 +640,7 @@ class ExampleParser(object):
         True, any trailing whitespace.
 
             >>> expected = '<foo>\n\n\n'
-            >>> regexs, _, _, names, _, _ = _as_regexs(expected, False, True)
+            >>> regexs, _, _, names, _, _ = _as_regexs(expected, False, True, True)
 
             >>> regexs
             ['\\A', '(?P<foo>.*?)(?<!\\n)', '\\n*\\Z']
@@ -641,7 +650,7 @@ class ExampleParser(object):
             ('   123  ',)
 
             >>> expected = '<foo>  \n\n'
-            >>> regexs, _, _, names, _, _ = _as_regexs(expected, True, True)
+            >>> regexs, _, _, names, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', '(?P<foo>.*?)(?<!\\s)', '\\s*\\Z']
@@ -703,11 +712,19 @@ class ExampleParser(object):
 
                 else:
                     if name in names_seen:
-                        # matched the same string that a previous
-                        # group matched with that name
-                        regex = r"(?P=%s)" % name
-                        rcount = 1
-                        are_advanced_captures_used = True
+                        if XXXXX:
+                            # matched the same string that a previous
+                            # group matched with that name
+                            regex = r"(?P=%s)" % name
+                            rcount = 1
+                            are_advanced_captures_used = True
+
+                        else:
+                            msg = "The named capture tag '%s' is repeated in " +\
+                                  "the %ith character. You need to explicitly " +\
+                                  "allow this."
+
+                            raise ValueError(msg % (name, charno))
 
                     else:
                         # first seen, capture anything (non-greedy)
