@@ -82,6 +82,7 @@ def print_example(example, use_colors, x):
     print("  Indentation: |%s| (%i bytes)" % (example.indentation,
                                                 len(example.indentation)))
     print("  Capture Tags: %s" % pprint.pformat(example.expected.captures, width=50))
+    print("  Advanced Capture: %s" % str(example.expected.advanced_captures))
 
     opts_repr = pprint.pformat(example.options.as_dict(), width=50)
     lines = opts_repr.split('\n')
