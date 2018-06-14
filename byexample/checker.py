@@ -4,19 +4,25 @@ import string, re, difflib
 class LinearChecker(object):
     def __init__(self, verbosity, **unused):
         self.verbosity = verbosity
+        self.check_good = False
 
     def check_got_output(self, example, got, flags):
-        self._partial_expected_replaced = None
+        self.check_good = False
 
         regexs = example.expected.regexs
         capture_idxs = example.expected.capture_idxs
         expected_str = example.expected.str
         positions = example.expected.positions
 
-        return self._linear_matching(regexs, capture_idxs, positions, expected_str, got)
+        self._partial_expected_replaced = expected_str
+        self.check_good = self._linear_matching(regexs, capture_idxs, positions, expected_str, got)
+        return self.check_good
 
-    def get_partial_capture(self, example, got, flags):
-        return self._partial_expected_replaced, {} # TODO
+    def get_captures(self, example, got, flags):
+        if self.check_good:
+            return got, {} # TODO
+        else:
+            return self._partial_expected_replaced, {} # TODO
 
     def _linear_matching(self, regexs, capture_idxs, positions, expected_str, got):
         ''' Assume that all (if any) example's capture tags are regex
@@ -63,32 +69,39 @@ class LinearChecker(object):
 class RegexChecker(object):
     def __init__(self, verbosity, **unused):
         self.verbosity = verbosity
+        self.check_good = False
 
     def check_got_output(self, example, got, flags):
-        self._partial_captures = self._partial_expected_replaced = None
+        self.check_good = False
+        self._captures_from_good_check = None
 
         r = re.compile(''.join(example.expected.regexs), re.MULTILINE | re.DOTALL)
         m = r.match(got)
 
         if m:
-            self._partial_captures = m.groups() # TODO this is not the correct method
-            self._partial_expected_replaced = got
+            self._captures_from_good_check = {} # TODO m.groups() is not the correct method
+            self.check_good = True
             return True
 
         else:
+            self.check_good = False
             return False
 
-    def get_partial_capture(self, example, got, flags):
-        expected = example.expected
-        return self._replace_captures(expected.captures,
-                                      expected.regexs,
-                                      expected.positions,
-                                      expected.rcounts,
-                                      expected.str,
-                                      got,
-                                      min_rcount = 6)
+    def get_captures(self, example, got, flags):
+        if self.check_good:
+            return got, self._captures_from_good_check
 
-    def _replace_captures(self, captures, expected_regexs, positions, rcounts, expected, got, min_rcount=6):
+        else:
+            expected = example.expected
+            return self._get_all_captures_as_possible(expected.captures,
+                                          expected.regexs,
+                                          expected.positions,
+                                          expected.rcounts,
+                                          expected.str,
+                                          got,
+                                          min_rcount = 6)
+
+    def _get_all_captures_as_possible(self, captures, expected_regexs, positions, rcounts, expected, got, min_rcount=6):
         r'''
         Try to replace all the capture groups in the expected by
         the strings found in got.
@@ -98,7 +111,7 @@ class RegexChecker(object):
 
             >>> from byexample.checker import RegexChecker
             >>> from functools import partial
-            >>> _replace_captures = RegexChecker(verbosity=0)._replace_captures
+            >>> _replace_captures = RegexChecker(verbosity=0)._get_all_captures_as_possible
 
         We can only "safely" replace all the groups at the begin (left) of the
         string before the first difference and replace all the groups at the
@@ -445,7 +458,7 @@ class Checker(object):
             expected = example.expected.str
 
             if flags['enhance_diff']:
-                expected, replaced_captures = self._checker.get_partial_capture(
+                expected, replaced_captures = self._checker.get_captures(
                                                 example, got, flags)
 
         else:
