@@ -1,19 +1,24 @@
 from .common import log, colored
 import string, re, difflib
 
-class Checker(object):
+class LinearChecker(object):
     def __init__(self, verbosity, **unused):
-        self._diff = []
         self.verbosity = verbosity
 
     def check_output(self, example, got, flags):
-        if example.expected.advanced_captures:
-            return self._check_advanced_expected(example, got, flags)
+        self._partial_expected_replaced = None
 
-        else:
-            return self._check_simple_expected(example, got, flags)
+        regexs = example.expected.regexs
+        capture_idxs = example.expected.capture_idxs
+        expected_str = example.expected.str
+        positions = example.expected.positions
 
-    def _check_simple_expected(self, example, got, flags):
+        return self._linear_matching(regexs, capture_idxs, positions, expected_str, got)
+
+    def get_partial_capture(self, example, got, flags):
+        return self._partial_expected_replaced, {} # TODO
+
+    def _linear_matching(self, regexs, capture_idxs, positions, expected_str, got):
         ''' Assume that all (if any) example's capture tags are regex
             of the form '.*'.
             If that's true, then the example will pass if all the literal
@@ -34,201 +39,54 @@ class Checker(object):
 
         prev = 0
         literals = []
-        regexs = example.expected.regexs
-        capture_idxs = example.expected.capture_idxs
         for capture_idx in capture_idxs + [len(regexs)]:
             literal = ''.join(regexs[prev:capture_idx])
+            at = positions[prev]
             prev = capture_idx + 1
             if literal:
-                literals.append(literal)
+                literals.append((at, literal))
 
         pos = 0
-        for literal in literals:
+        for at, literal in literals:
             r = re.compile(literal, re.MULTILINE | re.DOTALL)
             m = r.search(got, pos)
 
             if not m:
+                self._partial_expected_replaced = got[:pos] + expected_str[at:]
                 return False
 
             pos = m.end()
 
+        self._partial_expected_replaced = got
         return True
 
+class RegexChecker(object):
+    def __init__(self, verbosity, **unused):
+        self.verbosity = verbosity
 
-    def _check_advanced_expected(self, example, got, flags):
+    def check_output(self, example, got, flags):
+        self._partial_captures = self._partial_expected_replaced = None
+
         r = re.compile(''.join(example.expected.regexs), re.MULTILINE | re.DOTALL)
-        return r.match(got) is not None
+        m = r.match(got)
 
-    def output_difference(self, example, got, flags, use_colors):
-        r'''
-        Return a string with the differences between the example's expected
-        output and the found or got.
-
-        Depending of the flags the diff can be returned differently.
-            >>> from byexample.checker import Checker
-            >>> output_difference = Checker(verbosity=0).output_difference
-
-            >>> expected = 'one\ntwo\nthree\nfour'
-            >>> got      = 'zero\none\ntree\nfour'
-
-            >>> flags = {'enhance_diff': False, 'diff': 'none'}
-            >>> print(output_difference(expected, got, flags, False))
-            Expected:
-            one
-            two
-            three
-            four
-            Got:
-            zero
-            one
-            tree
-            four
-
-            >>> flags['diff'] = 'unified'
-            >>> print(output_difference(expected, got, flags, False))
-            Differences:
-            @@ -1,4 +1,4 @@
-            +zero
-             one
-            -two
-            -three
-            +tree
-             four
-
-            >>> flags['diff'] = 'ndiff'
-            >>> print(output_difference(expected, got, flags, False))
-            Differences:
-            + zero
-              one
-            - two
-            - three
-            ?  -
-            <blankline>
-            + tree
-              four
-
-            >>> flags['diff'] = 'context'
-            >>> print(output_difference(expected, got, flags, False))
-            Differences:
-            *** 1,4 ****
-              one
-            ! two
-            ! three
-              four
-            --- 1,4 ----
-            + zero
-              one
-            ! tree
-              four
-
-            >>> expected = 'one\ntwo  \n\n\tthree'
-            >>> got      = 'one  \ntwo\n\n    three'
-
-            >>> flags['diff'] = 'none'
-            >>> flags['enhance_diff'] = True
-            >>> print(output_difference(expected, got, flags, False))
-            Nothing captured.
-            Notes:
-                $: trailing spaces
-                ^n: a blank line    ?: non-printable    ^t: tab
-                ^v: vertical tab   ^r: carriage return  ^f: form feed
-            Expected:
-            one
-            two$$
-            ^n
-            ^tthree
-            Got:
-            one$$
-            two
-            ^n
-                three
-
-        '''
-
-        # delete any previous diff
-        del self._diff
-
-        # the example may have *named* capture tags like <foo>
-        # if possible, we will save what we captured from the got here
-        replaced_captures = {}
-
-        # get the expected string, and if it is possible (and the
-        # user allows this), try to get the captured strings
-        if hasattr(example, 'expected'):
-            expected = example.expected.str
-
-            if flags['enhance_diff']:
-                expected, replaced_captures = self._replace_captures(
-                                                example.expected.captures,
-                                                example.expected.regexs,
-                                                example.expected.positions,
-                                                example.expected.rcounts,
-                                                expected, got)
+        if m:
+            self._partial_captures = m.groups() # TODO this is not the correct method
+            self._partial_expected_replaced = got
+            return True
 
         else:
-            expected = example # aka literal string, mostly for internal testing
+            return False
 
-        self._diff = []
-
-        # remove the last empty lines. this should improve the
-        # diff when the algorithm is none (just_print)
-        # it should be safe too because expected_regexs should have
-        # a '\n*' regex at the end to match any possible empty line
-        expected = self._remove_last_empty_lines(expected)
-        got      = self._remove_last_empty_lines(got)
-
-        if flags['enhance_diff']:
-            self._print_named_captures(replaced_captures)
-            self._write("Notes:\n%s" % self.HUMAN_EXPL)
-            expected, got = self._human(expected), self._human(got)
-
-        diff_type = flags['diff']
-
-        if diff_type != 'none':
-            self.print_diff(expected, got, diff_type, use_colors)
-        else:
-            self.just_print(expected, got, use_colors)
-
-        return ''.join(self._diff)
-
-    def _print_named_captures(self, replaced_captures):
-        if not replaced_captures:
-            pass
-
-        max_len = 36
-        def _format(k, v):
-            if k is None or v is None:
-                return ""
-
-            _mlen = max_len - len(k) + 2 # plus the : and the space
-
-            # remove any newline and replace them by a ^n
-            v = self.NLs.sub('^n', v)
-
-            v = self._human(v)
-            if len(v) > _mlen:
-                _mlen -= 5 # minus the ' ... '
-                v = v[:_mlen/2] + " ... " + v[-_mlen/2:]
-
-
-            return "%s: %s" % (k, v)
-
-        k_vs = list(replaced_captures.items())
-        if not k_vs:
-            self._write("Nothing captured.")
-            return
-
-        self._write("Captured:\n")
-
-        if len(k_vs) % 2 != 0:
-            k_vs.append((None, None)) # make the list even
-
-        for k_v1, k_v2 in zip(k_vs[::2], k_vs[1::2]):
-            left, right = _format(*k_v1), _format(*k_v2)
-
-            space_between = max(max_len - len(left), 1)
-            self._write("    %s%s%s" % (left, " " * space_between, right))
-
+    def get_partial_capture(self, example, got, flags):
+        expected = example.expected
+        return self._replace_captures(expected.captures,
+                                      expected.regexs,
+                                      expected.positions,
+                                      expected.rcounts,
+                                      expected.str,
+                                      got,
+                                      min_rcount = 6)
 
     def _replace_captures(self, captures, expected_regexs, positions, rcounts, expected, got, min_rcount=6):
         r'''
@@ -238,9 +96,9 @@ class Checker(object):
         The idea is to have the expected and the got as much similar as
         possible making further diffs easier.
 
-            >>> from byexample.checker import Checker
+            >>> from byexample.checker import RegexChecker
             >>> from functools import partial
-            >>> _replace_captures = Checker(verbosity=0)._replace_captures
+            >>> _replace_captures = RegexChecker(verbosity=0)._replace_captures
 
         We can only "safely" replace all the groups at the begin (left) of the
         string before the first difference and replace all the groups at the
@@ -472,6 +330,189 @@ class Checker(object):
                 got_left, middle_part, got_right, repr(replaced_captures), buffer_captured), self.verbosity-4)
 
         return got_left + middle_part + got_right, replaced_captures
+
+
+class Checker(object):
+    def __init__(self, verbosity, **unused):
+        self._diff = []
+        self.verbosity = verbosity
+
+    def check_output(self, example, got, flags):
+        if example.expected.advanced_captures:
+            self._checker = RegexChecker(self.verbosity)
+            return self._checker.check_output(example, got, flags)
+
+        else:
+            self._checker = LinearChecker(self.verbosity)
+            return self._checker.check_output(example, got, flags)
+
+    def output_difference(self, example, got, flags, use_colors):
+        r'''
+        Return a string with the differences between the example's expected
+        output and the found or got.
+
+        Depending of the flags the diff can be returned differently.
+            >>> from byexample.checker import Checker
+            >>> output_difference = Checker(verbosity=0).output_difference
+
+            >>> expected = 'one\ntwo\nthree\nfour'
+            >>> got      = 'zero\none\ntree\nfour'
+
+            >>> flags = {'enhance_diff': False, 'diff': 'none'}
+            >>> print(output_difference(expected, got, flags, False))
+            Expected:
+            one
+            two
+            three
+            four
+            Got:
+            zero
+            one
+            tree
+            four
+
+            >>> flags['diff'] = 'unified'
+            >>> print(output_difference(expected, got, flags, False))
+            Differences:
+            @@ -1,4 +1,4 @@
+            +zero
+             one
+            -two
+            -three
+            +tree
+             four
+
+            >>> flags['diff'] = 'ndiff'
+            >>> print(output_difference(expected, got, flags, False))
+            Differences:
+            + zero
+              one
+            - two
+            - three
+            ?  -
+            <blankline>
+            + tree
+              four
+
+            >>> flags['diff'] = 'context'
+            >>> print(output_difference(expected, got, flags, False))
+            Differences:
+            *** 1,4 ****
+              one
+            ! two
+            ! three
+              four
+            --- 1,4 ----
+            + zero
+              one
+            ! tree
+              four
+
+            >>> expected = 'one\ntwo  \n\n\tthree'
+            >>> got      = 'one  \ntwo\n\n    three'
+
+            >>> flags['diff'] = 'none'
+            >>> flags['enhance_diff'] = True
+            >>> print(output_difference(expected, got, flags, False))
+            Nothing captured.
+            Notes:
+                $: trailing spaces
+                ^n: a blank line    ?: non-printable    ^t: tab
+                ^v: vertical tab   ^r: carriage return  ^f: form feed
+            Expected:
+            one
+            two$$
+            ^n
+            ^tthree
+            Got:
+            one$$
+            two
+            ^n
+                three
+
+        '''
+
+        # delete any previous diff
+        del self._diff
+
+        # the example may have *named* capture tags like <foo>
+        # if possible, we will save what we captured from the got here
+        replaced_captures = {}
+
+        # get the expected string, and if it is possible (and the
+        # user allows this), try to get the captured strings
+        if hasattr(example, 'expected'):
+            expected = example.expected.str
+
+            if flags['enhance_diff']:
+                expected, replaced_captures = self._checker.get_partial_capture(
+                                                example, got, flags)
+
+        else:
+            expected = example # aka literal string, mostly for internal testing
+
+        self._diff = []
+
+        # remove the last empty lines. this should improve the
+        # diff when the algorithm is none (just_print)
+        # it should be safe too because expected_regexs should have
+        # a '\n*' regex at the end to match any possible empty line
+        expected = self._remove_last_empty_lines(expected)
+        got      = self._remove_last_empty_lines(got)
+
+        if flags['enhance_diff']:
+            self._print_named_captures(replaced_captures)
+            self._write("Notes:\n%s" % self.HUMAN_EXPL)
+            expected, got = self._human(expected), self._human(got)
+
+        diff_type = flags['diff']
+
+        if diff_type != 'none':
+            self.print_diff(expected, got, diff_type, use_colors)
+        else:
+            self.just_print(expected, got, use_colors)
+
+        return ''.join(self._diff)
+
+    def _print_named_captures(self, replaced_captures):
+        if not replaced_captures:
+            pass
+
+        max_len = 36
+        def _format(k, v):
+            if k is None or v is None:
+                return ""
+
+            _mlen = max_len - len(k) + 2 # plus the : and the space
+
+            # remove any newline and replace them by a ^n
+            v = self.NLs.sub('^n', v)
+
+            v = self._human(v)
+            if len(v) > _mlen:
+                _mlen -= 5 # minus the ' ... '
+                v = v[:_mlen/2] + " ... " + v[-_mlen/2:]
+
+
+            return "%s: %s" % (k, v)
+
+        k_vs = list(replaced_captures.items())
+        if not k_vs:
+            self._write("Nothing captured.")
+            return
+
+        self._write("Captured:\n")
+
+        if len(k_vs) % 2 != 0:
+            k_vs.append((None, None)) # make the list even
+
+        for k_v1, k_v2 in zip(k_vs[::2], k_vs[1::2]):
+            left, right = _format(*k_v1), _format(*k_v2)
+
+            space_between = max(max_len - len(left), 1)
+            self._write("    %s%s%s" % (left, " " * space_between, right))
+
+
 
     def _write(self, s, end_with_newline=True):
         self._diff.append(s)
