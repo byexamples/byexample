@@ -5,7 +5,7 @@ class LinearChecker(object):
     def __init__(self, verbosity, **unused):
         self.verbosity = verbosity
 
-    def check_output(self, example, got, flags):
+    def check_got_output(self, example, got, flags):
         self._partial_expected_replaced = None
 
         regexs = example.expected.regexs
@@ -64,7 +64,7 @@ class RegexChecker(object):
     def __init__(self, verbosity, **unused):
         self.verbosity = verbosity
 
-    def check_output(self, example, got, flags):
+    def check_got_output(self, example, got, flags):
         self._partial_captures = self._partial_expected_replaced = None
 
         r = re.compile(''.join(example.expected.regexs), re.MULTILINE | re.DOTALL)
@@ -337,14 +337,14 @@ class Checker(object):
         self._diff = []
         self.verbosity = verbosity
 
-    def check_output(self, example, got, flags):
+    def check_got_output(self, example, got, flags):
         if example.expected.advanced_captures:
             self._checker = RegexChecker(self.verbosity)
-            return self._checker.check_output(example, got, flags)
+            return self._checker.check_got_output(example, got, flags)
 
         else:
             self._checker = LinearChecker(self.verbosity)
-            return self._checker.check_output(example, got, flags)
+            return self._checker.check_got_output(example, got, flags)
 
     def output_difference(self, example, got, flags, use_colors):
         r'''

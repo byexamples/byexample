@@ -75,7 +75,7 @@ class FileExecutor(object):
                     # however, a Timeout is always a fail
                     force_pass = options['pass']
                     if not timedout and \
-                            (force_pass or self.checker.check_output(example, got, options)):
+                            (force_pass or self.checker.check_got_output(example, got, options)):
                         self.concerns.success(example, got, self.checker)
                     else:
                         self.concerns.failure(example, got, self.checker)
