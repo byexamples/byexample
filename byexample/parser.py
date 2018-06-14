@@ -152,11 +152,12 @@ class ExampleParser(object):
 
         snippet, expected = self.process_snippet_and_expected(snippet, expected)
 
+        are_advanced_captures_enabled = False
         expected_regexs, positions, rcounts, captures, capture_idxs, adv = self.expected_as_regexs(
                                                 expected,
                                                 options['norm_ws'],
                                                 options['capture'],
-                                                options['XXXXX'])
+                                                are_advanced_captures_enabled)
 
         expected = Expected(
                           # the output expected
@@ -413,7 +414,7 @@ class ExampleParser(object):
         return exprs, charnos, rcounts
 
 
-    def expected_as_regexs(self, expected, normalize_whitespace, capture, XXXXX):
+    def expected_as_regexs(self, expected, normalize_whitespace, capture, are_advanced_captures_enabled):
         r'''
         From the expected string create a list of regular expressions that
         joined with the flags re.MULTILINE | re.DOTALL, matches
@@ -547,8 +548,9 @@ class ExampleParser(object):
             >>> m.match('a<foo>b<bar>c') is None # the strings <foo> <bar> are literals
             False
 
-         - if the XXXXX is True when a named capture is repeated we assume that
-           all but first must match the value of the first captured:
+         - if the are_advanced_captures_enabled is True when a named capture is
+           repeated we assume that all but first must match the value of
+           the first captured:
 
             >>> r, p, _, _, _, adv = _as_regexs('a<foo>b<foo>c', False, True, True)
             >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
@@ -712,7 +714,7 @@ class ExampleParser(object):
 
                 else:
                     if name in names_seen:
-                        if XXXXX:
+                        if are_advanced_captures_enabled:
                             # matched the same string that a previous
                             # group matched with that name
                             regex = r"(?P=%s)" % name
