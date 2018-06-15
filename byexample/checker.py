@@ -92,13 +92,13 @@ class _LinearChecker(object):
         self.check_good = False
 
         regexs = example.expected.regexs
-        captures_by_idx = example.expected.captures_by_idx
+        tags_by_idx = example.expected.tags_by_idx
         expected_str = example.expected.str
         charnos = example.expected.charnos
 
         self._partial_expected_replaced = expected_str
         self._partial_captured = {}
-        self.check_good = self._linear_matching(regexs, captures_by_idx, charnos, expected_str, got)
+        self.check_good = self._linear_matching(regexs, tags_by_idx, charnos, expected_str, got)
         return self.check_good
 
     def get_captures(self, example, got, flags):
@@ -107,7 +107,7 @@ class _LinearChecker(object):
         else:
             return self._partial_expected_replaced, self._partial_captured
 
-    def _linear_matching(self, regexs, captures_by_idx, charnos, expected_str, got):
+    def _linear_matching(self, regexs, tags_by_idx, charnos, expected_str, got):
         ''' Assume that all (if any) example's capture tags are regex
             of the form '.*'.
             If that's true, then the example will pass if all the literal
@@ -128,12 +128,12 @@ class _LinearChecker(object):
 
         prev = 0
         literals = []
-        capture_idxs = list(sorted(captures_by_idx.keys()))
+        capture_idxs = list(sorted(tags_by_idx.keys()))
         for capture_idx in capture_idxs + [len(regexs)]:
             literal = ''.join(regexs[prev:capture_idx])
             at = charnos[prev]
             if literal:
-                literals.append((at, literal, captures_by_idx.get(prev-1)))
+                literals.append((at, literal, tags_by_idx.get(prev-1)))
 
             prev = capture_idx + 1
 

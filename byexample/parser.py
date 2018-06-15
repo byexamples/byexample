@@ -14,7 +14,7 @@ Expected = collections.namedtuple('Expected', ['str',
                                                'regexs',
                                                'charnos',
                                                'rcounts',
-                                               'captures_by_idx',
+                                               'tags_by_idx',
                                                'advanced_captures',
                                                ])
 
@@ -152,7 +152,7 @@ class ExampleParser(object):
         snippet, expected = self.process_snippet_and_expected(snippet, expected)
 
         are_advanced_captures_enabled = False
-        expected_regexs, charnos, rcounts, captures_by_idx, adv = self.expected_as_regexs(
+        expected_regexs, charnos, rcounts, tags_by_idx, adv = self.expected_as_regexs(
                                                 expected,
                                                 options['norm_ws'],
                                                 options['capture'],
@@ -173,8 +173,12 @@ class ExampleParser(object):
                           # the 'real count' of literals
                           rcounts=rcounts,
 
-                          # what regexs are product of the capture tags
-                          captures_by_idx=captures_by_idx,
+                          # all the regexs that are not literal (tags) indexed
+                          # by their position in the regex list.
+                          # we don't save the regex (use 'regexs' for that),
+                          # instead save the name of the tag or None if it's
+                          # unnamed
+                          tags_by_idx=tags_by_idx,
 
                           # are we using advanced captures?
                           advanced_captures=adv
@@ -424,7 +428,8 @@ class ExampleParser(object):
               string from where it was created each regex
             - a list of rcounts (see below)
             - a dict of non-literal regexs names (capturing and non-capturing)
-              indexed by position. For non-capturing the name will be None.
+              also know as "tags" indexed by position.
+              For non-capturing the name will be None.
             - a flag saying if advanced captures are being used (currently
               advanced means repeated named capture tags like 'aa<foo>bb<foo>')
 
@@ -435,7 +440,7 @@ class ExampleParser(object):
             >>> _as_regexs = parser.expected_as_regexs
 
             >>> expected = 'a<foo>b<bar>c'
-            >>> regexs, charnos, rcounts, captures_by_idx, adv = _as_regexs(expected, False, True, True)
+            >>> regexs, charnos, rcounts, tags_by_idx, adv = _as_regexs(expected, False, True, True)
 
         We return the regexs
 
@@ -463,13 +468,14 @@ class ExampleParser(object):
 
         We can see the names of the capturing regexs (named capture tags)
 
-            >>> [n for n in sorted(captures_by_idx.values()) if n != None]
+            >>> [n for n in sorted(tags_by_idx.values()) if n != None]
             ['bar', 'foo']
 
-        And we can see the positions of the regexs in the regex list
-        of all the capture tags (named and unamed)
+        And we can see the positions of the tags in the regex list
+        of all the non-literal regexs or "tags". The value of each
+        item is the name of tag or None if it is unnamed
 
-            >>> captures_by_idx
+            >>> tags_by_idx
             {2: 'foo', 4: 'bar'}
 
         No repeated named tags so in our currently definition of advanced capture
@@ -478,18 +484,18 @@ class ExampleParser(object):
             >>> adv
             False
 
-        An example with non-capturing regex could be:
+        An example with non-capturing regex (unamed tag) could be:
 
             >>> expected = 'a<...>b<bar>c'
-            >>> regexs, _, _, captures_by_idx, _ = _as_regexs(expected, False, True, True)
+            >>> regexs, _, _, tags_by_idx, _ = _as_regexs(expected, False, True, True)
 
             >>> regexs
             ['\\A', 'a', '(?:.*?)', 'b', '(?P<bar>.*?)', 'c', '\\n*\\Z']
 
-            >>> [n for n in sorted(captures_by_idx.values()) if n != None]
+            >>> [n for n in sorted(tags_by_idx.values()) if n != None]
             ['bar']
 
-            >>> captures_by_idx
+            >>> tags_by_idx
             {2: None, 4: 'bar'}
 
         Multi line strings will yield splitted regexs: one regex per line.
@@ -551,7 +557,7 @@ class ExampleParser(object):
             >>> i
             {2: 'foo', 4: 'bar'}
 
-           Note that if two or more capture tags are consecutive,
+           Note that if two or more tags are consecutive,
            we will raise an exception as this is ambiguous:
 
             >>> # but here? foo is 'x' and bar 'xyyy'?, '' and 'xxyyy', or ....
@@ -700,7 +706,7 @@ class ExampleParser(object):
 
         charno = 0
         names_seen = set()
-        captures_by_idx = {}
+        tags_by_idx = {}
 
         regexs = []
         charnos = []
@@ -782,7 +788,7 @@ class ExampleParser(object):
                         regex = regex + \
                                 self.do_not_end_with_newline_regex_str()
 
-                captures_by_idx[len(regexs)] = name
+                tags_by_idx[len(regexs)] = name
 
                 regexs.append(regex)
                 charnos.append(charno)
@@ -808,7 +814,7 @@ class ExampleParser(object):
         charnos.append(charno)
         rcounts.append(0)
 
-        return regexs, charnos, rcounts, captures_by_idx, are_advanced_captures_used
+        return regexs, charnos, rcounts, tags_by_idx, are_advanced_captures_used
 
     def get_extended_option_parser(self, parent_parser, **kw):
         parents = [parent_parser] if parent_parser else []
