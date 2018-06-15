@@ -1,7 +1,89 @@
 from .common import log, colored
 import string, re, difflib
 
-class LinearChecker(object):
+class _LinearChecker(object):
+    ''' Assume that all the example's capture tags are of the form .*
+        Then we can just apply a quicker and more efficient algorithm
+        to detect if example's expected matches or not the got string.
+
+        >>> from byexample.parser import ExampleParser
+        >>> from byexample.options import Options
+        >>> parser = ExampleParser(0, 'utf8', None, Options()); parser.language = 'python'
+        >>> parser.extract_options = lambda x: {'norm_ws': False, 'capture': True}
+
+        >>> build_example = parser.build_example
+
+        Consider the following example with a named capture in the expected:
+
+        >>> ex = build_example('f()', 'aa<foo>bb<bar>cc', 0, None, None, (0, 1, 'file'))
+
+        If <foo> is .* we can split the expected string into two: aa and bb; and
+        check each of them in order from left to right without overlapping:
+
+        >>> from byexample.checker import _LinearChecker
+        >>> chk = _LinearChecker(0)
+
+        >>> got = 'aaXYZbbcc'
+        >>> chk.check_got_output(ex, got, 0)
+        True
+
+        Once we performed the check we can query the captured strings:
+
+        >>> whole, captures = chk.get_captures(ex, got, 0)
+
+        The whole string is the expected string with all of its capture tags
+        replaced by the captured texts from the got string.
+
+        Because the check passed we should have a copy of the got:
+
+        >>> whole == got
+        True
+
+        The captures is a dictionary with the strings captures by name:
+
+        >>> captures['foo'], captures['bar']
+        ('XYZ', '')
+
+        The things gets more interesting when the example fails.
+        In this case the values returned by get_captures will be incomplete.
+
+        >>> got = 'aaXYZccbb'
+        >>> chk.check_got_output(ex, got, 0)
+        False
+
+        >>> whole, captures = chk.get_captures(ex, got, 0)
+
+        In this case the whole string will have some tags replaced but others no
+        in a best effort manner.
+
+        >>> whole
+        'aaXYZccbb<bar>cc'
+
+        And the captures, obviously, will be incomplete too
+
+        >>> captures['foo'], captures.get('bar')
+        ('XYZcc', None)
+
+        The algorithm works perfectly fine with unnamed captures
+
+        >>> ex = build_example('f()', 'aa<...>bb<...>cc', 0, None, None, (0, 1, 'file'))
+
+        >>> got = 'aaXYZbbcc'
+        >>> chk.check_got_output(ex, got, 0)
+        True
+
+        >>> whole, captures = chk.get_captures(ex, got, 0)
+
+        >>> whole == got
+        True
+
+        But nothing is captured of course (we keep the captured string of the
+        named capture tags only)
+
+        >>> captures
+        {}
+
+        '''
     def __init__(self, verbosity, **unused):
         self.verbosity = verbosity
         self.check_good = False
@@ -10,21 +92,22 @@ class LinearChecker(object):
         self.check_good = False
 
         regexs = example.expected.regexs
-        capture_idxs = example.expected.capture_idxs
+        captures_by_idx = example.expected.captures_by_idx
         expected_str = example.expected.str
         positions = example.expected.positions
 
         self._partial_expected_replaced = expected_str
-        self.check_good = self._linear_matching(regexs, capture_idxs, positions, expected_str, got)
+        self._partial_captured = {}
+        self.check_good = self._linear_matching(regexs, captures_by_idx, positions, expected_str, got)
         return self.check_good
 
     def get_captures(self, example, got, flags):
         if self.check_good:
-            return got, {} # TODO
+            return got, self._partial_captured
         else:
-            return self._partial_expected_replaced, {} # TODO
+            return self._partial_expected_replaced, self._partial_captured
 
-    def _linear_matching(self, regexs, capture_idxs, positions, expected_str, got):
+    def _linear_matching(self, regexs, captures_by_idx, positions, expected_str, got):
         ''' Assume that all (if any) example's capture tags are regex
             of the form '.*'.
             If that's true, then the example will pass if all the literal
@@ -45,15 +128,17 @@ class LinearChecker(object):
 
         prev = 0
         literals = []
+        capture_idxs = list(sorted(captures_by_idx.keys()))
         for capture_idx in capture_idxs + [len(regexs)]:
             literal = ''.join(regexs[prev:capture_idx])
             at = positions[prev]
-            prev = capture_idx + 1
             if literal:
-                literals.append((at, literal))
+                literals.append((at, literal, captures_by_idx.get(prev-1)))
+
+            prev = capture_idx + 1
 
         pos = 0
-        for at, literal in literals:
+        for at, literal, prev_name in literals:
             r = re.compile(literal, re.MULTILINE | re.DOTALL)
             m = r.search(got, pos)
 
@@ -61,12 +146,16 @@ class LinearChecker(object):
                 self._partial_expected_replaced = got[:pos] + expected_str[at:]
                 return False
 
+            if prev_name is not None:
+                captured = got[pos:m.start()]
+                self._partial_captured[prev_name] = captured
+
             pos = m.end()
 
         self._partial_expected_replaced = got
         return True
 
-class RegexChecker(object):
+class _RegexChecker(object):
     def __init__(self, verbosity, **unused):
         self.verbosity = verbosity
         self.check_good = False
@@ -79,7 +168,7 @@ class RegexChecker(object):
         m = r.match(got)
 
         if m:
-            self._captures_from_good_check = {} # TODO m.groups() is not the correct method
+            self._captures_from_good_check = m.groupdict()
             self.check_good = True
             return True
 
@@ -109,9 +198,9 @@ class RegexChecker(object):
         The idea is to have the expected and the got as much similar as
         possible making further diffs easier.
 
-            >>> from byexample.checker import RegexChecker
+            >>> from byexample.checker import _RegexChecker
             >>> from functools import partial
-            >>> _replace_captures = RegexChecker(verbosity=0)._get_all_captures_as_possible
+            >>> _replace_captures = _RegexChecker(verbosity=0)._get_all_captures_as_possible
 
         We can only "safely" replace all the groups at the begin (left) of the
         string before the first difference and replace all the groups at the
@@ -352,11 +441,11 @@ class Checker(object):
 
     def check_got_output(self, example, got, flags):
         if example.expected.advanced_captures:
-            self._checker = RegexChecker(self.verbosity)
+            self._checker = _RegexChecker(self.verbosity)
             return self._checker.check_got_output(example, got, flags)
 
         else:
-            self._checker = LinearChecker(self.verbosity)
+            self._checker = _LinearChecker(self.verbosity)
             return self._checker.check_got_output(example, got, flags)
 
     def output_difference(self, example, got, flags, use_colors):
