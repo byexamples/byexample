@@ -14,7 +14,6 @@ Expected = collections.namedtuple('Expected', ['str',
                                                'regexs',
                                                'charnos',
                                                'rcounts',
-                                               'captures',
                                                'captures_by_idx',
                                                'advanced_captures',
                                                ])
@@ -153,7 +152,7 @@ class ExampleParser(object):
         snippet, expected = self.process_snippet_and_expected(snippet, expected)
 
         are_advanced_captures_enabled = False
-        expected_regexs, charnos, rcounts, captures, captures_by_idx, adv = self.expected_as_regexs(
+        expected_regexs, charnos, rcounts, captures_by_idx, adv = self.expected_as_regexs(
                                                 expected,
                                                 options['norm_ws'],
                                                 options['capture'],
@@ -173,9 +172,6 @@ class ExampleParser(object):
 
                           # the 'real count' of literals
                           rcounts=rcounts,
-
-                          # the names of the capture tags in the expected regex
-                          captures=captures,
 
                           # what regexs are product of the capture tags
                           captures_by_idx=captures_by_idx,
@@ -422,12 +418,15 @@ class ExampleParser(object):
         joined with the flags re.MULTILINE | re.DOTALL, matches
         that string.
 
-        This method returns six things: a list of regexs, a list with the
-        position in the expected string from where it was created the regex,
-        a list of rcounts, a list of named captures a dict of capture tag
-        (named and unamed) indexed by position,
-        and a flag saying if advanced captures are being used (currently
-        advanced means repeated named capture tags like 'aa<foo>bb<foo>')
+        This method returns five things:
+            - a list of regexs: for literals, captures, wildcards, ...
+            - a list with the character numbers, the positions in the expected
+              string from where it was created each regex
+            - a list of rcounts (see below)
+            - a dict of non-literal regexs names (capturing and non-capturing)
+              indexed by position. For non-capturing the name will be None.
+            - a flag saying if advanced captures are being used (currently
+              advanced means repeated named capture tags like 'aa<foo>bb<foo>')
 
             >>> from byexample.parser import ExampleParser
             >>> import re
@@ -436,7 +435,7 @@ class ExampleParser(object):
             >>> _as_regexs = parser.expected_as_regexs
 
             >>> expected = 'a<foo>b<bar>c'
-            >>> regexs, charnos, rcounts, names, captures_by_idx, adv = _as_regexs(expected, False, True, True)
+            >>> regexs, charnos, rcounts, captures_by_idx, adv = _as_regexs(expected, False, True, True)
 
         We return the regexs
 
@@ -462,7 +461,7 @@ class ExampleParser(object):
         if not, it is the len(line) but counting the secuence of whitespaces as
         +1.
 
-        We can see the names of the named capture tags
+        We can see the names of the capturing regexs (named capture tags)
 
             >>> [n for n in sorted(captures_by_idx.values()) if n != None]
             ['bar', 'foo']
@@ -479,10 +478,10 @@ class ExampleParser(object):
             >>> adv
             False
 
-        An example of unnamed capture tags could be:
+        An example with non-capturing regex could be:
 
             >>> expected = 'a<...>b<bar>c'
-            >>> regexs, _, _, names, captures_by_idx, _ = _as_regexs(expected, False, True, True)
+            >>> regexs, _, _, captures_by_idx, _ = _as_regexs(expected, False, True, True)
 
             >>> regexs
             ['\\A', 'a', '(?:.*?)', 'b', '(?P<bar>.*?)', 'c', '\\n*\\Z']
@@ -498,7 +497,7 @@ class ExampleParser(object):
         (match the whole regex matching one regex at time)
 
             >>> expected = 'a\n<foo>bcd\nefg<bar>hi'
-            >>> regexs, _, rcounts, _, _, _ = _as_regexs(expected, False, True, True)
+            >>> regexs, _, rcounts, _, _ = _as_regexs(expected, False, True, True)
 
             >>> regexs
             ['\\A',
@@ -524,7 +523,7 @@ class ExampleParser(object):
            the spaces in the expected, the regexp will ignore that.
            However we preserve the new line as 'regex's boundaries'
 
-            >>> r, p, c, _, _, _ = _as_regexs('a  \n   b  \t\vc', True, True, True)
+            >>> r, p, c, _, _ = _as_regexs('a  \n   b  \t\vc', True, True, True)
 
             >>> r
             ['\\A', 'a\\s+', 'b\\s+c', '\\s*\\Z']
@@ -541,12 +540,12 @@ class ExampleParser(object):
 
          - if capture is true, replace the literals capture tags by regexs.
 
-            >>> r, p, _, n, i, _ = _as_regexs('a<foo>b<bar>c', False, True, True)
+            >>> r, p, _, i, _ = _as_regexs('a<foo>b<bar>c', False, True, True)
             >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
             >>> m.match('axxbyyyc').groups()
             ('xx', 'yyy')
 
-            >>> sorted(n)
+            >>> [n for n in sorted(i.values()) if n != None]
             ['bar', 'foo']
 
             >>> i
@@ -563,7 +562,7 @@ class ExampleParser(object):
 
          - if the capture flag is False, all the <...> tags are taken literally.
 
-            >>> r, p, _, n, i, _ = _as_regexs('a<foo>b<bar>c', False, False, True)
+            >>> r, p, _, i, _ = _as_regexs('a<foo>b<bar>c', False, False, True)
             >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
             >>> m.match('axxbyyyc') is None # don't matched as <foo> is not xx
             True
@@ -571,7 +570,7 @@ class ExampleParser(object):
             >>> m.match('a<foo>b<bar>c') is None # the strings <foo> <bar> are literals
             False
 
-            >>> sorted(n)
+            >>> [n for n in sorted(i.values()) if n != None]
             []
 
             >>> i
@@ -581,7 +580,7 @@ class ExampleParser(object):
            repeated we assume that all but first must match the value of
            the first captured:
 
-            >>> r, p, _, _, _, adv = _as_regexs('a<foo>b<foo>c', False, True, True)
+            >>> r, p, _, _, adv = _as_regexs('a<foo>b<foo>c', False, True, True)
             >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
             >>> m.match('axxbyyyc') is None # don't matched as <foo>=xx is not yy
             True
@@ -607,7 +606,7 @@ class ExampleParser(object):
         the begin or end of the match, always
 
             >>> expected = 'a<foo>b'
-            >>> regexs, _, _, _, _, _ = _as_regexs(expected, False, True, True)
+            >>> regexs, _, _, _, _ = _as_regexs(expected, False, True, True)
 
             >>> regexs
             ['\\A', 'a', '(?P<foo>.*?)', 'b', '\\n*\\Z']
@@ -623,7 +622,7 @@ class ExampleParser(object):
         normalize_whitespace was false
 
             >>> expected = 'a<foo>b'
-            >>> regexs, _, _, _, _, _ = _as_regexs(expected, True, True, True)
+            >>> regexs, _, _, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', 'a', '(?P<foo>.*?)', 'b', '\\s*\\Z']
@@ -635,7 +634,7 @@ class ExampleParser(object):
         But if we add some whitespace
 
             >>> expected = 'a <foo>b'
-            >>> regexs, _, _, _, _, _ = _as_regexs(expected, True, True, True)
+            >>> regexs, _, _, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', 'a\\s+', '(?!\\s)(?P<foo>.*?)', 'b', '\\s*\\Z']
@@ -645,7 +644,7 @@ class ExampleParser(object):
             ('123\n\n ',)
 
             >>> expected = 'a<foo> b'
-            >>> regexs, _, _, _, _, _ = _as_regexs(expected, True, True, True)
+            >>> regexs, _, _, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', 'a', '(?P<foo>.*?)(?<!\\s)', '\\s+b', '\\s*\\Z']
@@ -658,7 +657,7 @@ class ExampleParser(object):
         just add a whitespace around it
 
             >>> expected = 'a\n<foo>\tb'
-            >>> regexs, _, _, _, _, _ = _as_regexs(expected, True, True, True)
+            >>> regexs, _, _, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', 'a\\s+', '(?!\\s)(?P<foo>.*?)(?<!\\s)', '\\s+b', '\\s*\\Z']
@@ -671,7 +670,7 @@ class ExampleParser(object):
         True, any trailing whitespace.
 
             >>> expected = '<foo>\n\n\n'
-            >>> regexs, _, _, _, _, _ = _as_regexs(expected, False, True, True)
+            >>> regexs, _, _, _, _ = _as_regexs(expected, False, True, True)
 
             >>> regexs
             ['\\A', '(?P<foo>.*?)(?<!\\n)', '\\n*\\Z']
@@ -681,7 +680,7 @@ class ExampleParser(object):
             ('   123  ',)
 
             >>> expected = '<foo>  \n\n'
-            >>> regexs, _, _, _, _, _ = _as_regexs(expected, True, True, True)
+            >>> regexs, _, _, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', '(?P<foo>.*?)(?<!\\s)', '\\s*\\Z']
@@ -700,7 +699,7 @@ class ExampleParser(object):
         expected = trailing_re.sub('', expected)
 
         charno = 0
-        names_seen = []
+        names_seen = set()
         captures_by_idx = {}
 
         regexs = []
@@ -760,7 +759,7 @@ class ExampleParser(object):
 
                     else:
                         # first seen, capture anything (non-greedy)
-                        names_seen.append(name)
+                        names_seen.add(name)
                         regex = self.non_capture_anything_regex_str(name)
 
                 # match 'anything' but do not match any leading
@@ -809,7 +808,7 @@ class ExampleParser(object):
         charnos.append(charno)
         rcounts.append(0)
 
-        return regexs, charnos, rcounts, names_seen, captures_by_idx, are_advanced_captures_used
+        return regexs, charnos, rcounts, captures_by_idx, are_advanced_captures_used
 
     def get_extended_option_parser(self, parent_parser, **kw):
         parents = [parent_parser] if parent_parser else []
