@@ -12,7 +12,7 @@ Example = collections.namedtuple('Example', ['runner',
 
 Expected = collections.namedtuple('Expected', ['str',
                                                'regexs',
-                                               'positions',
+                                               'charnos',
                                                'rcounts',
                                                'captures',
                                                'captures_by_idx',
@@ -153,7 +153,7 @@ class ExampleParser(object):
         snippet, expected = self.process_snippet_and_expected(snippet, expected)
 
         are_advanced_captures_enabled = False
-        expected_regexs, positions, rcounts, captures, captures_by_idx, adv = self.expected_as_regexs(
+        expected_regexs, charnos, rcounts, captures, captures_by_idx, adv = self.expected_as_regexs(
                                                 expected,
                                                 options['norm_ws'],
                                                 options['capture'],
@@ -169,7 +169,7 @@ class ExampleParser(object):
                           regexs=expected_regexs,
 
                           # where each regex comes from
-                          positions=positions,
+                          charnos=charnos,
 
                           # the 'real count' of literals
                           rcounts=rcounts,
@@ -436,7 +436,7 @@ class ExampleParser(object):
             >>> _as_regexs = parser.expected_as_regexs
 
             >>> expected = 'a<foo>b<bar>c'
-            >>> regexs, positions, rcounts, names, captures_by_idx, adv = _as_regexs(expected, False, True, True)
+            >>> regexs, charnos, rcounts, names, captures_by_idx, adv = _as_regexs(expected, False, True, True)
 
         We return the regexs
 
@@ -447,13 +447,13 @@ class ExampleParser(object):
             >>> m.match('axxbyyyc').groups()
             ('xx', 'yyy')
 
-        And we can see the positions in the original expected string
-        of each regex
+        And we can see the charnos or the position in the original expected
+        string from where each regex was built
 
-            >>> positions
+            >>> charnos
             [0, 0, 1, 6, 7, 12, 13]
 
-            >>> len(expected) == positions[-1]
+            >>> len(expected) == charnos[-1]
             True
 
         And the rcount of each regex. A rcount or 'real count' count how many

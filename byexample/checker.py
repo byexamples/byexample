@@ -94,11 +94,11 @@ class _LinearChecker(object):
         regexs = example.expected.regexs
         captures_by_idx = example.expected.captures_by_idx
         expected_str = example.expected.str
-        positions = example.expected.positions
+        charnos = example.expected.charnos
 
         self._partial_expected_replaced = expected_str
         self._partial_captured = {}
-        self.check_good = self._linear_matching(regexs, captures_by_idx, positions, expected_str, got)
+        self.check_good = self._linear_matching(regexs, captures_by_idx, charnos, expected_str, got)
         return self.check_good
 
     def get_captures(self, example, got, flags):
@@ -107,7 +107,7 @@ class _LinearChecker(object):
         else:
             return self._partial_expected_replaced, self._partial_captured
 
-    def _linear_matching(self, regexs, captures_by_idx, positions, expected_str, got):
+    def _linear_matching(self, regexs, captures_by_idx, charnos, expected_str, got):
         ''' Assume that all (if any) example's capture tags are regex
             of the form '.*'.
             If that's true, then the example will pass if all the literal
@@ -131,7 +131,7 @@ class _LinearChecker(object):
         capture_idxs = list(sorted(captures_by_idx.keys()))
         for capture_idx in capture_idxs + [len(regexs)]:
             literal = ''.join(regexs[prev:capture_idx])
-            at = positions[prev]
+            at = charnos[prev]
             if literal:
                 literals.append((at, literal, captures_by_idx.get(prev-1)))
 
@@ -184,13 +184,13 @@ class _RegexChecker(object):
             expected = example.expected
             return self._get_all_captures_as_possible(expected.captures,
                                           expected.regexs,
-                                          expected.positions,
+                                          expected.charnos,
                                           expected.rcounts,
                                           expected.str,
                                           got,
                                           min_rcount = 6)
 
-    def _get_all_captures_as_possible(self, captures, expected_regexs, positions, rcounts, expected, got, min_rcount=6):
+    def _get_all_captures_as_possible(self, captures, expected_regexs, charnos, rcounts, expected, got, min_rcount=6):
         r'''
         Try to replace all the capture groups in the expected by
         the strings found in got.
@@ -211,16 +211,16 @@ class _RegexChecker(object):
 
             >>> expected_regexs = ['\A', 'aa', '(.*?)', 'bb', '(.*?)', 'ddd',
             ...                    '(.*?)', 'eee', '(.*?)', 'cc', r'\n*\Z']
-            >>> positions = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32]
+            >>> charnos = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32]
             >>> rcounts   = [0, 2, 0, 2, 0, 3, 0, 3, 0, 2, 0]
 
-            >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=1)
+            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=1)
 
             >>> s                               # byexample: -capture
             'aaAAbb<...>ddd<...>eeeCCcc'
 
             >>> got = r'aaAAbBBxxxddeeeCCcc'
-            >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=1)
+            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=1)
 
             >>> s                               # byexample: -capture
             'aa<...>bb<...>ddd<...>eeeCCcc'
@@ -237,18 +237,18 @@ class _RegexChecker(object):
         A small value of min_rcount means that we don't need much literals after
         and before the capture.
 
-            >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=1)
+            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=1)
             >>> s                               # byexample: -capture
             'aaAAbb<...>ddd<...>eeeCCcc'
 
-            >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=2)
+            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=2)
             >>> s                               # byexample: -capture
             'aaAAbb<...>ddd<...>eeeCCcc'
 
         Notice how a value of 3 changes the result because the 'bb' literal,
         after the capture has only a rcount of 2
 
-            >>> s, c = _replace_captures([], expected_regexs, positions, rcounts, expected, got, min_rcount=3)
+            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=3)
             >>> s                               # byexample: -capture
             'aa<...>bb<...>ddd<...>eeeCCcc'
 
@@ -260,11 +260,11 @@ class _RegexChecker(object):
             >>> expected_regexs = ['\A', 'aa', '(?P<foo>.*?)', 'bb',
             ...                     '(?P<bar>.*?)', 'ddd', '(?P<baz>.*?)',
             ...                     'eee', '(?P<zaz>.*?)', 'cc', r'\n*\Z']
-            >>> positions = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32]
+            >>> charnos = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32]
             >>> rcounts   = [0, 2, 0, 2, 0, 3, 0, 3, 0, 2, 0]
 
             >>> s, c = _replace_captures(['foo', 'bar', 'baz', 'zaz'],
-            ...                          expected_regexs, positions, rcounts, expected, got, min_rcount=1)
+            ...                          expected_regexs, charnos, rcounts, expected, got, min_rcount=1)
             >>> s                                                       # byexample: -capture
             'aaAAbb<bar>ddd<baz>eeeCCcc'
             >>> c
@@ -287,11 +287,11 @@ class _RegexChecker(object):
             >>> expected_regexs = ['\A', 'aa', '(?P<foo>.*?)', 'bb\n',
             ...                     'cc\n', 'dd', '(?P<bar>.*?)',
             ...                     'ee', r'\n*\Z']
-            >>> positions = [0, 0, 2, 7, 10, 13, 15, 20, 22]
+            >>> charnos = [0, 0, 2, 7, 10, 13, 15, 20, 22]
             >>> rcounts   = [0, 2, 0, 3, 3, 2, 0, 2, 0]
 
             >>> s, c = _replace_captures(['foo', 'bar'], expected_regexs,
-            ...                          positions, rcounts, expected, got, min_rcount=2)
+            ...                          charnos, rcounts, expected, got, min_rcount=2)
             >>> s                                                       # byexample: -capture
             'aaAAbb\ncc\ndd<bar>ee'
             >>> c
@@ -308,7 +308,7 @@ class _RegexChecker(object):
             ...                     'ee', r'\n*\Z']
             >>> rcounts   = [0, 2, 0, 3, 3, 2, 1, 2, 0] # notice the +1
 
-            >>> s, c = _replace_captures(['foo'], expected_regexs, positions, rcounts, expected, got, min_rcount=2)
+            >>> s, c = _replace_captures(['foo'], expected_regexs, charnos, rcounts, expected, got, min_rcount=2)
             >>> s                                                       # byexample: -capture
             'aaAAbb\ncc\nddAAee'
             >>> c
@@ -320,7 +320,7 @@ class _RegexChecker(object):
         def _compile(regexs):
             return re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
 
-        assert len(regs) == len(positions) == len(rcounts)
+        assert len(regs) == len(charnos) == len(rcounts)
 
         best_left_index = 0
         best_right_index = len(regs)-1
@@ -348,7 +348,7 @@ class _RegexChecker(object):
             m = _compile(regs[:i+1]).match(got)
             if m:
                 log("Match\n% 4i: %s\n" % (
-                    positions[i], m.group(0)),
+                    charnos[i], m.group(0)),
                     self.verbosity-4)
 
                 if accum >= min_rcount:
@@ -358,7 +358,7 @@ class _RegexChecker(object):
         r = _compile(left_side)
         got_left = r.match(got).group(0)
 
-        left_ends_at = positions[best_left_index+1]
+        left_ends_at = charnos[best_left_index+1]
 
         # a 'capture anything' regex between the left and the right side
         # to hold all the rest of the string
@@ -419,7 +419,7 @@ class _RegexChecker(object):
         m = r.match(got)
         got_right = m.group(0)[m.end(buffer_tag_name):]
 
-        right_begin_at = positions[best_right_index]
+        right_begin_at = charnos[best_right_index]
 
         replaced_captures = m.groupdict()
         buffer_captured = replaced_captures.pop(buffer_tag_name)
