@@ -416,7 +416,7 @@ class ExampleParser(object):
         return exprs, charnos, rcounts
 
 
-    def expected_as_regexs(self, expected, normalize_whitespace, capture, are_advanced_captures_enabled):
+    def expected_as_regexs(self, expected, normalize_whitespace, tags_enabled, are_advanced_captures_enabled):
         r'''
         From the expected string create a list of regular expressions that
         joined with the flags re.MULTILINE | re.DOTALL, matches
@@ -515,13 +515,13 @@ class ExampleParser(object):
              'hi',
              '\\n*\\Z']
 
-        Notice also how the capture tags don't count as 'real counts' (zero).
+        Notice also how the tags don't count as 'real counts' (zero).
         The first and the last regex either.
 
             >>> rcounts
             [0, 2, 0, 4, 3, 0, 2, 0]
 
-        The normalize_whitespace and capture flags modify how the regexs
+        The normalize_whitespace and tags_enabled flags modify how the regexs
         are built:
          - if normalize_whitespace is true, replace all the consecutive
            whitespaces by a single regular expression that matches any amount
@@ -544,7 +544,7 @@ class ExampleParser(object):
             >>> c
             [0, 2, 3, 0]
 
-         - if capture is true, replace the literals capture tags by regexs.
+         - if tags_enabled is true, interpret the tags <..> as regexs.
 
             >>> r, p, _, i, _ = _as_regexs('a<foo>b<bar>c', False, True, True)
             >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
@@ -566,7 +566,7 @@ class ExampleParser(object):
             <...>
             ValueError: <...>
 
-         - if the capture flag is False, all the <...> tags are taken literally.
+         - if tags_enabled is False, all the <...> tags are taken literally.
 
             >>> r, p, _, i, _ = _as_regexs('a<foo>b<bar>c', False, False, True)
             >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
@@ -605,9 +605,10 @@ class ExampleParser(object):
             ValueError: <...>
 
 
-        The capture will behave differently if normalize_whitespace is true or false.
+        The tags' regexs will behave differently if normalize_whitespace
+        is true or false.
 
-        In the default, normalize_whitespace == False, case, a capture will
+        In the default, normalize_whitespace == False, case, a regex will
         include any amount of spaces, including new lines even if they are at
         the begin or end of the match, always
 
@@ -621,7 +622,7 @@ class ExampleParser(object):
             >>> m.match('a  \n 123\n\n b').groups()
             ('  \n 123\n\n ',)
 
-        When normalize_whitespace is True it will depend if the capture tag is
+        When normalize_whitespace is True it will depend if the tag is
         preceded or followed by a whitespace.
 
         When no whitespace is around the tag, the things work as if
@@ -718,7 +719,7 @@ class ExampleParser(object):
 
         are_advanced_captures_used = False
 
-        if capture:
+        if tags_enabled:
             for match in self.capture_tag_regex().finditer(expected):
                 if charno == match.start() and charno > 0:
                     msg = "Two consecutive capture tags were found at %ith character. " +\
