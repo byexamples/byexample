@@ -9,7 +9,7 @@ class _LinearChecker(object):
         >>> from byexample.parser import ExampleParser
         >>> from byexample.options import Options
         >>> parser = ExampleParser(0, 'utf8', None, Options()); parser.language = 'python'
-        >>> parser.extract_options = lambda x: {'norm_ws': False, 'capture': True}
+        >>> parser.extract_options = lambda x: {'norm_ws': False, 'tags': True}
 
         >>> build_example = parser.build_example
 
@@ -216,13 +216,13 @@ class _RegexChecker(object):
 
             >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=1)
 
-            >>> s                               # byexample: -capture
+            >>> s                               # byexample: -tag
             'aaAAbb<...>ddd<...>eeeCCcc'
 
             >>> got = r'aaAAbBBxxxddeeeCCcc'
             >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=1)
 
-            >>> s                               # byexample: -capture
+            >>> s                               # byexample: -tag
             'aa<...>bb<...>ddd<...>eeeCCcc'
 
         The definition of "safely" is a little weak. A capture tag may match
@@ -238,18 +238,18 @@ class _RegexChecker(object):
         and before the capture.
 
             >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=1)
-            >>> s                               # byexample: -capture
+            >>> s                               # byexample: -tag
             'aaAAbb<...>ddd<...>eeeCCcc'
 
             >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=2)
-            >>> s                               # byexample: -capture
+            >>> s                               # byexample: -tag
             'aaAAbb<...>ddd<...>eeeCCcc'
 
         Notice how a value of 3 changes the result because the 'bb' literal,
         after the capture has only a rcount of 2
 
             >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=3)
-            >>> s                               # byexample: -capture
+            >>> s                               # byexample: -tag
             'aa<...>bb<...>ddd<...>eeeCCcc'
 
         Named groups are returned as well:
@@ -265,7 +265,7 @@ class _RegexChecker(object):
 
             >>> s, c = _replace_captures(['foo', 'bar', 'baz', 'zaz'],
             ...                          expected_regexs, charnos, rcounts, expected, got, min_rcount=1)
-            >>> s                                                       # byexample: -capture
+            >>> s                               # byexample: -tag
             'aaAAbb<bar>ddd<baz>eeeCCcc'
             >>> c
             {'foo': 'AA', 'zaz': 'CC'}
@@ -292,7 +292,7 @@ class _RegexChecker(object):
 
             >>> s, c = _replace_captures(['foo', 'bar'], expected_regexs,
             ...                          charnos, rcounts, expected, got, min_rcount=2)
-            >>> s                                                       # byexample: -capture
+            >>> s                               # byexample: -tag
             'aaAAbb\ncc\ndd<bar>ee'
             >>> c
             {'foo': 'AA'}
@@ -309,7 +309,7 @@ class _RegexChecker(object):
             >>> rcounts   = [0, 2, 0, 3, 3, 2, 1, 2, 0] # notice the +1
 
             >>> s, c = _replace_captures(['foo'], expected_regexs, charnos, rcounts, expected, got, min_rcount=2)
-            >>> s                                                       # byexample: -capture
+            >>> s                               # byexample: -tag
             'aaAAbb\ncc\nddAAee'
             >>> c
             {'foo': 'AA'}

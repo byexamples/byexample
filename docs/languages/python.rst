@@ -174,18 +174,18 @@ is a summary of the equivalent options:
 ====================  ==========================  ============================
 ``norm-ws``           ``NORMALIZE_WHITESPACE``    Same functionality.
 *not supported*       ``DONT_ACCEPT_TRUE_FOR_1``  Only useful for Python 2.3.
-``capture``           ``ELLIPSIS``                More powerful than ``doctest`` version
+``tags``              ``ELLIPSIS``                More powerful than ``doctest`` version
 ``skip``              ``SKIP``                    Same functionality.
 ``pass``              *not supported*             Execute but do not check.
-*better alternative*  ``IGNORE_EXCEPTION_DETAIL`` Use the more general ``capture`` flag.
-*better alternative*  ``DONT_ACCEPT_BLANKLINE``   Use the more general ``capture`` flag.
+*better alternative*  ``IGNORE_EXCEPTION_DETAIL`` Use the more general ``tags`` flag.
+*better alternative*  ``DONT_ACCEPT_BLANKLINE``   Use the more general ``tags`` flag.
 ``diff``              ``REPORT_UDIFF``            With ``unified`` as argument.
 ``diff``              ``REPORT_CDIFF``            With ``context`` as argument.
 ``diff``              ``REPORT_NDIFF``            With ``ndiff`` as argument.
 ====================  =========================== ============================
 
 ``DONT_ACCEPT_BLANKLINE`` and ``IGNORE_EXCEPTION_DETAIL`` are used to ignore
-some pieces of the output. The ``capture`` flag of ``byexample`` should cover
+some pieces of the output. The ``tags`` flag of ``byexample`` should cover
 those cases and even more.
 
 

@@ -166,7 +166,7 @@ class PythonParser(ExampleParser):
         if getattr(self, 'compatibility_mode', True):
             parser.add_flag("NORMALIZE_WHITESPACE", help="[doctest] alias for +norm-ws.")
             parser.add_flag("SKIP", help="[doctest] alias for +skip.")
-            parser.add_flag("ELLIPSIS", help="[doctest] enables the ... capture.")
+            parser.add_flag("ELLIPSIS", help="[doctest] enables the ... wildcard.")
             parser.add_flag("DONT_ACCEPT_BLANKLINE", help="[doctest] take <BLANKLINE> as literal.")
             parser.add_flag("DONT_ACCEPT_TRUE_FOR_1", help="[doctest] ignored.")
             parser.add_flag("IGNORE_EXCEPTION_DETAIL", help="[doctest] ignore the exception details.")
@@ -182,7 +182,7 @@ class PythonParser(ExampleParser):
         and map them to a byexample option if possible.
         Otherwise log a message.
 
-        Also, in compatibility mode, disable any "capture" unless the ELLIPSIS
+        Also, in compatibility mode, disable any "tags" unless the ELLIPSIS
         flag is present.
 
         Return a dictionary with the mapped flags; self.options is unchanged.
@@ -199,9 +199,9 @@ class PythonParser(ExampleParser):
                 mapped['skip'] = True
 
             if options['ELLIPSIS']:
-                # enable the capture if ELLIPSIS but see also expected_from_match
+                # enable the 'tags' if ELLIPSIS but see also expected_from_match
                 # as this byexample's option is not equivalent to doctest's one
-                mapped['capture'] = True
+                mapped['tags'] = True
 
             if options['REPORT_UDIFF']:
                 mapped['diff'] = 'unified'
@@ -218,9 +218,9 @@ class PythonParser(ExampleParser):
                 log("[Note] DONT_ACCEPT_TRUE_FOR_1 flag is not supported.",
                         self.verbosity-2)
 
-        # in compatibility mode, do not capture by default [force this]
-        if self.options['py_doctest'] and 'capture' not in mapped:
-            mapped['capture'] = False
+        # in compatibility mode, do not interpret <...> by default [force this]
+        if self.options['py_doctest'] and 'tags' not in mapped:
+            mapped['tags'] = False
 
         options.unmask_default()
         return mapped
@@ -344,7 +344,7 @@ class PythonParser(ExampleParser):
                                     ])
 
                 # enable the capture, this should affect to this example only
-                options['capture'] = True
+                options['tags'] = True
 
         options.unmask_default()
         return expected_str

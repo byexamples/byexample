@@ -155,7 +155,7 @@ class ExampleParser(object):
         expected_regexs, charnos, rcounts, tags_by_idx, adv = self.expected_as_regexs(
                                                 expected,
                                                 options['norm_ws'],
-                                                options['capture'],
+                                                options['tags'],
                                                 are_advanced_captures_enabled)
 
         assert not adv

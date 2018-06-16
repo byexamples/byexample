@@ -111,7 +111,7 @@ def get_default_options_parser(cmdline_args):
     options_parser.add_flag("norm-ws", help="ignore the amount of whitespaces.")
     options_parser.add_flag("pass", help="run the example but do not check its output.")
     options_parser.add_flag("skip", help="do not run the example.")
-    options_parser.add_flag("capture", help="enable the capture tags <...>.")
+    options_parser.add_flag("tags", help="enable the tags <...>.")
     options_parser.add_flag("enhance-diff", help="improve how the diff are shown.")
     options_parser.add_flag("interact", help="interact with the runner/interpreter manually if an example fails.")
     options_parser.add_argument("+timeout", type=int, help="timeout in seconds to complete the example.")
@@ -130,7 +130,7 @@ def get_options(args, cfg):
                         'norm_ws': False,
                         'pass': False,
                         'skip': False,
-                        'capture': True,
+                        'tags': True,
                         'enhance_diff': args.enhance_diff,
                         'interact': args.interact,
                         'timeout': args.timeout,

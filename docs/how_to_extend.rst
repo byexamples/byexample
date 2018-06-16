@@ -227,7 +227,7 @@ specific options.
     >>> def extend_option_parser(parser):
     ...     parser.add_flag("awesome")
     ...     parser.add_flag("norm-ws", default=False)
-    ...     parser.add_flag("capture", default=True)
+    ...     parser.add_flag("tags", default=True)
 
 See the documentation of ``byexample.options.OptionParser`` for more
 information.
@@ -275,7 +275,7 @@ Let's peek how the parsing is used
      Hello World!
 
      >>> print(example.options)
-     {'awesome': True, 'capture': True, 'norm_ws': False}
+     {'awesome': True, 'norm_ws': False, 'tags': True}
 
 The ``process_snippet_and_expected`` method can be extended to perform the last
 minute changed to the snippet and the expected strings, after the parsing of the
