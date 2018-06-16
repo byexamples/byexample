@@ -2,7 +2,7 @@ from .common import log, colored
 import string, re, difflib
 
 class _LinearChecker(object):
-    ''' Assume that all the example's capture tags are of the form .*
+    ''' Assume that all the example's tags are of the form .*
         Then we can just apply a quicker and more efficient algorithm
         to detect if example's expected matches or not the got string.
 
@@ -82,6 +82,66 @@ class _LinearChecker(object):
 
         >>> captures
         {}
+
+        The algorithm also takes into account what happen if the expected string
+        starts or ends with a tag:
+
+        >>> ex = build_example('f()', '<foo>bb<...>bb<bar>', 0, None, None, (0, 1, 'file'))
+
+        >>> got = 'aabbxbbcc'
+        >>> chk.check_got_output(ex, got, 0)
+        True
+
+        >>> chk.get_captures(ex, got, 0)
+        ('aabbxbbcc', {'bar': 'cc', 'foo': 'aa'})
+
+        Or if it has a single literal chunk
+
+        >>> ex = build_example('f()', '<foo>bbbb<bar>', 0, None, None, (0, 1, 'file'))
+
+        >>> got = 'aabbbbcc'
+        >>> chk.check_got_output(ex, got, 0)
+        True
+
+        >>> chk.get_captures(ex, got, 0)
+        ('aabbbbcc', {'bar': 'cc', 'foo': 'aa'})
+
+        If it has a single tag
+
+        >>> ex = build_example('f()', '<foo>', 0, None, None, (0, 1, 'file'))
+
+        >>> got = 'bbbb'
+        >>> chk.check_got_output(ex, got, 0)
+        True
+
+        >>> chk.get_captures(ex, got, 0)
+        ('bbbb', {'foo': 'bbbb'})
+
+        Or even if there is any tag at all:
+
+        >>> ex = build_example('f()', 'bbbb', 0, None, None, (0, 1, 'file'))
+
+        >>> got = 'bbbb'
+        >>> chk.check_got_output(ex, got, 0)
+        True
+
+        >>> chk.get_captures(ex, got, 0)
+        ('bbbb', {})
+
+
+        We still need to use the regexs that represent the literal chunks
+        as they may not be so 'literal'. Think for example that their regexs
+        will be in charge of consume the whitespace if we ask for it
+
+        >>> parser.extract_options = lambda x: {'norm_ws': True, 'tags': True}
+        >>> ex = build_example('f()', '\n  <...>A \n\nB<...> C\n<...>', 0, None, None, (0, 1, 'file'))
+
+        >>> got = ' A B  C '
+        >>> chk.check_got_output(ex, got, 0)
+        True
+
+        >>> chk.get_captures(ex, got, 0)
+        (' A B  C ', {})
 
         '''
     def __init__(self, verbosity, **unused):
