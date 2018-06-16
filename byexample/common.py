@@ -154,8 +154,11 @@ def human_exceptions(where_default, verbosity, quiet, exitcode):
             msg = str(e)
             if verbosity >= 1:
                 msg = traceback.format_exc()
+            else:
+                msg += "\n\nRerun with -v to get a full stack trace."
 
-            print("{where}\n{msg}".format(where=where, msg=msg))
+            cls = str(e.__class__.__name__)
+            print("{where}\n{cls}: {msg}".format(where=where, msg=msg, cls=cls))
         sys.exit(exitcode)
 
 @contextlib.contextmanager
