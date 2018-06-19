@@ -160,7 +160,7 @@ class _LinearExpected(Expected):
         Expected.__init__(self, *args, **kargs)
         self.check_good = False
 
-    def check_got_output(self, example, got, flags, verbosity):
+    def check_got_output(self, example, got, options, verbosity):
         self.check_good = False
         self.verbosity = verbosity
 
@@ -174,7 +174,7 @@ class _LinearExpected(Expected):
         self.check_good = self._linear_matching(regexs, tags_by_idx, charnos, expected_str, got)
         return self.check_good
 
-    def get_captures(self, example, got, flags, verbosity):
+    def get_captures(self, example, got, options, verbosity):
         self.verbosity = verbosity
         if self.check_good:
             return got, self._partial_captured
@@ -234,7 +234,7 @@ class _RegexExpected(Expected):
         Expected.__init__(self, *args, **kargs)
         self.check_good = False
 
-    def check_got_output(self, example, got, flags, verbosity):
+    def check_got_output(self, example, got, options, verbosity):
         self.check_good = False
         self.verbosity = verbosity
         self._captures_from_good_check = None
@@ -251,7 +251,7 @@ class _RegexExpected(Expected):
             self.check_good = False
             return False
 
-    def get_captures(self, example, got, flags, verbosity):
+    def get_captures(self, example, got, options, verbosity):
         self.verbosity = verbosity
         if self.check_good:
             return got, self._captures_from_good_check
