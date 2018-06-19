@@ -1,6 +1,7 @@
 import collections, re, shlex, argparse
 from .common import log, tohuman, constant
 from .options import OptionParser, UnrecognizedOption
+from .expected import _LinearExpected, _RegexExpected
 
 Example = collections.namedtuple('Example', ['runner',
                                              'filepath',
@@ -10,13 +11,6 @@ Example = collections.namedtuple('Example', ['runner',
                                              'source',
                                              'expected'])
 
-Expected = collections.namedtuple('Expected', ['str',
-                                               'regexs',
-                                               'charnos',
-                                               'rcounts',
-                                               'tags_by_idx',
-                                               'advanced_captures',
-                                               ])
 
 class ExampleParser(object):
     def __init__(self, verbosity, encoding, optparser, options, **unused):
@@ -159,10 +153,11 @@ class ExampleParser(object):
                                                 are_advanced_captures_enabled)
 
         assert not adv
+        ExpectedClass = _LinearExpected if not adv else _RegexExpected
 
-        expected = Expected(
+        expected = ExpectedClass(
                           # the output expected
-                          str=expected,
+                          expected_str=expected,
 
                           # expected regex version
                           regexs=expected_regexs,
@@ -179,9 +174,6 @@ class ExampleParser(object):
                           # instead save the name of the tag or None if it's
                           # unnamed
                           tags_by_idx=tags_by_idx,
-
-                          # are we using advanced captures?
-                          advanced_captures=adv
                           )
 
         example = Example(
