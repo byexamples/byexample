@@ -4,7 +4,7 @@ from .options import Options, OptionParser
 from .runner import ExampleRunner
 from .finder import ExampleHarvest, ExampleFinder
 from .executor import FileExecutor
-from .checker import Checker
+from .differ import Differ
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
 from .common import log
@@ -235,9 +235,9 @@ def init(args):
 
     concerns = ConcernComposite(registry, **cfg)
 
-    checker  = Checker(**cfg)
+    differ = Differ(**cfg)
 
     harvester = ExampleHarvest(allowed_languages, registry, **cfg)
-    executor  = FileExecutor(concerns, checker, **cfg)
+    executor  = FileExecutor(concerns, differ, **cfg)
 
     return testfiles, harvester, executor, options

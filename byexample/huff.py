@@ -2,7 +2,7 @@ import sys, argparse, os
 from . import __version__, __doc__, _author, _license, _url, _license_disclaimer
 from .cmdline import _Print
 from .common import human_exceptions
-from .checker import Checker
+from .differ import Differ
 from .options import Options
 
 doc = 'Compare files and make the differences more human-understandable.'
@@ -96,7 +96,7 @@ def init(args):
     # if the output is not atty, disable the color anyways
     cfg['use_colors'] &= cfg['output'].isatty()
 
-    checker  = Checker(**cfg)
+    differ  = Differ(**cfg)
 
     options = Options({
                 'use_colors': cfg['use_colors'],
@@ -104,13 +104,13 @@ def init(args):
                 'diff': args.diff
                 })
 
-    return args.file_duples, checker, options
+    return args.file_duples, differ, options
 
 def main(args=None):
     args = parse_args(args)
     human_args = (0, args.quiet, Status.error)
     with human_exceptions('During the initialization phase:', *human_args):
-        file_duples, checker, options = init(args)
+        file_duples, differ, options = init(args)
 
     exit_status = Status.ok
     for from_f, to_f in file_duples:
@@ -122,7 +122,7 @@ def main(args=None):
                 if not args.quiet:
                     print("Differences found between files '%s' and '%s':" % (from_f, to_f))
 
-                    diff = checker.output_difference(expected,
+                    diff = differ.output_difference(expected,
                                                      got,
                                                      options,
                                                      options['use_colors'])

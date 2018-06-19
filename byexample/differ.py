@@ -1,13 +1,10 @@
 from .common import log, colored
 import string, re, difflib
 
-class Checker(object):
+class Differ(object):
     def __init__(self, verbosity, **unused):
         self._diff = []
         self.verbosity = verbosity
-
-    def check_got_output(self, example, got, flags):
-        return example.expected.check_got_output(example, got, flags, self.verbosity)
 
     def output_difference(self, example, got, flags, use_colors):
         r'''
@@ -15,8 +12,8 @@ class Checker(object):
         output and the found or got.
 
         Depending of the flags the diff can be returned differently.
-            >>> from byexample.checker import Checker
-            >>> output_difference = Checker(verbosity=0).output_difference
+            >>> from byexample.differ import Differ
+            >>> output_difference = Differ(verbosity=0).output_difference
 
             >>> expected = 'one\ntwo\nthree\nfour'
             >>> got      = 'zero\none\ntree\nfour'

@@ -4,9 +4,9 @@ class TimeoutException(Exception):
     pass
 
 class FileExecutor(object):
-    def __init__(self, concerns, checker, verbosity, use_colors, options, **unused):
+    def __init__(self, concerns, differ, verbosity, use_colors, options, **unused):
         self.concerns   = concerns
-        self.checker    = checker
+        self.differ    = differ
         self.use_colors = use_colors
         self.verbosity  = verbosity
 
@@ -75,10 +75,10 @@ class FileExecutor(object):
                     # however, a Timeout is always a fail
                     force_pass = options['pass']
                     if not timedout and \
-                            (force_pass or self.checker.check_got_output(example, got, options)):
-                        self.concerns.success(example, got, self.checker)
+                            (force_pass or example.expected.check_got_output(example, got, options, self.verbosity)):
+                        self.concerns.success(example, got, self.differ)
                     else:
-                        self.concerns.failure(example, got, self.checker)
+                        self.concerns.failure(example, got, self.differ)
                         failed = True
 
                         # start an interactive session if the example failes

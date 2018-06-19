@@ -130,16 +130,16 @@ class SimpleReporter(Concern):
         self._write(msg)
         self.aborted_or_crashed += 1
 
-    def success(self, example, got, checker):
+    def success(self, example, got, differ):
         self._update(1)
         self.good += 1
 
-    def failure(self, example, got, checker):
+    def failure(self, example, got, differ):
         self._update(1)
         self._write("\n")
 
         self._print_error_header(example)
-        diff = checker.output_difference(example, got, self.current_merged_flags,
+        diff = differ.output_difference(example, got, self.current_merged_flags,
                                          self.use_colors)
         self._write(diff)
         self._write('\n')

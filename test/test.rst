@@ -13,7 +13,7 @@ to start.
 
     $ byexample -l python byexample/*.py
     <nl>
-    File byexample/checker.py, 60/60 test ran in <...> seconds
+    File byexample/differ.py, 60/60 test ran in <...> seconds
     [PASS] Pass: 60 Fail: 0 Skip: 0
     <nl>
     File byexample/finder.py, 56/56 test ran in <...> seconds

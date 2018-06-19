@@ -14,12 +14,13 @@ class ExampleHarvest(object):
     |         |      -----------     : > 1 + 2 } snippet  =>  1 + 2 ----> runner
     | > 1 + 2 |      | > 1 + 2 |     :                                      |
     | 3       |  =>  | 3       |  => : 3 } expected       =>  3 == ?? <-- output
-    |         |      -----------     :.......... .. . .       compare
-    | bar     |      -----------                           done by checker
+    |         |      -----------     :.......... .. . .     compare done
+    | bar     |      -----------                         by expected object
     | > 1 + 3 |  =>  | > 1 + 3 |                                |
     | 4       |      | 4       |                                |--> PASS/FAIL
     :         :      -----------                                      report
                                                                   done by reporter
+                                                                   and by differ
     '''
     def __init__(self, allowed_languages, registry, verbosity,
                         options, **unused):

@@ -116,7 +116,7 @@ class Concern(object):
         '''
         pass    # pragma: no cover
 
-    def success(self, example, got, checker):
+    def success(self, example, got, differ):
         '''
         Called when an example execution finish and its output is
         what it was expecting or the example was marked to PASS.
@@ -125,7 +125,7 @@ class Concern(object):
         '''
         pass    # pragma: no cover
 
-    def failure(self, example, got, checker):
+    def failure(self, example, got, differ):
         '''
         Called when an example execution finish but its output wasn't
         expected.
