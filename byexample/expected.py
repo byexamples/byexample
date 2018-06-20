@@ -17,7 +17,8 @@ class _LinearExpected(Expected):
         >>> from byexample.parser import ExampleParser
         >>> from byexample.options import Options
         >>> parser = ExampleParser(0, 'utf8', None, Options()); parser.language = 'python'
-        >>> parser.extract_options = lambda x: {'norm_ws': False, 'tags': True}
+        >>> opts = {'norm_ws': False, 'tags': True}
+        >>> parser.extract_options = lambda x: opts
 
         >>> build_example = parser.build_example
 
@@ -30,12 +31,12 @@ class _LinearExpected(Expected):
         check each of them in order from left to right without overlapping:
 
         >>> got = 'aaXYZbbcc'
-        >>> exp.check_got_output(ex, got, 0, 0)
+        >>> exp.check_got_output(ex, got, opts, 0)
         True
 
         Once we performed the check we can query the captured strings:
 
-        >>> whole, captures = exp.get_captures(ex, got, 0, 0)
+        >>> whole, captures = exp.get_captures(ex, got, opts, 0)
 
         The whole string is the expected string with all of its capture tags
         replaced by the captured texts from the got string.
@@ -53,22 +54,7 @@ class _LinearExpected(Expected):
         The things gets more interesting when the example fails.
         In this case the values returned by get_captures will be incomplete.
 
-        >>> got = 'aaXYZccbb'
-        >>> exp.check_got_output(ex, got, 0, 0)
-        False
-
-        >>> whole, captures = exp.get_captures(ex, got, 0, 0)
-
-        In this case the whole string will have some tags replaced but others no
-        in a best effort manner.
-
-        >>> whole
-        'aaXYZccbb<bar>cc'
-
-        And the captures, obviously, will be incomplete too
-
-        >>> captures['foo'], captures.get('bar')
-        ('XYZcc', None)
+        See _RegexExpected.get_captures documentation.
 
         The algorithm works perfectly fine with unnamed captures
 
@@ -76,10 +62,10 @@ class _LinearExpected(Expected):
         >>> exp = ex.expected
 
         >>> got = 'aaXYZbbcc'
-        >>> exp.check_got_output(ex, got, 0, 0)
+        >>> exp.check_got_output(ex, got, opts, 0)
         True
 
-        >>> whole, captures = exp.get_captures(ex, got, 0, 0)
+        >>> whole, captures = exp.get_captures(ex, got, opts, 0)
 
         >>> whole == got
         True
@@ -97,10 +83,10 @@ class _LinearExpected(Expected):
         >>> exp = ex.expected
 
         >>> got = 'aabbxbbcc'
-        >>> exp.check_got_output(ex, got, 0, 0)
+        >>> exp.check_got_output(ex, got, opts, 0)
         True
 
-        >>> exp.get_captures(ex, got, 0, 0)
+        >>> exp.get_captures(ex, got, opts, 0)
         ('aabbxbbcc', {'bar': 'cc', 'foo': 'aa'})
 
         Or if it has a single literal chunk
@@ -109,10 +95,10 @@ class _LinearExpected(Expected):
         >>> exp = ex.expected
 
         >>> got = 'aabbbbcc'
-        >>> exp.check_got_output(ex, got, 0, 0)
+        >>> exp.check_got_output(ex, got, opts, 0)
         True
 
-        >>> exp.get_captures(ex, got, 0, 0)
+        >>> exp.get_captures(ex, got, opts, 0)
         ('aabbbbcc', {'bar': 'cc', 'foo': 'aa'})
 
         If it has a single tag
@@ -121,10 +107,10 @@ class _LinearExpected(Expected):
         >>> exp = ex.expected
 
         >>> got = 'bbbb'
-        >>> exp.check_got_output(ex, got, 0, 0)
+        >>> exp.check_got_output(ex, got, opts, 0)
         True
 
-        >>> exp.get_captures(ex, got, 0, 0)
+        >>> exp.get_captures(ex, got, opts, 0)
         ('bbbb', {'foo': 'bbbb'})
 
         Or even if there is any tag at all:
@@ -133,10 +119,10 @@ class _LinearExpected(Expected):
         >>> exp = ex.expected
 
         >>> got = 'bbbb'
-        >>> exp.check_got_output(ex, got, 0, 0)
+        >>> exp.check_got_output(ex, got, opts, 0)
         True
 
-        >>> exp.get_captures(ex, got, 0, 0)
+        >>> exp.get_captures(ex, got, opts, 0)
         ('bbbb', {})
 
 
@@ -144,21 +130,26 @@ class _LinearExpected(Expected):
         as they may not be so 'literal'. Think for example that their regexs
         will be in charge of consume the whitespace if we ask for it
 
-        >>> parser.extract_options = lambda x: {'norm_ws': True, 'tags': True}
-        >>> ex = build_example('f()', '\n  <...>A \n\nB<...> C\n<...>', 0, None, None, (0, 1, 'file'))
+        >>> opts = {'norm_ws': True, 'tags': True}
+        >>> parser.extract_options = lambda x: opts
+        >>> ex = build_example('f()', '\n  <...>A \n\nB <...> C\n<...>', 0, None, None, (0, 1, 'file'))
         >>> exp = ex.expected
+        >>> exp
 
+        >>> exp.regexs
         >>> got = ' A B  C '
-        >>> exp.check_got_output(ex, got, 0, 0)
+        >>> exp.check_got_output(ex, got, opts, 0)
         True
 
-        >>> exp.get_captures(ex, got, 0, 0)
-        (' A B  C ', {})
+        >>> exp.get_captures(ex, got, opts, 0)
+        (' A B C ', {})
 
         '''
     def __init__(self, *args, **kargs):
         Expected.__init__(self, *args, **kargs)
-        self.check_good = False
+        self._regex_expected = _RegexExpected(*args, **kargs)
+        self.check_good = self._regex_expected.check_good = False
+
 
     def check_got_output(self, example, got, options, verbosity):
         self.check_good = False
@@ -179,7 +170,13 @@ class _LinearExpected(Expected):
         if self.check_good:
             return got, self._partial_captured
         else:
-            return self._partial_expected_replaced, self._partial_captured
+            # relay on _RegexExpected's get_captures algorithm
+            # it is more complex and less safer than _LinearExpected but
+            # yield results of much better quality and because we are using
+            # it only when the example fails, the performance penalty should
+            # be minimal.
+            self._regex_expected.check_good = False
+            return self._regex_expected.get_captures(example, got, options, verbosity)
 
     def _linear_matching(self, regexs, tags_by_idx, charnos, expected_str, got):
         ''' Assume that all (if any) example's capture tags are regex
@@ -205,28 +202,26 @@ class _LinearExpected(Expected):
         capture_idxs = list(sorted(tags_by_idx.keys()))
         for capture_idx in capture_idxs + [len(regexs)]:
             literal = ''.join(regexs[prev:capture_idx])
-            at = charnos[prev]
             if literal:
-                literals.append((at, literal, tags_by_idx.get(prev-1)))
+                literals.append((literal, tags_by_idx.get(prev-1)))
 
             prev = capture_idx + 1
 
         pos = 0
-        for at, literal, prev_name in literals:
+        for literal, prev_tag_name in literals:
             r = re.compile(literal, re.MULTILINE | re.DOTALL)
             m = r.search(got, pos)
 
             if not m:
-                self._partial_expected_replaced = got[:pos] + expected_str[at:]
+                self._partial_captured = {}
                 return False
 
-            if prev_name is not None:
+            if prev_tag_name is not None:
                 captured = got[pos:m.start()]
-                self._partial_captured[prev_name] = captured
+                self._partial_captured[prev_tag_name] = captured
 
             pos = m.end()
 
-        self._partial_expected_replaced = got
         return True
 
 class _RegexExpected(Expected):
@@ -258,7 +253,8 @@ class _RegexExpected(Expected):
 
         else:
             expected = example.expected
-            return self._get_all_captures_as_possible(expected.captures,
+            captures = [n for n in expected.tags_by_idx.values() if n != None]
+            return self._get_all_captures_as_possible(captures,
                                           expected.regexs,
                                           expected.charnos,
                                           expected.rcounts,
