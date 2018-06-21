@@ -109,11 +109,15 @@ class ExampleParser(object):
     def trailing_optional_newline_regex_str(self):
         return r'\n*\Z'
 
-    def non_capture_anything_regex_str(self, name):
+    def end_of_string_regex_str(self):
+        return r'\Z'
+
+    def non_capture_anything_regex_str(self, name, at_least_one):
+        repetition = r'+' if at_least_one else r'*'
         if name:
-            return r"(?P<%s>.*?)" % name
+            return r"(?P<%s>.%s?)" % (name, repetition)
         else:
-            return r"(?:.*?)"
+            return r"(?:.%s?)" % repetition
 
     def process_snippet_and_expected(self, snippet, expected):
         r'''
@@ -526,6 +530,9 @@ class ExampleParser(object):
             >>> r
             ['\\A', 'a\\s+', 'b\\s+c', '\\s*\\Z']
 
+            >>> p
+            [0, 0, 7, 13]
+
             >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
             >>> m.match('a b c') is not None
             True
@@ -605,10 +612,13 @@ class ExampleParser(object):
         the begin or end of the match, always
 
             >>> expected = 'a<foo>b'
-            >>> regexs, _, _, _, _ = _as_regexs(expected, False, True, True)
+            >>> regexs, p, c, _, _ = _as_regexs(expected, False, True, True)
 
             >>> regexs
             ['\\A', 'a', '(?P<foo>.*?)', 'b', '\\n*\\Z']
+
+            >>> p
+            [0, 0, 1, 6, 7]
 
             >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
             >>> m.match('a  \n 123\n\n b').groups()
@@ -621,10 +631,13 @@ class ExampleParser(object):
         normalize_whitespace was false
 
             >>> expected = 'a<foo>b'
-            >>> regexs, _, _, _, _ = _as_regexs(expected, True, True, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', 'a', '(?P<foo>.*?)', 'b', '\\s*\\Z']
+
+            >>> p
+            [0, 0, 1, 6, 7]
 
             >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
             >>> m.match('a  \n 123\n\n b').groups()
@@ -633,20 +646,26 @@ class ExampleParser(object):
         But if we add some whitespace
 
             >>> expected = 'a <foo>b'
-            >>> regexs, _, _, _, _ = _as_regexs(expected, True, True, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', 'a\\s+', '(?!\\s)(?P<foo>.*?)', 'b', '\\s*\\Z']
+
+            >>> p
+            [0, 0, 2, 7, 8]
 
             >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
             >>> m.match('a  \n 123\n\n b').groups()
             ('123\n\n ',)
 
             >>> expected = 'a<foo> b'
-            >>> regexs, _, _, _, _ = _as_regexs(expected, True, True, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', 'a', '(?P<foo>.*?)(?<!\\s)', '\\s+b', '\\s*\\Z']
+
+            >>> p
+            [0, 0, 1, 6, 8]
 
             >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
             >>> m.match('a  \n 123\n\n b').groups()
@@ -656,17 +675,23 @@ class ExampleParser(object):
         just add a whitespace around it
 
             >>> expected = 'a\n<foo>\tb'
-            >>> regexs, _, _, _, _ = _as_regexs(expected, True, True, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
-            ['\\A', 'a\\s+', '(?!\\s)(?P<foo>.*?)(?<!\\s)', '\\s+b', '\\s*\\Z']
+            ['\\A', 'a\\s+', '(?:(?!\\s)(?P<foo>.+?)(?<!\\s)\\s+)?', 'b', '\\s*\\Z']
+
+            >>> p
+            [0, 0, 2, 8, 9]
 
             >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
             >>> m.match('a  \n 123\n\n b').groups()
             ('123',)
 
-        Any trailing new line will be ignored and if normalize_whitespace is
-        True, any trailing whitespace.
+            >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+            >>> m.match('a  \n \n\n b').groups()
+            ()
+
+        Any trailing new line will be ignored
 
             >>> expected = '<foo>\n\n\n'
             >>> regexs, _, _, _, _ = _as_regexs(expected, False, True, True)
@@ -678,15 +703,43 @@ class ExampleParser(object):
             >>> m.match('   123  \n\n\n\n').groups()
             ('   123  ',)
 
+            >>> expected = '<foo>'
+            >>> regexs, _, _, _, _ = _as_regexs(expected, False, True, True)
+
+            >>> regexs
+            ['\\A', '(?P<foo>.*?)(?<!\\n)', '\\n*\\Z']
+
+            >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+            >>> m.match('123\n\n\n\n').groups()
+            ('123',)
+
+        And if normalize_whitespace is True, any trailing whitespace.
+
             >>> expected = '<foo>  \n\n'
-            >>> regexs, _, _, _, _ = _as_regexs(expected, True, True, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
             ['\\A', '(?P<foo>.*?)(?<!\\s)', '\\s*\\Z']
 
+            >>> p
+            [0, 0, 5]
+
             >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
             >>> m.match('   123  \n\n\n\n').groups()
             ('   123',)
+
+            >>> expected = ' <foo>  \n\n'
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True, True)
+
+            >>> regexs
+            ['\\A', '\\s+', '(?:(?!\\s)(?P<foo>.+?)(?<!\\s)\\s+)?', '\\Z']
+
+            >>> p
+            [0, 0, 1, 10]
+
+            >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+            >>> m.match('   123  \n\n\n\n').groups()
+            ('123',)
 
         '''
         # remove any trailing new lines, we will add a regex to match any
@@ -695,6 +748,7 @@ class ExampleParser(object):
         # whitespaces
         trailing_re = self.trailing_whitespace_regex() if normalize_whitespace \
                       else self.trailing_newlines_regex()
+        non_striped_expected_len = len(expected)
         expected = trailing_re.sub('', expected)
 
         charno = 0
@@ -710,6 +764,7 @@ class ExampleParser(object):
         rcounts.append(0)
 
         are_advanced_captures_used = False
+        trailing_ws_absorved = False
 
         if tags_enabled:
             for match in self.capture_tag_regex().finditer(expected):
@@ -719,14 +774,60 @@ class ExampleParser(object):
                     raise ValueError(msg % charno)
 
                 literals = expected[charno:match.start()]
+
+                pre_capture  = literals
+                post_capture = expected[match.end():]
+
+                need_match_at_least_one = False
+                skip_next_leading_ws_count = 0
+                if normalize_whitespace:
+                    not_begin_ws_prefix = self.trailing_single_whitespace_regex().search(pre_capture)
+
+                    begin_ws_match = self.leading_single_whitespace_regex().search(post_capture)
+                    not_end_ws_posfix = begin_ws_match or not post_capture
+
+                    # this is a special case....
+                    if not_begin_ws_prefix and not_end_ws_posfix:
+                        # we cannot use .*:
+                        #   (?!\\s)(?P<foo>.*?)(?<!\\s)
+                        #
+                        # because if foo is empty the following regex will never
+                        # match:
+                        #   aaa\s+ (?!\\s)(?P<foo>.*?)(?<!\\s) \s+bbb
+                        # which in turns is, because foo is empty:
+                        #   aaa\s+ (?!\\s)(?<!\\s) \s+bbb
+                        #
+                        # That says follow 'aaa' by whitespace then, (?<!\\s) must
+                        # not be preceeded by a whitespace (ups!)
+                        # Also, (?!\\s) the next char cannot be whitespace, then
+                        # \s+bbb must start with a whitespace (ups again!!)
+                        #
+                        # Forcing a .+ force to be no empty (this is onle a part
+                        # of a bigger solution)
+                        need_match_at_least_one = True
+
+                        # Because aaa\s+ \s+bbb is a pathological case when <foo>
+                        # is empty, we will strip the leading whitespace
+                        # so the regex will be:
+                        #   aaa\s+  bbb             if foo is empty
+                        #   aaa\s+ .+ \s+ bbb       when foo is not empty
+                        #
+                        # To acomplish the first case we need to strip the leading
+                        # whitespace: we need to move the charno pointer a little
+                        # further
+                        # How many bytes?, let's see:
+                        if begin_ws_match:
+                            next_leading_span_ends = begin_ws_match.span()[1]
+                            skip_next_leading_ws_count = next_leading_span_ends
+
+                            # update the post_capture too skipping the leading ws
+                            post_capture = post_capture[skip_next_leading_ws_count:]
+
                 if literals:
                     _res, _pos, _rcount = self._as_safe_regexs(literals, charno, normalize_whitespace)
                     regexs.extend(_res)
                     charnos.extend(_pos)
                     rcounts.extend(_rcount)
-
-                pre_capture  = literals
-                post_capture = expected[match.end():]
 
                 charno = match.start()
 
@@ -737,7 +838,7 @@ class ExampleParser(object):
 
                 if name == self.ellipsis_marker():
                     # capture anything (non-greedy)
-                    regex = self.non_capture_anything_regex_str(None)
+                    regex = self.non_capture_anything_regex_str(None, need_match_at_least_one)
                     name = None # unamed
 
                 else:
@@ -759,27 +860,31 @@ class ExampleParser(object):
                     else:
                         # first seen, capture anything (non-greedy)
                         names_seen.add(name)
-                        regex = self.non_capture_anything_regex_str(name)
+                        regex = self.non_capture_anything_regex_str(name, need_match_at_least_one)
 
                 # match 'anything' but do not match any leading
                 # space if the previous regex already matches that
                 # do the same for the trailing space and next regex
                 if normalize_whitespace:
-                    if self.trailing_single_whitespace_regex().search(pre_capture):
+                    if not_begin_ws_prefix:
                         regex = self.do_not_begin_with_whitespace_regex_str() + \
                                 regex
 
-                    if self.leading_single_whitespace_regex().search(post_capture):
+                    if not_end_ws_posfix:
                         regex = regex + \
                                 self.do_not_end_with_whitespace_regex_str()
 
-                if not post_capture:
-                    if normalize_whitespace:
-                        regex = regex + \
-                                self.do_not_end_with_whitespace_regex_str()
-                    else:
-                        regex = regex + \
-                                self.do_not_end_with_newline_regex_str()
+                    # this is a special case....
+                    if not_begin_ws_prefix and not_end_ws_posfix:
+                        assert need_match_at_least_one
+                        ws_regex_str = self.one_or_more_whitespace_regex().pattern
+
+                        regex = r'(?:' + regex + ws_regex_str + r')?'
+                        trailing_ws_absorved = True
+
+                if not post_capture and not normalize_whitespace:
+                    regex = regex + \
+                            self.do_not_end_with_newline_regex_str()
 
                 tags_by_idx[len(regexs)] = name
 
@@ -788,6 +893,7 @@ class ExampleParser(object):
                 rcounts.append(rcount)
 
                 charno = match.end()
+                charno += skip_next_leading_ws_count
 
         literals = expected[charno:]
         if literals:
@@ -796,13 +902,22 @@ class ExampleParser(object):
             charnos.extend(_pos)
             rcounts.extend(_rcount)
 
-        charno = len(expected)
 
         # the end: ignore any trailing new line (trailing whitespace if
         # normalize_whitespace == True)
-        trailing_re_str = self.trailing_optional_whitespace_regex_str() \
-                               if normalize_whitespace \
-                               else self.trailing_optional_newline_regex_str()
+        # the only exception is when the previous tag already captured
+        # and absorved the whitespace and there is any literal between
+        # it and us
+        if trailing_ws_absorved and not literals:
+            charno = non_striped_expected_len
+            trailing_re_str = self.end_of_string_regex_str()
+
+        else:
+            charno = len(expected)
+            trailing_re_str = self.trailing_optional_whitespace_regex_str() \
+                                   if normalize_whitespace \
+                                   else self.trailing_optional_newline_regex_str()
+
         regexs.append(trailing_re_str)
         charnos.append(charno)
         rcounts.append(0)
