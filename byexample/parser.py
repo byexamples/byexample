@@ -80,6 +80,10 @@ class ExampleParser(object):
         return re.compile(r'\s+', re.MULTILINE | re.DOTALL)
 
     @constant
+    def zero_or_more_whitespace_regex(self):
+        return re.compile(r'\s*', re.MULTILINE | re.DOTALL)
+
+    @constant
     def trailing_whitespace_regex(self):
         return re.compile(r'\s+\Z', re.MULTILINE | re.DOTALL)
 
@@ -688,8 +692,8 @@ class ExampleParser(object):
             ('123',)
 
             >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
-            >>> m.match('a  \n \n\n b').groups()
-            ()
+            >>> m.match('a  \n \n\n b').groups('')
+            ('',)
 
         Any trailing new line will be ignored
 
@@ -732,10 +736,23 @@ class ExampleParser(object):
             >>> regexs, p, _, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
-            ['\\A', '\\s+', '(?:(?!\\s)(?P<foo>.+?)(?<!\\s)\\s+)?', '\\Z']
+            ['\\A', '\\s+', '(?:(?!\\s)(?P<foo>.+?)(?<!\\s)\\s*)?', '\\Z']
 
             >>> p
             [0, 0, 1, 10]
+
+            >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+            >>> m.match('   123  \n\n\n\n').groups()
+            ('123',)
+
+            >>> expected = ' <foo>'
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True, True)
+
+            >>> regexs
+            ['\\A', '\\s+', '(?:(?!\\s)(?P<foo>.+?)(?<!\\s)\\s*)?', '\\Z']
+
+            >>> p
+            [0, 0, 1, 6]
 
             >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
             >>> m.match('   123  \n\n\n\n').groups()
@@ -781,13 +798,18 @@ class ExampleParser(object):
                 need_match_at_least_one = False
                 skip_next_leading_ws_count = 0
                 if normalize_whitespace:
-                    not_begin_ws_prefix = self.trailing_single_whitespace_regex().search(pre_capture)
+                    prev_literal_end_ws_match = self.trailing_single_whitespace_regex().search(pre_capture)
+                    next_literal_begin_ws_match = self.leading_single_whitespace_regex().search(post_capture)
 
-                    begin_ws_match = self.leading_single_whitespace_regex().search(post_capture)
-                    not_end_ws_posfix = begin_ws_match or not post_capture
+                    # aka: (?!\\s)(?P<foo>.*?)
+                    do_not_begin_ws_prefix = prev_literal_end_ws_match != None
+
+                    # aka: (?P<foo>.*?)(?<!\\s)
+                    do_not_end_ws_posfix = next_literal_begin_ws_match != None \
+                                            or not post_capture
 
                     # this is a special case....
-                    if not_begin_ws_prefix and not_end_ws_posfix:
+                    if do_not_begin_ws_prefix and do_not_end_ws_posfix:
                         # we cannot use .*:
                         #   (?!\\s)(?P<foo>.*?)(?<!\\s)
                         #
@@ -816,8 +838,8 @@ class ExampleParser(object):
                         # whitespace: we need to move the charno pointer a little
                         # further
                         # How many bytes?, let's see:
-                        if begin_ws_match:
-                            next_leading_span_ends = begin_ws_match.span()[1]
+                        if next_literal_begin_ws_match:
+                            next_leading_span_ends = next_literal_begin_ws_match.span()[1]
                             skip_next_leading_ws_count = next_leading_span_ends
 
                             # update the post_capture too skipping the leading ws
@@ -866,20 +888,28 @@ class ExampleParser(object):
                 # space if the previous regex already matches that
                 # do the same for the trailing space and next regex
                 if normalize_whitespace:
-                    if not_begin_ws_prefix:
+                    if do_not_begin_ws_prefix:
                         regex = self.do_not_begin_with_whitespace_regex_str() + \
                                 regex
 
-                    if not_end_ws_posfix:
+                    if do_not_end_ws_posfix:
                         regex = regex + \
                                 self.do_not_end_with_whitespace_regex_str()
 
                     # this is a special case....
-                    if not_begin_ws_prefix and not_end_ws_posfix:
+                    if do_not_begin_ws_prefix and do_not_end_ws_posfix:
                         assert need_match_at_least_one
-                        ws_regex_str = self.one_or_more_whitespace_regex().pattern
 
-                        regex = r'(?:' + regex + ws_regex_str + r')?'
+                        if next_literal_begin_ws_match:
+                            # so we need to consume at least one ws
+                            ws_regex_str = self.one_or_more_whitespace_regex().pattern
+                            regex = r'(?:' + regex + ws_regex_str + r')?'
+                        else:
+                            # the next literal doesn't begin with ws
+                            # so we should consume zero or more ws
+                            ws_regex_str = self.zero_or_more_whitespace_regex().pattern
+                            regex = r'(?:' + regex + ws_regex_str + r')?'
+
                         trailing_ws_absorved = True
 
                 if not post_capture and not normalize_whitespace:
