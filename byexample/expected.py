@@ -130,19 +130,26 @@ class _LinearExpected(Expected):
         as they may not be so 'literal'. Think for example that their regexs
         will be in charge of consume the whitespace if we ask for it
 
+        (See byexample.parser docs)
+
         >>> opts = {'norm_ws': True, 'tags': True}
         >>> parser.extract_options = lambda x: opts
-        >>> ex = build_example('f()', '\n  <...>A \n\nB <...> C\n<...>', 0, None, None, (0, 1, 'file'))
+        >>> ex = build_example('f()', '\n  <a>A \n\nB <bc> C\n<c>', 0, None, None, (0, 1, 'file'))
         >>> exp = ex.expected
-        >>> exp
 
-        >>> exp.regexs
         >>> got = ' A B  C '
         >>> exp.check_got_output(ex, got, opts, 0)
         True
 
         >>> exp.get_captures(ex, got, opts, 0)
-        (' A B C ', {})
+        (' A B  C ', {'a': '', 'bc': '', 'c': ''})
+
+        >>> got = ' 12A B 34 C 1'
+        >>> exp.check_got_output(ex, got, opts, 0)
+        True
+
+        >>> exp.get_captures(ex, got, opts, 0)
+        (' 12A B 34 C 1', {'a': '12', 'bc': '34', 'c': '1'})
 
         '''
     def __init__(self, *args, **kargs):
@@ -167,16 +174,20 @@ class _LinearExpected(Expected):
 
     def get_captures(self, example, got, options, verbosity):
         self.verbosity = verbosity
+        self._regex_expected.check_good = self.check_good
+        self._regex_expected.verbosity = self.verbosity
+
+        # relay on _RegexExpected's get_captures algorithm
+        # it is more complex and less safer than _LinearExpected but
+        # yield results of much better quality
         if self.check_good:
-            return got, self._partial_captured
+            captured = self._regex_expected._get_all_capture_or_none(example, got, options)
+            assert captured != None
+
+            return got, captured
+
         else:
-            # relay on _RegexExpected's get_captures algorithm
-            # it is more complex and less safer than _LinearExpected but
-            # yield results of much better quality and because we are using
-            # it only when the example fails, the performance penalty should
-            # be minimal.
-            self._regex_expected.check_good = False
-            return self._regex_expected.get_captures(example, got, options, verbosity)
+            return self._regex_expected._get_all_capture_as_possible(example, got, options)
 
     def _linear_matching(self, regexs, tags_by_idx, charnos, expected_str, got):
         ''' Assume that all (if any) example's capture tags are regex
@@ -229,16 +240,33 @@ class _RegexExpected(Expected):
         Expected.__init__(self, *args, **kargs)
         self.check_good = False
 
+    def _get_all_capture_or_none(self, example, got, options):
+        r = re.compile(''.join(example.expected.regexs), re.MULTILINE | re.DOTALL)
+        m = r.match(got)
+
+        if m:
+            return m.groupdict('')
+
+    def _get_all_capture_as_possible(self, example, got, options):
+        expected = example.expected
+        captures = [n for n in expected.tags_by_idx.values() if n != None]
+        return self._get_captures_by_incremental_match(captures,
+                                      expected.regexs,
+                                      expected.charnos,
+                                      expected.rcounts,
+                                      expected.str,
+                                      got,
+                                      min_rcount = 6)
+
     def check_got_output(self, example, got, options, verbosity):
         self.check_good = False
         self.verbosity = verbosity
         self._captures_from_good_check = None
 
-        r = re.compile(''.join(example.expected.regexs), re.MULTILINE | re.DOTALL)
-        m = r.match(got)
+        captured_or_none = self._get_all_capture_or_none(example, got, options)
 
-        if m:
-            self._captures_from_good_check = m.groupdict()
+        if captured_or_none != None:
+            self._captures_from_good_check = captured_or_none
             self.check_good = True
             return True
 
@@ -249,20 +277,12 @@ class _RegexExpected(Expected):
     def get_captures(self, example, got, options, verbosity):
         self.verbosity = verbosity
         if self.check_good:
+            # already captured in check_got_output
             return got, self._captures_from_good_check
-
         else:
-            expected = example.expected
-            captures = [n for n in expected.tags_by_idx.values() if n != None]
-            return self._get_all_captures_as_possible(captures,
-                                          expected.regexs,
-                                          expected.charnos,
-                                          expected.rcounts,
-                                          expected.str,
-                                          got,
-                                          min_rcount = 6)
+            return self._get_all_capture_as_possible(example, got, options)
 
-    def _get_all_captures_as_possible(self, captures, expected_regexs, charnos, rcounts, expected, got, min_rcount=6):
+    def _get_captures_by_incremental_match(self, captures, expected_regexs, charnos, rcounts, expected, got, min_rcount=6):
         r'''
         Try to replace all the capture groups in the expected by
         the strings found in got.
@@ -274,7 +294,7 @@ class _RegexExpected(Expected):
             >>> from functools import partial
             >>> exp = _RegexExpected(0, 0, 0, 0, 0)
             >>> exp.verbosity = 0
-            >>> _replace_captures = exp._get_all_captures_as_possible
+            >>> _replace_captures = exp._get_captures_by_incremental_match
 
         We can only "safely" replace all the groups at the begin (left) of the
         string before the first difference and replace all the groups at the
@@ -495,7 +515,7 @@ class _RegexExpected(Expected):
 
         right_begin_at = charnos[best_right_index]
 
-        replaced_captures = m.groupdict()
+        replaced_captures = m.groupdict('')
         buffer_captured = replaced_captures.pop(buffer_tag_name)
 
         # we cannot keep replacing the capture tags... leave the
