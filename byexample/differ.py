@@ -170,7 +170,7 @@ class Differ(object):
         for k_v1, k_v2 in zip(k_vs[::2], k_vs[1::2]):
             left, right = _format(*k_v1), _format(*k_v2)
 
-            space_between = max(max_len - len(left), 1)
+            space_between = max(max_len - len(left), 1) if right else 0
             self._write("    %s%s%s" % (left, " " * space_between, right))
 
 
