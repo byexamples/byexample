@@ -76,13 +76,14 @@ def print_example(example, use_colors, x):
     if x < 0:
         return
 
+    capture_tag_names = [n for n in sorted(example.expected.tags_by_idx.values()) if n != None]
+
     print("::[Example]" + ":" * 59)
     print("  Found in: %s by: %s" % (example.filepath, example.finder))
     print("  Lines from: %s to: %s" % (example.start_lineno, example.end_lineno))
     print("  Indentation: |%s| (%i bytes)" % (example.indentation,
                                                 len(example.indentation)))
-    print("  Capture Tags: %s" % pprint.pformat(example.expected.captures, width=50))
-    print("  Advanced Capture: %s" % str(example.expected.advanced_captures))
+    print("  Capture Tags: %s" % pprint.pformat(capture_tag_names, width=50))
 
     opts_repr = pprint.pformat(example.options.as_dict(), width=50)
     lines = opts_repr.split('\n')
@@ -100,12 +101,12 @@ def print_example(example, use_colors, x):
         _l += len(e) + 1
 
     print("..[Regexs]" + "." * 60)
-    if len(example.expected.regexs) != len(example.expected.positions):
+    if len(example.expected.regexs) != len(example.expected.charnos):
         print("Error: inconsistent regexs")
         print("  Regexs: %s" % example.expected.regexs)
-        print("  Positions: %s" % example.expected.positions)
+        print("  Positions: %s" % example.expected.charnos)
 
-    for p, r in zip(example.expected.positions, example.expected.regexs):
+    for p, r in zip(example.expected.charnos, example.expected.regexs):
         print("% 4i: %s" % (p, repr(r)))
 
     print("..[Run]" + "." * 63)
