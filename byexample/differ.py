@@ -152,7 +152,7 @@ class Differ(object):
             v = self._human(v)
             if len(v) > _mlen:
                 _mlen -= 5 # minus the ' ... '
-                v = v[:_mlen/2] + " ... " + v[-_mlen/2:]
+                v = v[:int(_mlen/2)] + " ... " + v[-int(_mlen/2):]
 
 
             return "%s: %s" % (k, v)
