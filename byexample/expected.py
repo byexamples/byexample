@@ -249,6 +249,9 @@ class _RegexExpected(Expected):
 
     def _get_all_capture_as_possible(self, example, got, options):
         expected = example.expected
+        if not expected.tags_by_idx:
+            return expected.str, {}
+
         captures = [n for n in expected.tags_by_idx.values() if n != None]
         return self._get_captures_by_incremental_match(captures,
                                       expected.regexs,
