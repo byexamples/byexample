@@ -212,7 +212,7 @@ class ExampleParser(object):
     def _as_safe_regexs(self, literals, charno, normalize_whitespace):
         r'''
         Process a possible multi line literals string and create one
-        regex per line.
+        regex per word.
 
             >>> from byexample.parser import ExampleParser
             >>> parser = ExampleParser(0, 'utf8', "", None); parser.language = 'python'
@@ -240,15 +240,17 @@ class ExampleParser(object):
             (['AB\\+'], [4], [3])
 
         The third and last return item is the 'rcount' or the 'real count'.
-        It is the count of how many literals a line has. In normal circustances,
-        rcount == len(line) but if normalize_whitespace == True, each secuence
-        of whitespaces will count as just +1.
+        It is the count of how many literals a word has (including the space
+        at the end of the word).
+        In normal circustances, rcount == len(word) but if
+        normalize_whitespace == True, each secuence of whitespaces will count
+        as just +1.
 
-        Because we are creating a regex per line, where we should put
-        the new line character?
+        Because we are creating a regex per word, where we should put
+        the space character? or the new line character?
 
-        The current implementation ensures that the new line character
-        (if exists) will be appended to the end of the line.
+        The current implementation ensures that the space/new line character
+        (if exists) will be appended to the end of the word.
 
             >>> r, p, c = _safe('A\nB', 0, False)
             >>> r
@@ -262,13 +264,13 @@ class ExampleParser(object):
 
             >>> r, p, c = _safe('\n  A \n\nB  C\n', 0, False)
             >>> r
-            ['\\\n', '\\ \\ A\\ \\\n', '\\\n', 'B\\ \\ C\\\n']
+            ['\\\n', '\\ ', '\\ ', 'A\\ ', '\\\n', '\\\n', 'B\\ ', '\\ ', 'C\\\n']
 
             >>> p
-            [0, 1, 6, 7]
+            [0, 1, 2, 3, 5, 6, 7, 9, 10]
 
             >>> c
-            [1, 5, 1, 5]
+            [1, 1, 1, 2, 1, 1, 2, 1, 2]
 
 
         When the flag normalize_whitespace is true, this things are a little
@@ -281,13 +283,13 @@ class ExampleParser(object):
 
             >>> r, p, c = _safe('\n  A \n\nB  C\n', 0, True)
             >>> r
-            ['\\s+', 'A\\s+', 'B\\s+C\\s+']
+            ['\\s+', 'A\\s+', 'B\\s+', 'C\\s+']
 
             >>> p
-            [0, 3, 7]
+            [0, 3, 7, 10]
 
             >>> c
-            [1, 2, 4]
+            [1, 2, 2, 2]
 
         '''
         if not literals:
@@ -307,13 +309,31 @@ class ExampleParser(object):
         rcounts = []
 
         # Now we want to split the possible multi line literals
-        # into lines: this will make the life easier for supporting
-        # the incremental matching later (see Checker)
+        # into words: this will make the life easier for supporting
+        # the incremental matching later (see byexample/expected.py)
         #
-        # Our definition is that the new line character will be
-        # appended or at the end of the line.
-        exprs = exprs[0].split('\n')
-        exprs[:-1] = [e + '\n' for e in exprs[:-1]]
+        # Our definition is that the new line character or the space
+        # character will be appended at the end of the word.
+        lines = exprs[0].split('\n')
+        lines[:-1] = [e + '\n' for e in lines[:-1]]
+
+        exprs = []
+        for line in lines:
+            words = line.split(' ')
+            words[:-1] = [w + ' ' for w in words[:-1]]
+
+            # all the words in 'words' ends in a space ' '
+            # except the last.
+            # so all of them are no-empty except, may be, the
+            # last one.
+            #
+            # but because the words belong to a line that ends
+            # in a new line, the last word must have a new line
+            # at the end so it is not empty neither
+            #
+            # this however may not be true for the last word
+            # of the last line... see below
+            exprs.extend(words)
 
         # re calculate the new position for each expr
         assert len(charnos) == 1
@@ -323,8 +343,8 @@ class ExampleParser(object):
         assert len(exprs) == len(charnos) # any charno missing?
         assert next_charno == charnos[-1] + len(exprs[-1]) # any byte missing?
 
-        # it is possible that the last line is empty (because the previous
-        # ended in a \n -> remove it
+        # it is possible that the last word is empty (because the previous
+        # ended in a \n) -> remove it
         if not exprs[-1]:
             del exprs[-1]
             del charnos[-1]
@@ -333,7 +353,7 @@ class ExampleParser(object):
         assert all(e for e in exprs)
 
         if normalize_whitespace:
-            # Because all the exprs ends in \n (except the last one),
+            # Because all the exprs ends in ' ' or \n (except the last one),
             # all of them will end in \s+ (except the last one)
             # Said that, any leading whitespace at the begin of a expr
             # can be stripped away because it will be matched by the \s+
@@ -361,7 +381,7 @@ class ExampleParser(object):
         assert all(e for e in exprs) # any empty string?
 
         if normalize_whitespace:
-            # We don't care about any kind of whitespace, so we will replace
+            # We don't care about whitespace, so we will replace
             # them by a \s+ regex
             # Because we will be mixing regexs with literals, it is time
             # to build safe literals and count the 'real counts'
@@ -370,7 +390,8 @@ class ExampleParser(object):
             _rcs = []
             _es = []
             for e in exprs:
-                # First, separate the chunks of literals
+                # First, separate the chunks of literals by any whitespace
+                # which includes spaces, new lines but also others ws like tabs
                 chunks = any_ws_re.split(e)
 
                 assert chunks
@@ -395,8 +416,7 @@ class ExampleParser(object):
             rcounts = _rcs
 
         else:
-            # Because each expr already has a new line, we compute
-            # the real count just as the length of each expr
+            # We compute the real count just as the length of each expr
             rcounts = [len(e) for e in exprs]
 
             # We leave the whitespaces as they are and we escape them
@@ -532,10 +552,10 @@ class ExampleParser(object):
             >>> r, p, c, _, _ = _as_regexs('a  \n   b  \t\vc', True, True, True)
 
             >>> r
-            ['\\A', 'a\\s+', 'b\\s+c', '\\s*\\Z']
+            ['\\A', 'a\\s+', 'b\\s+', 'c', '\\s*\\Z']
 
             >>> p
-            [0, 0, 7, 13]
+            [0, 0, 7, 12, 13]
 
             >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
             >>> m.match('a b c') is not None
@@ -545,7 +565,7 @@ class ExampleParser(object):
             rcount is computed (do not count each whitespace)
 
             >>> c
-            [0, 2, 3, 0]
+            [0, 2, 2, 1, 0]
 
          - if tags_enabled is true, interpret the tags <..> as regexs.
 
@@ -666,10 +686,10 @@ class ExampleParser(object):
             >>> regexs, p, _, _, _ = _as_regexs(expected, True, True, True)
 
             >>> regexs
-            ['\\A', 'a', '(?P<foo>.*?)(?<!\\s)', '\\s+b', '\\s*\\Z']
+            ['\\A', 'a', '(?P<foo>.*?)(?<!\\s)', '\\s+', 'b', '\\s*\\Z']
 
             >>> p
-            [0, 0, 1, 6, 8]
+            [0, 0, 1, 6, 7, 8]
 
             >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
             >>> m.match('a  \n 123\n\n b').groups()
