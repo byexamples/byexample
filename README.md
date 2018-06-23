@@ -132,36 +132,14 @@ out:
 The ``<name>`` marker can be used to capture any string (like ``<...>``)
 but also it assigns a name to the capture.
 
-If a name is used in an example more than once, all the string captured under
-that name must be the same string, otherwise the test will fail.
+Currently the strings captured cannot be used in any place but there are plans
+to use it to enhance the tests.
 
-Given the value:
-
-```python
-X = 42
-
-```
-
-The following example will pass, as both ``random-number``s are the same (42).
-
-```python
-[1, X, 2, X]
-
-out:
-[1, <random-number>, 2, <random-number>]
-
-```
-
-But in the following, both numbers are different and the example will fail
-
-```python
-[1, X, 2, 4]                                    # byexample: +pass
-
-out:
-[1, <random-number>, 2, <random-number>]
-
-```
-
+Crazy ideas (not implemented yet):
+ - If a tag ``<foo>`` is repeated, test that all of the capture the same string,
+   otherwise fail the test.
+ - Enable a raw copy & paste: capture a string in one example and paste it in
+   other.
 
 ### Option flags
 

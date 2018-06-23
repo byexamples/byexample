@@ -124,7 +124,7 @@ So let's change the example to be more realistic:
     $ byexample --pretty none -l shell synthetic.doc
     <...>
     Captured:
-        protect: your rights                responsibilities: responsi ... of others
+        protect: your rights                responsibilities: responsi ... f others
     <...>
     Expected:
     To protect your rights, we need to prevent others from <prevent1>
@@ -154,7 +154,7 @@ This guess makes the differences shorter and more easy to spot:
     $ byexample --pretty none -l shell --diff ndiff synthetic.doc
     <...>
     Captured:
-        protect: your rights                responsibilities: responsi ... of others
+        protect: your rights                responsibilities: responsi ... f others
     <...>
     Differences:
     - To protect your rights, we need to prevent others from <prevent1>
