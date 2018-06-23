@@ -1,5 +1,5 @@
 from .common import log
-import string, re
+import string, re, time
 
 class Expected(object):
     def __init__(self, expected_str, regexs, charnos, rcounts, tags_by_idx):
@@ -256,7 +256,8 @@ class _RegexExpected(Expected):
                                       expected.rcounts,
                                       expected.str,
                                       got,
-                                      min_rcount = 16)
+                                      min_rcount = 16,
+                                      timeout = 2)
 
     def check_got_output(self, example, got, options, verbosity):
         self.check_good = False
@@ -282,7 +283,8 @@ class _RegexExpected(Expected):
         else:
             return self._get_all_capture_as_possible(example, got, options)
 
-    def _get_captures_by_incremental_match(self, captures, expected_regexs, charnos, rcounts, expected, got, min_rcount):
+    def _get_captures_by_incremental_match(self, captures, expected_regexs,
+            charnos, rcounts, expected, got, min_rcount, timeout):
         r'''
         Try to replace all the capture groups in the expected by
         the strings found in got.
@@ -308,13 +310,13 @@ class _RegexExpected(Expected):
             >>> charnos = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32]
             >>> rcounts   = [0, 2, 0, 2, 0, 3, 0, 3, 0, 2, 0]
 
-            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=1)
+            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, 1, 1)
 
             >>> s                               # byexample: -tag
             'aaAAbb<...>ddd<...>eeeCCcc'
 
             >>> got = r'aaAAbBBxxxddeeeCCcc'
-            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=1)
+            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, 1, 1)
 
             >>> s                               # byexample: -tag
             'aa<...>bb<...>ddd<...>eeeCCcc'
@@ -331,18 +333,18 @@ class _RegexExpected(Expected):
         A small value of min_rcount means that we don't need much literals after
         and before the capture.
 
-            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=1)
+            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=1, timeout=1)
             >>> s                               # byexample: -tag
             'aaAAbb<...>ddd<...>eeeCCcc'
 
-            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=2)
+            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=2, timeout=1)
             >>> s                               # byexample: -tag
             'aaAAbb<...>ddd<...>eeeCCcc'
 
         Notice how a value of 3 changes the result because the 'bb' literal,
         after the capture has only a rcount of 2
 
-            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=3)
+            >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=3, timeout=1)
             >>> s                               # byexample: -tag
             'aa<...>bb<...>ddd<...>eeeCCcc'
 
@@ -358,7 +360,7 @@ class _RegexExpected(Expected):
             >>> rcounts   = [0, 2, 0, 2, 0, 3, 0, 3, 0, 2, 0]
 
             >>> s, c = _replace_captures(['foo', 'bar', 'baz', 'zaz'],
-            ...                          expected_regexs, charnos, rcounts, expected, got, min_rcount=1)
+            ...                          expected_regexs, charnos, rcounts, expected, got, 1, 1)
             >>> s                               # byexample: -tag
             'aaAAbb<bar>ddd<baz>eeeCCcc'
             >>> c
@@ -385,7 +387,7 @@ class _RegexExpected(Expected):
             >>> rcounts   = [0, 2, 0, 3, 3, 2, 0, 2, 0]
 
             >>> s, c = _replace_captures(['foo', 'bar'], expected_regexs,
-            ...                          charnos, rcounts, expected, got, min_rcount=2)
+            ...                          charnos, rcounts, expected, got, min_rcount=2, timeout=1)
             >>> s                               # byexample: -tag
             'aaAAbb\ncc\ndd<bar>ee'
             >>> c
@@ -402,11 +404,27 @@ class _RegexExpected(Expected):
             ...                     'ee', r'\n*\Z']
             >>> rcounts   = [0, 2, 0, 3, 3, 2, 1, 2, 0] # notice the +1
 
-            >>> s, c = _replace_captures(['foo'], expected_regexs, charnos, rcounts, expected, got, min_rcount=2)
+            >>> s, c = _replace_captures(['foo'], expected_regexs, charnos, rcounts, expected, got, min_rcount=2, timeout=1)
             >>> s                               # byexample: -tag
             'aaAAbb\ncc\nddAAee'
             >>> c
             {'foo': 'AA'}
+
+        Because we are dealing with an expected that will not match the got
+        string, it is possible that the regex takes a lot of time trying to
+        fit itself into the got string as best as he can.
+        This may do a lot of backtracking in the regex engine which can be
+        really slow.
+        To put a safe guard, the 'timeout' parameter control how much time
+        we are willing to spend on this.
+
+        Setting a value of 0 virtually disable this increcmental match:
+
+            >>> s, c = _replace_captures(['foo'], expected_regexs, charnos, rcounts, expected, got, min_rcount=2, timeout=0)
+            >>> s                               # byexample: -tag
+            'aa<foo>bb\ncc\ndd<foo>ee'
+            >>> c
+            {}
 
         '''
 
@@ -418,6 +436,9 @@ class _RegexExpected(Expected):
 
         best_left_index = 0
         best_right_index = len(regs)-1
+
+        timeout_left = timeout / 2.0
+        timeout_right = timeout - timeout_left
 
         log("Partial Matching:\nGot string to target:\n%s\n" % repr(got),
                 self.verbosity-4)
@@ -431,6 +452,10 @@ class _RegexExpected(Expected):
                 accum = 0
                 continue
 
+            if timeout_left <= 0:
+                log("Partial Matching on the Left Timed Out", self.verbosity-4)
+                break
+
             accum += rcounts[i]
 
             log("|-->  | best at index % 3i (accum rcount % 3i/%i):\nTrying partial left regex: %s" % (
@@ -439,7 +464,9 @@ class _RegexExpected(Expected):
                 self.verbosity-4)
 
 
+            begin = time.time()
             m = _compile(regs[:i+1]).match(got)
+            timeout_left -= (time.time() - begin)
             if m:
                 log("Match\n% 4i: %s\n" % (
                     charnos[i], m.group(0)),
@@ -447,6 +474,11 @@ class _RegexExpected(Expected):
 
                 if accum >= min_rcount:
                     best_left_index = i
+
+        # Sum any extra time didn't spend on the left.
+        # If the left timed out, timeout_left will be negative and
+        # in deed will reduce the available timeout on the right
+        timeout_right += timeout_left
 
         left_side = regs[:best_left_index+1]
         r = _compile(left_side)
@@ -476,6 +508,10 @@ class _RegexExpected(Expected):
                     accum = 0
                     continue
 
+                if timeout_right <= 0:
+                    log("Partial Matching on the Right Timed Out", self.verbosity-4)
+                    break
+
                 accum += rcounts[i]
 
                 log("|  <--| best at index % 3i (accum rcount % 3i/%i):\nTrying partial regex: %s" % (
@@ -483,7 +519,9 @@ class _RegexExpected(Expected):
                     repr(''.join(left_side + [buffer_re] + regs[i:]))),
                     self.verbosity-4)
 
+                begin = time.time()
                 m = _compile(left_side + [buffer_re] + regs[i:]).match(got)
+                timeout_right -= (time.time() - begin)
                 if m:
                     log("Matched; Buffer between left and right:\n%s\n" % (
                         m.group(buffer_tag_name)),
@@ -522,8 +560,10 @@ class _RegexExpected(Expected):
         # string as it is: this always was a best-effort algorithm
         middle_part = expected[left_ends_at:right_begin_at]
 
-        log("Incremental Match:\n##Left: %s\n\n##Middle: %s\n\n##Right: %s\n\n##Captured: %s\n\n##Buffer: %s" % (
-                got_left, middle_part, got_right, repr(replaced_captures), buffer_captured), self.verbosity-4)
+        elapsed = timeout - timeout_right
+
+        log("Incremental Match:\n##Elapsed: %0.2f secs\n##Left: %s\n\n##Middle: %s\n\n##Right: %s\n\n##Captured: %s\n\n##Buffer: %s" % (
+                elapsed, got_left, middle_part, got_right, repr(replaced_captures), buffer_captured), self.verbosity-4)
 
         return got_left + middle_part + got_right, replaced_captures
 
