@@ -256,7 +256,7 @@ class _RegexExpected(Expected):
                                       expected.rcounts,
                                       expected.str,
                                       got,
-                                      min_rcount = 6)
+                                      min_rcount = 16)
 
     def check_got_output(self, example, got, options, verbosity):
         self.check_good = False
@@ -282,7 +282,7 @@ class _RegexExpected(Expected):
         else:
             return self._get_all_capture_as_possible(example, got, options)
 
-    def _get_captures_by_incremental_match(self, captures, expected_regexs, charnos, rcounts, expected, got, min_rcount=6):
+    def _get_captures_by_incremental_match(self, captures, expected_regexs, charnos, rcounts, expected, got, min_rcount):
         r'''
         Try to replace all the capture groups in the expected by
         the strings found in got.
