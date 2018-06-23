@@ -76,7 +76,7 @@ def print_example(example, use_colors, x):
     if x < 0:
         return
 
-    capture_tag_names = [n for n in sorted(example.expected.tags_by_idx.values()) if n != None]
+    capture_tag_names = list(sorted(n for n in example.expected.tags_by_idx.values() if n != None))
 
     print("::[Example]" + ":" * 59)
     print("  Found in: %s by: %s" % (example.filepath, example.finder))

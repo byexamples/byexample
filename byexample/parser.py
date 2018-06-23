@@ -488,7 +488,7 @@ class ExampleParser(object):
 
         We can see the names of the capturing regexs (named capture tags)
 
-            >>> [n for n in sorted(tags_by_idx.values()) if n != None]
+            >>> list(sorted(n for n in tags_by_idx.values() if n != None))
             ['bar', 'foo']
 
         And we can see the positions of the tags in the regex list
@@ -512,7 +512,7 @@ class ExampleParser(object):
             >>> regexs
             ['\\A', 'a', '(?:.*?)', 'b', '(?P<bar>.*?)', 'c', '\\n*\\Z']
 
-            >>> [n for n in sorted(tags_by_idx.values()) if n != None]
+            >>> list(sorted(n for n in tags_by_idx.values() if n != None))
             ['bar']
 
             >>> tags_by_idx
