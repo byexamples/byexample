@@ -39,7 +39,7 @@ We can corroborate that the test passes or not running ``byexample``
     $ # ignore this
     $ alias byexample=python\ r.py
 
-    $ byexample --pretty none -l shell synthetic.doc    # byexample: +timeout=5
+    $ byexample --pretty none -l shell synthetic.doc
     <...>
     Expected:
     To protect your rights, we need to prevent others from denying you
@@ -65,7 +65,7 @@ For this reason ``byexample`` allows you to change the diff algorithm:
 
 .. code:: sh
 
-    $ byexample --pretty none -l shell --diff ndiff synthetic.doc   # byexample: +timeout=5
+    $ byexample --pretty none -l shell --diff ndiff synthetic.doc
     <...>
     Differences:
     - To protect your rights, we need to prevent others from denying you
@@ -121,7 +121,7 @@ So let's change the example to be more realistic:
 
 .. code:: sh
 
-    $ byexample --pretty none -l shell synthetic.doc   # byexample: +timeout=5
+    $ byexample --pretty none -l shell synthetic.doc
     <...>
     Captured:
         protect: your rights                responsibilities: responsi ... f others
@@ -151,7 +151,7 @@ respect the freedom of others" and replaced the tags by the captured text.
 
 This guess makes the differences shorter and more easy to spot:
 
-    $ byexample --pretty none -l shell --diff ndiff synthetic.doc   # byexample: +timeout=5
+    $ byexample --pretty none -l shell --diff ndiff synthetic.doc
     <...>
     Captured:
         protect: your rights                responsibilities: responsi ... f others

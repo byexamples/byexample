@@ -158,6 +158,7 @@ class Differ(object):
             return "%s: %s" % (k, v)
 
         k_vs = list(replaced_captures.items())
+        k_vs.sort()
         if not k_vs:
             self._write("Nothing captured.")
             return
