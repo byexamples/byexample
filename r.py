@@ -14,6 +14,7 @@ try:
 except ImportError:
     @contextlib.contextmanager
     def coverage_measure():
+        print("Warning: coverage is not installed")
         yield
 
 if __name__ == '__main__':

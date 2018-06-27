@@ -4,66 +4,59 @@
 ordinary text and snippets of code in the same file and then you
 execute them as regression tests.
 
-It is primary intended for writing good and live tutorials and documentation
-showing how a piece of software works or it can be used *by example*.
+It lets you to execute the examples written in ``Python``, ``Ruby`` or whatever
+in your documentation and validate them.
 
-Currently we support:
+You can always be sure that the examples are correct and your documentation
+is up to date!
 
- - Python (compatible with ``doctest``)
- - Ruby
- - Shell (``sh`` and ``bash``)
- - GDB (the [GNU Debugger](https://www.gnu.org/software/gdb/download/))
- - C++ (using [cling](https://github.com/root-project/cling) - *experimental*)
-
-The documentation of each one can be found in ``docs/languages/``.
-
-More languages will be supported in the future. Stay tuned.
-
-## Contribute
-
-Go ahead, fork this project and start to hack it. Run ``make test`` to ensure that
-everything is working as expected and then propose your Pull Request!
-
-There are some interesting areas where you can contribute like:
-
- - add support to new languages (Javascript, Julia, just listen to you heart)
- - misspelling? I'm not an English native so any grammatical correction is welcome
- - add more examples. How do you use ``byexample``? Give us your feedback!
- - is ``byexample`` producing a hard-to-debug diff or you found a bug? Create an issue in github
+If not, you may have an out dated documentation or your docs are ok but you
+have a bug in your code.
 
 ## Usage
 
-Install and run it against any source file(s), like this README.
-All the snippets will be collected, executed and checked.
+<img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/demo.gif" alt="Sorry, it seems that you cannot see the demo. Another excuse to install byexample and test it by yourself ;)" width="75%" height="75%">
+
+## How do I get started?
+
+First, you need to install it.
 
 ```shell
 $ pip install --user byexample                # install it # byexample: +skip
-$ byexample -l python,ruby,shell README.rst   # run it     # byexample: +skip
-................
-File README.rst, 20/20 test ran in <...> seconds
-[PASS] Pass: 17 Fail: 0 Skip: 3
 
 ```
 
-<img src="https://raw.githubusercontent.com/eldipa/byexample/master/media/demo.gif" alt="Sorry, it seems that you cannot see the demo. Another excuse to install byexample and test it by yourself ;)" width="75%" height="75%">
+If you don't have ``pip`` or ``python`` installed, check the
+[download page](https://www.python.org/downloads/).
+
+Now, write a tutorial, blog, how-to putting some examples in the middle
+(like this README);
+All the snippets and examples will be collected, executed and checked.
+
+```shell
+$ byexample -l python,ruby,shell README.md   # run it     # byexample: +skip
+................
+[PASS] Pass: <...> Fail: <...>
+
+```
 
 You can select which languages to run, over which files, how to display the
 differences and much more.
 
-The ``doc/usage.rst`` document goes through almost all the flags that the
-``byexample`` program has.
+The [how to usage](docs/usage.md) document goes through almost all the flags that
+``byexample`` program has, full of examples of course.
 
-### Snippets of code
+## What an example looks like?
 
-Any snippet of code that it is detected by ``byexample`` will be executed
-and its output compared with the text below.
+It is just a snippet of code followed by the expected result:
 
-This is a quite useful way to test and document by example.
+```python
+>>> 1 + 2
+3
 
-Any code that is written inside of a Markdown fenced code block will be parsed
-and executed depending of the language selected.
+```
 
-Here is an example in Python
+or
 
 ```python
 1 + 2
@@ -76,134 +69,91 @@ out:
 The expression ``1 + 2`` is executed and the output compared with ``3`` to
 see if the test passes or not.
 
-For some languages, we support the interpreter-session like syntax.
+## Where should I write the examples?
 
-For Python we use ``>>>`` and ``...`` as prompts to find this sessions
+``byexample`` really doesn't care where you write the examples: you can write
+them in a Markdown, HTML, Latex, or plain text file.
+
+Even you can write them in your own source code to document and test it.
+
+Anything that it is between `` ```<language> `` and `` ``` `` is considered
+an example: this the Markdown fenced block syntax.
+
+But ``byexample`` detects examples in other contexts as well.
+
+For example in ``Python`` you can use the prompts ``>>>`` and ``...`` to write
+an interpreter session like example.
 
 ```python
 >>> def add(a, b):
 ...   return a + b
 
-```
-
-```python
-add(1, 2)
-
-out:
+>>> add(1, 2)
 3
-```
-
-
-There is not restriction in which snippets you can add. You can even mix
-snippets of different languages in the same file!
-
-Here is an example in Ruby
-
-```ruby
-def add(a, b)
-  a + b
-end;
-
-add(2, 6)
-
-out:
-=> 8
-```
-
-The documentation of each language can be found in ``docs/languages/``.
-
-### The 'match anything' wildcard
-
-By default, if the expected text has the ``<...>`` marker, that
-will match for any string.
-
-Very useful to match long unwanted or uninteresting strings.
-
-```python
-print(list(range(20)))
-
-out:
-[0, 1, <...>, 18, 19]
 
 ```
 
-### Capture
+Take a look to the documentation of each language [docs/languages](docs/languages/).
 
-The ``<name>`` marker can be used to capture any string (like ``<...>``)
-but also it assigns a name to the capture.
+## Languages supported
 
-Currently the strings captured cannot be used in any place but there are plans
-to use it to enhance the tests.
+Currently we support:
 
-Crazy ideas (not implemented yet):
- - If a tag ``<foo>`` is repeated, test that all of the capture the same string,
-   otherwise fail the test.
- - Enable a raw copy & paste: capture a string in one example and paste it in
-   other.
+ - Python (compatible with ``doctest``) -> [docs](docs/languages/python.md)
+ - Ruby -> [docs](docs/languages/ruby.md)
+ - Shell (``sh`` and ``bash``) -> [docs](docs/languages/shell.md)
+ - GDB (the [GNU Debugger](https://www.gnu.org/software/gdb/download/)) -> [docs](docs/languages/gdb.md)
+ - C++ (using [cling](https://github.com/root-project/cling) - *experimental*) -> [docs](docs/languages/cpp.md)
 
-### Option flags
+The documentation of each one can be found in [docs/languages/](docs/languages/).
 
-``byexample`` supports a set of flags or options that can change some
-parameters of the execution of the example.
+More languages will be supported in the future. Stay tuned.
 
-Some flags are generic, others are interpreter-specific.
+## Contributing
 
-#### Normalize whitespace
+First off, thanks for using and considering contributing to ``byexample``.
 
-Replace any sequence of whitespace by a single one. This makes the test
-more robust against small differences (trailing spaces, space/tab mismatch)
+We love to receive contributions from our community. There are tons of ways you
+can contribute
+ - add support to new languages (Javascript, Julia, just listen to you heart). Check this [how to](docs/how_to_support_new_finders_and_languages.md).
+ - misspelling? Improve to the documentation is more than welcome.
+ - add more examples. How do you use ``byexample``? Give us your feedback!
+ - is ``byexample`` producing a hard-to-debug diff or you found a bug? Create an issue in github.
 
-```python
-print(list(range(20)))				# byexample: +norm-ws
+But don't be limited to those options. We keep our mind open to other useful
+contributions: write a tutorial or a blog, feature requests, social media...
 
-out:
-[0,   1,  2,  3,  4,  5,  6,  7,  8,  9,
-10,  11, 12, 13, 14, 15, 16, 17, 18, 19]
+Check out our [CONTRIBUTING](CONTRIBUTING.md) guidelines and welcome!
 
-```
-
-#### Skip and Pass
-
-``skip`` will skip the example completely while ``pass`` will execute it
-normally but it will not check the output.
-
-```python
-a = 1
-a = 2       # this assignment will not be executed # byexample: +skip
-a
-
-out:
-1
-```
-
-```python
-def f():
-    print("Choosing a random number...")
-    return 42
-
-a = f()     # execute the code but ignore the output # byexample: +pass
-a
-
-out:
-42
-
-```
-
-#### Timeout
-
-The execution of each example has a timeout which can be changed by
-a flag
-
-```python
-import time
-time.sleep(2.5) # simulates a slow operation # byexample: +timeout=3
-
-```
-
-## Extend ``byexample``
+### Extend ``byexample``
 
 It is possible to extend ``byexample`` adding new ways to find examples in a
 document and/or to parse and run/interpret a new language or adding hooks to be
 called regardless of the language/interpreter.
 
-The ``doc/how_to_extend.rst`` is a quick tutorial that shows exactly that.
+Check out [how_to support new finders and languages](docs/how_to_support_new_finders_and_languages.md)
+and [how to hook to events with concerns](docs/how_to_hook_to_events_with_concerns.md) for
+a quick tutorials that shows exactly how to do that.
+
+You could also share your work and [contribute](CONTRIBUTING.md) to
+``byexample`` with your extensions.
+
+## Versioning
+
+We use [semantic version](https://semver.org/).
+
+See the latest [releases and tags](https://github.com/byexamples/byexample/tags)
+
+## License
+
+This project is licensed under GPLv3
+
+```shell
+$ head -n 2 LICENSE     # byexample: +norm-ws
+          GNU GENERAL PUBLIC LICENSE
+           Version 3, 29 June 2007
+
+```
+
+See [LICENSE.md](LICENSE.md) for more details.
+

@@ -1,17 +1,20 @@
-.PHONY: all test travis-test coverage dist upload clean doc
+.PHONY: all test lib-test docs-test modules-test travis-test coverage dist upload clean doc deps
 
 python_bin ?= python
 pretty ?= all
+languages ?= python,shell,ruby,gdb,cpp
 
 all:
 	@echo "Usage: make deps|meta-test|test|quick-test|dist|upload|doc|clean"
 	@echo " - deps: install the dependencies for byexample"
 	@echo " - test: run the all the tests and validate the byexample's output."
 	@echo " - travis-test: run the all the tests (tweaked for Travis CI)."
+	@echo " - docs-test: run the tests in the docs."
+	@echo " - lib-test: run the tests in the lib (unit test)."
+	@echo " - modules-test: run the tests of the modules (unit test)."
 	@echo " - coverage: run the all the tests under differnet envs to measure the coverage."
 	@echo " - dist: make a source and a binary distribution (package)"
 	@echo " - upload: upload the source and the binary distribution to pypi"
-	@echo " - deprecated-doc: (deprecated) build a pdf file from the documentation"
 	@echo " - clean: restore the environment"
 	@exit 1
 
@@ -19,17 +22,23 @@ deps:
 	pip install -e .
 
 test:
-	@$(python_bin) r.py --timeout 60 --pretty $(pretty) --ff -l shell test/test.rst
+	@$(python_bin) r.py --timeout 60 --pretty $(pretty) --ff -l shell test/test.md
 	@make -s clean_test
 
-travis-test:
+lib-test:
+	@$(python_bin) r.py --pretty $(pretty) --ff -l python byexample/*.py
+
+modules-test:
+	@$(python_bin) r.py --pretty $(pretty) --ff -l $(languages) byexample/modules/*.py
+
+docs-test:
+	@$(python_bin) r.py --pretty $(pretty) --ff -l $(languages) *.md
+	@$(python_bin) r.py --pretty $(pretty) --ff -l $(languages) --skip docs/huff/usage.md -- `find docs -name "*.md"`
+
+travis-test: lib-test modules-test docs-test
 	@# run the test separately so we can control which languages will
 	@# be used. In a Travis CI environment,  Ruby, GDB and C++ are
 	@# not supported
-	@$(python_bin) r.py --pretty $(pretty) --ff -l python byexample/*.py
-	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell byexample/modules/*.py
-	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell README.md
-	@$(python_bin) r.py --pretty $(pretty) --ff -l python,shell `find docs -name "*.rst"`
 	@make -s clean_test
 
 coverage:
@@ -41,8 +50,8 @@ coverage:
 	@echo
 	@echo "Run the rest of the tests with an environment variable to make"
 	@echo "r.py to initialize the coverage too"
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l python,shell,ruby,gdb,cpp `find docs -name "*.rst"`
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l python,shell,ruby,gdb,cpp README.md
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l $(languages) `find docs -name "*.md"`
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l $(languages) *.md
 	@echo
 	@echo "Run again, but with different flags to force the"
 	@echo "execution of different parts of byexample"
@@ -61,17 +70,13 @@ dist:
 upload: dist
 	twine upload dist/*.tar.gz dist/*.whl
 
-deprecated-doc:
-	pandoc -s -o doc.pdf README.md docs/languages/* docs/how_to_extend.rst
-
 clean_test:
-	rm -f file1 file2 file3
-	rm -f synthetic.doc
+	rm -f blog-101-python-tutorial.md wiki-about-license.doc license.doc
+	rm -f param-echo.exe param-echo.c
 
 clean: clean_test
 	rm -Rf dist/ build/ *.egg-info
 	rm -Rf build/ *.egg-info
 	find . -name "*.pyc" -delete
 	find . -type d -name "__pycache__" -delete
-	rm -f doc.pdf
 	rm -f README.rst
