@@ -6,6 +6,12 @@ Where = collections.namedtuple('Where', ['start_lineno',
                                          'end_lineno',
                                          'filepath'])
 
+ExampleMatch = collections.namedtuple('ExampleMatch', [
+                                            'finder', 'runner',
+                                            'start_lineno', 'end_lineno',
+                                            'build'
+                                            ])
+
 class ExampleHarvest(object):
     '''
           Finding process    Parsing process         Run process
@@ -49,7 +55,9 @@ class ExampleHarvest(object):
         # that they were found in the file/string.
         all_examples.sort(key=lambda this: this.start_lineno)
 
-        return self.check_example_overlap(all_examples, filepath)
+        all_examples = self.check_example_overlap(all_examples, filepath)
+
+        return [example.build() for example in all_examples]
 
     def check_example_overlap(self, examples, filepath):
         r'''
@@ -338,9 +346,9 @@ class ExampleHarvest(object):
 
             with enhance_exceptions(where, parser):
                 # perfect, we have everything to build an example
-                example = parser.build_example(snippet, expected, indent,
-                                                        runner, finder, where)
-
+                example = self._create_example_match(finder, parser, runner,
+                                                        snippet, expected,
+                                                        indent, where)
                 examples.append(example)
 
 
@@ -348,6 +356,17 @@ class ExampleHarvest(object):
                                             self.verbosity-1)
 
         return examples
+
+    def _create_example_match(self, finder, parser, runner, snippet, expected,
+            indent, where):
+
+        start_lineno, end_lineno, _ = where
+        build = lambda: parser.build_example(snippet, expected, indent,
+                                                runner, finder, where)
+        return ExampleMatch(finder, runner,
+                               start_lineno, end_lineno,
+                               build)
+
 
 
 class ExampleFinder(object):
