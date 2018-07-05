@@ -18,6 +18,7 @@ Example:
 
   out:
   => 11
+  ```
 
   >> { 1 => 2, 3=>{4=>"aaaaaaaa", 5=>Array(0..20)}}
   => {1=>2,
@@ -30,7 +31,14 @@ Example:
        19,
        20]}}
 
-  ```
+  >> "foo bar 1"
+  => "foo bar 1"
+
+  >> "foo bar 2"
+
+  >> "foo bar 3"
+  => "foo bar 3"
+
 """
 
 import re, pexpect, sys, time
@@ -81,6 +89,9 @@ class RubyParser(ExampleParser):
 
     def extend_option_parser(self, parser):
         parser.add_flag("ruby-pretty-print", help="enable the pretty print enhancement.")
+        parser.add_argument("+ruby-expr-print", choices=['auto', 'true', 'false'],
+                            default='auto',
+                            help='')
         return parser
 
 class RubyInterpreter(ExampleRunner, PexepctMixin):
@@ -95,14 +106,38 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         self.encoding = encoding
 
     def run(self, example, flags):
-        return self._exec_and_wait(example.source,
-                                    timeout=int(flags['timeout']))
+
+        # turn on/off the echo mode base on the setting from the
+        # start; per example setting is not supported
+        src = example.source
+        print_expr = False
+        if self.expr_print_mode == 'auto':
+            if self._detect_expression_print_expected(example):
+                print_expr = True
+                src = 'IRB.CurrentContext.echo = true;\n' + src
+            else:
+                print_expr = False
+                src = 'IRB.CurrentContext.echo = false;\n' + src
+
+        # there is no need to revert the echo=True if it was changed
+        # because the execution of the next example will set it correctly
+        return self._exec_and_wait(src, timeout=int(flags['timeout']))
+
+    _EXPR_RESULT_RE = re.compile(r'^=> ', re.MULTILINE | re.DOTALL)
+
+    def _detect_expression_print_expected(self, example):
+        # aka, check for a =>
+        expected_str = example.expected.str
+        return self._EXPR_RESULT_RE.search(expected_str) != None
 
     def interact(self, example, options):
         PexepctMixin.interact(self)
 
     def initialize(self, examples, options):
         ruby_pretty_print = options.get('ruby_pretty_print', True)
+
+        # always/yes; never/no; autoetect normalization
+        self.expr_print_mode = options['ruby_expr_print']
 
         # set the final command
         self.cmd = '/usr/bin/env irb'
@@ -114,6 +149,13 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         if ruby_pretty_print:
             self._exec_and_wait('IRB.CurrentContext.inspect_mode = :pp\n',
                                     timeout=2)
+
+        # disable the echo if we don't want it (false) or we may want it
+        # but it will depend on the example (auto)
+        if self.expr_print_mode in ('auto', 'false'):
+            self._exec_and_wait('IRB.CurrentContext.echo = false\n', timeout=2)
+        else:
+            self._exec_and_wait('IRB.CurrentContext.echo = true\n', timeout=2)
 
     def shutdown(self):
         self._shutdown_interpreter()

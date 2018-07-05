@@ -43,8 +43,8 @@ File byexample/modules/gdb.py, 2/2 test ran in <...> seconds
 File byexample/modules/python.py, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0
 ~
-File byexample/modules/ruby.py, 3/3 test ran in <...> seconds
-[PASS] Pass: 3 Fail: 0 Skip: 0
+File byexample/modules/ruby.py, 7/7 test ran in <...> seconds
+[PASS] Pass: 7 Fail: 0 Skip: 0
 ~
 File byexample/modules/shell.py, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0
