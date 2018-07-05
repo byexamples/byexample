@@ -75,7 +75,7 @@ def parse_args(args=None):
                         default=2,
                         type=int,
                         help='timeout in seconds to complete each example (2 by default); ' + \
-                             'this can be changed per example with TIMEOUT option.')
+                             'this can be changed per example with this option.')
     parser.add_argument("-o", "--options",
                         dest='options_str',
                         default="",
