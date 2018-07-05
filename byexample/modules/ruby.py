@@ -18,6 +18,18 @@ Example:
 
   out:
   => 11
+
+  >> { 1 => 2, 3=>{4=>"aaaaaaaa", 5=>Array(0..20)}}
+  => {1=>2,
+   3=>
+    {4=>"aaaaaaaa",
+     5=>
+      [0,
+       1,
+       <...>
+       19,
+       20]}}
+
   ```
 """
 
@@ -67,12 +79,16 @@ class RubyParser(ExampleParser):
         return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
 
+    def extend_option_parser(self, parser):
+        parser.add_flag("ruby-pretty-print", help="enable the pretty print enhancement.")
+        return parser
+
 class RubyInterpreter(ExampleRunner, PexepctMixin):
     language = 'ruby'
 
     def __init__(self, verbosity, encoding, **unused):
         PexepctMixin.__init__(self,
-                                cmd='/usr/bin/env irb',
+                                cmd=None,
                                 PS1_re = r'irb[^:]*:\d+:0(>|\*) ',
                                 any_PS_re = r'irb[^:]*:\d+:\d+(>|\*) ')
 
@@ -86,7 +102,18 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         PexepctMixin.interact(self)
 
     def initialize(self, examples, options):
+        ruby_pretty_print = options.get('ruby_pretty_print', True)
+
+        # set the final command
+        self.cmd = '/usr/bin/env irb'
+
+        # run!
         self._spawn_interpreter(delaybeforesend=options['delaybeforesend'])
+
+        # set the pretty print inspector
+        if ruby_pretty_print:
+            self._exec_and_wait('IRB.CurrentContext.inspect_mode = :pp\n',
+                                    timeout=2)
 
     def shutdown(self):
         self._shutdown_interpreter()
