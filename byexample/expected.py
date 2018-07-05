@@ -17,7 +17,7 @@ class _LinearExpected(Expected):
         >>> from byexample.parser import ExampleParser
         >>> from byexample.options import Options
         >>> parser = ExampleParser(0, 'utf8', None, Options()); parser.language = 'python'
-        >>> opts = {'norm_ws': False, 'tags': True}
+        >>> opts = {'norm_ws': False, 'tags': True, 'rm': []}
         >>> parser.extract_options = lambda x: opts
 
         >>> build_example = parser.build_example
@@ -132,7 +132,7 @@ class _LinearExpected(Expected):
 
         (See byexample.parser docs)
 
-        >>> opts = {'norm_ws': True, 'tags': True}
+        >>> opts = {'norm_ws': True, 'tags': True, 'rm': []}
         >>> parser.extract_options = lambda x: opts
         >>> ex = build_example('f()', '\n  <a>A \n\nB <bc> C\n<c>', 0, None, None, (0, 1, 'file'))
         >>> exp = ex.expected

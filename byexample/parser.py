@@ -153,6 +153,9 @@ class ExampleParser(object):
 
         snippet, expected = self.process_snippet_and_expected(snippet, expected)
 
+        for x in options['rm']:
+            expected = expected.replace(x, '')
+
         are_advanced_captures_enabled = False
         expected_regexs, charnos, rcounts, tags_by_idx, adv = self.expected_as_regexs(
                                                 expected,
