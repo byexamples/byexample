@@ -30,6 +30,8 @@ from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.runner import ExampleRunner, PexepctMixin
 
+stability = 'experimental'
+
 class CPPParser(ExampleParser):
     language = 'cpp'
 

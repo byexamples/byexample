@@ -3,6 +3,8 @@ from byexample.common import colored, highlight_syntax
 from byexample.concern import Concern
 from doctest import _indent
 
+stability = 'unstable'
+
 try:
     from tqdm import tqdm
     if os.environ.get('BYEXAMPLE_PROGRESS_ASCII'):

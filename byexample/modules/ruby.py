@@ -47,6 +47,8 @@ from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin
 
+stability = 'experimental'
+
 class RubyPromptFinder(ExampleFinder):
     target = 'ruby-prompt'
 

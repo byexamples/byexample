@@ -1,6 +1,8 @@
 import re
 from byexample.finder import ExampleFinder
 
+stability = 'stable'
+
 class FencedMatchFinder(ExampleFinder):
     target = 'markdown-fenced-code'
     specific = False

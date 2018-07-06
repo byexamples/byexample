@@ -26,6 +26,8 @@ from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin
 
+stability = 'stable'
+
 class PythonPromptFinder(ExampleFinder):
     target = 'python-prompt'
 

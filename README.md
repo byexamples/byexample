@@ -140,7 +140,18 @@ You could also share your work and [contribute](CONTRIBUTING.md) to
 
 ## Versioning
 
-We use [semantic version](https://semver.org/).
+We use [semantic version](https://semver.org/) for the core or engine.
+
+For each module we have the following categorization:
+
+ - ``experimental``: non backward compatibility changes are possible or even
+removal between versions (even patch versions).
+ - ``unstable``: low impact non backward compatibility changes may occur
+between versions; but in general a change like that will happen only between
+major versions.
+ - ``stable``: non backward compatibility changes, if happen, they will
+between major versions.
+ - ``deprecated``: it will disappear in a future version.
 
 See the latest [releases and tags](https://github.com/byexamples/byexample/tags)
 

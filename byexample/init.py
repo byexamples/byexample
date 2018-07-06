@@ -43,7 +43,11 @@ def load_modules(dirnames, cfg):
                                                         verbosity-2)
             continue
 
-        log("From '%s' loaded '%s'" % (path, name), verbosity-1)
+        stability = getattr(module, 'stability', 'undefined')
+        if stability not in ('experimental', 'unstable', 'stable', 'deprecated'):
+            stability = 'experimental/%s?' % str(stability)
+
+        log("From '%s' loaded '%s' (%s)" % (path, name, stability), verbosity-1)
         for klass, key, what in [(ExampleRunner, 'language', 'runners'),
                                  (ExampleParser, 'language', 'parsers'),
                                  (ExampleFinder, 'target', 'finders'),
