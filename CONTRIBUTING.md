@@ -20,32 +20,32 @@ But it is not just contribute code.
 
 Is ``byexample`` producing a hard-to-debug diff or did you found a bug?
 [Creating an issue](https://github.com/byexamples/byexample/issues) in
-github is as important as writting new code.
+github is as important as writing new code.
 
 Do you like to write? Write a blog or post in the social medias (I hope for the good :)
 
-Do you want to contrib but you are not sure where to start?
+Do you want to contribute but you are not sure where to start?
 Pick an issue from [here](https://github.com/byexamples/byexample/issues);
 the issues with the label ``good first issue`` is what you are looking for.
 
 
-## Modules: the prefered way
+## Modules: the preferred way
 
 We love to extend ``byexample`` adding new ``modules``.
 
-Instead of editting the internal ``Parser`` class, extend it through a
+Instead of editing the internal ``Parser`` class, extend it through a
 parser that can be loaded on the fly using ``modules`` (read this
 [how to](docs/how_to_support_new_finders_and_languages.md) if you
 didn't)
 
-Instead of editting the interal ``Runner`` class, try to a ``Concern``.
+Instead of editing the internal ``Runner`` class, try to a ``Concern``.
 
-If you find that a feture would be cool and the current ``Concern``'s inteface
+If you find that a feature would be cool and the current ``Concern``'s interface
 (a set of hooks) is not enough, open an issue and propose an extension
 for ``Concern``.
 
 In this way we your contributions can be merged and shipped in the next
-release without worring to be incompatible with previous versions.
+release without worrying to be incompatible with previous versions.
 
 But if you have the feeling that something cool is missing, don't be afraid
 and talk about it.
