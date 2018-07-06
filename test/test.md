@@ -76,8 +76,8 @@ File docs/languages/cpp.md, 2/2 test ran in <...> seconds
 File docs/languages/gdb.md, 8/8 test ran in <...> seconds
 [PASS] Pass: 8 Fail: 0 Skip: 0
 ~
-File docs/languages/ruby.md, 9/9 test ran in <...> seconds
-[PASS] Pass: 9 Fail: 0 Skip: 0
+File docs/languages/ruby.md, 12/12 test ran in <...> seconds
+[PASS] Pass: 12 Fail: 0 Skip: 0
 ~
 File docs/languages/python.md, 41/41 test ran in <...> seconds
 [PASS] Pass: 40 Fail: 0 Skip: 1
@@ -101,9 +101,6 @@ File docs/how_to_hook_to_events_with_concerns.md, 2/2 test ran in <...> seconds
 ## Coverage tests
 
 ```shell
-$ pretty=none make coverage         # byexample: +rm=~ +timeout=120
-<...>
-TOTAL <...>  66%
-<...>
+$ pretty=none make coverage         # byexample: +pass
 
 ```

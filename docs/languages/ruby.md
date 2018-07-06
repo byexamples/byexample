@@ -13,8 +13,6 @@ secondary prompts.
 Because of this, all the consecutive lines that start with ``>>`` will belong
 to the same example and they will be executed together.
 
-The ``=>`` marker is written by the Ruby interpreter and not by ``byexample``.
-It is left as is as this is quite common in the Ruby examples and literature.
 
 ```ruby
 >> a = 1;
@@ -27,7 +25,7 @@ It is left as is as this is quite common in the Ruby examples and literature.
 >>     c += b
 >>
 >>     return c
->> end;
+>> end
 
 >> g(1, 2, 3)
 => 6
@@ -36,21 +34,47 @@ It is left as is as this is quite common in the Ruby examples and literature.
 
 ## The object returned
 
-``>>`` is the only prompt the ``byexample`` uses.
+Because everything in Ruby is an expression, everything returns a result.
 
-As said before the ``=>`` marker is written by the Ruby interpreter
-and not by ``byexample``.
+This is annoying if you want to write several ``Ruby`` lines without checking
+the results.
+
+For this reason, ``byexample`` suppress the representation of the object
+returned unless the example has a ``=>``.
+
+In the following case, no object returned is not printed and there for
+it is not checked:
+
+```ruby
+>> 1 + 2
+
+>> puts "hello"
+hello
+
+```
+
+Now, compare it with this. It is the same example but the objects returned
+are checked too.
 
 ```ruby
 >> 1 + 2
 => 3
 
+>> puts "hello"
+hello
+=> nil
+
 ```
 
-Because everything in Ruby is an expression, everything returns a result.
+If you want to check all the expressions, you can force to print all the
+objects returned using the ``+ruby-expr-print=true``.
 
-This is annoying if you want to write several ``Ruby`` lines without checking
-the results.
+On the other hand, you can disable it for never see an object's print
+with ``+ruby-expr-print=false``.
+
+The default is ``+ruby-expr-print=auto``.
+
+## Semicolon side effect
 
 The semicolon ``;`` at the end of each expression will suppress the print of
 the returned object.
@@ -75,14 +99,36 @@ semicolons. It is easy to get confused with this weird effect.
 
 ```
 
-An alternative could be group all the expression and run the example
-with the ``pass`` option to ignore the intermediate results.
+This is important because you may want to use ``;`` to suppress the expression's
+value in a multi expression example:
+
 
 ```ruby
->> a = 1       # byexample: +pass
->> b = 2
-
+>> a = 1;
+>> b = 2;
 >> a + b
 => 3
 
 ```
+
+In contrast with:
+
+```ruby
+>> a = 1
+>> b = 2
+>> a + b
+=> 1
+=> 2
+=> 3
+
+```
+
+# Pretty print
+
+``byexample`` changes the default IRB's ``inspector`` and uses ``pp``
+(pretty print).
+
+If you want, you can use the IRB's default one with
+the option ``-ruby-pretty-print``
+
+

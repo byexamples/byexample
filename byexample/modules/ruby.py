@@ -91,7 +91,9 @@ class RubyParser(ExampleParser):
         parser.add_flag("ruby-pretty-print", help="enable the pretty print enhancement.")
         parser.add_argument("+ruby-expr-print", choices=['auto', 'true', 'false'],
                             default='auto',
-                            help='')
+                            help='print the expression\'s value (true); ' +\
+                                 'suppress it (false); or print it only ' +\
+                                 'if the example has a => (auto, the default)')
         return parser
 
 class RubyInterpreter(ExampleRunner, PexepctMixin):
