@@ -89,6 +89,7 @@ foo...bar
 
 ### Compatibility overview
 
+```
 ==========================  ============================
 ``doctest``                 Observations
 ==========================  ============================
@@ -102,6 +103,7 @@ foo...bar
 ``REPORT_CDIFF``            Supported
 ``REPORT_NDIFF``            Supported
 =========================== ============================
+```
 
 ``DONT_ACCEPT_TRUE_FOR_1`` is not supported as it was implemented in ``doctest``
 as a workaround for the result of a comparison in Python 2.3: in that time
@@ -189,6 +191,7 @@ Error: oh no!
 As you can see ``byexample`` uses a different set of options. Here
 is a summary of the equivalent options:
 
+```
 ====================  ==========================  ============================
 ``byexample``         ``doctest``                 Observations
 ====================  ==========================  ============================
@@ -203,6 +206,7 @@ is a summary of the equivalent options:
 ``diff``              ``REPORT_CDIFF``            With ``context`` as argument.
 ``diff``              ``REPORT_NDIFF``            With ``ndiff`` as argument.
 ====================  =========================== ============================
+```
 
 ``DONT_ACCEPT_BLANKLINE`` and ``IGNORE_EXCEPTION_DETAIL`` are used to ignore
 some pieces of the output. The ``tags`` flag of ``byexample`` should cover
