@@ -14,3 +14,6 @@ branches:
 addons:
     apt_packages:
         - pandoc
+env:
+    global:
+        - languages=python,shell
