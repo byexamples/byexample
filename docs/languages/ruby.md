@@ -7,11 +7,8 @@ Check its [download page](https://www.ruby-lang.org/en/downloads/)
 
 ## Find interactive examples
 
-For ``Ruby``, ``byexample`` uses the ``>>`` string as the primary and
-secondary prompts.
-
-Because of this, all the consecutive lines that start with ``>>`` will belong
-to the same example and they will be executed together.
+For ``Ruby``, ``byexample`` uses the ``>>`` string as the primary prompt
+and ``..`` as the secondary prompt.
 
 
 ```ruby
@@ -21,11 +18,11 @@ to the same example and they will be executed together.
 => 3
 
 >> def g(a, b, c)
->>     c += a
->>     c += b
->>
->>     return c
->> end
+..     c += a
+..     c += b
+..
+..     return c
+.. end
 
 >> g(1, 2, 3)
 => 6
@@ -96,30 +93,6 @@ semicolons. It is easy to get confused with this weird effect.
 >> nil       # this dummy expression is enough to flush the previous one
 4
 => nil
-
-```
-
-This is important because you may want to use ``;`` to suppress the expression's
-value in a multi expression example:
-
-
-```ruby
->> a = 1;
->> b = 2;
->> a + b
-=> 3
-
-```
-
-In contrast with:
-
-```ruby
->> a = 1
->> b = 2
->> a + b
-=> 1
-=> 2
-=> 3
 
 ```
 

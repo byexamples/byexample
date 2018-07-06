@@ -1,8 +1,8 @@
 """
 Example:
   >> def hello
-  >>     'hello bla world'
-  >> end;
+  ..     'hello bla world'
+  .. end;
 
   >> hello
   => "hello<...>world"
@@ -53,13 +53,13 @@ class RubyPromptFinder(ExampleFinder):
     @constant
     def example_regex(self):
         return re.compile(r'''
-            # Snippet consists of one or more PS1 lines >>
+            # Snippet consists of one PS1 line >> and zero or more PS2 lines
             (?P<snippet>
                 (?:^(?P<indent> [ ]*) >>[ ]     .*)    # PS1 line
-                (?:\n           [ ]*  >>      .*)*)    # and more PS1 lines
+                (?:\n           [ ]*  \.\.    .*)*)    # zero or more PS2 lines
             \n?
             # Want consists of any non-blank lines that do not start with PS1
-            # The '=>' indicator is included (implicitly)
+            # The '=>' indicator is included (implicitly) and may not exist
             (?P<expected> (?:(?![ ]*$)     # Not a blank line
                           (?![ ]*>>)       # Not a line starting with PS1
                          .+$\n?            # But any other line

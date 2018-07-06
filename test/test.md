@@ -76,8 +76,8 @@ File docs/languages/cpp.md, 2/2 test ran in <...> seconds
 File docs/languages/gdb.md, 8/8 test ran in <...> seconds
 [PASS] Pass: 8 Fail: 0 Skip: 0
 ~
-File docs/languages/ruby.md, 12/12 test ran in <...> seconds
-[PASS] Pass: 12 Fail: 0 Skip: 0
+File docs/languages/ruby.md, 14/14 test ran in <...> seconds
+[PASS] Pass: 14 Fail: 0 Skip: 0
 ~
 File docs/languages/python.md, 41/41 test ran in <...> seconds
 [PASS] Pass: 40 Fail: 0 Skip: 1
