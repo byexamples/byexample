@@ -13,7 +13,7 @@ class ByexampleCoverage(Concern):
             if runner.language == 'python':
                 coverage_start_code = r'''
 from coverage import Coverage as _cov_class
-_cov_instance = _cov_class(auto_data=True)
+_cov_instance = _cov_class(source=['byexample'], auto_data=True)
 _cov_instance.start()
 '''
                 runner._exec_and_wait(coverage_start_code, 10)
