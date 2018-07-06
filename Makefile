@@ -22,20 +22,20 @@ deps:
 	pip install -e .
 
 test:
-	@make -p w
+	@mkdir -p w
 	@$(python_bin) r.py --timeout 60 --pretty $(pretty) --ff -l shell test/test.md
 	@make -s clean_test
 
 lib-test:
-	@make -p w
+	@mkdir -p w
 	@$(python_bin) r.py --pretty $(pretty) --ff -l python byexample/*.py
 
 modules-test:
-	@make -p w
+	@mkdir -p w
 	@$(python_bin) r.py --pretty $(pretty) --ff -l $(languages) byexample/modules/*.py
 
 docs-test:
-	@make -p w
+	@mkdir -p w
 	@$(python_bin) r.py --pretty $(pretty) --ff -l $(languages) *.md
 	@$(python_bin) r.py --pretty $(pretty) --ff -l $(languages) --skip docs/huff/usage.md -- `find docs -name "*.md"`
 
@@ -47,7 +47,7 @@ travis-test: lib-test modules-test docs-test
 
 coverage:
 	@rm -f .coverage
-	@make -p w
+	@mkdir -p w
 	@echo "Run the byexample's tests with the Python interpreter."
 	@echo "to start the coverage, use a hook in test/ to initialize the coverage"
 	@echo "engine at the begin of the execution (and to finalize it at the end)"
