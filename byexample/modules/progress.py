@@ -123,9 +123,10 @@ class SimpleReporter(Concern):
     def crashed(self, example, exception):
         self._write('\n')
 
+        tb = ''.join(traceback.format_tb(exception.__traceback__))
         msg = 'Execution of example %i of %i crashed.\n%s' % (
                                     self.examplenro, self.num_examples,
-                                    traceback.format_exc(exception))
+                                    tb)
         self._print_error_header(example)
         self._write(msg)
         self.aborted_or_crashed += 1
