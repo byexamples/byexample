@@ -29,15 +29,18 @@ test:
 lib-test:
 	@mkdir -p w
 	@$(python_bin) r.py --pretty $(pretty) --ff -l python byexample/*.py
+	@make -s clean_test
 
 modules-test:
 	@mkdir -p w
 	@$(python_bin) r.py --pretty $(pretty) --ff -l $(languages) byexample/modules/*.py
+	@make -s clean_test
 
 docs-test:
 	@mkdir -p w
 	@$(python_bin) r.py --pretty $(pretty) --ff -l $(languages) *.md
 	@$(python_bin) r.py --pretty $(pretty) --ff -l $(languages) --skip docs/huff/usage.md -- `find docs -name "*.md"`
+	@make -s clean_test
 
 travis-test: lib-test modules-test docs-test
 	@# run the test separately so we can control which languages will
@@ -76,9 +79,7 @@ upload: dist
 	twine upload dist/*.tar.gz dist/*.whl
 
 clean_test:
-	rm -f blog-101-python-tutorial.md wiki-about-license.doc license.doc
-	rm -f param-echo.exe param-echo.c
-	rm -f w
+	rm -Rf w
 
 clean: clean_test
 	rm -Rf dist/ build/ *.egg-info
