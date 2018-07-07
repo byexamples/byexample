@@ -36,9 +36,8 @@ Now, write a tutorial, blog, how-to putting some examples in the middle
 All the snippets and examples will be collected, executed and checked.
 
 ```shell
-$ byexample -l python,ruby,shell README.md   # run it     # byexample: +skip
-................
-[PASS] Pass: <...> Fail: <...>
+$ byexample -l python,ruby,shell README.md      # run it    # byexample: +skip
+[PASS] Pass: <...> Fail: <...> Skip: <...>
 
 ```
 
@@ -156,6 +155,17 @@ between major versions.
  - ``deprecated``: it will disappear in a future version.
 
 See the latest [releases and tags](https://github.com/byexamples/byexample/tags)
+
+Current version:
+
+```shell
+$ byexample -V
+byexample 6.0.0 - GNU GPLv3
+<...>
+Copyright (C) Di Paola Martin - https://github.com/byexamples/byexample
+<...>
+
+```
 
 ## License
 

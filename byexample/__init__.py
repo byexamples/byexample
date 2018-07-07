@@ -1,10 +1,10 @@
 '''Write snippets of code in C++, Python, Ruby, and others as documentation and execute them as regression tests.'''
 
-__version__ = "5.0.0"
+__version__ = "6.0.0"
 
 _author  = 'Di Paola Martin'
 _license = 'GNU GPLv3'
-_url = 'https://github.com/eldipa/byexample'
+_url = 'https://github.com/byexamples/byexample'
 
 _license_disclaimer = r'''Copyright (C) {author} - {url}
 
