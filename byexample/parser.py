@@ -9,7 +9,8 @@ Example = collections.namedtuple('Example', ['runner',
                                              'start_lineno', 'end_lineno',
                                              'options', 'indentation',
                                              'source',
-                                             'expected'])
+                                             'expected',
+                                             'meta'])
 
 
 class ExampleParser(object):
@@ -207,7 +208,11 @@ class ExampleParser(object):
                           start_lineno=start_lineno, end_lineno=end_lineno,
 
                           # the runner for this example
-                          runner=runner)
+                          runner=runner,
+
+                          # extra stuff, probably what we could get
+                          # from the execution of the example (nothing yet)
+                          meta={})
 
         options.down()
         return example

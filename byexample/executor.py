@@ -54,9 +54,10 @@ class FileExecutor(object):
                     self.concerns.start_example(example, options)
                     try:
                         with enhance_exceptions(example, example.runner):
-                            got = example.runner.run(example, options)
+                            example.meta['got'] = example.runner.run(example, options)
+                        self.concerns.end_example(example, options)
                     except TimeoutException as e:  # pragma: no cover
-                        got = "**Execution timed out**\n" + str(e)
+                        example.meta['got'] = "**Execution timed out**\n" + str(e)
                         timedout = True
                     except KeyboardInterrupt:      # pragma: no cover
                         self.concerns.user_aborted(example)
@@ -64,6 +65,12 @@ class FileExecutor(object):
                     except Exception as e:         # pragma: no cover
                         self.concerns.crashed(example, e)
                         crashed = True
+                    finally:
+                        self.concerns.finally_example(example, options)
+
+                    # cache this *after* calling end_example/finally_example
+                    # those two may modify the got
+                    got = example.meta['got']
 
                     if user_aborted or crashed:    # pragma: no cover
                         failed = True
@@ -98,6 +105,9 @@ class FileExecutor(object):
                         if fail_fast or timedout:
                             break
                 finally:
+                    # allow the garbage collector to collect the got string,
+                    # do not keep it in memory
+                    example.meta['got'] = None
                     options.down()
 
         self.concerns.end_run(failed, user_aborted, crashed)

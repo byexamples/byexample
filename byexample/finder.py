@@ -88,7 +88,7 @@ class ExampleHarvest(object):
             ...                   None, F,
             ...                   start_lineno, end_lineno,
             ...                   None, None,
-            ...                   source, expected)
+            ...                   source, expected, {})
 
         And we create a harvester to play with it:
 

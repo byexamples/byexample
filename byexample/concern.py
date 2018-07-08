@@ -69,6 +69,11 @@ class Concern(object):
         and the options set before (probably by the user from the command
         line).
 
+        If the example finish (no crash, abort, timeout), eventually the
+        end_example will be called.
+
+        Regardless of the example's result, finally_example will be called.
+
         You may expect that eventually one of the following methods will
         be called to mark the end of the execution of the example:
          - user_aborted
@@ -80,12 +85,36 @@ class Concern(object):
         '''
         pass    # pragma: no cover
 
+    def end_example(self, example, options):
+        '''
+        Called when the given example finished its execution normally.
+
+        You may modify example.meta.
+        For example, you could modify example.meta['got'], the string captured,
+        for sanitization or other enhancement purposes.
+
+        But keep in mind that may exist multiple concern objects and
+        the order in which they will be called is undefined, so if two
+        or more concern objects edit the same example, you may not always will
+        get the same effect.
+        '''
+        pass    # pragma: no cover
+
+    def finally_example(self, example, options):
+        '''
+        Called when the given example finished its execution regardless of how.
+
+        Like in end_example you may modify example.meta but the
+        same warning apply. See Concern.end_example.
+        '''
+        pass    # pragma: no cover
+
     def start_interact(self, example, options):
         '''
         Called before the user start an interactive session with the
         example's runner/interpreter.
 
-        You may use this opportunity to perform some maintance tasks
+        You may use this opportunity to perform some maintenance tasks
         in the runner/interpreter to make the user life easier.
         '''
         pass    # pragma: no cover
