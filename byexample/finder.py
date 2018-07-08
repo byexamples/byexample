@@ -39,6 +39,9 @@ class ExampleHarvest(object):
 
         self.options = options
 
+    def __repr__(self):
+        return 'Example Harvester'
+
     def get_examples_from_file(self, filepath):
         with open(filepath, 'rtU') as f:
             string = f.read()
