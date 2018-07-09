@@ -68,13 +68,13 @@ class FileExecutor(object):
                     finally:
                         self.concerns.finally_example(example, options)
 
-                    # cache this *after* calling end_example/finally_example
-                    # those two may modify the got
-                    got = example.meta['got']
-
                     if user_aborted or crashed:    # pragma: no cover
                         failed = True
                         break # always fail fast if the user aborted or code crashed
+
+                    # cache this *after* calling end_example/finally_example
+                    # those two may modify the got
+                    got = example.meta['got']
 
                     print_execution(example, got, self.verbosity-3)
 
