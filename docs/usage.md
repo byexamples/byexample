@@ -373,6 +373,96 @@ world!
 
 ```
 
+## Changing the runner: Shebang
+
+The examples are executed by a specific runner based on the language of
+the examples.
+
+In general, the runner is an interactive interpreter like ``irb`` for ``Ruby``
+or ``python`` for ``Python``.
+
+Sometimes is convenient to change how the interpreter is executed for:
+ - using another one (but compatible)
+ - redirecting the standard error
+ - executing it remotely
+
+Consider the following example that prints interesting things to standard output
+and debug/uninterested things to standard error:
+
+```
+$ cat <<EOF > w/blog-database.md
+>     >>> from __future__ import print_function
+>     >>> import sys
+>
+>     >>> def load_database():
+>     ...     print("Loading...")
+>     ...     print("debug 314kb", file=sys.stderr)
+>     ...     print("Done")
+>
+>     >>> load_database()
+>     Loading...
+>     Done
+> EOF
+
+```
+
+Running this will fail because the debug print will be mixed with the normal
+prints:
+
+```
+$ byexample --pretty none -l python w/blog-database.md
+<...>
+Expected:
+Loading...
+Done
+Got:
+Loading...
+debug 314kb
+Done
+<...>
+
+```
+
+Yes, changing the example solves this but what happen if you cannot change it?
+
+Then you can teach ``byexample`` to redirect the standard error.
+
+For this we need to change how to spawn a ``python`` interpreter using
+the ``shebang`` option:
+
+```
+$ byexample --pretty none -l python \
+>   --shebang "python:/bin/sh -c '%e %p %a 2>/dev/null'"  \
+>   w/blog-database.md
+<...>
+[PASS] Pass: 4 Fail: 0 Skip: 0
+
+```
+
+Don't be scared, the expression ``python:/bin/sh -c '%e %p %a 2>/dev/null'``
+means for the runner ``python`` use the following command line.
+
+The ``%e``, ``%p``, ``%a`` tokens are replaced by ``byexample`` with the
+environment, program name and arguments.
+
+Each runner has its own set of values for those tokens.
+
+To simplify let's assume that ``%e`` and ``%a`` are empty and ``%p``
+is ``python``.
+
+So shebang after the substitutions is ``/bin/sh -c 'python 2>/dev/null'``
+
+This one in turns means: spawn a ``/bin/sh`` shell with ``-c`` and
+``'python 2>/dev/null'`` arguments.
+
+``-c`` means execute the next argument as a shell command, so this will
+execute ``python 2>/dev/null`` and the ``2>/dev/null`` mean that the standard
+error should be discarded.
+
+If your shell-fu is a little rusty and the shebang is too magic, don't worry
+I had the same problem; it's for very specific situation and you should be
+away from this most of the time.
+
 ## Extending ``byexample``
 
 
