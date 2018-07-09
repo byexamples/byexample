@@ -142,6 +142,7 @@ def get_options(args, cfg):
                         'timeout': args.timeout,
                         'diff': args.diff,
                         'delaybeforesend': None,
+                        'shebangs': args.shebangs
                         })
     log("Options (cmdline): %s" % options, cfg['verbosity']-2)
 

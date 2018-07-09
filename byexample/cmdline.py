@@ -21,7 +21,18 @@ class _Print(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         parser.exit(message=self.message)
 
+def _key_val_type(item):
+    try:
+        key, val = [i.strip() for i in item.split(":", 1)]
+    except:
+        raise argparse.ArgumentTypeError(
+                "Invalid format '%s'. Use key:val instead." % item)
 
+    if not key or not val:
+        raise argparse.ArgumentTypeError(
+                "Neither the key nor the value can be empty in '%s'." % item)
+
+    return (key, val)
 
 def parse_args(args=None):
     '''Parse the arguments args and return the them.
@@ -91,6 +102,15 @@ def parse_args(args=None):
                         help="control how to pretty print the output.")
     parser.add_argument("--interact", "--debug", action='store_true',
                         help="interact with the runner/interpreter manually if an example fails.")
+    parser.add_argument("--shebang", action='append', metavar='runner:shebang',
+                        dest='shebangs',
+                        default=[],
+                        type=_key_val_type,
+                        help='change the command line of the given <runner> by ' + \
+                             '<shebang>; the tokens %%e %%p %%a are replaced by ' + \
+                             'the default values for environment, program name, ' + \
+                             'and arguments (however no all ' + \
+                             'the runners will honor this and some may break)')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", action='count', dest='verbosity', default=0,
@@ -99,5 +119,29 @@ def parse_args(args=None):
                         help="quiet mode, do not print anything even if an example fails; "
                              "supress the progress output.")
 
-    return parser.parse_args(args)
+    namespace = parser.parse_args(args)
+
+    # Some extra checks
+    # -----------------
+
+    # the languages must be uniq
+    copy = set(namespace.languages) # copy of uniqs
+    for l in namespace.languages:
+        if l not in copy:
+            parser.error("argument --languages: '%s' is duplicated." % l)
+        copy.remove(l)
+
+    # the shebangs must belong to a language and must be uniq
+    copy = set(k for k, v in namespace.shebangs)
+    for k in (k for k, v in namespace.shebangs):
+        if k not in copy:
+            parser.error("argument --shebang: '%s' is duplicated." % k)
+        elif k not in namespace.languages:
+            parser.error("argument --shebang: runner '%s' is unknown." % k)
+        copy.remove(k)
+
+    namespace.shebangs = dict(namespace.shebangs)
+
+    return namespace
+
 
