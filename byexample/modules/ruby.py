@@ -45,7 +45,7 @@ import re, pexpect, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
-from byexample.runner import ExampleRunner, PexepctMixin
+from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
 
 stability = 'experimental'
 
@@ -103,7 +103,6 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
 
     def __init__(self, verbosity, encoding, **unused):
         PexepctMixin.__init__(self,
-                                cmd=None,
                                 PS1_re = r'irb[^:]*:\d+:0(>|\*) ',
                                 any_PS_re = r'irb[^:]*:\d+:\d+(>|\*) ')
 
@@ -137,17 +136,26 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
     def interact(self, example, options):
         PexepctMixin.interact(self)
 
+    def get_default_cmd(self, *args, **kargs):
+        return  "%e %p %a", {
+                    'e': '/usr/bin/env',
+                    'p': 'irb',
+                    'a': []
+                    }
+
     def initialize(self, examples, options):
         ruby_pretty_print = options.get('ruby_pretty_print', True)
 
         # always/yes; never/no; autoetect normalization
         self.expr_print_mode = options['ruby_expr_print']
 
-        # set the final command
-        self.cmd = '/usr/bin/env irb'
+        shebang, tokens = self.get_default_cmd()
+        shebang = options['shebangs'].get(self.language, shebang)
+
+        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
         # run!
-        self._spawn_interpreter(delaybeforesend=options['delaybeforesend'])
+        self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'])
 
         # set the pretty print inspector
         if ruby_pretty_print:

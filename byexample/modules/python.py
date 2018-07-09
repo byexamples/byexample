@@ -24,7 +24,7 @@ import re, pexpect, sys, time
 from byexample.common import log, constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
-from byexample.runner import ExampleRunner, PexepctMixin
+from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
 
 stability = 'stable'
 
@@ -379,11 +379,10 @@ class PythonInterpreter(ExampleRunner, PexepctMixin):
         self._PS2 = r'/byexample/py/ps2> '
 
         PexepctMixin.__init__(self,
-                                cmd=None, # patchme later
                                 PS1_re = self._PS1,
                                 any_PS_re = r'/byexample/py/ps\d> ')
 
-    def _get_cmd(self, pretty_print):
+    def get_default_cmd(self, pretty_print, *args, **kargs):
         # Important: do not use a single quote ' in the following python code
         # it will break it in real hard ways to debug.
         change_prompts = r'''
@@ -443,7 +442,13 @@ del sys
 del _byexample_pprint
 ''' % (self._PS1, self._PS2, pretty_print)
 
-        return "/usr/bin/env python -i -c '%s'" % change_prompts
+        return  "%e %p %a", {
+                    'e': "/usr/bin/env",
+                    'p': "python",
+                    'a': [
+                            "-i", # mean interactive, run -c arg and continue running
+                            "-c", change_prompts,  # run this before anything else
+                     ]}
 
     def run(self, example, flags):
         return self._exec_and_wait(example.source,
@@ -458,11 +463,13 @@ del _byexample_pprint
         pretty_print = (py_doctest and py_pretty_print) \
                         or not py_doctest
 
-        # set the final command
-        self.cmd = self._get_cmd(pretty_print)
+        shebang, tokens = self.get_default_cmd(pretty_print)
+        shebang = options['shebangs'].get(self.language, shebang)
+
+        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
         # run!
-        self._spawn_interpreter(delaybeforesend=options['delaybeforesend'])
+        self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'])
 
     def shutdown(self):
         self._shutdown_interpreter()

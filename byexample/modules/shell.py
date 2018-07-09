@@ -25,7 +25,7 @@ import re, pexpect, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
-from byexample.runner import ExampleRunner, PexepctMixin
+from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
 
 stability = 'unstable'
 
@@ -77,9 +77,15 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
         self.encoding = encoding
 
         PexepctMixin.__init__(self,
-                                cmd='/usr/bin/env sh',
                                 PS1_re = r"/byexample/sh/ps1> ",
                                 any_PS_re = r"/byexample/sh/ps\d+> ")
+
+    def get_default_cmd(self, *args, **kargs):
+        return  "%e %p %a", {
+                    'e': '/usr/bin/env',
+                    'p': 'sh',
+                    'a': [],
+                    }
 
     def _spawn_new_shell(self, cmd):
         self._exec_and_wait('export PS1\n' +\
@@ -102,7 +108,11 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
         PexepctMixin.interact(self)
 
     def initialize(self, examples, options):
-        self._spawn_interpreter(wait_first_prompt=False,
+        shebang, tokens = self.get_default_cmd()
+        shebang = options['shebangs'].get(self.language, shebang)
+
+        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        self._spawn_interpreter(cmd, wait_first_prompt=False,
                                 delaybeforesend=options['delaybeforesend'])
 
         self._exec_and_wait(

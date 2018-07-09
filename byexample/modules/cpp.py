@@ -28,7 +28,7 @@ Example:
 import re, pexpect, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
-from byexample.runner import ExampleRunner, PexepctMixin
+from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
 
 stability = 'experimental'
 
@@ -57,10 +57,18 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
         self.encoding = encoding
 
         PexepctMixin.__init__(self,
-                                cmd="/usr/bin/env cling --nologo",
                                 PS1_re =    r'\[cling\]\$',           # [cling]$
                                 any_PS_re = r'\[cling\][$!](?: \?)?') # [cling]!
-                                                                      # [cling]$ ?  
+                                                                      # [cling]$ ?
+
+    def get_default_cmd(self, *args, **kargs):
+        return  "%e %p %a", {
+                    'e': "/usr/bin/env",
+                    'p': "cling",
+                    'a': [
+                            "--nologo", # do not output the banner
+                        ]
+                    }
 
     def run(self, example, flags):
         return self._exec_and_wait(example.source,
@@ -70,7 +78,12 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
         PexepctMixin.interact(self)
 
     def initialize(self, examples, options):
-        self._spawn_interpreter(delaybeforesend=options['delaybeforesend'])
+        shebang, tokens = self.get_default_cmd()
+        shebang = options['shebangs'].get(self.language, shebang)
+
+        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+
+        self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'])
 
     def shutdown(self):
         self._shutdown_interpreter()

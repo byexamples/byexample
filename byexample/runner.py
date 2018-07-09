@@ -126,18 +126,19 @@ class ExampleRunner(object):
         '''
         raise NotImplementedError() # pragma: no cover
 
+
 class PexepctMixin(object):
-    def __init__(self, cmd, PS1_re, any_PS_re):
-        self.cmd = cmd
+    def __init__(self, PS1_re, any_PS_re):
         self.PS1_re = re.compile(PS1_re)
         self.any_PS_re = re.compile(any_PS_re)
 
         self.last_output = []
 
-    def _spawn_interpreter(self, delaybeforesend=0.010, wait_first_prompt=True,
+    def _spawn_interpreter(self, cmd, delaybeforesend=0.010,
+                                        wait_first_prompt=True,
                                         first_prompt_timeout=10):
         self._drop_output() # there shouldn't be any output yet but...
-        self.interpreter = pexpect.spawn(self.cmd, echo=False,
+        self.interpreter = pexpect.spawn(cmd, echo=False,
                                                 encoding=self.encoding)
         self.interpreter.delaybeforesend = delaybeforesend
 

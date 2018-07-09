@@ -10,7 +10,7 @@ import re, pexpect, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
-from byexample.runner import ExampleRunner, PexepctMixin
+from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
 
 stability = 'experimental'
 
@@ -75,10 +75,19 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
         # --nx     do not read any .gdbinit
         # --quiet  do not print version number on startup
         PexepctMixin.__init__(self,
-                                cmd="/usr/bin/env gdb --nh --nx --quiet",
                                 PS1_re = r'\(gdb\)[ ]',
                                 any_PS_re = r'\(gdb\)[ ]')
 
+    def get_default_cmd(self, *args, **kargs):
+        return  "%e %p %a", {
+                    'e': "/usr/bin/env",
+                    'p': "gdb",
+                    'a': [
+                            "--nh",  # do not read ~/.gdbinit.
+                            "--nx",  # do not read any .gdbinit files in any directory
+                            "--quiet", # do not print version on startup
+                        ]
+                    }
 
     def run(self, example, flags):
         if not example.source:
@@ -95,7 +104,11 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
         PexepctMixin.interact(self)
 
     def initialize(self, examples, options):
-        self._spawn_interpreter(delaybeforesend=options['delaybeforesend'])
+        shebang, tokens = self.get_default_cmd()
+        shebang = options['shebangs'].get(self.language, shebang)
+
+        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'])
 
         # gdb will not print the address of a variable by default
         self._exec_and_wait('set print address off\n', timeout=1)
