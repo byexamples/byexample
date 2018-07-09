@@ -84,7 +84,7 @@ def parse_args(args=None):
                              'Comma separated syntax is also accepted.')
     parser.add_argument("--timeout",
                         default=2,
-                        type=int,
+                        type=float,
                         help='timeout in seconds to complete each example (2 by default); ' + \
                              'this can be changed per example with this option.')
     parser.add_argument("-o", "--options",
@@ -110,7 +110,7 @@ def parse_args(args=None):
                              '<shebang>; the tokens %%e %%p %%a are replaced by ' + \
                              'the default values for environment, program name, ' + \
                              'and arguments (however no all ' + \
-                             'the runners will honor this and some may break)')
+                             'the runners will honor this and some may break).')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", action='count', dest='verbosity', default=0,

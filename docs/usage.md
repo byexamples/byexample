@@ -254,6 +254,19 @@ time.sleep(2.5) # simulates a slow operation # byexample: +timeout=3
 
 ```
 
+See what happen when an example timeout:
+
+```
+$ byexample --pretty none -l python --timeout 0.0001 --ff w/blog-101-python-tutorial.md
+<...>
+Got:
+**Execution timed out**
+Prompt not found: the code is taking too long to finish or there is a syntax error.
+<...>
+[FAIL] Pass: 0 Fail: 1 Skip: 0
+
+```
+
 ### More options
 
 ``byexample`` has more options that control the behavior of the examples.
