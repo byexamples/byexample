@@ -23,9 +23,9 @@ class ShebangTemplate(string.Template):
         /usr/bin/env python -i -c 'blue = "1"'
 
         This works even if the token in the template are already quoted
-        >>> shebang = '/bin/sh -c \'%e %p %a\''
+        >>> shebang = '/bin/sh -c \'%e %p %a >/dev/null\''
         >>> print(ShebangTemplate(shebang).quote_and_substitute(tokens))
-        /bin/sh -c '/usr/bin/env python -i -c '"'"'blue = "1"'"'"''
+        /bin/sh -c '/usr/bin/env python -i -c '"'"'blue = "1"'"'"' >/dev/null'
 
         Here is another pair of examples:
         >>> tokens = {'a': ['-i', "-c", 'blue = \'1\''],
@@ -35,9 +35,9 @@ class ShebangTemplate(string.Template):
         >>> print(ShebangTemplate(shebang).quote_and_substitute(tokens))
         /usr/bin/env 'py'"'"'thon' -i -c 'blue = '"'"'1'"'"''
 
-        >>> shebang = '/bin/sh -c \'%e %p %a\''
+        >>> shebang = '/bin/sh -c \'%e %p %a >/dev/null\''
         >>> print(ShebangTemplate(shebang).quote_and_substitute(tokens))
-        /bin/sh -c '/usr/bin/env '"'"'py'"'"'"'"'"'"'"'"'thon'"'"' -i -c '"'"'blue = '"'"'"'"'"'"'"'"'1'"'"'"'"'"'"'"'"''"'"''
+        /bin/sh -c '/usr/bin/env '"'"'py'"'"'"'"'"'"'"'"'thon'"'"' -i -c '"'"'blue = '"'"'"'"'"'"'"'"'1'"'"'"'"'"'"'"'"''"'"' >/dev/null'
 
         '''
 
@@ -58,13 +58,11 @@ class ShebangTemplate(string.Template):
             # perform the expansion
             x = ShebangTemplate(x).substitute(self._tokens)
 
-            # *after* the expansion quote each item, if any, and join
-            # them together
-            cmd.append((' '.join(shlex.quote(y) for y in shlex.split(x))))
-
             # was needed to quote this *before* the expansion?
             if should_quote:
-                cmd[-1] = shlex.quote(cmd[-1])
+                x = shlex.quote(x)
+
+            cmd.append(x)
 
         return ' '.join(cmd)
 
