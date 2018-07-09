@@ -383,6 +383,7 @@ or ``python`` for ``Python``.
 
 Sometimes is convenient to change how the interpreter is executed for:
  - using another one (but compatible)
+ - adding or removing environment variables
  - redirecting the standard error
  - executing it remotely
 
@@ -498,7 +499,8 @@ $ byexample -h                                          # byexample: +norm-ws
 usage: <byexample> [-h] [-V] [--ff] [--dry] [--skip file [file ...]] [-m dir]
             [-d {none,unified,ndiff,context}] [--no-enhance-diff] -l language
             [--timeout TIMEOUT] [-o OPTIONS_STR] [--show-options]
-            [--encoding ENCODING] [--pretty {none,all}] [--interact] [-v | -q]
+            [--encoding ENCODING] [--pretty {none,all}] [--interact]
+            [--shebang runner:shebang] [-v | -q]
             [file [file ...]]
 positional arguments:
   file                  file that have the examples to run.
@@ -533,6 +535,12 @@ optional arguments:
   --pretty {none,all}   control how to pretty print the output.
   --interact, --debug   interact with the runner/interpreter manually if an
                         example fails.
+  --shebang runner:shebang
+                        change the command line of the given <runner> by
+                        <shebang>; the tokens %e %p %a are replaced by the
+                        default values for environment, program name, and
+                        arguments (however no all the runners will honor this
+                        and some may break).
   -v                    verbosity level, add more flags to increase the level.
   -q, --quiet           quiet mode, do not print anything even if an example
                         fails; supress the progress output.
