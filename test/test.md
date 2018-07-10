@@ -64,8 +64,8 @@ $ pretty=none make docs-test         # byexample: +rm=~ +timeout=60
 File CONTRIBUTING.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 0 Fail: 0 Skip: 5
 ~
-File README.md, 7/7 test ran in <...> seconds
-[PASS] Pass: 5 Fail: 0 Skip: 2
+File README.md, 8/8 test ran in <...> seconds
+[PASS] Pass: 6 Fail: 0 Skip: 2
 ~
 File docs/how_to_support_new_finders_and_languages.md, 35/35 test ran in <...> seconds
 [PASS] Pass: 35 Fail: 0 Skip: 0
@@ -85,8 +85,8 @@ File docs/languages/python.md, 41/41 test ran in <...> seconds
 File docs/languages/shell.md, 15/15 test ran in <...> seconds
 [PASS] Pass: 15 Fail: 0 Skip: 0
 ~
-File docs/usage.md, 24/24 test ran in <...> seconds
-[PASS] Pass: 23 Fail: 0 Skip: 1
+File docs/usage.md, 28/28 test ran in <...> seconds
+[PASS] Pass: 27 Fail: 0 Skip: 1
 ~
 File docs/differences.md, 10/10 test ran in <...> seconds
 [PASS] Pass: 10 Fail: 0 Skip: 0
