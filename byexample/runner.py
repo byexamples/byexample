@@ -2,6 +2,11 @@ import re, pexpect, sys, time, termios, operator, string, shlex
 from .executor import TimeoutException
 from .common import tohuman
 
+try:
+    from shlex import quote as shlex_quote
+except ImportError:
+    from pipes import quote as shlex_quote
+
 class ShebangTemplate(string.Template):
     delimiter = '%'
 
@@ -45,9 +50,9 @@ class ShebangTemplate(string.Template):
         self._not_quote_them = []
         for k, v in tokens.items():
             if isinstance(v, (list, tuple)):
-                self._tokens[k] = ' '.join(shlex.quote(i) for i in v)
+                self._tokens[k] = ' '.join(shlex_quote(i) for i in v)
             else:
-                self._tokens[k] = shlex.quote(v)
+                self._tokens[k] = shlex_quote(v)
 
         cmd = []
         for x in shlex.split(self.template):
@@ -60,7 +65,7 @@ class ShebangTemplate(string.Template):
 
             # was needed to quote this *before* the expansion?
             if should_quote:
-                x = shlex.quote(x)
+                x = shlex_quote(x)
 
             cmd.append(x)
 
