@@ -5,7 +5,7 @@ python:
     - "3.4"
     - "3.5"
     - "3.6"
-    - "3.7"
+      # - "3.7" travis doesn't support this yet
 install: make deps
 script: make travis-test
 branches:
