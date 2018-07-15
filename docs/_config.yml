@@ -1,3 +1,5 @@
 theme: jekyll-theme-cayman
 github:
     owner_name: Martin Di Paola
+plugins:
+    - jekyll-readme-index
