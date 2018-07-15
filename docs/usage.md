@@ -95,7 +95,7 @@ Obviously our blog has a bug!
 
 
 We can fix ``2j * 2`` replacing the expected ``4`` by ``4j`` and re running
-the test:
+the test (I will use ``sed`` for this, but you can edit the file by hand):
 
 ```
 $ sed -i 's/ 4$/ 4j/' w/blog-101-python-tutorial.md
@@ -316,21 +316,21 @@ a given file.
 Currently ``byexample`` supports one generic finder based on the
 Markdown fenced block syntax.
 
-Anything that it is between `` ```<language> `` and `` ``` `` is considered
-an example and the language of syntax set.
+Anything that it is between ````` ```<language> ````` and ````` ``` ````` is
+considered an example and the language of syntax set.
 
 The fenced block contains the code to execute and the expected output separated
 by the ``out:`` label.
 
-```
- `` `python
+`````
+ ```python
  1 + 1
 
  out:
  2
- `` `
+ ```
 
-```
+`````
 
 In addition to that, most of the languages supported in ``byexample`` has their
 own additional finder.
@@ -454,7 +454,7 @@ $ byexample --pretty none -l python \
 ```
 
 Don't be scared, the expression ``python:/bin/sh -c '%e %p %a 2>/dev/null'``
-means for the runner ``python`` use the following command line.
+sets how to execute a runner for ``python``.
 
 The ``%e``, ``%p``, ``%a`` tokens are replaced by ``byexample`` with the
 environment, program name and arguments.
@@ -464,10 +464,10 @@ Each runner has its own set of values for those tokens.
 To simplify let's assume that ``%e`` and ``%a`` are empty and ``%p``
 is ``python``.
 
-So shebang after the substitutions is ``/bin/sh -c 'python 2>/dev/null'``
+So the shebang after the substitutions is ``/bin/sh -c 'python 2>/dev/null'``
 
 This one in turns means: spawn a ``/bin/sh`` shell with ``-c`` and
-``'python 2>/dev/null'`` arguments.
+``'python 2>/dev/null'`` as arguments.
 
 ``-c`` means execute the next argument as a shell command, so this will
 execute ``python 2>/dev/null`` and the ``2>/dev/null`` mean that the standard
@@ -488,8 +488,6 @@ Currently we support:
  - GDB (the [GNU Debugger](https://www.gnu.org/software/gdb/download/)). [docs](languages/gdb.md)
  - C++ (using [cling](https://github.com/root-project/cling) - *experimental*). [docs](languages/cpp.md)
 
-The documentation of each one can be found in [docs/languages/](languages/).
-
 But don't get limited to those.
 
 You can extend ``byexample`` adding:
@@ -497,8 +495,8 @@ You can extend ``byexample`` adding:
  - support new languages and interpreters
  - new reports and other things
 
-Check out [docs/how to support new finders and languages](how_to_support_new_finders_and_languages.md)
-and [docs/how to hook to events with concerns](how_to_hook_to_events_with_concerns.md) for more info.
+Check out [how to support new finders and languages](how_to_support_new_finders_and_languages.md)
+and [how to hook to events with concerns](how_to_hook_to_events_with_concerns.md) for more info.
 
 It is easier than you think!
 
