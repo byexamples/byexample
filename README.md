@@ -130,7 +130,7 @@ It is possible to extend ``byexample`` adding new ways to find examples in a
 document and/or to parse and run/interpret a new language or adding hooks to be
 called regardless of the language/interpreter.
 
-Check out [how_to support new finders and languages](docs/how_to_support_new_finders_and_languages.md)
+Check out [how to support new finders and languages](docs/how_to_support_new_finders_and_languages.md)
 and [how to hook to events with concerns](docs/how_to_hook_to_events_with_concerns.md) for
 a quick tutorials that shows exactly how to do that.
 
@@ -176,5 +176,5 @@ $ head -n 2 LICENSE     # byexample: +norm-ws
 
 ```
 
-See [LICENSE.md](LICENSE.md) for more details.
+See [LICENSE](LICENSE.md) for more details.
 
