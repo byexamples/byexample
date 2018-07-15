@@ -9,7 +9,7 @@ for this interpreter.
 ## Find interactive examples
 
 For ``Python``, ``byexample`` uses the ``>>>`` string as the primary and ``...``
-as the secondary prompt.
+as the secondary prompts.
 
 ```python
 >>> def f():
@@ -38,7 +38,7 @@ If you enabled the compatibility from the command line, *nothing* needs to be
 changed: you can still using the ``doctest`` keyword to change the options
 of the example.
 
-But because I'm enabling it form the example itself, I need use the
+But because I'm enabling it from the example itself, I need use the
 ``byexample`` keyword instead of ``doctest``
 
 ```python

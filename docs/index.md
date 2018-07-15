@@ -174,5 +174,5 @@ $ head -n 2 LICENSE     # byexample: +norm-ws
 
 ```
 
-See [LICENSE](https://github.com/byexamples/byexample/tree/master/LICENSE.md) for more details.
+See [LICENSE](https://github.com/byexamples/byexample/tree/master/LICENSE) for more details.
 

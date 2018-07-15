@@ -39,8 +39,8 @@ the results.
 For this reason, ``byexample`` suppress the representation of the object
 returned unless the example has a ``=>``.
 
-In the following case, no object returned is not printed and there for
-it is not checked:
+In the following case, the result of each expression is not printed and
+therefor they are not checked:
 
 ```ruby
 >> 1 + 2
