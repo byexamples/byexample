@@ -106,8 +106,6 @@ Currently we support:
  - GDB (the [GNU Debugger](https://www.gnu.org/software/gdb/download/)) -> [docs](docs/languages/gdb.md)
  - C++ (using [cling](https://github.com/root-project/cling) - *experimental*) -> [docs](docs/languages/cpp.md)
 
-The documentation of each one can be found in [docs/languages/](docs/languages/).
-
 More languages will be supported in the future. Stay tuned.
 
 ## Contributing
