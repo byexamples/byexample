@@ -77,7 +77,7 @@ them in a Markdown, HTML, Latex, or plain text file.
 
 Even you can write them in your own source code to document and test it.
 
-Anything that it is between `` ```<language> `` and `` ``` `` is considered
+Anything that it is between ````` ```<language> ````` and ````` ``` ````` is considered
 an example: this the Markdown fenced block syntax.
 
 But ``byexample`` detects examples in other contexts as well.
