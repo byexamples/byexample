@@ -43,8 +43,8 @@ File byexample/modules/gdb.py, 2/2 test ran in <...> seconds
 File byexample/modules/python.py, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0
 ~
-File byexample/modules/ruby.py, 7/7 test ran in <...> seconds
-[PASS] Pass: 7 Fail: 0 Skip: 0
+File byexample/modules/ruby.py, 8/8 test ran in <...> seconds
+[PASS] Pass: 8 Fail: 0 Skip: 0
 ~
 File byexample/modules/shell.py, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0
@@ -59,7 +59,7 @@ If what you are looking for is what is capable of, you definetly need
 to see the README.md and the rest of the documentation in ``docs/``
 
 ```shell
-$ pretty=none make docs-test         # byexample: +rm=~ +timeout=60
+$ pretty=none make docs-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
 <...>
 File CONTRIBUTING.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 0 Fail: 0 Skip: 5
@@ -69,6 +69,9 @@ File README.md, 8/8 test ran in <...> seconds
 ~
 File docs/how_to_support_new_finders_and_languages.md, 35/35 test ran in <...> seconds
 [PASS] Pass: 35 Fail: 0 Skip: 0
+~
+File docs/index.md, 8/8 test ran in <...> seconds
+[PASS] Pass: 6 Fail: 0 Skip: 2
 ~
 File docs/languages/cpp.md, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
@@ -85,8 +88,8 @@ File docs/languages/python.md, 41/41 test ran in <...> seconds
 File docs/languages/shell.md, 15/15 test ran in <...> seconds
 [PASS] Pass: 15 Fail: 0 Skip: 0
 ~
-File docs/usage.md, 28/28 test ran in <...> seconds
-[PASS] Pass: 27 Fail: 0 Skip: 1
+File docs/usage.md, 29/29 test ran in <...> seconds
+[PASS] Pass: 28 Fail: 0 Skip: 1
 ~
 File docs/differences.md, 10/10 test ran in <...> seconds
 [PASS] Pass: 10 Fail: 0 Skip: 0
