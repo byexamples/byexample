@@ -1,14 +1,16 @@
 """
 Example:
+  Multi line expressions (like definitions)
   >> def hello
   ..     'hello bla world'
   .. end;
 
+  Single line expressions
   >> hello
   => "hello<...>world"
 
+  Markdown's version (no prompt)
   ```ruby
-
   j = 2;
   (0..3).each do |i|
     j += i;
@@ -20,6 +22,7 @@ Example:
   => 11
   ```
 
+  Pretty print
   >> { 1 => 2, 3=>{4=>"aaaaaaaa", 5=>Array(0..20)}}
   => {1=>2,
    3=>
@@ -31,6 +34,7 @@ Example:
        19,
        20]}}
 
+  Autodetect print expression:
   >> "foo bar 1"
   => "foo bar 1"
 
@@ -38,6 +42,19 @@ Example:
 
   >> "foo bar 3"
   => "foo bar 3"
+
+
+  Heredocs
+  ```ruby
+  puts <<-FOO
+  one
+  two
+  FOO
+
+  out:
+  one
+  two
+  ```
 
 """
 
@@ -104,7 +121,7 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
     def __init__(self, verbosity, encoding, **unused):
         PexepctMixin.__init__(self,
                                 PS1_re = r'irb[^:]*:\d+:0(>|\*) ',
-                                any_PS_re = r'irb[^:]*:\d+:\d+(>|\*) ')
+                                any_PS_re = r'irb[^:]*:\d+:\d+(>|\*|") ')
 
         self.encoding = encoding
 
