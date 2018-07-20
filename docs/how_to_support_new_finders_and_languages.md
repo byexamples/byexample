@@ -158,7 +158,7 @@ finder will be used.
 
 If there is not a winner, ``byexample`` will use some heuristics to find a
 single one and if it is still too unclear, ``byexample`` will print
-an error. (check [byexample/finder.py](../byexample/finder.py))
+an error. (check [byexample/finder.py](https://github.com/byexamples/byexample/tree/master/byexample/finder.py))
 
 Let's see if our finder can find the ArnoldC snippet above.
 
@@ -197,7 +197,7 @@ The ``get_snippet_and_expected`` by default gets the ``snippet`` and the
 the strings.
 
 Take a look of the implementation of ``PythonFinder``
-(in [byexample/modules/python.py](../byexample/modules/python.py))
+(in [byexample/modules/python.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/python.py))
 
 The ``PythonFinder`` will find and match ``Python`` examples that starts with
 the prompt ``>>>``; later, it extends ``get_snippet_and_expected`` to remove
@@ -248,7 +248,7 @@ own specific options (``ArnoldC``'s specific).
 
 ```
 
-See the documentation of the class [byexample.options.OptionParser](../byexample/options.py)
+See the documentation of the class [OptionParser](https://github.com/byexamples/byexample/tree/master/byexample/options.py)
 for more information.
 
 ### The Parser class
@@ -311,12 +311,12 @@ True
 
 ```
 
-See ``GDBParser`` in [byexample/modules/gdb.py](../byexample/modules/gdb.py).
+See ``GDBParser`` in [byexample/modules/gdb.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/gdb.py).
 
 The implementation extends this method to remove any comment on the snippet
 because ``GDB`` doesn't support them.
 
-Other useful example is ``PythonParser`` [byexample/modules/python.py](../byexample/modules/python.py)
+Other useful example is ``PythonParser`` [byexample/modules/python.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/python.py)
 It modifies heavily the expected string to support a compatibility mode with ``doctest``.
 
 
@@ -329,8 +329,8 @@ of compiler/runner depending of the underlying language.
 
 To see how this 'proxy' class can interact with another program, check the
 implementation of the Python and Ruby Interpreters of ``byexample`` in
-[byexample/modules/python.py](../byexample/modules/python.py) and
-[byexample/modules/ruby.py](../byexample/modules/ruby.py)
+[byexample/modules/python.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/python.py) and
+[byexample/modules/ruby.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/ruby.py)
 
 For our case, we will implement a small toy-interpreter in ``Python`` itself so
 you do not need to install a real ``ArnoldC`` compiler.

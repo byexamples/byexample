@@ -60,10 +60,10 @@ the expected strings nor anything else.
 ```
 
 See the documentation of the class ``Concern`` in
-[byexample/concern.py](../byexample/concern.py) to get a description of all the
+[byexample/concern.py](https://github.com/byexamples/byexample/tree/master/byexample/concern.py) to get a description of all the
 possible hooks and when they are called.
 
 ``byexample`` uses this mechanism to generate a progress bar. Check
-[byexample/modules/progress.py](../byexample/modules/progress.py).
+[byexample/modules/progress.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/progress.py).
 
 
