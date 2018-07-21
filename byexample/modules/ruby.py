@@ -43,6 +43,9 @@ Example:
   >> "foo bar 3"
   => "foo bar 3"
 
+  >> "foo bar 4"    # byexample: +norm-ws
+  =>
+  "foo bar 4"
 
   Heredocs
   ```ruby
@@ -143,7 +146,7 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         # because the execution of the next example will set it correctly
         return self._exec_and_wait(src, timeout=int(flags['timeout']))
 
-    _EXPR_RESULT_RE = re.compile(r'^=> ', re.MULTILINE | re.DOTALL)
+    _EXPR_RESULT_RE = re.compile(r'^=>( |$)', re.MULTILINE | re.DOTALL)
 
     def _detect_expression_print_expected(self, example):
         # aka, check for a =>
