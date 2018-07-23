@@ -16,7 +16,7 @@ class _LinearExpected(Expected):
 
         >>> from byexample.parser import ExampleParser
         >>> from byexample.options import Options
-        >>> parser = ExampleParser(0, 'utf8', None, Options()); parser.language = 'python'
+        >>> parser = ExampleParser(0, 'utf8', Options()); parser.language = 'python'
         >>> opts = {'norm_ws': False, 'tags': True, 'rm': []}
         >>> parser.extract_options = lambda x: opts
 

@@ -14,10 +14,9 @@ Example = collections.namedtuple('Example', ['runner',
 
 
 class ExampleParser(object):
-    def __init__(self, verbosity, encoding, optparser, options, **unused):
+    def __init__(self, verbosity, encoding, options, **unused):
         self.verbosity = verbosity
         self.encoding  = encoding
-        self.optparser = optparser
         self.options   = options
 
     def __repr__(self):
@@ -223,7 +222,7 @@ class ExampleParser(object):
         regex per word.
 
             >>> from byexample.parser import ExampleParser
-            >>> parser = ExampleParser(0, 'utf8', "", None); parser.language = 'python'
+            >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
             >>> _safe = parser._as_safe_regexs
 
         A empty string doesn't yield anything useful
@@ -464,7 +463,7 @@ class ExampleParser(object):
             >>> from byexample.parser import ExampleParser
             >>> import re
 
-            >>> parser = ExampleParser(0, 'utf8', "", None); parser.language = 'python'
+            >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
             >>> _as_regexs = parser.expected_as_regexs
 
             >>> expected = 'a<foo>b<bar>c'
@@ -1000,7 +999,8 @@ class ExampleParser(object):
         # we parse this non-strictly because the 'options' string from the
         # command line may contain language-specific options for other
         # languages than this parser (self) is targeting.
-        optparser_extended = self.get_extended_option_parser(self.optparser)
+        optparser = self.options['optparser']
+        optparser_extended = self.get_extended_option_parser(optparser)
         return optparser_extended.parse(opts_from_cmdline, strict=False)
 
     def extract_options(self, snippet):
@@ -1021,7 +1021,8 @@ class ExampleParser(object):
         # must contain options standard of byexample and/or standard of this
         # parser (self)
         # any other options is an error
-        optparser_extended = self.get_extended_option_parser(self.optparser)
+        optparser = self.options['optparser']
+        optparser_extended = self.get_extended_option_parser(optparser)
         try:
           opts = optparser_extended.parse(optlist, strict=True)
         except UnrecognizedOption as e:

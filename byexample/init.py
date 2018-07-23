@@ -148,6 +148,7 @@ def get_options(args, cfg):
 
     # create a parser for the rest of the options.
     optparser = get_default_options_parser(args)
+    options['optparser'] = optparser
 
     # we parse the argument 'options' to allow the user to change
     # some options.
@@ -169,7 +170,6 @@ def get_options(args, cfg):
     #
     # Because this, we pass these to the rest of the system to be used and
     # completed later
-    cfg['optparser'] = optparser
     cfg['options']= options
 
     log("Options (cmdline + --options): %s" % options, cfg['verbosity']-2)
@@ -184,7 +184,7 @@ def show_options(cfg, registry, allowed_languages):
         print("-" * len(t))
 
     _title("byexample's options", nl=False)
-    cfg['optparser'].print_help()
+    cfg['options']['optparser'].print_help()
     for parser in parsers:
         _title("%s's specific options" % parser.language)
         parser.get_extended_option_parser(parent_parser=None).print_help()

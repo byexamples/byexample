@@ -282,7 +282,7 @@ Let's see how the parsing is used
 
 ```python
 >>> from byexample.options import Options, OptionParser
->>> parser = ArnoldCParser(0, 'utf-8', OptionParser(add_help=False), Options())
+>>> parser = ArnoldCParser(0, 'utf-8', Options(optparser=OptionParser(add_help=False)))
 
 >>> runner = None # not yet
 >>> example = parser.build_example(snippet, expected, indent, # from finder
@@ -297,7 +297,11 @@ YOU HAVE BEEN TERMINATED
 Hello World!
 
 >>> print(example.options)
-{'awesome': True, 'norm_ws': False, 'rm': [], 'tags': True}
+{'awesome': True,
+ 'norm_ws': False,
+ 'optparser': <...>
+ 'rm': [],
+ 'tags': True}
 
 ```
 

@@ -331,3 +331,6 @@ class OptionParser(argparse.ArgumentParser):
 
     def error(self, message):
         raise UnrecognizedOption(message)
+
+    def __repr__(self):
+        return "OptionParser(...)"
