@@ -12,12 +12,12 @@ class FileExecutor(object):
 
         self.options = options
 
-    def initialize_runners(self, runners, examples, options):
+    def initialize_runners(self, runners, options):
         log("Initializing %i runners..." % len(runners),
                                                     self.verbosity-1)
         for runner in runners:
             log(" - %s" % str(runner), self.verbosity-1)
-            runner.initialize(examples, options)
+            runner.initialize(options)
 
     def shutdown_runners(self, runners):
         log("Shutting down %i runners..." % len(runners),
@@ -29,12 +29,17 @@ class FileExecutor(object):
     def __repr__(self):
         return 'File Executor'
 
-    def execute(self, examples, filepath):
-        options = self.options
-        runners = list(set(e.runner for e in examples))
+    def dry_execute(self, matches, filepath):
+        for match in matches:
+            with enhance_exceptions(match, match.parser, self.use_colors):
+                match.build()   # ignore the result
 
-        self.initialize_runners(runners, examples, options)
-        self.concerns.start_run(examples, runners, filepath)
+    def execute(self, matches, filepath):
+        options = self.options
+        runners = list(set(e.runner for e in matches))
+
+        self.initialize_runners(runners, options)
+        self.concerns.start_run(matches, runners, filepath)
 
         fail_fast = options['fail_fast']
 
@@ -42,7 +47,15 @@ class FileExecutor(object):
         user_aborted = False
         crashed = False
         timedout = False
-        for example in examples:
+        for example_match in matches:
+            with enhance_exceptions(example_match, example_match.parser, self.use_colors):
+                try:
+                    example = example_match.build()
+                except Exception as e:
+                    self.concerns.build_example_failed(example_match, e)
+                    failed = True   # TODO this is not exactly the correct status
+                    break   # do not continue
+
             with enhance_exceptions(example, self, self.use_colors):
                 options.up(example.options)
                 try:

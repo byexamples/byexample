@@ -115,7 +115,7 @@ class ExampleRunner(object):
         '''
         raise NotImplementedError() # pragma: no cover
 
-    def initialize(self):
+    def initialize(self, options):
         '''
         Hook to initialize the runner. This method will be called
         before running any example.

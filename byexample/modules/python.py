@@ -457,7 +457,7 @@ del _byexample_pprint
     def interact(self, example, options):
         PexepctMixin.interact(self)
 
-    def initialize(self, examples, options):
+    def initialize(self, options):
         py_doctest = options.get('py_doctest', False)
         py_pretty_print = options.get('py_pretty_print', False)
         pretty_print = (py_doctest and py_pretty_print) \

@@ -163,7 +163,7 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
                     'a': []
                     }
 
-    def initialize(self, examples, options):
+    def initialize(self, options):
         ruby_pretty_print = options.get('ruby_pretty_print', True)
 
         # always/yes; never/no; autoetect normalization

@@ -30,18 +30,24 @@ class Concern(ExtendOptionParserMixin):
         '''
         return parser
 
-    def start_run(self, examples, runners, filepath):
+    def start_run(self, example_matches, runners, filepath):
         '''
-        Called at the begin of the execution of the given examples
+        Called at the begin of the execution of the given example matches
         found in the specific filepath with the given runners.
 
-        The runners are already initialized but no example
+        The runners are already initialized but no example was built nor
         was executed yet.
 
-        You could use this opportunity to alter the examples, or
-        even alter the example list (the parameter) in place.
+        You could use this opportunity to alter the example match, or
+        even alter the example match list (the parameter) in place.
         Or you could inject some code to the given runners
         before running any example.
+
+        Keep in mind that we are talking about example matches and
+        not fully created examples.
+
+        If you want to customize the example *after* the parsing stage
+        use build_example.
         '''
         pass    # pragma: no cover
 

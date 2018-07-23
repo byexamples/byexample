@@ -103,7 +103,7 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
     def interact(self, example, options):
         PexepctMixin.interact(self)
 
-    def initialize(self, examples, options):
+    def initialize(self, options):
         shebang, tokens = self.get_default_cmd()
         shebang = options['shebangs'].get(self.language, shebang)
 

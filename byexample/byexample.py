@@ -17,11 +17,12 @@ def main(args=None):
     exit_status = Status.ok
     for filename in testfiles:
         with human_exceptions("File '%s':" % filename, *human_args):
-            examples = harvester.get_examples_from_file(filename)
+            matches = harvester.get_example_matches_from_file(filename)
             if args.dry:
+                executor.dry_execute(matches, filename)
                 continue
 
-            result = executor.execute(examples, filename)
+            result = executor.execute(matches, filename)
             failed, aborted_or_crashed = result
 
             if failed:

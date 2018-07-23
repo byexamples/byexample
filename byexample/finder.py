@@ -42,27 +42,27 @@ class ExampleHarvest(object):
     def __repr__(self):
         return 'Example Harvester'
 
-    def get_examples_from_file(self, filepath):
+    def get_example_matches_from_file(self, filepath):
         with open(filepath, 'rtU') as f:
             string = f.read()
 
-        return self.get_examples_from_string(string, filepath)
+        return self.get_example_matches_from_string(string, filepath)
 
-    def get_examples_from_string(self, string, filepath='<string>'):
-        all_examples = []
+    def get_example_matches_from_string(self, string, filepath='<string>'):
+        all_matches = []
         for finder in self.available_finders:
-            examples = self.get_examples_using(finder, string, filepath)
-            all_examples.extend(examples)
+            matches = self.get_example_matches_using(finder, string, filepath)
+            all_matches.extend(matches)
 
-        # sort the examples in the same order
+        # sort the matches in the same order
         # that they were found in the file/string.
-        all_examples.sort(key=lambda this: this.start_lineno)
+        all_matches.sort(key=lambda this: this.start_lineno)
 
-        all_examples = self.check_example_overlap(all_examples, filepath)
+        all_matches = self.check_example_match_overlap(all_matches, filepath)
 
-        return [example.build() for example in all_examples]
+        return all_matches
 
-    def check_example_overlap(self, examples, filepath):
+    def check_example_match_overlap(self, example_matches, filepath):
         r'''
         It may be possible that two or more examples found by different
         finders overlap: their source lines are actually the same.
@@ -96,7 +96,7 @@ class ExampleHarvest(object):
             >>> f = ExampleHarvest([], dict((k, {}) for k in \
             ...                   ('parsers', 'finders', 'runners')), 0, None)
 
-        Okay, back to the check_example_overlap documentation,
+        Okay, back to the check_example_match_overlap documentation,
         given the examples sorted in that way, a collision is detected if
         the span lines of one example intersect with the span lines of other.
 
@@ -131,7 +131,7 @@ class ExampleHarvest(object):
            >>> A = build_example('>>> 1 + 2', '3', 'python', start_lineno=1)
            >>> B = build_example('1 + 2', '3', 'python', start_lineno=1, specific=True)
 
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           >>> examples = f.check_example_match_overlap([A, B], 'foo.rst')
            >>> len(examples)
            1
 
@@ -150,7 +150,7 @@ class ExampleHarvest(object):
            >>> A = build_example('1 + 2', '3', 'python', start_lineno=1)
            >>> B = build_example('1 + 2', '3', 'python', start_lineno=2)
 
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           >>> examples = f.check_example_match_overlap([A, B], 'foo.rst')
            >>> len(examples)
            1
 
@@ -172,7 +172,7 @@ class ExampleHarvest(object):
            >>> A = build_example('# python comment\n1 + 2', '3', 'python', start_lineno=1)
            >>> B = build_example('# python comment', '1 + 2\n3', 'shell', start_lineno=1)
 
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           >>> examples = f.check_example_match_overlap([A, B], 'foo.rst')
            >>> len(examples)
            1
 
@@ -189,7 +189,7 @@ class ExampleHarvest(object):
            >>> A = build_example('# python comment', '', 'python', start_lineno=1)
            >>> B = build_example('# python comment', '', 'shell', start_lineno=1)
 
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           >>> examples = f.check_example_match_overlap([A, B], 'foo.rst')
            Traceback<...>
            ValueError: In foo.rst, examples at line 1 (found by <...>) and at line 1 (found by <...>) overlap each other.
 
@@ -200,14 +200,14 @@ class ExampleHarvest(object):
            >>> A = build_example('a\nb\nc', '', 'sh', start_lineno=1)   # span 3
            >>> B = build_example('d\ne', '', 'sh', start_lineno=1)      # span 2
 
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           >>> examples = f.check_example_match_overlap([A, B], 'foo.rst')
            Traceback<...>
            ValueError: In foo.rst, examples at line 1 (found by <...>) and at line 1 (found by <...>) overlap each other.
 
            >>> A = build_example('a\nb', '', 'sh', start_lineno=1)      # span 2
            >>> B = build_example('b\nc', '', 'sh', start_lineno=2)      # span 2
 
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           >>> examples = f.check_example_match_overlap([A, B], 'foo.rst')
            Traceback<...>
            ValueError: In foo.rst, examples at line 2 (found by <...>) and at line 1 (found by <...>) overlap each other.
 
@@ -216,7 +216,7 @@ class ExampleHarvest(object):
            >>> A = build_example('a\nb\nc', '', 'sh', start_lineno=1)   # span 3
            >>> B = build_example('d', '', 'sh', start_lineno=2)         # span 1
 
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           >>> examples = f.check_example_match_overlap([A, B], 'foo.rst')
            Traceback<...>
            ValueError: In foo.rst, examples at line 2 (found by <...>) and at line 1 (found by <...>) overlap each other.
 
@@ -225,11 +225,12 @@ class ExampleHarvest(object):
            >>> A = build_example('a\nb', '', 'sh1', start_lineno=1)     # span 2
            >>> B = build_example('a\nb', '', 'sh2', start_lineno=1)     # span 2
 
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
+           >>> examples = f.check_example_match_overlap([A, B], 'foo.rst')
            Traceback<...>
            ValueError: In foo.rst, examples at line 1 (found by <...>) and at line 1 (found by <...>) overlap each other.
 
         '''
+        examples = example_matches  # alias
 
         collision_free = False
         while not collision_free:
@@ -304,7 +305,7 @@ class ExampleHarvest(object):
         log(build_where_msg(where, self, "Dropped example: " + reason),
                 self.verbosity-2)
 
-    def get_examples_using(self, finder, string, filepath='<string>'):
+    def get_example_matches_using(self, finder, string, filepath='<string>'):
         charno = 0
         start_lineno = 1  # humans tend to count from 1
         examples = []
