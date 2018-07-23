@@ -7,7 +7,7 @@ If you want to know how ``byexample`` works, it is the best place
 to start.
 
 ```shell
-$ pretty=none make lib-test         # byexample: +rm=~ +timeout=60
+$ pretty=none make lib-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
 <...>
 File byexample/differ.py, 17/17 test ran in <...> seconds
 [PASS] Pass: 17 Fail: 0 Skip: 0
@@ -15,8 +15,8 @@ File byexample/differ.py, 17/17 test ran in <...> seconds
 File byexample/expected.py, 98/98 test ran in <...> seconds
 [PASS] Pass: 98 Fail: 0 Skip: 0
 ~
-File byexample/finder.py, 56/56 test ran in <...> seconds
-[PASS] Pass: 56 Fail: 0 Skip: 0
+File byexample/finder.py, 58/58 test ran in <...> seconds
+[PASS] Pass: 58 Fail: 0 Skip: 0
 ~
 File byexample/options.py, 64/64 test ran in <...> seconds
 [PASS] Pass: 64 Fail: 0 Skip: 0
@@ -32,7 +32,7 @@ Then, each module (Finder, Parser and Runner) provided by ``byexample`` has
 a little documentation and tests as well.
 
 ```shell
-$ pretty=none make modules-test         # byexample: +rm=~ +timeout=60
+$ pretty=none make modules-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
 <...>
 File byexample/modules/cpp.py, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0

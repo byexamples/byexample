@@ -136,7 +136,10 @@ class ExampleHarvest(object):
            1
 
            >>> examples
-           [Example(<...> source='1 + 2', <...>)]
+           [Example [python] in file <...>, lines 1-3]
+
+           >>> examples[0].source
+           '1 + 2'
 
 
          - if both examples have the same source code, expected string and
@@ -152,7 +155,7 @@ class ExampleHarvest(object):
            1
 
            >>> examples
-           [Example(<...>start_lineno=1, end_lineno=3<...>)]
+           [Example [python] in file <...>, lines 1-3]
 
          - if the example A has a source code that contains the example B's
            source code and all the B's code is inside in A's one, we will
@@ -174,7 +177,10 @@ class ExampleHarvest(object):
            1
 
            >>> examples
-           [Example(<...> source='# python comment\n1 + 2', <...>)]
+           [Example [python] in file <...>, lines 1-4]
+
+           >>> examples[0].source
+           '# python comment\n1 + 2'
 
            The border case is when both examples have the same source code but
            are examples of two different languages.
