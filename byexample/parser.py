@@ -1,6 +1,6 @@
 import collections, re, shlex, argparse
 from .common import log, tohuman, constant
-from .options import OptionParser, UnrecognizedOption
+from .options import OptionParser, UnrecognizedOption, ExtendOptionParserMixin
 from .expected import _LinearExpected, _RegexExpected
 
 Example = collections.namedtuple('Example', ['runner',
@@ -13,8 +13,9 @@ Example = collections.namedtuple('Example', ['runner',
                                              'meta'])
 
 
-class ExampleParser(object):
+class ExampleParser(ExtendOptionParserMixin):
     def __init__(self, verbosity, encoding, options, **unused):
+        ExtendOptionParserMixin.__init__(self)
         self.verbosity = verbosity
         self.encoding  = encoding
         self.options   = options
@@ -50,11 +51,9 @@ class ExampleParser(object):
 
     def extend_option_parser(self, parser):
         '''
-        Extend the the instance of OptionParser that will be in
-        charge of parsing the options list returned by example_options_as_list.
+        See options.ExtendOptionParserMixin.
 
-        Basically you need to see the options of an examples as if they were
-        options and flags in a command line.
+        By default do not add any new flag.
         '''
         return parser
 
@@ -980,17 +979,6 @@ class ExampleParser(object):
         rcounts.append(0)
 
         return regexs, charnos, rcounts, tags_by_idx, are_advanced_captures_used
-
-    def get_extended_option_parser(self, parent_parser, **kw):
-        parents = [parent_parser] if parent_parser else []
-
-        optparser_extended = OptionParser(parents=parents, **kw)
-        self.extend_option_parser(optparser_extended)
-        if not isinstance(optparser_extended, argparse.ArgumentParser):
-            raise ValueError("The option parser is not an instance of ArgumentParser!.  This probably means that there is a bug in the parser %s." % str(self))
-
-        return optparser_extended
-
 
     def extract_cmdline_options(self, opts_from_cmdline):
         # now we can re-parse this argument 'options' from the command line

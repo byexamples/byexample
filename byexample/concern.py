@@ -1,6 +1,7 @@
 from .common import tohuman
+from .options import ExtendOptionParserMixin
 
-class Concern(object):
+class Concern(ExtendOptionParserMixin):
     '''
     Cross-cutting Concern interface.
 
@@ -21,6 +22,13 @@ class Concern(object):
 
     def __repr__(self):
         return '%s Concern' % tohuman(self.target)
+
+    def extend_option_parser(self, parser):
+        '''
+        See options.ExtendOptionParserMixin.
+        By default do not add any new flag.
+        '''
+        return parser
 
     def start_run(self, examples, runners, filepath):
         '''

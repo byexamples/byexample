@@ -334,3 +334,27 @@ class OptionParser(argparse.ArgumentParser):
 
     def __repr__(self):
         return "OptionParser(...)"
+
+
+class ExtendOptionParserMixin(object):
+    def extend_option_parser(self, parser):
+        '''
+        Extend the the instance of OptionParser that will be in
+        charge of parsing the options from the command line and
+        from the examples.
+
+        Basically you need to see the options of an examples as if they were
+        options and flags in a command line.
+        '''
+        raise NotImplementedError()
+
+    def get_extended_option_parser(self, parent_parser, **kw):
+        parents = [parent_parser] if parent_parser else []
+
+        optparser_extended = OptionParser(parents=parents, **kw)
+        self.extend_option_parser(optparser_extended)
+        if not isinstance(optparser_extended, argparse.ArgumentParser):
+            raise ValueError("The option parser is not an instance of ArgumentParser!. This probably means that there is a bug in %s." % str(self))
+
+        return optparser_extended
+

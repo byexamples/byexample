@@ -179,15 +179,34 @@ def show_options(cfg, registry, allowed_languages):
     parsers = [p for p in registry['parsers'].values()
                if p.language in allowed_languages]
 
+    concerns = [c for c in registry['concerns'].values()]
+
     def _title(t, nl=True):
         print(('\n' + t) if nl else t)
         print("-" * len(t))
 
     _title("byexample's options", nl=False)
     cfg['options']['optparser'].print_help()
+
+    for concern in concerns:
+        _title("%s's specific options" % concern.target)
+        concern.get_extended_option_parser(parent_parser=None).print_help()
+
     for parser in parsers:
         _title("%s's specific options" % parser.language)
         parser.get_extended_option_parser(parent_parser=None).print_help()
+
+def extend_option_parser_with_concerns(cfg, registry):
+    concerns = [c for c in registry['concerns'].values()]
+
+    # join the concerns' option parser into one single parser
+    # starting from the byexample's one
+    optparser = cfg['options']['optparser']
+    for concern in concerns:
+        optparser = concern.get_extended_option_parser(optparser)
+
+    cfg['options']['optparser'] = optparser
+    return optparser
 
 def extend_options_with_language_specific(cfg, registry, allowed_languages):
     parsers = [p for p in registry['parsers'].values()
@@ -229,6 +248,11 @@ def init(args):
     if args.show_options:
         show_options(cfg, registry, allowed_languages)
         sys.exit(0)
+
+    # extend the option parser with all the parsers of the concerns.
+    # do this *after* showing the options so we can show each parser's opt
+    # separately
+    extend_option_parser_with_concerns(cfg, registry)
 
     # now that we know what languages are allowed, extend the options
     # for them
