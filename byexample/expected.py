@@ -157,6 +157,8 @@ class _LinearExpected(Expected):
         self._regex_expected = _RegexExpected(*args, **kargs)
         self.check_good = self._regex_expected.check_good = False
 
+        self._check_got_output_called = False
+
 
     def check_got_output(self, example, got, options, verbosity):
         self.check_good = False
@@ -170,9 +172,13 @@ class _LinearExpected(Expected):
         self._partial_expected_replaced = expected_str
         self._partial_captured = {}
         self.check_good = self._linear_matching(regexs, tags_by_idx, charnos, expected_str, got)
+        self._check_got_output_called = True
         return self.check_good
 
     def get_captures(self, example, got, options, verbosity):
+        if not self._check_got_output_called:
+            self.check_got_output(example, got, options, verbosity)
+
         self.verbosity = verbosity
         self._regex_expected.check_good = self.check_good
         self._regex_expected.verbosity = self.verbosity
@@ -239,6 +245,7 @@ class _RegexExpected(Expected):
     def __init__(self, *args, **kargs):
         Expected.__init__(self, *args, **kargs)
         self.check_good = False
+        self._check_got_output_called = False
 
     def _get_all_capture_or_none(self, example, got, options):
         r = re.compile(''.join(example.expected.regexs), re.MULTILINE | re.DOTALL)
@@ -269,6 +276,7 @@ class _RegexExpected(Expected):
 
         captured_or_none = self._get_all_capture_or_none(example, got, options)
 
+        self._check_got_output_called = True
         if captured_or_none != None:
             self._captures_from_good_check = captured_or_none
             self.check_good = True
@@ -279,6 +287,9 @@ class _RegexExpected(Expected):
             return False
 
     def get_captures(self, example, got, options, verbosity):
+        if not self._check_got_output_called:
+            self.check_got_output(example, got, options, verbosity)
+
         self.verbosity = verbosity
         if self.check_good:
             # already captured in check_got_output
