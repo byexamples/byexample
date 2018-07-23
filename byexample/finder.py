@@ -7,9 +7,9 @@ Where = collections.namedtuple('Where', ['start_lineno',
                                          'filepath'])
 
 ExampleMatch = collections.namedtuple('ExampleMatch', [
-                                            'finder', 'runner',
+                                            'finder', 'runner', 'parser',
                                             'start_lineno', 'end_lineno',
-                                            'build'
+                                            'filepath', 'build'
                                             ])
 
 class ExampleHarvest(object):
@@ -369,12 +369,12 @@ class ExampleHarvest(object):
     def _create_example_match(self, finder, parser, runner, snippet, expected,
             indent, where):
 
-        start_lineno, end_lineno, _ = where
+        start_lineno, end_lineno, filepath = where
         build = lambda: parser.build_example(snippet, expected, indent,
                                                 runner, finder, where)
-        return ExampleMatch(finder, runner,
+        return ExampleMatch(finder, runner, parser,
                                start_lineno, end_lineno,
-                               build)
+                               filepath, build)
 
 
 
