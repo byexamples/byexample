@@ -297,11 +297,7 @@ YOU HAVE BEEN TERMINATED
 Hello World!
 
 >>> print(example.options)
-{'awesome': True,
- 'norm_ws': False,
- 'optparser': <...>
- 'rm': [],
- 'tags': True}
+{'awesome': True, 'norm_ws': False, 'rm': [], 'tags': True}
 
 ```
 

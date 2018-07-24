@@ -158,7 +158,8 @@ class ExampleParser(ExtendOptionParserMixin):
         start_lineno, end_lineno, filepath = where
         options = self.options
 
-        options.up(self.extract_options(snippet))
+        local_options = self.extract_options(snippet)
+        options.up(local_options)
 
         snippet, expected = self.process_snippet_and_expected(snippet, expected)
 
@@ -201,7 +202,7 @@ class ExampleParser(ExtendOptionParserMixin):
                           source=snippet, expected=expected,
 
                           # the options to customize this example
-                          options=options.copy(),
+                          options=local_options,
 
                           # the original indentation of the example
                           indentation=indent,
