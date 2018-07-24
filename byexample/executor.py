@@ -1,5 +1,4 @@
 from .common import log, print_example, print_execution, enhance_exceptions
-from .concern import Concern
 
 class TimeoutException(Exception):
     pass
@@ -34,7 +33,7 @@ class FileExecutor(object):
         for match in matches:
             with enhance_exceptions(match, match.parser, self.use_colors):
                 # build but ignore any output; even do not use the concerns
-                match.build(Concern())
+                match.build(None)
 
     def execute(self, matches, filepath):
         options = self.options

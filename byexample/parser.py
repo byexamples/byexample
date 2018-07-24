@@ -164,9 +164,10 @@ class ExampleParser(ExtendOptionParserMixin):
         snippet, expected = self.process_snippet_and_expected(snippet, expected)
 
         # wrap these in a dictionary and let the concerns to replace them
-        tmp = {'snippet': snippet, 'expected': expected}
-        concerns.process_snippet_and_expected(tmp, options)
-        snippet, expected = tmp['snippet'], tmp['expected']
+        if concerns:
+            tmp = {'snippet': snippet, 'expected': expected}
+            concerns.process_snippet_and_expected(tmp, options)
+            snippet, expected = tmp['snippet'], tmp['expected']
 
         for x in options['rm']:
             expected = expected.replace(x, '')

@@ -20,11 +20,13 @@ class _LinearExpected(Expected):
         >>> opts = {'norm_ws': False, 'tags': True, 'rm': []}
         >>> parser.extract_options = lambda x: opts
 
-        >>> build_example = parser.build_example
+        >>> from functools import partial
+        >>> build_example = partial(parser.build_example, where=(0, 1, 'file'),
+        ...                                               concerns=None)
 
         Consider the following example with a named capture in the expected:
 
-        >>> ex = build_example('f()', 'aa<foo>bb<bar>cc', 0, None, None, (0, 1, 'file'))
+        >>> ex = build_example('f()', 'aa<foo>bb<bar>cc', 0, None, None)
         >>> exp = ex.expected
 
         If <foo> is .* we can split the expected string into two: aa and bb; and
@@ -58,7 +60,7 @@ class _LinearExpected(Expected):
 
         The algorithm works perfectly fine with unnamed captures
 
-        >>> ex = build_example('f()', 'aa<...>bb<...>cc', 0, None, None, (0, 1, 'file'))
+        >>> ex = build_example('f()', 'aa<...>bb<...>cc', 0, None, None)
         >>> exp = ex.expected
 
         >>> got = 'aaXYZbbcc'
@@ -79,7 +81,7 @@ class _LinearExpected(Expected):
         The algorithm also takes into account what happen if the expected string
         starts or ends with a tag:
 
-        >>> ex = build_example('f()', '<foo>bb<...>bb<bar>', 0, None, None, (0, 1, 'file'))
+        >>> ex = build_example('f()', '<foo>bb<...>bb<bar>', 0, None, None)
         >>> exp = ex.expected
 
         >>> got = 'aabbxbbcc'
@@ -91,7 +93,7 @@ class _LinearExpected(Expected):
 
         Or if it has a single literal chunk
 
-        >>> ex = build_example('f()', '<foo>bbbb<bar>', 0, None, None, (0, 1, 'file'))
+        >>> ex = build_example('f()', '<foo>bbbb<bar>', 0, None, None)
         >>> exp = ex.expected
 
         >>> got = 'aabbbbcc'
@@ -103,7 +105,7 @@ class _LinearExpected(Expected):
 
         If it has a single tag
 
-        >>> ex = build_example('f()', '<foo>', 0, None, None, (0, 1, 'file'))
+        >>> ex = build_example('f()', '<foo>', 0, None, None)
         >>> exp = ex.expected
 
         >>> got = 'bbbb'
@@ -115,7 +117,7 @@ class _LinearExpected(Expected):
 
         Or even if there is any tag at all:
 
-        >>> ex = build_example('f()', 'bbbb', 0, None, None, (0, 1, 'file'))
+        >>> ex = build_example('f()', 'bbbb', 0, None, None)
         >>> exp = ex.expected
 
         >>> got = 'bbbb'
@@ -134,7 +136,7 @@ class _LinearExpected(Expected):
 
         >>> opts = {'norm_ws': True, 'tags': True, 'rm': []}
         >>> parser.extract_options = lambda x: opts
-        >>> ex = build_example('f()', '\n  <a>A \n\nB <bc> C\n<c>', 0, None, None, (0, 1, 'file'))
+        >>> ex = build_example('f()', '\n  <a>A \n\nB <bc> C\n<c>', 0, None, None)
         >>> exp = ex.expected
 
         >>> got = ' A B  C '

@@ -286,7 +286,7 @@ Let's see how the parsing is used
 
 >>> runner = None # not yet
 >>> example = parser.build_example(snippet, expected, indent, # from finder
-...                                runner, finder, where)
+...                                runner, finder, where, concerns=None)
 
 >>> print(example.source)
 IT'S SHOWTIME                       # byexample: +awesome
