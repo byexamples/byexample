@@ -154,7 +154,7 @@ class ExampleParser(ExtendOptionParserMixin):
         return snippet, expected
 
     def build_example(self, snippet, expected, indent,
-                                     runner, finder, where):
+                                     runner, finder, where, concerns):
         start_lineno, end_lineno, filepath = where
         options = self.options
 
@@ -162,6 +162,11 @@ class ExampleParser(ExtendOptionParserMixin):
         options.up(local_options)
 
         snippet, expected = self.process_snippet_and_expected(snippet, expected)
+
+        # wrap these in a dictionary and let the concerns to replace them
+        tmp = {'snippet': snippet, 'expected': expected}
+        concerns.process_snippet_and_expected(tmp, options)
+        snippet, expected = tmp['snippet'], tmp['expected']
 
         for x in options['rm']:
             expected = expected.replace(x, '')

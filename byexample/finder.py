@@ -371,8 +371,8 @@ class ExampleHarvest(object):
             indent, where):
 
         start_lineno, end_lineno, filepath = where
-        build = lambda: parser.build_example(snippet, expected, indent,
-                                                runner, finder, where)
+        build = lambda concerns: parser.build_example(snippet, expected, indent,
+                                                runner, finder, where, concerns)
         return ExampleMatch(finder, runner, parser,
                                start_lineno, end_lineno,
                                filepath, build)

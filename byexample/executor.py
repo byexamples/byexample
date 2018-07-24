@@ -1,4 +1,5 @@
 from .common import log, print_example, print_execution, enhance_exceptions
+from .concern import Concern
 
 class TimeoutException(Exception):
     pass
@@ -32,7 +33,8 @@ class FileExecutor(object):
     def dry_execute(self, matches, filepath):
         for match in matches:
             with enhance_exceptions(match, match.parser, self.use_colors):
-                match.build()   # ignore the result
+                # build but ignore any output; even do not use the concerns
+                match.build(Concern())
 
     def execute(self, matches, filepath):
         options = self.options
@@ -50,11 +52,12 @@ class FileExecutor(object):
         for example_match in matches:
             with enhance_exceptions(example_match, example_match.parser, self.use_colors):
                 try:
-                    example = example_match.build()
+                    self.concerns.start_build(example_match, options)
+                    example = example_match.build(self.concerns)
+                    self.concerns.end_build(example, options)
                 except Exception as e:
-                    self.concerns.build_example_failed(example_match, e)
-                    failed = True   # TODO this is not exactly the correct status
-                    break   # do not continue
+                    self.concerns.broken(example_match, e)
+                    raise
 
             with enhance_exceptions(example, self, self.use_colors):
                 options.up(example.options)

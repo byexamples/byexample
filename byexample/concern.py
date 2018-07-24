@@ -30,6 +30,18 @@ class Concern(ExtendOptionParserMixin):
         '''
         return parser
 
+    def start_build(self, match, options):
+        pass
+
+    def process_snippet_and_expected(self, snippet_and_expected, options):
+        pass
+
+    def end_build(self, example, options):
+        pass
+
+    def broken(self, example_match, exception):
+        pass
+
     def start_run(self, example_matches, runners, filepath):
         '''
         Called at the begin of the execution of the given example matches
