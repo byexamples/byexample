@@ -43,7 +43,7 @@ class FileExecutor(object):
         crashed = False
         timedout = False
         for example in examples:
-            with enhance_exceptions(example, self):
+            with enhance_exceptions(example, self, self.use_colors):
                 options.up(example.options)
                 try:
                     if options['skip']:
@@ -53,7 +53,7 @@ class FileExecutor(object):
                     print_example(example, True, self.verbosity-3)
                     self.concerns.start_example(example, options)
                     try:
-                        with enhance_exceptions(example, example.runner):
+                        with enhance_exceptions(example, example.runner, self.use_colors):
                             example.meta['got'] = example.runner.run(example, options)
                         self.concerns.end_example(example, options)
                     except TimeoutException as e:  # pragma: no cover

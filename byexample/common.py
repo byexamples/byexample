@@ -1,20 +1,27 @@
 import pprint, traceback, contextlib, sys
+from doctest import _indent
 
-def build_where_msg(where, owner, msg=None):
+def build_where_msg(where, owner, msg=None, use_colors=False):
+    tmp = []
     try:
-        where = 'File "%s", line %i' % (where.filepath, where.start_lineno)
+        tmp.append('File "%s", line %i' % (where.filepath, where.start_lineno))
     except:
         if where:
-            where = str(where)
+            tmp.append(str(where))
 
     if owner:
         owner = "[%s]" % str(owner)
-        where = ', '.join([where, owner]) if where else owner
+        tmp.append((', ' + owner) if tmp else owner)
+
+    try:
+        tmp.append('\n' + _indent(highlight_syntax(where, use_colors)))
+    except Exception as e:
+        pass
 
     if msg:
-        where += '\n' + msg
+        tmp.append('\n' + msg)
 
-    return where
+    return ''.join(tmp)
 
 
 def log(msg, x):
@@ -163,8 +170,8 @@ def human_exceptions(where_default, verbosity, quiet, exitcode):
         sys.exit(exitcode)
 
 @contextlib.contextmanager
-def enhance_exceptions(where, owner):
-    where = build_where_msg(where, owner)
+def enhance_exceptions(where, owner, use_colors=False):
+    where = build_where_msg(where, owner, use_colors=use_colors)
     try:
         yield
     except Exception as e:
