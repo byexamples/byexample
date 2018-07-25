@@ -6,11 +6,18 @@ Where = collections.namedtuple('Where', ['start_lineno',
                                          'end_lineno',
                                          'filepath'])
 
-ExampleMatch = collections.namedtuple('ExampleMatch', [
-                                            'finder', 'runner', 'parser',
-                                            'start_lineno', 'end_lineno',
-                                            'filepath', 'build'
-                                            ])
+class ExampleMatch(object):
+    def __init__(self, finder, runner, parser, snippet, expected, indent, where):
+        self.finder, self.runner, self.parser = finder, runner, parser
+        self.snippet, self.expected, self.indent = snippet, expected, indent
+
+        self.start_lineno, self.end_lineno, self.filepath = where
+
+    def build(self, concerns):
+        where = Where(self.start_lineno, self.end_lineno, self.filepath)
+        return self.parser.build_example(self.snippet, self.expected,
+                                    self. indent, self.runner, self.finder,
+                                    where, concerns)
 
 class ExampleHarvest(object):
     '''
@@ -356,9 +363,8 @@ class ExampleHarvest(object):
 
             with enhance_exceptions(where, parser):
                 # perfect, we have everything to build an example
-                example = self._create_example_match(finder, parser, runner,
-                                                        snippet, expected,
-                                                        indent, where)
+                example = ExampleMatch(finder, runner, parser,
+                                        snippet, expected, indent, where)
                 examples.append(example)
 
 
@@ -367,15 +373,6 @@ class ExampleHarvest(object):
 
         return examples
 
-    def _create_example_match(self, finder, parser, runner, snippet, expected,
-            indent, where):
-
-        start_lineno, end_lineno, filepath = where
-        build = lambda concerns: parser.build_example(snippet, expected, indent,
-                                                runner, finder, where, concerns)
-        return ExampleMatch(finder, runner, parser,
-                               start_lineno, end_lineno,
-                               filepath, build)
 
 
 
