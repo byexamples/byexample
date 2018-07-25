@@ -12,8 +12,8 @@ $ pretty=none make lib-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
 File byexample/differ.py, 17/17 test ran in <...> seconds
 [PASS] Pass: 17 Fail: 0 Skip: 0
 ~
-File byexample/expected.py, 98/98 test ran in <...> seconds
-[PASS] Pass: 98 Fail: 0 Skip: 0
+File byexample/expected.py, 99/99 test ran in <...> seconds
+[PASS] Pass: 99 Fail: 0 Skip: 0
 ~
 File byexample/finder.py, 58/58 test ran in <...> seconds
 [PASS] Pass: 58 Fail: 0 Skip: 0

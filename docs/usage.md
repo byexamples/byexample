@@ -57,8 +57,8 @@ executed.
 
 In normal circumstances there are two possible status: ``PASS`` and ``FAIL``.
 
-If something strange happen like the user pressed ``ctrl-c`` or the underlying
-runner crashed, the status will be ``ABORT``.
+If something strange happen like the user pressed ``ctrl-c``, the underlying
+runner crashed or an example couldn't get parsed, the status will be ``ABORT``.
 
 For quick regression you may want to stop ``byexample`` at the first failing
 example using ``--ff`` or ``--fail-fast``.

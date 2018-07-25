@@ -16,6 +16,28 @@ class Concern(ExtendOptionParserMixin):
      - log execution time history for future execution time prediction (estimate)
      - turn on/off debugging, coverage and profile facilities
 
+    Roughly this is the order in which the hooks are called:
+     - extend_option_parser
+     - start
+         - start_build
+             - process_snippet_and_expected
+         - finish_build
+
+         - skip_example
+
+         - start_example
+         - end_example
+         - finally_example
+
+         - user_aborted
+         - failure
+         - success
+         - crashed
+
+         - start_interact
+         - finish_interact
+     - finish
+
     See each method's documentation to get an idea of the capabilities of this
     interface.
     '''
@@ -30,19 +52,7 @@ class Concern(ExtendOptionParserMixin):
         '''
         return parser
 
-    def start_build(self, match, options):
-        pass
-
-    def process_snippet_and_expected(self, snippet_and_expected, options):
-        pass
-
-    def end_build(self, example, options):
-        pass
-
-    def broken(self, example_match, exception):
-        pass
-
-    def start_run(self, example_matches, runners, filepath):
+    def start(self, example_matches, runners, filepath):
         '''
         Called at the begin of the execution of the given example matches
         found in the specific filepath with the given runners.
@@ -59,19 +69,55 @@ class Concern(ExtendOptionParserMixin):
         not fully created examples.
 
         If you want to customize the example *after* the parsing stage
-        use build_example.
+        use start_example.
         '''
         pass    # pragma: no cover
 
-    def end_run(self, failed, user_aborted, crashed):
+    def start_build(self, match, options):
+        '''
+        Start the build of an example from the given match.
+
+        This is called exactly before the Parse object (match.parse)
+        build the example
+        '''
+        pass
+
+    def process_snippet_and_expected(self, snippet_and_expected, options):
+        '''
+        Called in the middle of the building of an example, after the snippet
+        and the expected were extracted and parsed.
+
+        The snippet_and_expected is a dictionary with two keys: snippet and
+        expected.
+
+        You can replace the values by what you want.
+        '''
+        pass
+
+    def finish_build(self, example, options, exception):
+        '''
+        Called after the example was built.
+
+        The given exception is a Python exception object if the build
+        fails, None otherwise,
+
+        The reason of a failure in the build may be a bug in the example,
+        like an invalid option in the example that couldn't be parsed.
+
+        In case of a failure, the example will be None.
+        '''
+        pass
+
+    def finish(self, failed, user_aborted, crashed, broken):
         '''
         Called at the end of the execution of the examples
-        given in the start_run call.
+        given in the start call.
 
         The parameters say if the run execution failed or not
-        and if it was aborted by the user or crashed.
+        and if it was aborted by the user, crashed or the build
+        was broken.
 
-        The runners given in start_run are still up and running
+        The runners given in start are still up and running
         but may not be in a consistent state if the user aborted the
         execution or if the runner crashed.
 
@@ -96,7 +142,7 @@ class Concern(ExtendOptionParserMixin):
         line).
 
         If the example finish (no crash, abort, timeout), eventually the
-        end_example will be called.
+        finish_example will be called.
 
         Regardless of the example's result, finally_example will be called.
 
@@ -111,7 +157,7 @@ class Concern(ExtendOptionParserMixin):
         '''
         pass    # pragma: no cover
 
-    def end_example(self, example, options):
+    def finish_example(self, example, options):
         '''
         Called when the given example finished its execution normally.
 
@@ -130,8 +176,8 @@ class Concern(ExtendOptionParserMixin):
         '''
         Called when the given example finished its execution regardless of how.
 
-        Like in end_example you may modify example.meta but the
-        same warning apply. See Concern.end_example.
+        Like in finish_example you may modify example.meta but the
+        same warning apply. See Concern.finish_example.
         '''
         pass    # pragma: no cover
 
@@ -156,6 +202,9 @@ class Concern(ExtendOptionParserMixin):
         '''
         The given example was cancelled and the run execution
         aborted by the user, probably with a ctrl-c (^C) or SIGINT.
+
+        Keep in mind that the abort could happen before the start or
+        after finishing the execution (Concern.start and Concern.finish)
         '''
         pass    # pragma: no cover
 

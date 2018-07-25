@@ -40,23 +40,30 @@ class FileExecutor(object):
         runners = list(set(e.runner for e in matches))
 
         self.initialize_runners(runners, options)
-        self.concerns.start_run(matches, runners, filepath)
+        try:
+            self.concerns.start(matches, runners, filepath)
+            failed, user_aborted, crashed, broken = self._exec(matches, filepath,
+                                                               options, runners)
+            self.concerns.finish(failed, user_aborted, crashed, broken)
+        finally:
+            self.shutdown_runners(runners)
 
+        return failed, (user_aborted or crashed or broken)
+
+    def _exec(self, matches, filepath, options, runners):
         fail_fast = options['fail_fast']
 
         failed = False
         user_aborted = False
         crashed = False
         timedout = False
+        broken = False
         for example_match in matches:
-            with enhance_exceptions(example_match, example_match.parser, self.use_colors):
-                try:
-                    self.concerns.start_build(example_match, options)
-                    example = example_match.build(self.concerns)
-                    self.concerns.end_build(example, options)
-                except Exception as e:
-                    self.concerns.broken(example_match, e)
-                    raise
+            example = self._build(example_match, options)
+
+            if example == None:
+                broken = True
+                break   # always fail fast if an example couldn't get parsed
 
             with enhance_exceptions(example, self, self.use_colors):
                 options.up(example.options)
@@ -70,7 +77,7 @@ class FileExecutor(object):
                     try:
                         with enhance_exceptions(example, example.runner, self.use_colors):
                             example.meta['got'] = example.runner.run(example, options)
-                        self.concerns.end_example(example, options)
+                        self.concerns.finish_example(example, options)
                     except TimeoutException as e:  # pragma: no cover
                         example.meta['got'] = "**Execution timed out**\n" + str(e)
                         timedout = True
@@ -87,7 +94,7 @@ class FileExecutor(object):
                         failed = True
                         break # always fail fast if the user aborted or code crashed
 
-                    # cache this *after* calling end_example/finally_example
+                    # cache this *after* calling finish_example/finally_example
                     # those two may modify the got
                     got = example.meta['got']
 
@@ -103,7 +110,7 @@ class FileExecutor(object):
                         self.concerns.failure(example, got, self.differ)
                         failed = True
 
-                        # start an interactive session if the example failes
+                        # start an interactive session if the example fails
                         # and the user wanted this
                         if options['interact'] and not timedout:
                             self.concerns.start_interact(example, options)
@@ -125,8 +132,16 @@ class FileExecutor(object):
                     example.meta['got'] = None
                     options.down()
 
-        self.concerns.end_run(failed, user_aborted, crashed)
-        self.shutdown_runners(runners)
+        return failed, user_aborted, crashed, broken
 
-        return failed, (user_aborted or crashed)
+    def _build(self, example_match, options):
+        try:
+            with enhance_exceptions(example_match, example_match.parser, self.use_colors):
+                self.concerns.start_build(example_match, options)
+                example = example_match.build(self.concerns)
+                self.concerns.finish_build(example, options, None)
 
+            return example
+        except Exception as e:
+            self.concerns.finish_build(None, options, e)
+            return None
