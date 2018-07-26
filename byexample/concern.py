@@ -19,9 +19,9 @@ class Concern(ExtendOptionParserMixin):
     Roughly this is the order in which the hooks are called:
      - extend_option_parser
      - start
-         - start_build
-             - process_snippet_and_expected
-         - finish_build
+         - start_parse
+             - before_build_regex
+         - finish_parse
 
          - skip_example
 
@@ -52,59 +52,58 @@ class Concern(ExtendOptionParserMixin):
         '''
         return parser
 
-    def start(self, example_matches, runners, filepath):
+    def start(self, examples, runners, filepath):
         '''
-        Called at the begin of the execution of the given example matches
+        Called at the begin of the execution of the given examples
         found in the specific filepath with the given runners.
 
         The runners are already initialized but no example was built nor
         was executed yet.
 
-        You could use this opportunity to alter the example match, or
-        even alter the example match list (the parameter) in place.
+        You could use this opportunity to alter the example, or
+        even alter the example list (the parameter) in place.
         Or you could inject some code to the given runners
         before running any example.
 
-        Keep in mind that we are talking about example matches and
-        not fully created examples.
+        Keep in mind that we are talking about examples that are not fully
+        parsed yet so you may not get all their attributs.
 
         If you want to customize the example *after* the parsing stage
         use start_example.
         '''
         pass    # pragma: no cover
 
-    def start_build(self, match, options):
+    def start_parse(self, example, options):
         '''
-        Start the build of an example from the given match.
+        Start the parse of an example to complete it.
 
-        This is called exactly before the Parse object (match.parse)
-        build the example
-        '''
-        pass
-
-    def process_snippet_and_expected(self, snippet_and_expected, options):
-        '''
-        Called in the middle of the building of an example, after the snippet
-        and the expected were extracted and parsed.
-
-        The snippet_and_expected is a dictionary with two keys: snippet and
-        expected.
-
-        You can replace the values by what you want.
+        This is called exactly before the Parse object (example.parse_yourself)
+        parse and complete the example.
         '''
         pass
 
-    def finish_build(self, example, options, exception):
+    def before_build_regex(self, example, options):
         '''
-        Called after the example was built.
+        Called in the middle of the parsing of an example, after the snippet
+        and the expected were extracted and parsed and before building the
+        regex from the expected string.
 
-        The given exception is a Python exception object if the build
+        The example's attributes source, expected_str and options
+        are in their final state and could be replaced by you.
+        '''
+        pass
+
+    def finish_parse(self, example, options, exception):
+        '''
+        Called after the example was parsed and completed.
+
+        The given exception is a Python exception object if the parse
         fails, None otherwise,
 
-        The reason of a failure in the build may be a bug in the example,
+        The reason of a failure during the parsing may be a bug in the example,
         like an invalid option in the example that couldn't be parsed.
 
-        In case of a failure, the example will be None.
+        In case of a failure, the example may not be in a consistent state.
         '''
         pass
 

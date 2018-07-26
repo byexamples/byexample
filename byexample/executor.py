@@ -29,20 +29,20 @@ class FileExecutor(object):
     def __repr__(self):
         return 'File Executor'
 
-    def dry_execute(self, matches, filepath):
-        for match in matches:
-            with enhance_exceptions(match, match.parser, self.use_colors):
+    def dry_execute(self, examples, filepath):
+        for example in examples:
+            with enhance_exceptions(example, example.parser, self.use_colors):
                 # build but ignore any output; even do not use the concerns
-                match.build(None)
+                example.parse_yourself(concerns=None)
 
-    def execute(self, matches, filepath):
+    def execute(self, examples, filepath):
         options = self.options
-        runners = list(set(e.runner for e in matches))
+        runners = list(set(e.runner for e in examples))
 
         self.initialize_runners(runners, options)
         try:
-            self.concerns.start(matches, runners, filepath)
-            failed, user_aborted, crashed, broken = self._exec(matches, filepath,
+            self.concerns.start(examples, runners, filepath)
+            failed, user_aborted, crashed, broken = self._exec(examples, filepath,
                                                                options, runners)
             self.concerns.finish(failed, user_aborted, crashed, broken)
         finally:
@@ -50,7 +50,7 @@ class FileExecutor(object):
 
         return failed, (user_aborted or crashed or broken)
 
-    def _exec(self, matches, filepath, options, runners):
+    def _exec(self, examples, filepath, options, runners):
         fail_fast = options['fail_fast']
 
         failed = False
@@ -58,8 +58,8 @@ class FileExecutor(object):
         crashed = False
         timedout = False
         broken = False
-        for example_match in matches:
-            example = self._build(example_match, options)
+        for example in examples:
+            example = self._parse(example, options)
 
             if example == None:
                 broken = True
@@ -134,14 +134,14 @@ class FileExecutor(object):
 
         return failed, user_aborted, crashed, broken
 
-    def _build(self, example_match, options):
+    def _parse(self, example, options):
         try:
-            with enhance_exceptions(example_match, example_match.parser, self.use_colors):
-                self.concerns.start_build(example_match, options)
-                example = example_match.parse_yourself(self.concerns)
-                self.concerns.finish_build(example, options, None)
+            with enhance_exceptions(example, example.parser, self.use_colors):
+                self.concerns.start_parse(example, options)
+                example = example.parse_yourself(self.concerns)
+                self.concerns.finish_parse(example, options, None)
 
             return example
         except Exception as e:
-            self.concerns.finish_build(None, options, e)
+            self.concerns.finish_parse(example, options, e)
             return None

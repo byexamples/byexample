@@ -144,9 +144,11 @@ class ExampleParser(ExtendOptionParserMixin):
                                                               example.snippet,
                                                               example.expected_str)
 
-        # wrap these in a dictionary and let the concerns to replace them
+        # the options to customize this example
+        example.options = local_options
+
         if concerns:
-            concerns.process_snippet_and_expected(example, options)
+            concerns.before_build_regex(example, options)
 
         for x in options['rm']:
             example.expected_str = example.expected_str.replace(x, '')
@@ -184,9 +186,6 @@ class ExampleParser(ExtendOptionParserMixin):
 
         # the source code to execute and the expected
         example.expected = expected
-
-        # the options to customize this example
-        example.options = local_options
 
         # extra stuff, probably what we could get
         # from the execution of the example (nothing yet)
