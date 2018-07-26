@@ -278,15 +278,39 @@ should not from the command line with the flag ``-l``.
 So we need to declare what language is our Parser for: that's the reason
 behind the ``language`` attribute.
 
-Let's see how the parsing is used
+Let's create the example:
 
 ```python
 >>> from byexample.options import Options, OptionParser
 >>> parser = ArnoldCParser(0, 'utf-8', Options(optparser=OptionParser(add_help=False)))
 
+>>> from byexample.finder import Example
 >>> runner = None # not yet
->>> example = parser.build_example(snippet, expected, indent, # from finder
-...                                runner, finder, where, concerns=None)
+>>> example = Example(finder, runner, parser,
+...                   snippet, expected, indent, where)
+
+```
+
+At this point, the example created is incomplete as its source code wasn't
+extracted from the snippet nor its options.
+
+```python
+>>> example.source
+<...>
+AttributeError: 'Example' object has no attribute 'source'
+
+>>> example.options
+<...>
+AttributeError: 'Example' object has no attribute 'options'
+
+```
+
+These attributes are completed using the parser. It is the parse who only
+knows how to extract these from a *raw* example because is a language
+specific task.
+
+```python
+>>> example = example.build(concerns=None)
 
 >>> print(example.source)
 IT'S SHOWTIME                       # byexample: +awesome
@@ -319,6 +343,8 @@ because ``GDB`` doesn't support them.
 Other useful example is ``PythonParser`` [byexample/modules/python.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/python.py)
 It modifies heavily the expected string to support a compatibility mode with ``doctest``.
 
+See also the [byexample/concerns.py](https://github.com/byexamples/byexample/tree/master/byexample/concerns.py) to
+know how to tweak the parsing process from a ``Concern``.
 
 ### The Runner class
 
