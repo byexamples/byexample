@@ -118,15 +118,15 @@ def _build_fake_example(snippet, expected, language='python', start_lineno=0,
 class ExampleHarvest(object):
     '''
           Finding process    Parsing process         Run process
-    ----------\                           example
-    | foo     |     example match    ............ . . .
-    |         |      -----------     : > 1 + 2 } snippet  =>  1 + 2 ----> runner
+    ----------\        example        example (parsed)
+    | foo     |      (not parsed)    ............ . . .
+    |         |      -----------     : 1 + 2 } source     =>  1 + 2 ----> runner
     | > 1 + 2 |      | > 1 + 2 |     :                                      |
     | 3       |  =>  | 3       |  => : 3 } expected       =>  3 == ?? <-- output
     |         |      -----------     :.......... .. . .     compare done
     | bar     |      -----------                         by expected object
-    | > 1 + 3 |  =>  | > 1 + 3 |                                |
-    | 4       |      | 4       |                                |--> PASS/FAIL
+    | > 1 + 3 |  =>  | > 1 + 3 } snippet                        |
+    | 4       |      | 4   } expected_str                       |--> PASS/FAIL
     :         :      -----------                                      report
                                                                   done by reporter
                                                                    and by differ
