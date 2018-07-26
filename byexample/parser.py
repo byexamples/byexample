@@ -134,7 +134,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
         return snippet, expected
 
-    def build_example(self, example, concerns):
+    def parse(self, example, concerns):
         options = self.options
 
         local_options = self.extract_options(example.snippet)

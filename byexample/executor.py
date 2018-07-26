@@ -138,7 +138,7 @@ class FileExecutor(object):
         try:
             with enhance_exceptions(example_match, example_match.parser, self.use_colors):
                 self.concerns.start_build(example_match, options)
-                example = example_match.build(self.concerns)
+                example = example_match.parse_yourself(self.concerns)
                 self.concerns.finish_build(example, options, None)
 
             return example

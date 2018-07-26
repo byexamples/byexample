@@ -45,7 +45,7 @@ class Example(object):
 
     After the completion those attributes should be defined
 
-    >>> example.build(None)
+    >>> example.parse_yourself()
     Example [python] in file file.md, lines 0-2
 
     >>> example.source
@@ -66,13 +66,13 @@ class Example(object):
 
         self.fully_parsed = False
 
-    def build(self, concerns):
+    def parse_yourself(self, concerns=None):
         if self.fully_parsed:
             raise ValueError("You cannot parse/build an example twice: " + \
                              repr(self))
 
         where = Where(self.start_lineno, self.end_lineno, self.filepath)
-        self.parser.build_example(self, concerns)
+        self.parser.parse(self, concerns)
         self.fully_parsed = True
 
         return self
@@ -111,7 +111,7 @@ def _build_fake_example(snippet, expected, language='python', start_lineno=0,
 
     # parse it (fake, of course)
     if fully_parsed:
-        e = e.build(concerns=None)
+        e = e.parse_yourself(concerns=None)
 
     return e
 

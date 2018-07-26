@@ -310,7 +310,7 @@ knows how to extract these from a *raw* example because is a language
 specific task.
 
 ```python
->>> example = example.build(concerns=None)
+>>> example = example.parse_yourself()
 
 >>> print(example.source)
 IT'S SHOWTIME                       # byexample: +awesome
@@ -342,9 +342,6 @@ because ``GDB`` doesn't support them.
 
 Other useful example is ``PythonParser`` [byexample/modules/python.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/python.py)
 It modifies heavily the expected string to support a compatibility mode with ``doctest``.
-
-See also the [byexample/concerns.py](https://github.com/byexamples/byexample/tree/master/byexample/concerns.py) to
-know how to tweak the parsing process from a ``Concern``.
 
 ### The Runner class
 
