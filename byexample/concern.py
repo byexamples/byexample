@@ -160,8 +160,7 @@ class Concern(ExtendOptionParserMixin):
         '''
         Called when the given example finished its execution normally.
 
-        You may modify example.meta.
-        For example, you could modify example.meta['got'], the string captured,
+        For example, you could modify example.got, the string captured,
         for sanitization or other enhancement purposes.
 
         But keep in mind that may exist multiple concern objects and
@@ -174,9 +173,6 @@ class Concern(ExtendOptionParserMixin):
     def finally_example(self, example, options):
         '''
         Called when the given example finished its execution regardless of how.
-
-        Like in finish_example you may modify example.meta but the
-        same warning apply. See Concern.finish_example.
         '''
         pass    # pragma: no cover
 

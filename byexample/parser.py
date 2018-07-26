@@ -187,10 +187,6 @@ class ExampleParser(ExtendOptionParserMixin):
         # the source code to execute and the expected
         example.expected = expected
 
-        # extra stuff, probably what we could get
-        # from the execution of the example (nothing yet)
-        example.meta = {}
-
         options.down()
         return example
 
