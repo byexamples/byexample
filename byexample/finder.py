@@ -177,21 +177,7 @@ class ExampleHarvest(object):
         Before going deeper, let's create a helper function to build examples:
 
             >>> # helper function to create examples
-            >>> from byexample.parser import Example
-            >>> def build_example(source, expected, language, start_lineno, specific=False):
-            ...    class R: pass    # <- fake runner instance
-            ...    R.language = language # <- language of the example
-            ...
-            ...    class F: pass    # <- fake finder instance
-            ...    F.specific = specific # <- is finder specific?
-            ...
-            ...    end_lineno = start_lineno
-            ...    end_lineno += (source + '\n' + expected).count('\n') + 1
-            ...    return Example(R,
-            ...                   None, F,
-            ...                   start_lineno, end_lineno,
-            ...                   None, None,
-            ...                   source, expected, {})
+            >>> from byexample.finder import _build_fake_example as build_example
 
         And we create a harvester to play with it:
 
@@ -242,7 +228,7 @@ class ExampleHarvest(object):
            [Example [python] in file <...>, lines 1-3]
 
            >>> examples[0].source
-           '1 + 2'
+           '1 + 2\n'
 
 
          - if both examples have the same source code, expected string and
@@ -283,7 +269,7 @@ class ExampleHarvest(object):
            [Example [python] in file <...>, lines 1-4]
 
            >>> examples[0].source
-           '# python comment\n1 + 2'
+           '# python comment\n1 + 2\n'
 
            The border case is when both examples have the same source code but
            are examples of two different languages.
