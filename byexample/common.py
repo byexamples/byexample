@@ -43,8 +43,9 @@ try:
     import pygments.formatters.terminal256
 
     def highlight_syntax(example, use_colors):
+        source = getattr(example, 'source', example.snippet)
         if not use_colors:
-            return example.source
+            return source
 
         try:
             # we want to use colors, let's try to find a valid lexer
@@ -60,13 +61,13 @@ try:
             # should we allow the user to change this?
             formatter = pygments.formatters.terminal.TerminalFormatter()
 
-            return pygments.highlight(example.source, lexer, formatter)
+            return pygments.highlight(source, lexer, formatter)
         except:
             pass
 
         # if something fails, just keep going: the highlight syntax is
         # nice to have but not a must to have.
-        return example.source
+        return source
 
 except ImportError:
     # do not use any highlight syntax
