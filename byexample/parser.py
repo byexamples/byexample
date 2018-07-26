@@ -3,25 +3,6 @@ from .common import log, tohuman, constant
 from .options import OptionParser, UnrecognizedOption, ExtendOptionParserMixin
 from .expected import _LinearExpected, _RegexExpected
 
-class Example(object):
-    def __init__(self, runner, filepath, finder, start_lineno, end_lineno,
-                        options, indentation, source, expected, meta):
-        self.runner = runner
-        self.filepath = filepath
-        self.finder = finder
-        self.start_lineno = start_lineno
-        self.end_lineno = end_lineno
-        self.options = options
-        self.indentation = indentation
-        self.source = source
-        self.expected = expected
-        self.meta = meta
-
-    def __repr__(self):
-        return "Example [%s] in file %s, lines %i-%i" % (
-                        self.runner.language,
-                        self.filepath, self.start_lineno, self.end_lineno)
-
 
 class ExampleParser(ExtendOptionParserMixin):
     def __init__(self, verbosity, encoding, options, **unused):

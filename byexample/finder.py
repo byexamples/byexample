@@ -2,22 +2,118 @@ import collections, re
 from .common import log, build_where_msg, tohuman, print_example, \
                     enhance_exceptions
 
+from .parser import ExampleParser
+from .options import Options
+
 Where = collections.namedtuple('Where', ['start_lineno',
                                          'end_lineno',
                                          'filepath'])
 
-class ExampleMatch(object):
-    def __init__(self, finder, runner, parser, snippet, expected, indent, where):
+class Example(object):
+    '''
+    The unit work of byexample: the example.
+
+    It represents a example found in <where> by the <finder> that should be
+    parsed by the <parser> and executed later by the <runnner>.
+
+    The piece of text found is given by <snippet> and <extracted_str>:
+    the code the be executed and the expected output.
+
+    These two are *incomplete* and further processing is need by <parser>
+
+    >>> from byexample.finder import _build_fake_example
+
+    >>> example = _build_fake_example('f()', '42', fully_parsed=False)
+    >>> example
+    Example (not parsed yet) [python] in file file.md, lines 0-2
+
+    The example is incomplete or not fully parsed because the <snippet> may
+    not be the code in its final state; the expected regex doesn't exist nor
+    the options.
+
+    >>> example.source
+    <...>
+    AttributeError: 'Example' object has no attribute 'source'
+
+    >>> example.expected
+    <...>
+    AttributeError: 'Example' object has no attribute 'expected'
+
+    >>> example.options
+    <...>
+    AttributeError: 'Example' object has no attribute 'options'
+
+    After the completion those attributes should be defined
+
+    >>> example.build(None)
+    Example [python] in file file.md, lines 0-2
+
+    >>> example.source
+    'f()\n'
+
+    >>> example.expected.str
+    '42'
+
+    >>> example.options
+    {'norm_ws': False, 'rm': [], 'tags': True}
+
+    '''
+    def __init__(self, finder, runner, parser, snippet, expected_str, indent, where):
         self.finder, self.runner, self.parser = finder, runner, parser
-        self.snippet, self.expected, self.indent = snippet, expected, indent
+        self.snippet, self.expected_str, self.indentation = snippet, expected_str, indent
 
         self.start_lineno, self.end_lineno, self.filepath = where
 
+        self.fully_parsed = False
+
     def build(self, concerns):
+        if self.fully_parsed:
+            raise ValueError("You cannot parse/build an example twice: " + \
+                             repr(self))
+
         where = Where(self.start_lineno, self.end_lineno, self.filepath)
-        return self.parser.build_example(self.snippet, self.expected,
-                                    self. indent, self.runner, self.finder,
-                                    where, concerns)
+        self.parser.build_example(self, concerns)
+        self.fully_parsed = True
+
+        return self
+
+    def __repr__(self):
+        f = "" if self.fully_parsed else "(not parsed yet) "
+        return "Example %s[%s] in file %s, lines %i-%i" % (
+                        f,
+                        self.runner.language,
+                        self.filepath, self.start_lineno, self.end_lineno)
+
+def _build_fake_example(snippet, expected, language='python', start_lineno=0,
+                            specific=False, fully_parsed=True, opts=None):
+    class R: pass    # <- fake runner instance
+    R.language = language # <- language of the example
+
+    class F: pass    # <- fake finder instance
+    F.specific = specific # <- is finder specific?
+
+    # fake a parser
+    parser = ExampleParser(0, 'utf8', Options())
+    parser.language = language
+
+    # fake the options parsed by the parser
+    if opts == None:
+        opts = {'norm_ws': False, 'tags': True, 'rm': []}
+    parser.extract_options = lambda x: opts
+
+    # fake the start-end lines where the example "was found"
+    end_lineno = start_lineno
+    end_lineno += (snippet + '\n' + expected).count('\n') + 1
+    where = Where(start_lineno, end_lineno, 'file.md')
+
+    # create it
+    e = Example(F, R, parser, snippet, expected, "", where)
+
+    # parse it (fake, of course)
+    if fully_parsed:
+        e = e.build(concerns=None)
+
+    return e
 
 class ExampleHarvest(object):
     '''
@@ -279,7 +375,7 @@ class ExampleHarvest(object):
                             break
 
                     if example.source == prev.source and \
-                            example.expected == prev.expected:
+                            example.expected_str == prev.expected_str:
 
                         del examples[i]
                         self._log_drop("duplicated examples", curr_where)
@@ -363,7 +459,7 @@ class ExampleHarvest(object):
 
             with enhance_exceptions(where, parser):
                 # perfect, we have everything to build an example
-                example = ExampleMatch(finder, runner, parser,
+                example = Example(finder, runner, parser,
                                         snippet, expected, indent, where)
                 examples.append(example)
 
