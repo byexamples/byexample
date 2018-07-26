@@ -134,28 +134,26 @@ class ExampleParser(ExtendOptionParserMixin):
 
         return snippet, expected
 
-    def build_example(self, snippet, expected, indent,
-                                     runner, finder, where, concerns):
-        start_lineno, end_lineno, filepath = where
+    def build_example(self, example, concerns):
         options = self.options
 
-        local_options = self.extract_options(snippet)
+        local_options = self.extract_options(example.snippet)
         options.up(local_options)
 
-        snippet, expected = self.process_snippet_and_expected(snippet, expected)
+        example.source, example.expected_str = self.process_snippet_and_expected(
+                                                              example.snippet,
+                                                              example.expected_str)
 
         # wrap these in a dictionary and let the concerns to replace them
         if concerns:
-            tmp = {'snippet': snippet, 'expected': expected}
-            concerns.process_snippet_and_expected(tmp, options)
-            snippet, expected = tmp['snippet'], tmp['expected']
+            concerns.process_snippet_and_expected(example, options)
 
         for x in options['rm']:
-            expected = expected.replace(x, '')
+            example.expected_str = example.expected_str.replace(x, '')
 
         are_advanced_captures_enabled = False
         expected_regexs, charnos, rcounts, tags_by_idx, adv = self.expected_as_regexs(
-                                                expected,
+                                                example.expected_str,
                                                 options['norm_ws'],
                                                 options['tags'],
                                                 are_advanced_captures_enabled)
@@ -165,7 +163,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
         expected = ExpectedClass(
                           # the output expected
-                          expected_str=expected,
+                          expected_str=example.expected_str,
 
                           # expected regex version
                           regexs=expected_regexs,
@@ -184,31 +182,15 @@ class ExampleParser(ExtendOptionParserMixin):
                           tags_by_idx=tags_by_idx,
                           )
 
-        example = Example(
-                          # the source code to execute and the expected
-                          source=snippet, expected=expected,
+        # the source code to execute and the expected
+        example.expected = expected
 
-                          # the options to customize this example
-                          options=local_options,
+        # the options to customize this example
+        example.options = local_options
 
-                          # the original indentation of the example
-                          indentation=indent,
-
-                          # file from where this example was extracted
-                          filepath=filepath,
-
-                          # by whom
-                          finder=finder,
-
-                          # start / end line numbers (inclusive) in the file
-                          start_lineno=start_lineno, end_lineno=end_lineno,
-
-                          # the runner for this example
-                          runner=runner,
-
-                          # extra stuff, probably what we could get
-                          # from the execution of the example (nothing yet)
-                          meta={})
+        # extra stuff, probably what we could get
+        # from the execution of the example (nothing yet)
+        example.meta = {}
 
         options.down()
         return example
