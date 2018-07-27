@@ -77,10 +77,9 @@ You may noticed the use of ``<...>`` in the previous example. This tag matches
 any string and can be used to ignore unwanted long or non-deterministic strings.
 
 Like ``<...>``, the tags with a name like ``<name>`` matches anything but
-the matched string is also captured and the name may be more meaningful than a
-simple ellipsis.
+the matched string is also captured and can be pasted into another example
+later.
 
-Check out [docs/differences](differences.md).
 
 ## Output differences
 
@@ -215,6 +214,38 @@ out:
 
 ```
 
+### Paste
+
+As we mentioned before, you can use ``<name>`` to capture some output
+and paste it in the next examples.
+
+```python
+>>> def gen_number():
+...     n = 42
+...     print("Generating: %i" % n)
+...     return n
+
+>>> a = gen_number()
+Generating: <number>
+
+>>> a == <number>     # byexample: +paste
+True
+
+```
+
+You can even paste it in the expected of the next examples:
+
+```python
+>>> a                 # byexample: +paste
+<number>
+
+>>> a                 # byexample: +paste -tags
+<number>
+
+```
+
+Disabling the capture you can be sure that the tags come from a previous example
+and they are not captured from the current example but it is not mandatory.
 
 ### Skip and Pass
 
