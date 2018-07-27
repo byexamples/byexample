@@ -53,17 +53,16 @@ class SimpleReporter(Concern):
     def _update(self, x):
         pass
 
-    def start_run(self, examples, runners, filepath):
-        self.examples = examples
+    def start(self, examples, runners, filepath):
         self.num_examples = len(examples)
         self.examplenro = 0
         self.filepath = filepath
         self.begin = time.time()
 
-        self.fail = self.good = self.aborted_or_crashed = self.skipped = 0
+        self.fail = self.good = self.skipped = 0
 
-    def end_run(self, failed, user_aborted, crashed):
-        if not self.examples:
+    def finish(self, failed, user_aborted, crashed, broken):
+        if self.num_examples == 0:
             if self.verbosity >= 1:
                 self._write("File %s, no test found\n" % self.filepath)
             return
@@ -84,7 +83,7 @@ class SimpleReporter(Concern):
 
         ran_number = self.examplenro
         tot_number = self.num_examples
-        if user_aborted or crashed:
+        if user_aborted or crashed or broken:
             status_str = colored("[ABORT]", 'red', self.use_colors)
         elif failed:
             status_str = colored("[FAIL]", 'red', self.use_colors)
@@ -100,11 +99,9 @@ class SimpleReporter(Concern):
         self._write(msg)
 
     def skip_example(self, example, options):
-        self.examplenro += 1
         self.skipped += 1
 
     def start_example(self, example, options):
-        self.examplenro += 1
         self.current_merged_flags = options
 
     def start_interact(self, example, options):
@@ -120,7 +117,6 @@ class SimpleReporter(Concern):
                                     self.examplenro, self.num_examples)
         self._print_error_header(example)
         self._write(msg)
-        self.aborted_or_crashed += 1
 
     def crashed(self, example, exception):
         self._write('\n')
@@ -132,7 +128,28 @@ class SimpleReporter(Concern):
                                     tb, ex)
         self._print_error_header(example)
         self._write(msg)
-        self.aborted_or_crashed += 1
+
+    def start_parse(self, example, options):
+        self.current_parsing_example = example
+
+    def finish_parse(self, example, options, exception):
+        self.examplenro += 1
+
+        if exception == None:
+            return
+
+        self._write('\n')
+
+        ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
+        if self.verbosity >= 1:
+            tb = ''.join(traceback.format_tb(exception.__traceback__))
+            ex = '\n'.join([tb, ex])
+
+        msg = 'Parse of example %i of %i failed.\n%s\n' % (
+                                    self.examplenro, self.num_examples,
+                                    ex)
+        self._print_error_header(self.current_parsing_example)
+        self._write(msg)
 
     def finish_interact(self, exception):
         if exception == None:
@@ -193,8 +210,8 @@ class ProgressBarReporter(SimpleReporter):
     def _update(self, x):
         self.bar.update(x)
 
-    def start_run(self, examples, runners, filepath):
-        SimpleReporter.start_run(self, examples, runners, filepath)
+    def start(self, examples, runners, filepath):
+        SimpleReporter.start(self, examples, runners, filepath)
 
         bar_format = '{desc} |{bar}| [{n_fmt}/{total_fmt}{postfix}]'
         self.bar = tqdm(total=len(examples), file=self.output,
@@ -203,9 +220,9 @@ class ProgressBarReporter(SimpleReporter):
                              disable=None # means disable if the output is not TTY
                              )
 
-    def end_run(self, failed, user_aborted, crashed):
+    def finish(self, failed, user_aborted, crashed, broken):
         self.bar.close()
-        SimpleReporter.end_run(self, failed, user_aborted, crashed)
+        SimpleReporter.finish(self, failed, user_aborted, crashed, broken)
 
     def start_example(self, example, options):
         SimpleReporter.start_example(self, example, options)
