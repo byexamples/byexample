@@ -7,7 +7,7 @@ class ByexampleCoverage(Concern):
     def __init__(self, **unused):
         pass
 
-    def start_run(self, examples, runners, filepath):
+    def start(self, examples, runners, filepath):
         self.runners = runners
         for runner in runners:
             if runner.language == 'python':
@@ -20,7 +20,7 @@ _cov_instance.start()
                 break
 
 
-    def end_run(self, failed, user_aborted, crashed):
+    def finish(self, failed, user_aborted, crashed, broken):
         for runner in self.runners:
             if runner.language == 'python':
                 coverage_end_code = r'''
