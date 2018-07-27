@@ -1,4 +1,5 @@
 import re, pexpect, sys, time, termios, operator, string, shlex
+from functools import reduce
 from .executor import TimeoutException
 from .common import tohuman
 
