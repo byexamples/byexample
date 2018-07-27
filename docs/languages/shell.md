@@ -23,6 +23,9 @@ $ g 1 2 3
 
 ## Using other shells (long story)
 
+**Warning:** this documentantion is about *internal details* that may
+not be honored between releases.
+
 There is no problem in spawning another shell even if the shell is not
 ``sh``
 
@@ -59,26 +62,13 @@ If you are sure that it is ok, you can remove the flag.
 
 ## Using other shells (short story)
 
-``byexample`` already has a shortcut to use a different shell.
-Use the ``+shell=`` option like this:
+``byexample`` allows you to use ``--shebang`` to control how to spawn
+a runner, in this case, the shell.
 
-```shell
-$ echo $0
-sh
-
-$ # byexample: +shell=bash
-$ echo $0
-bash
-
-$ # byexample: +shell=sh
-$ echo $0
-sh
-
-```
+See [usage](../usage.md) to see how ``--shebang`` is used.
 
 We support currently ``sh`` and ``bash``. It will probably work with others.
 
 Open an issue if not or even better, do a Pull Request for adding support to
 other shells!
-
 

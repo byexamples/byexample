@@ -68,7 +68,7 @@ class ShellParser(ExampleParser):
                                                     re.MULTILINE)
 
     def extend_option_parser(self, parser):
-        parser.add_argument("+shell", help='change the underlying shell to use.')
+        return
 
 class ShellInterpreter(ExampleRunner, PexepctMixin):
     language = 'shell'
@@ -87,20 +87,7 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
                     'a': [],
                     }
 
-    def _spawn_new_shell(self, cmd):
-        self._exec_and_wait('export PS1\n' +\
-                            'export PS2\n' +\
-                            'export PS3\n' +\
-                            'export PS4\n' +\
-                            cmd + '\n', timeout=2)
-
-
     def run(self, example, flags):
-        if flags.get('shell', False) == 'bash':
-            self._spawn_new_shell('/usr/bin/env bash --norc -i')
-        elif flags.get('shell', False) == 'sh':
-            self._spawn_new_shell('/usr/bin/env sh')
-
         return self._exec_and_wait(example.source,
                                     timeout=int(flags['timeout']))
 
