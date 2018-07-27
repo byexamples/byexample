@@ -12,11 +12,11 @@ $ pretty=none make lib-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
 File byexample/differ.py, 17/17 test ran in <...> seconds
 [PASS] Pass: 17 Fail: 0 Skip: 0
 ~
-File byexample/expected.py, 99/99 test ran in <...> seconds
-[PASS] Pass: 99 Fail: 0 Skip: 0
+File byexample/expected.py, 95/95 test ran in <...> seconds
+[PASS] Pass: 95 Fail: 0 Skip: 0
 ~
-File byexample/finder.py, 58/58 test ran in <...> seconds
-[PASS] Pass: 58 Fail: 0 Skip: 0
+File byexample/finder.py, 67/67 test ran in <...> seconds
+[PASS] Pass: 67 Fail: 0 Skip: 0
 ~
 File byexample/options.py, 64/64 test ran in <...> seconds
 [PASS] Pass: 64 Fail: 0 Skip: 0
@@ -67,8 +67,8 @@ File CONTRIBUTING.md, 5/5 test ran in <...> seconds
 File README.md, 8/8 test ran in <...> seconds
 [PASS] Pass: 6 Fail: 0 Skip: 2
 ~
-File docs/how_to_support_new_finders_and_languages.md, 35/35 test ran in <...> seconds
-[PASS] Pass: 35 Fail: 0 Skip: 0
+File docs/how_to_support_new_finders_and_languages.md, 39/39 test ran in <...> seconds
+[PASS] Pass: 39 Fail: 0 Skip: 0
 ~
 File docs/index.md, 8/8 test ran in <...> seconds
 [PASS] Pass: 6 Fail: 0 Skip: 2
@@ -88,8 +88,8 @@ File docs/languages/python.md, 41/41 test ran in <...> seconds
 File docs/languages/shell.md, 15/15 test ran in <...> seconds
 [PASS] Pass: 15 Fail: 0 Skip: 0
 ~
-File docs/usage.md, 29/29 test ran in <...> seconds
-[PASS] Pass: 28 Fail: 0 Skip: 1
+File docs/usage.md, 34/34 test ran in <...> seconds
+[PASS] Pass: 33 Fail: 0 Skip: 1
 ~
 File docs/differences.md, 10/10 test ran in <...> seconds
 [PASS] Pass: 10 Fail: 0 Skip: 0
