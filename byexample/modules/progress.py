@@ -134,6 +134,20 @@ class SimpleReporter(Concern):
         self._write(msg)
         self.aborted_or_crashed += 1
 
+    def finish_interact(self, exception):
+        if exception == None:
+            return
+
+        self._write('\n')
+
+        ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
+        if self.verbosity >= 1:
+            tb = ''.join(traceback.format_tb(exception.__traceback__))
+            ex = '\n'.join([tb, ex])
+
+        msg = 'Interactive session failed.\n%s\n' % (ex)
+        self._write(msg)
+
     def success(self, example, got, differ):
         self._update(1)
         self.good += 1
