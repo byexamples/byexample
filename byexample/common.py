@@ -80,6 +80,25 @@ def tohuman(s):
 
     return s
 
+def print_simple_example(example, use_colors, x):
+    if x < 0:
+        return
+
+    print("::[Example]" + ":" * 59)
+    print("  Found in: %s (%s - %s) by: %s" % (example.filepath,
+                                               example.start_lineno,
+                                               example.end_lineno,
+                                               example.finder))
+    print("  Language: %s" % (example.runner.language))
+    print("..[Source]" + "." * 60)
+    print(highlight_syntax(example, use_colors))
+
+    print("..[Expected]" + "." * 58)
+    _l = 0
+    for e in example.expected_str.split('\n'):
+        print("% 4i: %s" % (_l, e))
+        _l += len(e) + 1
+
 def print_example(example, use_colors, x):
     if x < 0:
         return
@@ -87,6 +106,7 @@ def print_example(example, use_colors, x):
     capture_tag_names = list(sorted(n for n in example.expected.tags_by_idx.values() if n != None))
 
     print("::[Example]" + ":" * 59)
+    print("  Language: %s" % (example.runner.language))
     print("  Found in: %s by: %s" % (example.filepath, example.finder))
     print("  Lines from: %s to: %s" % (example.start_lineno, example.end_lineno))
     print("  Indentation: |%s| (%i bytes)" % (example.indentation,
