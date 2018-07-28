@@ -1,6 +1,6 @@
 import collections, re
-from .common import log, build_where_msg, tohuman, print_example, \
-                    enhance_exceptions
+from .common import log, build_where_msg, tohuman, \
+                    enhance_exceptions, print_simple_example
 
 from .parser import ExampleParser
 from .options import Options
@@ -117,24 +117,35 @@ def _build_fake_example(snippet, expected, language='python', start_lineno=0,
 
 class ExampleHarvest(object):
     '''
-          Finding process    Parsing process         Run process
-    ----------\        example        example (parsed)
-    | foo     |      (not parsed)    ............ . . .
-    |         |      -----------     : 1 + 2 } source     =>  1 + 2 ----> runner
-    | > 1 + 2 |      | > 1 + 2 |     :                                      |
-    | 3       |  =>  | 3       |  => : 3 } expected       =>  3 == ?? <-- output
-    |         |      -----------     :.......... .. . .     compare done
-    | bar     |      -----------                         by expected object
-    | > 1 + 3 |  =>  | > 1 + 3 } snippet                        |
-    | 4       |      | 4   } expected_str                       |--> PASS/FAIL
-    :         :      -----------                                      report
-                                                                  done by reporter
-                                                                   and by differ
+                  Finding process             Parsing process
+    ----------\                      example                 example (parsed)
+    | foo     |      a match       (not parsed)         ............ . . .
+    |         |    -----------    -----------           : 1 + 2 } source
+    | > 1 + 2 |    | > 1 + 2 |    | 1 + 2 } snippet  => :
+    | 3       | => | 3       | => | 3 } expected_str    : 3 } expected (regex)
+    |         |    -----------    -----------           :
+    | bar     |    -----------                          : options extracted too
+    | > 1 + 3 | => | > 1 + 3 |                          :.......... .. . .
+    | 4       |    | 4       |                               |         |
+    :         :    -----------          /                    V         |
+                                       /        executed { 1 + 2       |
+                                      /         by runner    |         |
+                                     |                  . .  V . . . . V . . .
+                              Run    |    compare done  :  output   output   :
+                            process  |    by expected   :   got    expected  :
+                                     |      object      : .  . . . . . . . . :
+                                     |                            |
+                                     |                            V
+                                     |     report done by     PASS/FAIL
+                                     \     differ and by
+                                      \       reporter
+                                       \         .
     '''
     def __init__(self, allowed_languages, registry, verbosity,
-                        options, **unused):
+                        options, use_colors, **unused):
         self.allowed_languages = allowed_languages
         self.verbosity = verbosity
+        self.use_colors = use_colors
         self.available_finders = registry['finders'].values()
 
         self.parser_by_language = registry['parsers']
@@ -174,16 +185,15 @@ class ExampleHarvest(object):
         start_lineno attribute. In case of two examples with the same
         start_lineno, they must be sorted in reverse order by their end_lineno
 
-        Before going deeper, let's create a helper function to build examples:
+        Before going deeper, let's use a helper function to build examples:
 
-            >>> # helper function to create examples
             >>> from byexample.finder import _build_fake_example as build_example
 
-        And we create a harvester to play with it:
+        And create a harvester to play with it:
 
             >>> from byexample.finder import ExampleHarvest
             >>> f = ExampleHarvest([], dict((k, {}) for k in \
-            ...                   ('parsers', 'finders', 'runners')), 0, None)
+            ...                   ('parsers', 'finders', 'runners')), 0, 0, None)
 
         Okay, back to the check_example_overlap documentation,
         given the examples sorted in that way, a collision is detected if
@@ -193,16 +203,15 @@ class ExampleHarvest(object):
 
               1...........5.....7       1...........5       1...........5
               |  example  |             |  example  |       |  example  |
-              |     example     |           |  ex  |        |  example  |
+              |     example     |           |  ex |         |  example  |
                  |   example    |       1..2......4         1...........5
               1..2..............7
 
         What do we do will depend of the content of the examples, not only of
         the type of collision:
 
-         - if both examples have the same language and one example is contained
-           inside the other (Collision 2 or Collision 3), we drop the example
-           found by a generic finder.
+         - if one example is contained inside the other (Collision 2 or
+           Collision 3), we drop the example found by a generic finder.
 
            This scenario can happen when a generic finder like FencedMatchFinder
            finds a interpreter-session-like for the same language.
@@ -213,11 +222,20 @@ class ExampleHarvest(object):
                 3
 
                 ```
-           So we remove the example of the generic finder (FencedMatchFinder) as
-           we assume that it may have more precise information (the correct
-           source code and the correct expected string)
+           In that case both examples have the same language.
+           But there is a good case when that may not hold: using a markdown
+           for ona language (due its highligth syntax) and writting the real
+           example inside using a prompt:
+                ```shell
+                >>> 1 + 2
+                3
 
-           >>> A = build_example('>>> 1 + 2', '3', 'python', start_lineno=1)
+                ```
+           So we remove the example of the generic finder (FencedMatchFinder) as
+           we assume that the specific may have more precise information
+           (the correct source code and the correct expected string)
+
+           >>> A = build_example('1 + 2', '3', 'python', start_lineno=1)
            >>> B = build_example('1 + 2', '3', 'python', start_lineno=1, specific=True)
 
            >>> examples = f.check_example_overlap([A, B], 'foo.rst')
@@ -227,8 +245,8 @@ class ExampleHarvest(object):
            >>> examples
            [Example [python] in file <...>, lines 1-3]
 
-           >>> examples[0].source
-           '1 + 2\n'
+           >>> examples[0].snippet
+           '1 + 2'
 
 
          - if both examples have the same source code, expected string and
@@ -268,8 +286,8 @@ class ExampleHarvest(object):
            >>> examples
            [Example [python] in file <...>, lines 1-4]
 
-           >>> examples[0].source
-           '# python comment\n1 + 2\n'
+           >>> examples[0].snippet
+           '# python comment\n1 + 2'
 
            The border case is when both examples have the same source code but
            are examples of two different languages.
@@ -336,7 +354,6 @@ class ExampleHarvest(object):
                                     not collision_type_3)
 
                 any_collision = collision_type_1 or collision_type_2 or collision_type_3
-
                 if not any_collision:
                     prev = example
                     continue
@@ -346,20 +363,30 @@ class ExampleHarvest(object):
                 curr_where = Where(example.start_lineno, example.end_lineno, filepath)
                 prev_where = Where(prev.start_lineno, prev.end_lineno, filepath)
 
+                self._log_debug(" * Collision Type (1/2/3): %s/%s/%s\n"        \
+                                " * Languages (prev/current): %s/%s\n"         \
+                                " * Specific? (prev/current): %s/%s\n"
+                                    % (collision_type_1, collision_type_2,
+                                        collision_type_3, prev.runner.language,
+                                        example.runner.language, prev.finder.specific,
+                                        example.finder.specific), curr_where)
+                print_simple_example(prev, self.use_colors, self.verbosity-3)
+                print_simple_example(example, self.use_colors, self.verbosity-3)
+
+                if collision_type_2 or collision_type_3:
+                    if example.finder.specific != prev.finder.specific:
+                        if example.finder.specific:
+                            del examples[i-1]
+                            _where = prev_where
+                        else:
+                            del examples[i]
+                            _where = curr_where
+
+                        self._log_drop("generic/specific overlap", _where)
+                        break
+
                 if same_language:
-                    if collision_type_2 or collision_type_3:
-                        if example.finder.specific != prev.finder.specific:
-                            if example.finder.specific:
-                                del examples[i-1]
-                                _where = prev_where
-                            else:
-                                del examples[i]
-                                _where = curr_where
-
-                            self._log_drop("generic/specific overlap", _where)
-                            break
-
-                    if example.source == prev.source and \
+                    if example.snippet == prev.snippet and \
                             example.expected_str == prev.expected_str:
 
                         del examples[i]
@@ -367,17 +394,19 @@ class ExampleHarvest(object):
                         break
 
                 else:
-                    if example.source == prev.source:
+                    if example.snippet == prev.snippet:
                         pass # too ambiguous
 
-                    elif example.source in prev.source:
+                    elif example.snippet in prev.snippet:
+                        self._log_drop("inner example (%s)" %
+                                examples[i].runner.language, curr_where)
                         del examples[i]
-                        self._log_drop("inner example", curr_where)
                         break
 
-                    elif prev.source in example.source:
+                    elif prev.snippet in example.snippet:
+                        self._log_drop("inner example (%s)" %
+                                examples[i-1].runner.language, prev_where)
                         del examples[i-1]
-                        self._log_drop("inner example", prev_where)
                         break
 
                 msg = "In %s, examples at line %i (found by %s) and " +\
@@ -387,11 +416,18 @@ class ExampleHarvest(object):
                              prev.finder)
                 raise ValueError(msg)
 
+        if self.verbosity-2 >= 0:
+            print("== Examples found after removing any overlapping one:")
+            for e in examples:
+                print_simple_example(e, self.use_colors, 0)
+            print("")
         return examples
 
     def _log_drop(self, reason, where):
-        log(build_where_msg(where, self, "Dropped example: " + reason),
-                self.verbosity-2)
+        self._log_debug(" => Dropped example: " + reason, where)
+
+    def _log_debug(self, what, where):
+        log(build_where_msg(where, self, what), self.verbosity-3)
 
     def get_example_using(self, finder, string, filepath='<string>'):
         charno = 0
@@ -438,9 +474,11 @@ class ExampleHarvest(object):
                 # save the indentation here
                 indent = match.group('indent')
 
-                # then, get the snippet (runneable code) and the expected (the string)
-                # from the example_str
+                # then, get the source (runneable code) and the expected (the string)
                 snippet, expected = finder.get_snippet_and_expected(match, where)
+
+                if expected == None:
+                    expected = ""
 
             with enhance_exceptions(where, parser):
                 # perfect, we have everything to build an example
