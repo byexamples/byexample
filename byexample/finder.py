@@ -1,6 +1,6 @@
 import collections, re
 from .common import log, build_where_msg, tohuman, \
-                    enhance_exceptions, print_simple_example
+                    enhance_exceptions, print_example
 
 from .parser import ExampleParser
 from .options import Options
@@ -370,8 +370,8 @@ class ExampleHarvest(object):
                                         collision_type_3, prev.runner.language,
                                         example.runner.language, prev.finder.specific,
                                         example.finder.specific), curr_where)
-                print_simple_example(prev, self.use_colors, self.verbosity-3)
-                print_simple_example(example, self.use_colors, self.verbosity-3)
+                print_example(prev, self.use_colors, self.verbosity-3)
+                print_example(example, self.use_colors, self.verbosity-3)
 
                 if collision_type_2 or collision_type_3:
                     if example.finder.specific != prev.finder.specific:
@@ -419,7 +419,7 @@ class ExampleHarvest(object):
         if self.verbosity-2 >= 0:
             print("== Examples found after removing any overlapping one:")
             for e in examples:
-                print_simple_example(e, self.use_colors, 0)
+                print_example(e, self.use_colors, 0)
             print("")
         return examples
 
