@@ -95,10 +95,13 @@ def print_example(example, use_colors, x):
     print(highlight_syntax(example, use_colors))
 
     print("..[Expected]" + "." * 58)
-    _l = 0
-    for e in example.expected_str.split('\n'):
-        print("% 4i: %s" % (_l, e))
-        _l += len(e) + 1
+    if (x-2) >= 0:
+        _l = 0
+        for e in example.expected_str.split('\n'):
+            print("% 4i: %s" % (_l, e))
+            _l += len(e) + 1
+    else:
+        print(example.expected_str)
 
     if not example.fully_parsed:
         return
