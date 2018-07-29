@@ -164,6 +164,7 @@ class ExampleHarvest(object):
 
     def get_examples_from_string(self, string, filepath='<string>'):
         all_examples = []
+        log("Finding examples...", self.verbosity-1)
         for finder in self.available_finders:
             examples = self.get_example_using(finder, string, filepath)
             all_examples.extend(examples)
@@ -416,8 +417,16 @@ class ExampleHarvest(object):
                              prev.finder)
                 raise ValueError(msg)
 
+        if self.verbosity-1 >= 0:
+            log("Examples after removing any overlapping", self.verbosity-1)
+            for finder in set(e.finder for e in examples):
+                log("File '%s': %i examples [%s]" % (
+                                    filepath,
+                                    len([e for e in examples if e.finder==finder]),
+                                    str(finder)),
+                                    self.verbosity-1)
+
         if self.verbosity-2 >= 0:
-            print("== Examples found after removing any overlapping one:")
             for e in examples:
                 print_example(e, self.use_colors, 0)
             print("")
@@ -488,7 +497,7 @@ class ExampleHarvest(object):
 
 
         log("File '%s': %i examples [%s]" % (filepath, len(examples), str(finder)),
-                                            self.verbosity-1)
+                                            self.verbosity-2)
 
         return examples
 
