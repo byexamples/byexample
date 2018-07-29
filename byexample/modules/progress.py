@@ -1,4 +1,4 @@
-import traceback, time, os
+import traceback, time, os, sys
 from byexample.common import colored, highlight_syntax
 from byexample.concern import Concern
 from doctest import _indent
@@ -121,7 +121,7 @@ class SimpleReporter(Concern):
     def crashed(self, example, exception):
         self._write('\n')
 
-        tb = ''.join(traceback.format_tb(exception.__traceback__))
+        tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
         ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
         msg = 'Execution of example %i of %i crashed.\n%s\n%s\n' % (
                                     self.examplenro, self.num_examples,
@@ -142,7 +142,7 @@ class SimpleReporter(Concern):
 
         ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
         if self.verbosity >= 1:
-            tb = ''.join(traceback.format_tb(exception.__traceback__))
+            tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
             ex = '\n'.join([tb, ex])
 
         msg = 'Parse of example %i of %i failed.\n%s\n' % (
@@ -159,7 +159,7 @@ class SimpleReporter(Concern):
 
         ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
         if self.verbosity >= 1:
-            tb = ''.join(traceback.format_tb(exception.__traceback__))
+            tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
             ex = '\n'.join([tb, ex])
 
         msg = 'Interactive session failed.\n%s\n' % (ex)
@@ -192,6 +192,12 @@ class SimpleReporter(Concern):
 
         self._write("Failed example:\n")
         self._write(_indent(highlight_syntax(example, self.use_colors)))
+
+    def _get_traceback(self, exception):
+        if hasattr(exception, '__traceback__'):
+            return exception.__traceback__
+        else:
+            return sys.exc_info()[2]
 
 class ProgressBarReporter(SimpleReporter):
     target = None # progress
