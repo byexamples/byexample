@@ -169,8 +169,6 @@ class _LinearExpected(Expected):
         expected_str = example.expected.str
         charnos = example.expected.charnos
 
-        self._partial_expected_replaced = expected_str
-        self._partial_captured = {}
         self.check_good = self._linear_matching(regexs, tags_by_idx, charnos, expected_str, got)
         self._check_got_output_called = True
         return self.check_good
@@ -220,22 +218,17 @@ class _LinearExpected(Expected):
         for capture_idx in capture_idxs + [len(regexs)]:
             literal = ''.join(regexs[prev:capture_idx])
             if literal:
-                literals.append((literal, tags_by_idx.get(prev-1)))
+                literals.append(literal)
 
             prev = capture_idx + 1
 
         pos = 0
-        for literal, prev_tag_name in literals:
+        for literal in literals:
             r = re.compile(literal, re.MULTILINE | re.DOTALL)
             m = r.search(got, pos)
 
             if not m:
-                self._partial_captured = {}
                 return False
-
-            if prev_tag_name is not None:
-                captured = got[pos:m.start()]
-                self._partial_captured[prev_tag_name] = captured
 
             pos = m.end()
 
