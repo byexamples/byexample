@@ -3,6 +3,8 @@ from .common import log, tohuman, constant
 from .options import OptionParser, UnrecognizedOption, ExtendOptionParserMixin
 from .expected import _LinearExpected, _RegexExpected
 
+def tag_name_as_regex_name(name):
+    return name.replace('-', '_')
 
 class ExampleParser(ExtendOptionParserMixin):
     def __init__(self, verbosity, encoding, options, **unused):
@@ -54,6 +56,10 @@ class ExampleParser(ExtendOptionParserMixin):
         Return a regular expression to match a 'capture tag'.
         The regex must have a named group:
           - name: the name of the tag.
+
+        Due implementation details the underscore character '_'
+        *cannot* be used as a valid character in the name.
+        Instead you should use minus '-'.
         '''
         return re.compile(r"<(?P<name>(?:\w|-|\.)+)>")
 
@@ -428,7 +434,7 @@ class ExampleParser(ExtendOptionParserMixin):
             - a list with the character numbers, the positions in the expected
               string from where it was created each regex
             - a list of rcounts (see below)
-            - a dict of non-literal regexs names (capturing and non-capturing)
+            - a dict of non-literal 'regexs' names (capturing and non-capturing)
               also know as "tags" indexed by position.
               For non-capturing the name will be None.
             - a flag saying if advanced captures are being used (currently
@@ -485,19 +491,25 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> adv
             False
 
-        An example with non-capturing regex (unamed tag) could be:
+        The following example shows what happen when we use a non-capturing tag
+        (ellipsis tag) also known as unnamed tag and what happen when we use
+        a tag name with a - (Python regexs don't support this character):
 
-            >>> expected = 'a<...>b<bar>c'
+            >>> expected = 'a<...>b<foo-bar>c'
             >>> regexs, _, _, tags_by_idx, _ = _as_regexs(expected, False, True, True)
 
             >>> regexs
-            ['\\A', 'a', '(?:.*?)', 'b', '(?P<bar>.*?)', 'c', '\\n*\\Z']
+            ['\\A', 'a', '(?:.*?)', 'b', '(?P<foo_bar>.*?)', 'c', '\\n*\\Z']
 
             >>> list(sorted(n for n in tags_by_idx.values() if n != None))
-            ['bar']
+            ['foo-bar']
 
             >>> tags_by_idx
-            {2: None, 4: 'bar'}
+            {2: None, 4: 'foo-bar'}
+
+        Notice how the unnamed tag is mapped to None and how a name with a -
+        works out of the box with a subtle change: the regex name has a _
+        instead of a -.
 
         Multi line strings will yield splitted regexs: one regex per line.
         This in on purpose to support the concept of incremental matching
@@ -868,7 +880,7 @@ class ExampleParser(ExtendOptionParserMixin):
                         if are_advanced_captures_enabled:
                             # matched the same string that a previous
                             # group matched with that name
-                            regex = r"(?P=%s)" % name
+                            regex = r"(?P=%s)" % tag_name_as_regex_name(name)
                             rcount = 1
                             are_advanced_captures_used = True
 
@@ -882,7 +894,9 @@ class ExampleParser(ExtendOptionParserMixin):
                     else:
                         # first seen, capture anything (non-greedy)
                         names_seen.add(name)
-                        regex = self.non_capture_anything_regex_str(name, need_match_at_least_one)
+                        regex = self.non_capture_anything_regex_str(
+                                        tag_name_as_regex_name(name),
+                                        need_match_at_least_one)
 
                 # match 'anything' but do not match any leading
                 # space if the previous regex already matches that

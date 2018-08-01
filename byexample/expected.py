@@ -1,6 +1,9 @@
 from .common import log
 import string, re, time
 
+def regex_name_as_tag_name(name):
+    return name.replace('_', '-')
+
 class Expected(object):
     def __init__(self, expected_str, regexs, charnos, rcounts, tags_by_idx):
         self.str = expected_str
@@ -22,7 +25,7 @@ class _LinearExpected(Expected):
 
         Consider the following example with a named capture in the expected:
 
-        >>> ex = build_example('f()', 'aa<foo>bb<bar>cc', opts=opts)
+        >>> ex = build_example('f()', 'aa<foo>bb<bar-baz>cc', opts=opts)
         >>> exp = ex.expected
 
         If <foo> is .* we can split the expected string into two: aa and bb; and
@@ -46,7 +49,7 @@ class _LinearExpected(Expected):
 
         The captures is a dictionary with the strings captures by name:
 
-        >>> captures['foo'], captures['bar']
+        >>> captures['foo'], captures['bar-baz']
         ('XYZ', '')
 
         The things gets more interesting when the example fails.
@@ -249,7 +252,9 @@ class _RegexExpected(Expected):
         m = r.match(got)
 
         if m:
-            return m.groupdict('')
+            replaced_captures = m.groupdict('')
+            return {regex_name_as_tag_name(n): v
+                                    for n, v in replaced_captures.items()}
 
     def _get_all_capture_as_possible(self, example, got, options):
         expected = example.expected
@@ -361,21 +366,21 @@ class _RegexExpected(Expected):
 
         Named groups are returned as well:
 
-            >>> expected = r'aa<foo>bb<bar>ddd<baz>eee<zaz>cc'
+            >>> expected = r'aa<foo>bb<b-r>ddd<baz>eee<z-z>cc'
             >>> got = r'aaAAbbBBxxxddeeeCCcc'
 
             >>> expected_regexs = ['\A', 'aa', '(?P<foo>.*?)', 'bb',
-            ...                     '(?P<bar>.*?)', 'ddd', '(?P<baz>.*?)',
-            ...                     'eee', '(?P<zaz>.*?)', 'cc', r'\n*\Z']
+            ...                     '(?P<b_r>.*?)', 'ddd', '(?P<baz>.*?)',
+            ...                     'eee', '(?P<z_z>.*?)', 'cc', r'\n*\Z']
             >>> charnos = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32]
             >>> rcounts   = [0, 2, 0, 2, 0, 3, 0, 3, 0, 2, 0]
 
-            >>> s, c = _replace_captures(['foo', 'bar', 'baz', 'zaz'],
+            >>> s, c = _replace_captures(['foo', 'b-r', 'baz', 'z-z'],
             ...                          expected_regexs, charnos, rcounts, expected, got, 1, 1)
             >>> s                               # byexample: -tag
-            'aaAAbb<bar>ddd<baz>eeeCCcc'
+            'aaAAbb<b-r>ddd<baz>eeeCCcc'
             >>> c
-            {'foo': 'AA', 'zaz': 'CC'}
+            {'foo': 'AA', 'z-z': 'CC'}
 
 
 
@@ -573,6 +578,8 @@ class _RegexExpected(Expected):
 
         elapsed = timeout - timeout_right
 
+        replaced_captures = {regex_name_as_tag_name(n): v
+                                    for n, v in replaced_captures.items()}
         log("Incremental Match:\n##Elapsed: %0.2f secs\n##Left: %s\n\n##Middle: %s\n\n##Right: %s\n\n##Captured: %s\n\n##Buffer: %s" % (
                 elapsed, got_left, middle_part, got_right, repr(replaced_captures), buffer_captured), self.verbosity-4)
 
