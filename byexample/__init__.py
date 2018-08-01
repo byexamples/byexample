@@ -1,6 +1,6 @@
 '''Write snippets of code in C++, Python, Ruby, and others as documentation and execute them as regression tests.'''
 
-__version__ = "7.0.0"
+__version__ = "7.0.1"
 
 _author  = 'Di Paola Martin'
 _license = 'GNU GPLv3'
