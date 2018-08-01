@@ -855,7 +855,6 @@ class ExampleParser(ExtendOptionParserMixin):
                 charno = match.start()
 
                 name = match.group("name")
-                name = name.replace("-", "_") # uniform the name
 
                 rcount = 0
 
