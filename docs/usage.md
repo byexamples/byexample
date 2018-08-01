@@ -226,9 +226,9 @@ and paste it in the next examples.
 ...     return n
 
 >>> a = gen_number()
-Generating: <number>
+Generating: <random-number>
 
->>> a == <number>     # byexample: +paste
+>>> a == <random-number>     # byexample: +paste
 True
 
 ```
@@ -237,10 +237,10 @@ You can even paste it in the expected of the next examples:
 
 ```python
 >>> a                 # byexample: +paste
-<number>
+<random-number>
 
 >>> a                 # byexample: +paste -tags
-<number>
+<random-number>
 
 ```
 
