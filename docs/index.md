@@ -42,7 +42,7 @@ $ byexample -l python,ruby,shell README.md      # run it    # byexample: +skip
 You can select which languages to run, over which files, how to display the
 differences and much more.
 
-The [how to usage](usage.md) document goes through almost all the flags that
+The [usage](usage.md) document goes through almost all the flags that
 ``byexample`` program has, full of examples of course.
 
 ## What an example looks like?
