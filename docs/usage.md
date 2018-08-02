@@ -338,6 +338,31 @@ optional arguments:
 
 ```
 
+### Loading options from a file
+
+If the amount of options is a little overhelming for you, you can
+write them down to a file and let ``byexample`` load them for you.
+
+The only convention that you need to follow is to write one option
+per line and use ``=`` for the arguments.
+
+```
+$ echo '--pretty=none'         > w/options_file
+$ echo '--options="+norm-ws"' >> w/options_file
+
+```
+
+Then load it with ``@`` and the file; you can use multiple files
+and combine them with more options from the command line:
+
+```
+$ byexample -l python @w/options_file w/blog-101-python-tutorial.md
+<...>
+File w/blog-101-python-tutorial.md, 4/4 test ran in <...> seconds
+[PASS] Pass: 4 Fail: 0 Skip: 0
+
+```
+
 
 ## What is considered an example?
 

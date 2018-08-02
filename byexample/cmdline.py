@@ -41,7 +41,7 @@ def parse_args(args=None):
 
     search_default = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modules')
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
     parser.add_argument('-V', '--version', nargs=0, action=_Print,
             message='{prog} {version} - {license}\n\n{doc}'
                     '\n\n{license_disclaimer}'.format(
