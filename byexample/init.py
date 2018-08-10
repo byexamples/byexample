@@ -1,4 +1,4 @@
-import sys, pkgutil, inspect, pprint
+import sys, pkgutil, inspect, pprint, os
 
 from .options import Options, OptionParser
 from .runner import ExampleRunner
@@ -8,6 +8,31 @@ from .differ import Differ
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
 from .common import log
+
+def are_tty_colors_supported(output):
+    def get_colors():
+        try:
+            import curses
+            curses.setupterm()
+            return int(curses.tigetnum('colors'))
+        except:
+            # assume that we have a terminal with color support
+            return 8
+
+    # assume that colors are enabled by default iff:
+    # - the output is a TTY terminal (the output is not a redirection
+    #   to a file or pipe for example)
+    # - the terminal name (TERM) has not the 'm' suffix like xterm-m
+    #   (see term(7) for more terminal names conventions)
+    # - ncurses queries the terminal and it says that colors are supported
+    #   and it has 8 or more colors.
+    #
+    # the order is important because, for example, the value of TERM is
+    # more relevant: the terminal may have support for colors but if TERM
+    # has the -m suffix, we should honor that; the user may relay on this.
+    return output.isatty() and \
+           'm' not in os.getenv('TERM', '').split('-') and \
+           get_colors() >= 8
 
 def is_a(target_class, key_attr):
     '''
@@ -235,8 +260,8 @@ def init(args):
 
     options = get_options(args, cfg)
 
-    # if the output is not atty, disable the color anyways
-    cfg['use_colors'] &= cfg['output'].isatty()
+    # if the output has not color support, disable the color anyways
+    cfg['use_colors'] &= are_tty_colors_supported(cfg['output'])
 
     registry = load_modules(args.modules_dirs, cfg)
 
