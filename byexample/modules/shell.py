@@ -26,6 +26,7 @@ from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
+from byexample.executor import TimeoutException
 
 stability = 'unstable'
 
@@ -68,7 +69,7 @@ class ShellParser(ExampleParser):
                                                     re.MULTILINE)
 
     def extend_option_parser(self, parser):
-        return
+        parser.add_flag("stop-on-silence", help="stop the process after some period of inactivity or silence.")
 
 class ShellInterpreter(ExampleRunner, PexepctMixin):
     language = 'shell'
@@ -88,8 +89,25 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
                     }
 
     def run(self, example, flags):
-        return self._exec_and_wait(example.source,
+        try:
+            return self._exec_and_wait(example.source,
                                     timeout=int(flags['timeout']))
+        except TimeoutException as ex:
+            if 'stop_on_silence' in flags and flags['stop_on_silence']:
+                # get the current output
+                out = ex.output
+
+                # stop the process to get back the control of the shell.
+                # this require that the job monitoring system of
+                # the shell is on (set -m)
+                self.interpreter.sendcontrol('z')
+
+                # wait for the prompt, ignore any extra output
+                self._expect_prompt(timeout=int(flags['timeout']),
+                                        prompt_re=self.PS1_re)
+                self._drop_output()
+                return out
+            raise
 
     def interact(self, example, options):
         PexepctMixin.interact(self)

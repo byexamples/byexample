@@ -138,9 +138,62 @@ other side effects.
 
 See the documentation of your shell.
 
-The following ``stackoverflow`` thread explains all of this in a very concise
-manner:
-https://stackoverflow.com/questions/11097761/is-there-a-way-to-make-bash-job-control-quiet/11111042#11111042
+> The following ``stackoverflow`` thread explains all of this in a very concise
+> manner:
+> https://stackoverflow.com/questions/11097761/is-there-a-way-to-make-bash-job-control-quiet/11111042#11111042
+
+## Stopping a process on inactivity or silence
+
+Sometimes is useful to run a long-running process in foreground
+and after some period of inactivity or silence, stop it and get
+back the control of the shell.
+
+> Currently ``byexample`` waits until a time out raises (``+timeout``) to
+> stop the process.
+
+For example, imagine that we want to read the new entries of a log
+file as soon as they are saved in the log file.
+
+```shell
+$ echo "some log line" > w/msg.log
+
+```
+
+We could use ``tail -f`` for this. But if we do that, ``tail`` will never end,
+blocking the whole execution.
+
+In these cases we can use the ``+stop-on-silence`` option: after some period
+of inactivity or silence the process will be stopped:
+
+```shell
+$ tail -f w/msg.log             # byexample: +stop-on-silence
+some log line
+
+```
+
+The process will be stopped, if you want that the process keeps running
+in background execute ``bg``.
+
+Or you can resume it in foreground with ``fg``, this enable us
+to keep reading the new entries in the log.
+
+```shell
+$ echo "another log line" >> w/msg.log
+
+$ fg                            # byexample: +stop-on-silence
+tail -f w/msg.log
+another log line
+
+```
+
+```shell
+$ kill %% ; fg ; wait    # cleanup  # byexample: +pass
+$ jobs -l
+
+```
+
+> **Note:** ``+stop-on-silence`` requires the job control and monitoring to be
+> enabled (``set -m``).
 
 
 ## Using other shells (long story)
