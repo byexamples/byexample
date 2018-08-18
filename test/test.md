@@ -85,8 +85,8 @@ File docs/languages/ruby.md, 14/14 test ran in <...> seconds
 File docs/languages/python.md, 41/41 test ran in <...> seconds
 [PASS] Pass: 40 Fail: 0 Skip: 1
 ~
-File docs/languages/shell.md, 10/10 test ran in <...> seconds
-[PASS] Pass: 10 Fail: 0 Skip: 0
+File docs/languages/shell.md, 29/29 test ran in <...> seconds
+[PASS] Pass: 29 Fail: 0 Skip: 0
 ~
 File docs/usage.md, 37/37 test ran in <...> seconds
 [PASS] Pass: 36 Fail: 0 Skip: 1

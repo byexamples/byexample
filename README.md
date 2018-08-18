@@ -158,7 +158,7 @@ Current version:
 
 ```shell
 $ byexample -V
-byexample 7.0.3 - GNU GPLv3
+byexample 7.1.0 - GNU GPLv3
 <...>
 Copyright (C) Di Paola Martin - https://github.com/byexamples/byexample
 <...>
