@@ -201,7 +201,9 @@ class PexepctMixin(object):
         '''
         _timeout_msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s"
         if timeout <= 0:
-            raise TimeoutException(_timeout_msg % ''.join(self.last_output)[-1000:])
+            out = self._get_output()
+            raise TimeoutException(_timeout_msg % ''.join(self.last_output)[-1000:],
+                                    out)
 
         if not prompt_re:
             prompt_re = self.any_PS_re
@@ -213,7 +215,9 @@ class PexepctMixin(object):
         self.last_output.append(self.interpreter.before)
 
         if what == Timeout:
-            raise TimeoutException(_timeout_msg % ''.join(self.last_output)[-1000:])
+            out = self._get_output()
+            raise TimeoutException(_timeout_msg % ''.join(self.last_output)[-1000:],
+                                    out)
 
 
     def _get_output(self):

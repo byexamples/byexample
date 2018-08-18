@@ -1,7 +1,9 @@
 from .common import log, print_example, print_execution, enhance_exceptions
 
 class TimeoutException(Exception):
-    pass
+    def __init__(self, msg, output):
+        Exception.__init__(self, msg);
+        self.output = output
 
 class FileExecutor(object):
     def __init__(self, concerns, differ, verbosity, use_colors, options, **unused):
