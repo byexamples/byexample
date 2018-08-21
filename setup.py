@@ -75,7 +75,7 @@ setup(
         'Programming Language :: Unix Shell',
     ],
 
-    python_requires='>=2.6',
+    python_requires='>=2.7',
     install_requires=install_deps,
 
     keywords='doctest documentation test testing',
