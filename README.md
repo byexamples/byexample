@@ -17,7 +17,11 @@ have a bug in your code.
 
 ## Usage
 
+<!-- demo.gif begin -->
+
 <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/demo.gif" alt="Sorry, it seems that you cannot see the demo. Another excuse to install byexample and test it by yourself ;)" width="75%" height="75%">
+
+<!-- demo.gif end -->
 
 ## How do I get started?
 
@@ -115,6 +119,7 @@ First off, thanks for using and considering contributing to ``byexample``.
 
 We love to receive contributions from our community. There are tons of ways you
 can contribute
+
  - add support to new languages (Javascript, Julia, just listen to you heart). Check this [how to](https://github.com/byexamples/byexample/tree/master/docs/how_to_support_new_finders_and_languages.md).
  - misspelling? Improve to the documentation is more than welcome.
  - add more examples. How do you use ``byexample``? Give us your feedback!
