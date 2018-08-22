@@ -42,7 +42,8 @@ $ byexample -l python,ruby,shell README.md      # run it    # byexample: +skip
 You can select which languages to run, over which files, how to display the
 differences and much more.
 
-The [usage](usage.md) document goes through almost all the flags that
+The [usage](https://github.com/byexamples/byexample/tree/master/docs/usage.md)
+document goes through almost all the flags that
 ``byexample`` program has, full of examples of course.
 
 ## What an example looks like?
@@ -98,11 +99,11 @@ Take a look to the documentation of each language [docs/languages](https://githu
 
 Currently we support:
 
- - Python (compatible with ``doctest``) -> [docs](languages/python.md)
- - Ruby -> [docs](languages/ruby.md)
- - Shell (``sh`` and ``bash``) -> [docs](languages/shell.md)
- - GDB (the [GNU Debugger](https://www.gnu.org/software/gdb/download/)) -> [docs](languages/gdb.md)
- - C++ (using [cling](https://github.com/root-project/cling) - *experimental*) -> [docs](languages/cpp.md)
+ - Python (compatible with ``doctest``) -> [docs](https://github.com/byexamples/byexample/tree/master/docs/languages/python.md)
+ - Ruby -> [docs](https://github.com/byexamples/byexample/tree/master/docs/languages/ruby.md)
+ - Shell (``sh`` and ``bash``) -> [docs](https://github.com/byexamples/byexample/tree/master/docs/languages/shell.md)
+ - GDB (the [GNU Debugger](https://www.gnu.org/software/gdb/download/)) -> [docs](https://github.com/byexamples/byexample/tree/master/docs/languages/gdb.md)
+ - C++ (using [cling](https://github.com/root-project/cling) - *experimental*) -> [docs](https://github.com/byexamples/byexample/tree/master/docs/languages/cpp.md)
 
 More languages will be supported in the future. Stay tuned.
 
@@ -112,7 +113,7 @@ First off, thanks for using and considering contributing to ``byexample``.
 
 We love to receive contributions from our community. There are tons of ways you
 can contribute
- - add support to new languages (Javascript, Julia, just listen to you heart). Check this [how to](how_to_support_new_finders_and_languages.md).
+ - add support to new languages (Javascript, Julia, just listen to you heart). Check this [how to](https://github.com/byexamples/byexample/tree/master/docs/how_to_support_new_finders_and_languages.md).
  - misspelling? Improve to the documentation is more than welcome.
  - add more examples. How do you use ``byexample``? Give us your feedback!
  - is ``byexample`` producing a hard-to-debug diff or you found a bug? Create an issue in github.
@@ -128,8 +129,8 @@ It is possible to extend ``byexample`` adding new ways to find examples in a
 document and/or to parse and run/interpret a new language or adding hooks to be
 called regardless of the language/interpreter.
 
-Check out [how to support new finders and languages](how_to_support_new_finders_and_languages.md)
-and [how to hook to events with concerns](how_to_hook_to_events_with_concerns.md) for
+Check out [how to support new finders and languages](https://github.com/byexamples/byexample/tree/master/docs/how_to_support_new_finders_and_languages.md)
+and [how to hook to events with concerns](https://github.com/byexamples/byexample/tree/master/docs/how_to_hook_to_events_with_concerns.md) for
 a quick tutorials that shows exactly how to do that.
 
 You could also share your work and [contribute](https://github.com/byexamples/byexample/tree/master/CONTRIBUTING.md) to
@@ -174,5 +175,5 @@ $ head -n 2 LICENSE     # byexample: +norm-ws
 
 ```
 
-See [LICENSE](https://github.com/byexamples/byexample/tree/master/LICENSE) for more details.
+See [LICENSE](https://github.com/byexamples/byexample/tree/master/LICENSE.md) for more details.
 
