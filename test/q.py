@@ -14,9 +14,11 @@ try:
 except ImportError:
     @contextlib.contextmanager
     def coverage_measure():
+        print("Warning: coverage is not installed")
         yield
 
 if __name__ == '__main__':
+    sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
     if os.environ.get('BYEXAMPLE_COVERAGE_TEST'):
         with coverage_measure():
             from byexample.huff import main
