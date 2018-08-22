@@ -21,36 +21,31 @@ all:
 deps:
 	pip install -e .
 
-test:
-	@mkdir -p w
+test: clean_test
 	@$(python_bin) test/r.py --timeout 60 --pretty $(pretty) --ff -l shell test/test.md
 	@make -s clean_test
 
-lib-test:
-	@mkdir -p w
+lib-test: clean_test
 	@$(python_bin) test/r.py --pretty $(pretty) --ff -l python byexample/*.py
 	@make -s clean_test
 
-modules-test:
-	@mkdir -p w
+modules-test: clean_test
 	@$(python_bin) test/r.py --pretty $(pretty) --ff -l $(languages) byexample/modules/*.py
 	@make -s clean_test
 
-docs-test:
-	@mkdir -p w
+docs-test: clean_test
 	@$(python_bin) test/r.py --pretty $(pretty) --ff -l $(languages) *.md
 	@$(python_bin) test/r.py --pretty $(pretty) --ff -l $(languages) --skip docs/huff/usage.md -- `find docs -name "*.md"`
 	@make -s clean_test
 
-travis-test: lib-test modules-test docs-test
+travis-test: clean_test lib-test modules-test docs-test
 	@# run the test separately so we can control which languages will
 	@# be used. In a Travis CI environment,  Ruby, GDB and C++ are
 	@# not supported
 	@make -s clean_test
 
-coverage:
+coverage: clean_test
 	@rm -f .coverage
-	@mkdir -p w
 	@echo "Run the byexample's tests with the Python interpreter."
 	@echo "to start the coverage, use a hook in test/ to initialize the coverage"
 	@echo "engine at the begin of the execution (and to finalize it at the end)"
@@ -79,7 +74,8 @@ upload: dist
 	twine upload dist/*.tar.gz dist/*.whl
 
 clean_test:
-	rm -Rf w
+	@rm -Rf w/
+	@mkdir -p w/
 
 clean: clean_test
 	rm -Rf dist/ build/ *.egg-info
