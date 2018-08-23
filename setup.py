@@ -9,42 +9,51 @@ import sys
 
 here = path.abspath(path.dirname(__file__))
 
-system('''pandoc -o '%(dest_rst)s' '%(src_md)s' ''' % {
-            'dest_rst': path.join(here, 'README.rst'),
-            'src_md':   path.join(here, 'README.md'),
-            })
+try:
+    system('''pandoc -o '%(dest_rst)s' '%(src_md)s' ''' % {
+                'dest_rst': path.join(here, 'README.rst'),
+                'src_md':   path.join(here, 'README.md'),
+                })
+except:
+    print("Generation of the documentation failed. " + \
+          "Do you have 'pandoc' installed?")
+
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 # hack: this is a workaround for a limitation of pandoc
 # the README.md (markdown) has raw html code that it is not
 # copied into the README.rst file (reStructuredText)
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-    orig_descr = f.read()
+try:
+    with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+        orig_descr = f.read()
 
-t1 = r'<!-- demo.gif begin -->'
-t2 = r'<!-- demo.gif end -->'
+    t1 = r'<!-- demo.gif begin -->'
+    t2 = r'<!-- demo.gif end -->'
 
-p1 = long_description.find(t1)
-p2 = long_description.find(t2)
-o1 = orig_descr.find(t1)
-o2 = orig_descr.find(t2)
-if p1 < 0 or p2 < 0 or p1 >= p2 or o1 < 0 or o2 < 0 or o1 >= o2:
-    raise Exception("Invalid state for README* (workaround failed). " \
-                    ".md's positions (%i, %i); .rst's positions (%i, %i)."
-                        % (o1, o2, p1, p2))
+    p1 = long_description.find(t1)
+    p2 = long_description.find(t2)
+    o1 = orig_descr.find(t1)
+    o2 = orig_descr.find(t2)
+    if p1 < 0 or p2 < 0 or p1 >= p2 or o1 < 0 or o2 < 0 or o1 >= o2:
+        raise Exception("Invalid state for README* (workaround failed). " \
+                        ".md's positions (%i, %i); .rst's positions (%i, %i)."
+                            % (o1, o2, p1, p2))
 
-raw_html = orig_descr[o1+len(t1):o2].strip()
-if not raw_html:
-    raise Exception("Invalid state for README* (workaround failed). " \
-                    ".md's html (%i bytes)."
-                        % (len(raw_html)))
+    raw_html = orig_descr[o1+len(t1):o2].strip()
+    if not raw_html:
+        raise Exception("Invalid state for README* (workaround failed). " \
+                        ".md's html (%i bytes)."
+                            % (len(raw_html)))
 
-long_description = long_description[:p1] + raw_html + '\n' + \
-                   long_description[p2+len(t2):]
+    long_description = long_description[:p1] + raw_html + '\n' + \
+                       long_description[p2+len(t2):]
 
-with open(path.join(here, 'README.rst'), 'w', encoding='utf-8') as f:
-    f.write(long_description)
+    with open(path.join(here, 'README.rst'), 'w', encoding='utf-8') as f:
+        f.write(long_description)
+
+except Exception as ex:
+    print("Documentation fix failed: %s" % str(ex))
 
 #
 # god forgive me for that hack
