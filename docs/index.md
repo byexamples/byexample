@@ -23,18 +23,21 @@ have a bug in your code.
 
 ## How do I get started?
 
-First, you need to install it.
+First, you need to install it locally.
 
 ```shell
 $ pip install --user byexample                # install it # byexample: +skip
 
 ```
 
+Or if you prefer, you can install it inside a
+[virtual env](https://docs.python.org/3/library/venv.html).
+
 If you don't have ``pip`` or ``python`` installed, check the
 [download page](https://www.python.org/downloads/).
 
-Now, write a tutorial, blog, how-to putting some examples in the middle
-(like this README);
+That's it! Now, write a tutorial, a blog or a how-to and put some examples
+in between (like this ``README.md`` that you are reading);
 All the snippets and examples will be collected, executed and checked.
 
 ```shell
