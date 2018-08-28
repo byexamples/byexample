@@ -124,7 +124,7 @@ class ExampleParser(ExtendOptionParserMixin):
         if name:
             return r"(?P<%s>.%s?)" % (name, repetition)
         else:
-            return r"(?:.%s?)" % repetition
+            return r"(?:.%s)" % repetition
 
     def process_snippet_and_expected(self, snippet, expected):
         r'''
@@ -505,7 +505,7 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> regexs, _, _, tags_by_idx, _ = _as_regexs(expected, False, True, True)
 
             >>> regexs
-            ['\\A', 'a', '(?:.*?)', 'b', '(?P<foo_bar>.*?)', 'c', '\\n*\\Z']
+            ['\\A', 'a', '(?:.*)', 'b', '(?P<foo_bar>.*?)', 'c', '\\n*\\Z']
 
             >>> list(sorted(n for n in tags_by_idx.values() if n != None))
             ['foo-bar']
@@ -516,6 +516,14 @@ class ExampleParser(ExtendOptionParserMixin):
         Notice how the unnamed tag is mapped to None and how a name with a -
         works out of the box with a subtle change: the regex name has a _
         instead of a -.
+
+        Also notice that the unnamed tag's regex is greedy (.*) while the
+        named tag's one is non-greedy (.*?).
+        The reason of this is that typically the unnamed tag is used to
+        match long unwanted strings while the named tag is for small
+        and interesting strings.
+
+        This heuristic does not claim to be bulletproof however.
 
         Multi line strings will yield splitted regexs: one regex per line.
         This in on purpose to support the concept of incremental matching
