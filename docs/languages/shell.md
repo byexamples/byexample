@@ -33,7 +33,7 @@ Moreover you need to make sure that the process doesn't write anything to
 the console, otherwise its output will be mixed with the output of the
 next examples.
 
-It is easy to this using a redirection:
+It is easy to do this using a redirection:
 
 ```shell
 $ sleep 1 >/dev/null 2>&1 &
@@ -141,6 +141,20 @@ See the documentation of your shell.
 > The following ``stackoverflow`` thread explains all of this in a very concise
 > manner:
 > https://stackoverflow.com/questions/11097761/is-there-a-way-to-make-bash-job-control-quiet/11111042#11111042
+
+### Killing any background process
+
+This has nothing to do with ``byexample`` but I found quite useful this trick.
+
+To kill any running background process you can write:
+
+```shell
+$ kill -9 $(jobs -p) && wait        # byexample: -skip +pass
+
+```
+
+The ``-skip`` will make sure that this example gets executed while the ``+pass``
+will ignore any output so it will work even if there is no process to kill.
 
 ## Stopping a process on inactivity or silence
 
