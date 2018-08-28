@@ -116,6 +116,9 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
         # gdb will stop at the first null when printing an array
         self._exec_and_wait('set print null-stop on\n', timeout=1)
 
+        # gdb will not ask for "yes or no" confirmation
+        self._exec_and_wait('set confirm off\n', timeout=1)
+
     def shutdown(self):
         self._shutdown_interpreter()
 
