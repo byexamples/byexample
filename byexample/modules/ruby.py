@@ -9,6 +9,25 @@ Example:
   >> hello
   => "hello<...>world"
 
+  The snippets are detected even if they are inside
+  of a Ruby comment (even if there are out!)
+
+  # >> def say bla
+  # ..   bla
+  # .. end
+  #
+  # >> puts say 'hi'
+  # hi
+  #
+  # >> say 'hello'
+  # => "hello"
+  # >> say 'hello?'
+  # => "hello?"
+  >> puts say 'hello!'
+  hello!
+  >> puts "yes sr!"
+  yes sr!
+
   Markdown's version (no prompt)
   ```ruby
   j = 2;
@@ -77,14 +96,14 @@ class RubyPromptFinder(ExampleFinder):
         return re.compile(r'''
             # Snippet consists of one PS1 line >> and zero or more PS2 lines
             (?P<snippet>
-                (?:^(?P<indent> [ ]*) >>[ ]     .*)    # PS1 line
-                (?:\n           [ ]*  \.\.    .*)*)    # zero or more PS2 lines
+                (?:^(?P<indent> [ ]*) (?P<sharp>[#]?)[ ]* >>[ ]   .*)    # PS1 line
+                (?:\n           [ ]*  (?P=sharp)[ ]*     \.\.    .*)*)  # zero or more PS2 lines
             \n?
             # Want consists of any non-blank lines that do not start with PS1
             # The '=>' indicator is included (implicitly) and may not exist
-            (?P<expected> (?:(?![ ]*$)     # Not a blank line
-                          (?![ ]*>>)       # Not a line starting with PS1
-                         .+$\n?            # But any other line
+            (?P<expected> (?:(?![ ]*$)                    # Not a blank line
+                             (?![ ]* (?: [#]?[ ]*)  >>)   # Not a line starting with PS1
+                             [ ]* (?P=sharp) .+$\n?       # But any other line with the same prefix
                       )*)
             ''', re.MULTILINE | re.VERBOSE)
 
@@ -94,12 +113,17 @@ class RubyPromptFinder(ExampleFinder):
     def get_snippet_and_expected(self, match, where):
         snippet, expected = ExampleFinder.get_snippet_and_expected(self, match, where)
 
-        snippet = self._remove_prompts(snippet)
+        snippet, expected = self._remove_prompts(snippet, expected)
         return snippet, expected
 
-    def _remove_prompts(self, snippet):
+    def _remove_prompts(self, snippet, expected):
         lines = snippet.split("\n")
-        return '\n'.join(line[3:] for line in lines)
+        n = lines[0].index(">> ")
+
+        snippet  = '\n'.join(line[n+3:] for line in lines)
+        expected = '\n'.join(line[n:] for line in expected.split('\n'))
+
+        return snippet, expected
 
 class RubyParser(ExampleParser):
     language = 'ruby'
@@ -191,3 +215,19 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
 
     def shutdown(self):
         self._shutdown_interpreter()
+
+
+if False:
+        re.compile(r'''
+            # Snippet consists of one PS1 line >> and zero or more PS2 lines
+            (?P<snippet>
+                (?:^(?P<indent> [ ]*) (?P<comm> [#][ ]+) >>[ ]   .*)    # PS1 line
+                (?:\n           [ ]*         \.\.    .*)*)  # zero or more PS2 lines
+            \n?
+            # Want consists of any non-blank lines that do not start with PS1
+            # The '=>' indicator is included (implicitly) and may not exist
+            (?P<expected> (?:(?![ ]*$)             # Not a blank line
+                          (?![ ]*   >>)   # Not a line starting with PS1
+                         .+$\n?                    # But any other line
+                      )*)
+            ''', re.MULTILINE | re.VERBOSE)
