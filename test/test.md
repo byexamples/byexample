@@ -43,8 +43,8 @@ File byexample/modules/gdb.py, 2/2 test ran in <...> seconds
 File byexample/modules/python.py, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0
 ~
-File byexample/modules/ruby.py, 9/9 test ran in <...> seconds
-[PASS] Pass: 9 Fail: 0 Skip: 0
+File byexample/modules/ruby.py, 15/15 test ran in <...> seconds
+[PASS] Pass: 15 Fail: 0 Skip: 0
 ~
 File byexample/modules/shell.py, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0
@@ -79,8 +79,8 @@ File docs/languages/cpp.md, 2/2 test ran in <...> seconds
 File docs/languages/gdb.md, 8/8 test ran in <...> seconds
 [PASS] Pass: 8 Fail: 0 Skip: 0
 ~
-File docs/languages/ruby.md, 14/14 test ran in <...> seconds
-[PASS] Pass: 14 Fail: 0 Skip: 0
+File docs/languages/ruby.md, 17/17 test ran in <...> seconds
+[PASS] Pass: 17 Fail: 0 Skip: 0
 ~
 File docs/languages/python.md, 41/41 test ran in <...> seconds
 [PASS] Pass: 40 Fail: 0 Skip: 1
