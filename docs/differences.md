@@ -2,6 +2,9 @@
 Check that we have byexample installed first
 $ hash byexample                                    # byexample: +fail-fast
 
+$ alias byexample=byexample\ --pretty\ none
+
+--
 -->
 
 # Showing the differences
@@ -37,7 +40,7 @@ This example is to show you something about GPL
 We can corroborate that the test passes or not running ``byexample``
 
 ```
-$ byexample --pretty none -l shell test/ds/about-lic.doc
+$ byexample -l shell test/ds/about-lic.doc
 <...>
 Expected:
 To protect your rights, we need to prevent others from denying you
@@ -63,7 +66,7 @@ like this one is a little harder.
 For this reason ``byexample`` allows you to change the diff algorithm:
 
 ```
-$ byexample --pretty none -l shell --diff ndiff test/ds/about-lic.doc   # byexample: +rm=~
+$ byexample -l shell --diff ndiff test/ds/about-lic.doc   # byexample: +rm=~
 <...>
 Differences:
 - To protect your rights, we need to prevent others from denying you
@@ -109,7 +112,7 @@ This example is to show you something about GPL
 ```
 
 ```
-$ byexample --pretty none -l shell test/ds/about-lic-with-tags.doc
+$ byexample -l shell test/ds/about-lic-with-tags.doc
 <...>
 Captured:
     protect: your rights                responsibilities: responsi ... f others
@@ -143,7 +146,7 @@ respect the freedom of others" and replaced the tags by the captured text.
 This guess makes the differences shorter and more easy to spot:
 
 ```
-$ byexample --pretty none -l shell --diff ndiff test/ds/about-lic-with-tags.doc   # byexample: +rm=~
+$ byexample -l shell --diff ndiff test/ds/about-lic-with-tags.doc   # byexample: +rm=~
 <...>
 Captured:
     protect: your rights                responsibilities: responsi ... f others
@@ -184,7 +187,7 @@ usage: <byexample> [-d {none,unified,ndiff,context}] <...>
 The ``unified`` diff algorithm:
 
 ```
-$ byexample --pretty none -l shell --diff unified test/ds/about-lic-with-tags.doc
+$ byexample -l shell --diff unified test/ds/about-lic-with-tags.doc
 <...>
 Captured:
     protect: your rights                responsibilities: responsi ... f others
@@ -204,7 +207,7 @@ Differences:
 And the ``context`` diff algorithm:
 
 ```
-$ byexample --pretty none -l shell --diff context test/ds/about-lic-with-tags.doc
+$ byexample -l shell --diff context test/ds/about-lic-with-tags.doc
 <...>
 Captured:
     protect: your rights                responsibilities: responsi ... f others
