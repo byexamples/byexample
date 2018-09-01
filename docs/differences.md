@@ -6,12 +6,11 @@ you are expecting and the result actually got
 Image that you have a file with the following text:
 
 ```
-$ cat <<EOF > w/license.doc
-> To protect your rights, we need to prevent no-one from denying you
-> these rights or asking you to surrender the rights.  Therefore, you don't have
-> certain responsibilities if you distribute copies of the software, or if
-> you modify it: responsibilities to respect the freedom of others.
-> EOF
+$ cat test/ds/lic.doc
+To protect your rights, we need to prevent no-one from denying you
+these rights or asking you to surrender the rights.  Therefore, you don't have
+certain responsibilities if you distribute copies of the software, or if
+you modify it: responsibilities to respect the freedom of others.
 
 ```
 
@@ -19,23 +18,20 @@ Now let's image that you also have a document/test about GPL license
 that checks that file:
 
 ```
-$ cat <<EOF > w/wiki-about-license.doc
-> Let's check a GPL license file
->
-> $ cat w/license.doc
-> To protect your rights, we need to prevent others from denying you
-> these rights or asking you to surrender the rights.  Therefore, you have
-> certain responsibilities if you distribute copies of the software, or if
-> you modify it: responsibilities to respect the freedom of others.
->
-> EOF
+$ cat test/ds/about-lic.doc                        # byexample: +rm=~
+This example is to show you something about GPL
+    ~$ cat test/ds/lic.doc
+    To protect your rights, we need to prevent others from denying you
+    these rights or asking you to surrender the rights.  Therefore, you have
+    certain responsibilities if you distribute copies of the software, or if
+    you modify it: responsibilities to respect the freedom of others.
 
 ```
 
 We can corroborate that the test passes or not running ``byexample``
 
 ```
-$ byexample --pretty none -l shell w/wiki-about-license.doc
+$ byexample --pretty none -l shell test/ds/about-lic.doc
 <...>
 Expected:
 To protect your rights, we need to prevent others from denying you
@@ -61,7 +57,7 @@ like this one is a little harder.
 For this reason ``byexample`` allows you to change the diff algorithm:
 
 ```
-$ byexample --pretty none -l shell --diff ndiff w/wiki-about-license.doc   # byexample: +rm=~
+$ byexample --pretty none -l shell --diff ndiff test/ds/about-lic.doc   # byexample: +rm=~
 <...>
 Differences:
 - To protect your rights, we need to prevent others from denying you
@@ -96,21 +92,18 @@ ones.
 So let's change the example to be more realistic with some tags:
 
 ```
-$ cat <<EOF > w/wiki-about-license.doc
-> Let's check a GPL license file
->
-> $ cat w/license.doc
-> To protect <protect>, we need to prevent others from <prevent1>
-> or <prevent2>.  Therefore, you have
-> certain responsibilities if you distribute copies of the software, or if
-> you modify it: <responsibilities>.
->
-> EOF
+$ cat test/ds/about-lic-with-tags.doc              # byexample: +rm=~
+This example is to show you something about GPL
+    ~$ cat test/ds/lic.doc
+    To protect <protect>, we need to prevent others from <prevent1>
+    or <prevent2>.  Therefore, you have
+    certain responsibilities if you distribute copies of the software, or if
+    you modify it: <responsibilities>.
 
 ```
 
 ```
-$ byexample --pretty none -l shell w/wiki-about-license.doc
+$ byexample --pretty none -l shell test/ds/about-lic-with-tags.doc
 <...>
 Captured:
     protect: your rights                responsibilities: responsi ... f others
@@ -129,7 +122,7 @@ you modify it: responsibilities to respect the freedom of others.
 
 ```
 
-The test fails as expected: we didn't fix the typos in the ``license.doc``.
+The test fails as expected: we didn't fix the typos in the ``lic.doc``.
 
 But what it is interesting is how ``byexample`` show us the differences.
 
@@ -144,7 +137,7 @@ respect the freedom of others" and replaced the tags by the captured text.
 This guess makes the differences shorter and more easy to spot:
 
 ```
-$ byexample --pretty none -l shell --diff ndiff w/wiki-about-license.doc   # byexample: +rm=~
+$ byexample --pretty none -l shell --diff ndiff test/ds/about-lic-with-tags.doc   # byexample: +rm=~
 <...>
 Captured:
     protect: your rights                responsibilities: responsi ... f others
@@ -185,7 +178,7 @@ usage: <byexample> [-d {none,unified,ndiff,context}] <...>
 The ``unified`` diff algorithm:
 
 ```
-$ byexample --pretty none -l shell --diff unified w/wiki-about-license.doc
+$ byexample --pretty none -l shell --diff unified test/ds/about-lic-with-tags.doc
 <...>
 Captured:
     protect: your rights                responsibilities: responsi ... f others
@@ -205,7 +198,7 @@ Differences:
 And the ``context`` diff algorithm:
 
 ```
-$ byexample --pretty none -l shell --diff context w/wiki-about-license.doc
+$ byexample --pretty none -l shell --diff context test/ds/about-lic-with-tags.doc
 <...>
 Captured:
     protect: your rights                responsibilities: responsi ... f others

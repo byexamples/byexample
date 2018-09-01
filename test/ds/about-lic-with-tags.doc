@@ -1,0 +1,6 @@
+This example is to show you something about GPL
+    $ cat test/ds/lic.doc
+    To protect <protect>, we need to prevent others from <prevent1>
+    or <prevent2>.  Therefore, you have
+    certain responsibilities if you distribute copies of the software, or if
+    you modify it: <responsibilities>.
