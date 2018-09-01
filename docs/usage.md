@@ -2,6 +2,9 @@
 Check that we have byexample installed first
 $ hash byexample                                    # byexample: +fail-fast
 
+$ alias byexample=byexample\ --pretty\ none
+
+--
 -->
 
 # Usage
@@ -37,10 +40,9 @@ And of course, this is the hello world written in Python
 Now we want to be sure that the examples in the blog are correct.
 
 Just run ``byexample`` selecting ``python`` as the language target
-(for now, ignore the ``--pretty none``):
 
 ```
-$ byexample --pretty none -l python test/ds/python-tutorial.v1.md
+$ byexample -l python test/ds/python-tutorial.v1.md
 <...>
 Failed example:
     2j * 2
@@ -71,7 +73,7 @@ For quick regression you may want to stop ``byexample`` at the first failing
 example using ``--ff`` or ``--fail-fast`` to skip all the remaining examples.
 
 ```
-$ byexample --ff --pretty none -l python test/ds/python-tutorial.v1.md
+$ byexample --ff -l python test/ds/python-tutorial.v1.md
 <...>
 File test/ds/python-tutorial.v1.md, 4/4 test ran in <...> seconds
 [FAIL] Pass: 2 Fail: 1 Skip: 1
@@ -113,7 +115,7 @@ $ diff -U 1 test/ds/python-tutorial.v1.md test/ds/python-tutorial.v2.md  # byexa
 ~+    4j
 ~ 
 
-$ byexample --pretty none -l python test/ds/python-tutorial.v2.md
+$ byexample -l python test/ds/python-tutorial.v2.md
 <...>
 Failed example:
     print('hello world  ')
@@ -142,7 +144,7 @@ spaces, marked with a ``$``
 You can disable this enhancement if you are getting confuse for the extras ``$``s:
 
 ```
-$ byexample --pretty none --no-enhance-diff -l python test/ds/python-tutorial.v2.md
+$ byexample --no-enhance-diff -l python test/ds/python-tutorial.v2.md
 <...>
 Failed example:
     print('hello world  ')
@@ -169,7 +171,7 @@ you can select one diff and print both outputs in the same context.
 For large outputs this is an awesome tool
 
 ```
-$ byexample --pretty none --diff ndiff -l python test/ds/python-tutorial.v2.md
+$ byexample --diff ndiff -l python test/ds/python-tutorial.v2.md
 <...>
 Failed example:
     print('hello world  ')
@@ -200,7 +202,7 @@ $ diff -U 1 test/ds/python-tutorial.v2.md test/ds/python-tutorial.v3.md      # b
 ~     hello world
 ~
 
-$ byexample --pretty none -l python test/ds/python-tutorial.v3.md
+$ byexample -l python test/ds/python-tutorial.v3.md
 <...>
 File test/ds/python-tutorial.v3.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
@@ -307,7 +309,7 @@ time.sleep(2.5) # simulates a slow operation # byexample: +timeout=3
 See what happen when an example timeout:
 
 ```
-$ byexample --pretty none -l python --timeout 0.0001 --ff test/ds/python-tutorial.v3.md
+$ byexample -l python --timeout 0.0001 --ff test/ds/python-tutorial.v3.md
 <...>
 Got:
 **Execution timed out**
@@ -325,7 +327,7 @@ If the option is set in the command line using ``-o <opt>``, it will affect all
 the examples.
 
 ```
-$ byexample --pretty none -l python --options "+norm-ws" test/ds/python-tutorial.v2.md
+$ byexample -l python --options "+norm-ws" test/ds/python-tutorial.v2.md
 <...>
 File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
@@ -366,8 +368,8 @@ The only convention that you need to follow is to write one option
 per line and use ``=`` for the arguments.
 
 ```
-$ echo '-l=python'         > w/options_file
-$ echo '--options="+norm-ws"' >> w/options_file
+$ echo '-l=python'               > w/options_file
+$ echo '--options="+norm-ws"'   >> w/options_file
 
 ```
 
@@ -375,7 +377,7 @@ Then load it with ``@`` and the file; you can use multiple files
 and combine them with more options from the command line:
 
 ```
-$ byexample --pretty=none @w/options_file test/ds/python-tutorial.v2.md
+$ byexample @w/options_file test/ds/python-tutorial.v2.md
 <...>
 File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
@@ -498,7 +500,7 @@ Do not forget to close the connection
 In a happy and perfect world this should run smoothly:
 
 ```
-$ byexample --pretty none -l python test/ds/db-stock-model.md
+$ byexample -l python test/ds/db-stock-model.md
 <...>
 File test/ds/db-stock-model.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 5 Fail: 0 Skip: 0
@@ -521,7 +523,7 @@ examples except the last one because explicitly says *do not skip* me ``-skip``.
 ```
 $ mv test/ds/stock.sql test/ds/renamed.sql
 
-$ byexample --pretty none -l python test/ds/db-stock-model.md
+$ byexample -l python test/ds/db-stock-model.md
 <...>
 File test/ds/db-stock-model.md, 5/5 test ran in <...> seconds
 [FAIL] Pass: 3 Fail: 1 Skip: 1
@@ -578,7 +580,7 @@ Running this will fail because the debug print will be mixed with the normal
 prints:
 
 ```
-$ byexample --pretty none -l python test/ds/blog-database.md
+$ byexample -l python test/ds/blog-database.md
 <...>
 Expected:
 Loading...
@@ -597,7 +599,7 @@ What you can do is to redirect the standard error of the interpreter,
 ``python`` in this case, using the ``shebang`` option:
 
 ```
-$ byexample --pretty none -l python \
+$ byexample -l python \
 >   --shebang "python:/bin/sh -c '%e %p %a 2>/dev/null'"  \
 >   test/ds/blog-database.md
 <...>

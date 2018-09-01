@@ -18,10 +18,13 @@ in your documentation and validate them.
 You can always be sure that the examples are correct and your documentation
 is up to date!
 
-If not, you may have an out dated documentation or your docs are ok but you
-have a bug in your code.
+Currently ``byexample`` supports:
 
-<!-- README.rst eof -->
+ - [Python](https://byexamples.github.io/byexample/languages/python) (compatible with ``doctest``)
+ - [Ruby](https://byexamples.github.io/byexample/languages/ruby)
+ - [Shell](https://byexamples.github.io/byexample/languages/shell) (``sh`` and ``bash``)
+ - [GDB](https://byexamples.github.io/byexample/languages/gdb)
+ - [C/C++](https://byexamples.github.io/byexample/languages/cpp) (using [cling](https://github.com/root-project/cling))
 
 ## Usage
 
@@ -53,7 +56,7 @@ $ byexample -l python,ruby,shell README.md      # run it    # byexample: +skip
 ```
 
 You can select which languages to run, over which files, how to display the
-differences and much more.
+[differences](https://byexamples.github.io/byexample/differences) and much more.
 
 The [usage](https://byexamples.github.io/byexample/usage)
 document goes through almost all the flags that
@@ -108,15 +111,18 @@ an interpreter session like example.
 
 Take a look to the documentation of each language [docs/languages](https://github.com/byexamples/byexample/tree/master/docs/languages/).
 
+Check the [usage](https://byexamples.github.io/byexample/usage) page
+for more examples.
+
 ## Languages supported
 
 Currently we support:
 
- - Python (compatible with ``doctest``) -> [docs](https://byexamples.github.io/byexample/languages/python)
- - Ruby -> [docs](https://byexamples.github.io/byexample/languages/ruby)
- - Shell (``sh`` and ``bash``) -> [docs](https://byexamples.github.io/byexample/languages/shell)
- - GDB (the [GNU Debugger](https://www.gnu.org/software/gdb/download/)) -> [docs](https://byexamples.github.io/byexample/languages/gdb)
- - C++ (using [cling](https://github.com/root-project/cling) - *experimental*) -> [docs](https://byexamples.github.io/byexample/languages/cpp)
+ - [Python](https://byexamples.github.io/byexample/languages/python) (compatible with ``doctest``) -> *stable*
+ - [Ruby](https://byexamples.github.io/byexample/languages/ruby) -> *experimental*
+ - [Shell](https://byexamples.github.io/byexample/languages/shell) (``sh`` and ``bash``) -> *stable*
+ - [GDB](https://byexamples.github.io/byexample/languages/gdb) -> *experimental*
+ - [C/C++](https://byexamples.github.io/byexample/languages/cpp) (using ``cling``) -> *experimental*
 
 More languages will be supported in the future. Stay tuned.
 
@@ -127,7 +133,7 @@ First off, thanks for using and considering contributing to ``byexample``.
 We love to receive contributions from our community. There are tons of ways you
 can contribute
 
- - add support to new languages (Javascript, Julia, just listen to you heart). Check this [how to](https://github.com/byexamples/byexample/tree/master/docs/how_to_support_new_finders_and_languages.md).
+ - add support to new languages (Javascript, Julia, just listen to you heart). Check this [how to](https://byexamples.github.io/byexample/how_to_support_new_finders_and_languages).
  - misspelling? Improve to the documentation is more than welcome.
  - add more examples. How do you use ``byexample``? Give us your feedback!
  - is ``byexample`` producing a hard-to-debug diff or you found a bug? Create an issue in github.
@@ -143,8 +149,8 @@ It is possible to extend ``byexample`` adding new ways to find examples in a
 document and/or to parse and run/interpret a new language or adding hooks to be
 called regardless of the language/interpreter.
 
-Check out [how to support new finders and languages](https://github.com/byexamples/byexample/tree/master/docs/how_to_support_new_finders_and_languages.md)
-and [how to hook to events with concerns](https://github.com/byexamples/byexample/tree/master/docs/how_to_hook_to_events_with_concerns.md) for
+Check out [how to support new finders and languages](https://byexamples.github.io/byexample/how_to_support_new_finders_and_languages)
+and [how to hook to events with concerns](https://byexamples.github.io/byexample/how_to_hook_to_events_with_concerns) for
 a quick tutorials that shows exactly how to do that.
 
 You could also share your work and [contribute](https://github.com/byexamples/byexample/tree/master/CONTRIBUTING.md) to
@@ -171,7 +177,7 @@ Current version:
 
 ```shell
 $ byexample -V
-byexample 7.2.0 - GNU GPLv3
+byexample 7.2.1 - GNU GPLv3
 <...>
 Copyright (C) Di Paola Martin - https://github.com/byexamples/byexample
 <...>

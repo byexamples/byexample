@@ -88,11 +88,11 @@ File docs/languages/python.md, 41/41 test ran in <...> seconds
 File docs/languages/shell.md, 30/30 test ran in <...> seconds
 [PASS] Pass: 30 Fail: 0 Skip: 0
 ~
-File docs/usage.md, 43/43 test ran in <...> seconds
-[PASS] Pass: 42 Fail: 0 Skip: 1
+File docs/usage.md, 44/44 test ran in <...> seconds
+[PASS] Pass: 43 Fail: 0 Skip: 1
 ~
-File docs/differences.md, 11/11 test ran in <...> seconds
-[PASS] Pass: 11 Fail: 0 Skip: 0
+File docs/differences.md, 12/12 test ran in <...> seconds
+[PASS] Pass: 12 Fail: 0 Skip: 0
 ~
 File docs/how_to_hook_to_events_with_concerns.md, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
