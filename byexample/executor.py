@@ -53,8 +53,7 @@ class FileExecutor(object):
         return failed, (user_aborted or crashed or broken)
 
     def _exec(self, examples, filepath, options, runners):
-        fail_fast = options['fail_fast']
-
+        failing_fast = False
         failed = False
         user_aborted = False
         crashed = False
@@ -65,11 +64,23 @@ class FileExecutor(object):
 
             if example == None:
                 broken = True
-                break   # always fail fast if an example couldn't get parsed
+                break   # always fail fast hard if an example couldn't get parsed
 
             with enhance_exceptions(example, self, self.use_colors):
+                # are we in failing fast mode? if we do, skip all the
+                # examples by default
+                if failing_fast:
+                    options.up({'skip': True})
+
+                # load the example's options here to allow it to override
+                # a 'skip' if the user wants to run this even in failing fast
+                # mode
                 options.up(example.options)
                 try:
+                    # ask to the example if we should fail fast if it fails
+                    # no matter what the user said from the command line
+                    fail_fast = options['fail_fast']
+
                     if options['skip']:
                         self.concerns.skip_example(example, options)
                         continue
@@ -94,7 +105,7 @@ class FileExecutor(object):
 
                     if user_aborted or crashed:    # pragma: no cover
                         failed = True
-                        break # always fail fast if the user aborted or code crashed
+                        break # always fail fast hard if the user aborted or code crashed
 
                     # cache this *after* calling finish_example/finally_example
                     # those two may modify the got
@@ -124,10 +135,14 @@ class FileExecutor(object):
 
                             self.concerns.finish_interact(ex)
 
-                        # fail fast if the user want this or
-                        # if we got a Timeout
-                        if fail_fast or timedout:
+                        # fail fast hard if we got a Timeout
+                        if timedout:
                             break
+
+                        # enter in failing fast mode if the user wants and the
+                        # example failed
+                        if fail_fast:
+                            failing_fast = True
                 finally:
                     # allow the garbage collector to collect the example,
                     # do not keep it in memory
