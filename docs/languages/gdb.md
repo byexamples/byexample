@@ -7,18 +7,19 @@ its [download page](https://www.gnu.org/software/gdb/download/).
 
 To show you this, let's first create a program to debug:
 
-```
-$ cat <<EOF > w/param-echo.c
-> #include <stdio.h>
-> int main(int argc, char* argv[]) {
->     for (; argc > 0; --argc)
->         printf("%s\n", argv[argc-1]);
->
->     return 0;
-> }
-> EOF
+```cpp
+$ cat test/ds/param-echo.c                      # byexample: -tags
+#include <stdio.h>
+int main(int argc, char* argv[]) {
+    for (; argc > 0; --argc)
+        printf("%s\n", argv[argc-1]);
+    return 0;
+}
 
-$ gcc -o w/param-echo.exe -ggdb -O0 w/param-echo.c  # byexample: +timeout=10
+```
+
+```
+$ gcc -o w/param-echo.exe -ggdb -O0 test/ds/param-echo.c  # byexample: +timeout=10
 
 ```
 
