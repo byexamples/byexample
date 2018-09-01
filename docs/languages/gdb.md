@@ -1,3 +1,9 @@
+<!--
+Check that we have gcc installed first
+$ hash gcc                                          # byexample: +fail-fast
+
+-->
+
 # GDB the GNU debugger
 
 ``byexample`` can interpret and run examples for a ``GDB`` session.

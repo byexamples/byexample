@@ -1,3 +1,9 @@
+<!--
+Check that we have byexample installed first
+$ hash byexample                                    # byexample: +fail-fast
+
+-->
+
 <img src="https://api.travis-ci.org/byexamples/byexample.svg?branch=master" alt="Travis CI is not available">
 
 ``byexample`` is a literate programming engine where you mix
@@ -13,19 +19,17 @@ is up to date!
 If not, you may have an out dated documentation or your docs are ok but you
 have a bug in your code.
 
+<!-- README.rst eof -->
+
 ## Usage
 
-<!-- demo.gif begin -->
-
 <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/demo.gif" alt="Sorry, it seems that you cannot see the demo. Another excuse to install byexample and test it by yourself ;)" width="75%" height="75%">
-
-<!-- demo.gif end -->
 
 ## How do I get started?
 
 First, you need to install it locally.
 
-```shell
+```
 $ pip install --user byexample                # install it # byexample: +skip
 
 ```
@@ -40,7 +44,7 @@ That's it! Now, write a tutorial, a blog or a how-to and put some examples
 in between (like this ``README.md`` that you are reading);
 All the snippets and examples will be collected, executed and checked.
 
-```shell
+```
 $ byexample -l python,ruby,shell README.md      # run it    # byexample: +skip
 [PASS] Pass: <...> Fail: <...> Skip: <...>
 
@@ -49,7 +53,7 @@ $ byexample -l python,ruby,shell README.md      # run it    # byexample: +skip
 You can select which languages to run, over which files, how to display the
 differences and much more.
 
-The [usage](https://github.com/byexamples/byexample/tree/master/docs/usage.md)
+The [usage](https://byexamples.github.io/byexample/usage)
 document goes through almost all the flags that
 ``byexample`` program has, full of examples of course.
 
@@ -106,11 +110,11 @@ Take a look to the documentation of each language [docs/languages](https://githu
 
 Currently we support:
 
- - Python (compatible with ``doctest``) -> [docs](https://github.com/byexamples/byexample/tree/master/docs/languages/python.md)
- - Ruby -> [docs](https://github.com/byexamples/byexample/tree/master/docs/languages/ruby.md)
- - Shell (``sh`` and ``bash``) -> [docs](https://github.com/byexamples/byexample/tree/master/docs/languages/shell.md)
- - GDB (the [GNU Debugger](https://www.gnu.org/software/gdb/download/)) -> [docs](https://github.com/byexamples/byexample/tree/master/docs/languages/gdb.md)
- - C++ (using [cling](https://github.com/root-project/cling) - *experimental*) -> [docs](https://github.com/byexamples/byexample/tree/master/docs/languages/cpp.md)
+ - Python (compatible with ``doctest``) -> [docs](https://byexamples.github.io/byexample/languages/python)
+ - Ruby -> [docs](https://byexamples.github.io/byexample/languages/ruby)
+ - Shell (``sh`` and ``bash``) -> [docs](https://byexamples.github.io/byexample/languages/shell)
+ - GDB (the [GNU Debugger](https://www.gnu.org/software/gdb/download/)) -> [docs](https://byexamples.github.io/byexample/languages/gdb)
+ - C++ (using [cling](https://github.com/root-project/cling) - *experimental*) -> [docs](https://byexamples.github.io/byexample/languages/cpp)
 
 More languages will be supported in the future. Stay tuned.
 

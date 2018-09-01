@@ -13,7 +13,7 @@ Both should be almost the same
 
 ```shell
 $ diff README.md docs/index.md      # byexample: +norm-ws
-1,2d0
+7,8d6
 < # ``byexample``
 <
 

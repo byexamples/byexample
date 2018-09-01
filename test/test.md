@@ -64,20 +64,20 @@ $ pretty=none make docs-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
 File CONTRIBUTING.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 0 Fail: 0 Skip: 5
 ~
-File README.md, 8/8 test ran in <...> seconds
-[PASS] Pass: 6 Fail: 0 Skip: 2
+File README.md, 9/9 test ran in <...> seconds
+[PASS] Pass: 7 Fail: 0 Skip: 2
 ~
 File docs/how_to_support_new_finders_and_languages.md, 39/39 test ran in <...> seconds
 [PASS] Pass: 39 Fail: 0 Skip: 0
 ~
-File docs/index.md, 8/8 test ran in <...> seconds
-[PASS] Pass: 6 Fail: 0 Skip: 2
+File docs/index.md, 9/9 test ran in <...> seconds
+[PASS] Pass: 7 Fail: 0 Skip: 2
 ~
 File docs/languages/cpp.md, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
 ~
-File docs/languages/gdb.md, 8/8 test ran in <...> seconds
-[PASS] Pass: 8 Fail: 0 Skip: 0
+File docs/languages/gdb.md, 9/9 test ran in <...> seconds
+[PASS] Pass: 9 Fail: 0 Skip: 0
 ~
 File docs/languages/ruby.md, 17/17 test ran in <...> seconds
 [PASS] Pass: 17 Fail: 0 Skip: 0
@@ -88,11 +88,11 @@ File docs/languages/python.md, 41/41 test ran in <...> seconds
 File docs/languages/shell.md, 30/30 test ran in <...> seconds
 [PASS] Pass: 30 Fail: 0 Skip: 0
 ~
-File docs/usage.md, 37/37 test ran in <...> seconds
-[PASS] Pass: 36 Fail: 0 Skip: 1
+File docs/usage.md, 43/43 test ran in <...> seconds
+[PASS] Pass: 42 Fail: 0 Skip: 1
 ~
-File docs/differences.md, 10/10 test ran in <...> seconds
-[PASS] Pass: 10 Fail: 0 Skip: 0
+File docs/differences.md, 11/11 test ran in <...> seconds
+[PASS] Pass: 11 Fail: 0 Skip: 0
 ~
 File docs/how_to_hook_to_events_with_concerns.md, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0

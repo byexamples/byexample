@@ -1,3 +1,9 @@
+<!--
+Check that we have byexample installed first
+$ hash byexample                                    # byexample: +fail-fast
+
+-->
+
 # Usage
 
 Imagine that you are creating a 101 ``Python`` tutorial and you want to explain

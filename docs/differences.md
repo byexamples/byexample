@@ -1,3 +1,9 @@
+<!--
+Check that we have byexample installed first
+$ hash byexample                                    # byexample: +fail-fast
+
+-->
+
 # Showing the differences
 
 ``byexample`` will show what are the differences between the result that
