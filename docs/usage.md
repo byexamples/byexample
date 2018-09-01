@@ -3,27 +3,28 @@
 Imagine that you are creating a 101 ``Python`` tutorial and you want to explain
 the basics of the language writing a blog.
 
-So you open your favorite editor (mine is ``cat``) and start to write the blog:
+So you open your favorite editor, write some comments, you enhance them with
+real ``Python`` examples and you get something like this:
 
 ```
-$ cat <<EOF > w/blog-101-python-tutorial.md
-> This is a 101 Python tutorial
-> The following is an example written in Python about arithmetics
->
->     >>> from __future__ import print_function
->     >>> 1 + 2
->     3
->
-> The next example show you about complex numbers in Python
->
->     >>> 2j * 2
->     4
->
-> And of course, this is the hello world written in Python
->
->     >>> print('hello world  ')    # byexample
->     hello world
-> EOF
+$ cat test/ds/python-tutorial.v1.md               # byexample: +rm=~
+This is a 101 Python tutorial
+The following is an example written in Python about arithmetics
+~
+~    >>> from __future__ import print_function
+~    >>> 1 + 2
+~    3
+~
+The next example show you about complex numbers in Python
+~
+~    >>> 2j * 2
+~    4
+~
+And of course, this is the hello world written in Python
+~
+~    >>> print('hello world  ')
+~    hello world
+~
 
 ```
 
@@ -33,7 +34,7 @@ Just run ``byexample`` selecting ``python`` as the language target
 (for now, ignore the ``--pretty none``):
 
 ```
-$ byexample --pretty none -l python w/blog-101-python-tutorial.md
+$ byexample --pretty none -l python test/ds/python-tutorial.v1.md
 <...>
 Failed example:
     2j * 2
@@ -43,7 +44,7 @@ Expected:
 Got:
 4j
 <...>
-File w/blog-101-python-tutorial.md, 4/4 test ran in <...> seconds
+File test/ds/python-tutorial.v1.md, 4/4 test ran in <...> seconds
 [FAIL] Pass: 2 Fail: 2 Skip: 0
 
 ```
@@ -64,9 +65,9 @@ For quick regression you may want to stop ``byexample`` at the first failing
 example using ``--ff`` or ``--fail-fast`` to skip all the remaining examples.
 
 ```
-$ byexample --ff --pretty none -l python w/blog-101-python-tutorial.md
+$ byexample --ff --pretty none -l python test/ds/python-tutorial.v1.md
 <...>
-File w/blog-101-python-tutorial.md, 4/4 test ran in <...> seconds
+File test/ds/python-tutorial.v1.md, 4/4 test ran in <...> seconds
 [FAIL] Pass: 2 Fail: 1 Skip: 1
 
 ```
@@ -94,22 +95,29 @@ Obviously our blog has a bug!
 
 
 We can fix ``2j * 2`` replacing the expected ``4`` by ``4j`` and re running
-the test (I will use ``sed`` for this, but you can edit the file by hand):
+the test.
+
+Here is our second try:
 
 ```
-$ sed -i 's/ 4$/ 4j/' w/blog-101-python-tutorial.md
+$ diff -U 1 test/ds/python-tutorial.v1.md test/ds/python-tutorial.v2.md  # byexample: +rm=~
+<...>
+~     >>> 2j * 2
+~-    4
+~+    4j
+~ 
 
-$ byexample --pretty none -l python w/blog-101-python-tutorial.md
+$ byexample --pretty none -l python test/ds/python-tutorial.v2.md
 <...>
 Failed example:
-    print('hello world  ')    # byexample
+    print('hello world  ')
 <...>
 Expected:
 hello world
 Got:
 hello world$$
 <...>
-File w/blog-101-python-tutorial.md, 4/4 test ran in <...> seconds
+File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [FAIL] Pass: 3 Fail: 1 Skip: 0
 
 ```
@@ -128,10 +136,10 @@ spaces, marked with a ``$``
 You can disable this enhancement if you are getting confuse for the extras ``$``s:
 
 ```
-$ byexample --pretty none --no-enhance-diff -l python w/blog-101-python-tutorial.md
+$ byexample --pretty none --no-enhance-diff -l python test/ds/python-tutorial.v2.md
 <...>
 Failed example:
-    print('hello world  ')    # byexample
+    print('hello world  ')
 Expected:
 hello world
 Got:
@@ -155,10 +163,10 @@ you can select one diff and print both outputs in the same context.
 For large outputs this is an awesome tool
 
 ```
-$ byexample --pretty none --diff ndiff -l python w/blog-101-python-tutorial.md
+$ byexample --pretty none --diff ndiff -l python test/ds/python-tutorial.v2.md
 <...>
 Failed example:
-    print('hello world  ')    # byexample
+    print('hello world  ')
 <...>
 Differences:
 - hello world
@@ -179,11 +187,16 @@ We could use this to fix our failing example adding ``# byexample: +norm-ws``
 to the example:
 
 ```
-$ sed -i 's/byexample/byexample: +norm-ws/' w/blog-101-python-tutorial.md
-
-$ byexample --pretty none -l python w/blog-101-python-tutorial.md
+$ diff -U 1 test/ds/python-tutorial.v2.md test/ds/python-tutorial.v3.md      # byexample: +rm=~
 <...>
-File w/blog-101-python-tutorial.md, 4/4 test ran in <...> seconds
+~-    >>> print('hello world  ')
+~+    >>> print('hello world  ')      # byexample: +norm-ws
+~     hello world
+~
+
+$ byexample --pretty none -l python test/ds/python-tutorial.v3.md
+<...>
+File test/ds/python-tutorial.v3.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
 
 ```
@@ -288,7 +301,7 @@ time.sleep(2.5) # simulates a slow operation # byexample: +timeout=3
 See what happen when an example timeout:
 
 ```
-$ byexample --pretty none -l python --timeout 0.0001 --ff w/blog-101-python-tutorial.md
+$ byexample --pretty none -l python --timeout 0.0001 --ff test/ds/python-tutorial.v3.md
 <...>
 Got:
 **Execution timed out**
@@ -306,9 +319,9 @@ If the option is set in the command line using ``-o <opt>``, it will affect all
 the examples.
 
 ```
-$ byexample --pretty none -l python --options "+norm-ws" w/blog-101-python-tutorial.md
+$ byexample --pretty none -l python --options "+norm-ws" test/ds/python-tutorial.v2.md
 <...>
-File w/blog-101-python-tutorial.md, 4/4 test ran in <...> seconds
+File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
 
 ```
@@ -347,7 +360,7 @@ The only convention that you need to follow is to write one option
 per line and use ``=`` for the arguments.
 
 ```
-$ echo '--pretty=none'         > w/options_file
+$ echo '-l=python'         > w/options_file
 $ echo '--options="+norm-ws"' >> w/options_file
 
 ```
@@ -356,9 +369,9 @@ Then load it with ``@`` and the file; you can use multiple files
 and combine them with more options from the command line:
 
 ```
-$ byexample -l python @w/options_file w/blog-101-python-tutorial.md
+$ byexample --pretty=none @w/options_file test/ds/python-tutorial.v2.md
 <...>
-File w/blog-101-python-tutorial.md, 4/4 test ran in <...> seconds
+File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
 
 ```
@@ -461,28 +474,27 @@ It is also reasonable to *tear down* the database connection at the end.
 You could write:
 
 ```
-$ cat <<EOF > w/db-stock-model.md
-> This is a quick introduction to the database schema.
->     >>> import sqlite3
->     >>> c = sqlite3.connect(':memory:')       # in memory, useful for testing
->     >>> _ = c.executescript(open('test/ds/stock.sql').read())  # byexample: +fail-fast
->
-> Get the stocks' prices
->     >>> _ = c.execute('select price from stocks')
->
-> Do not forget to close the connection
->     >>> c.close()                             # byexample: -skip
->
-> EOF
+$ cat test/ds/db-stock-model.md                         # byexample: +rm=~
+This is a quick introduction to the database schema.
+~    >>> import sqlite3
+~    >>> c = sqlite3.connect(':memory:')       # in memory, useful for testing
+~    >>> _ = c.executescript(open('test/ds/stock.sql').read())  # byexample: +fail-fast
+~
+Get the stocks' prices
+~    >>> _ = c.execute('select price from stocks')
+~
+Do not forget to close the connection
+~    >>> c.close()                             # byexample: -skip
+~
 
 ```
 
 In a happy and perfect world this should run smoothly:
 
 ```
-$ byexample --pretty none -l python w/db-stock-model.md
+$ byexample --pretty none -l python test/ds/db-stock-model.md
 <...>
-File w/db-stock-model.md, 5/5 test ran in <...> seconds
+File test/ds/db-stock-model.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 5 Fail: 0 Skip: 0
 
 ```
@@ -503,9 +515,9 @@ examples except the last one because explicitly says *do not skip* me ``-skip``.
 ```
 $ mv test/ds/stock.sql test/ds/renamed.sql
 
-$ byexample --pretty none -l python w/db-stock-model.md
+$ byexample --pretty none -l python test/ds/db-stock-model.md
 <...>
-File w/db-stock-model.md, 5/5 test ran in <...> seconds
+File test/ds/db-stock-model.md, 5/5 test ran in <...> seconds
 [FAIL] Pass: 3 Fail: 1 Skip: 1
 
 ```
@@ -540,19 +552,19 @@ Consider the following example that prints interesting things to standard output
 and debug/uninterested things to standard error:
 
 ```
-$ cat <<EOF > w/blog-database.md
->     >>> from __future__ import print_function
->     >>> import sys
->
->     >>> def load_database():
->     ...     print("Loading...")
->     ...     print("debug 314kb", file=sys.stderr)
->     ...     print("Done")
->
->     >>> load_database()
->     Loading...
->     Done
-> EOF
+$ cat test/ds/blog-database.md                          # byexample: +rm=~
+~    >>> from __future__ import print_function
+~    >>> import sys
+~
+~    >>> def load_database():
+~    ...     print("Loading...")
+~    ...     print("debug 314kb", file=sys.stderr)
+~    ...     print("Done")
+~
+~    >>> load_database()
+~    Loading...
+~    Done
+~
 
 ```
 
@@ -560,7 +572,7 @@ Running this will fail because the debug print will be mixed with the normal
 prints:
 
 ```
-$ byexample --pretty none -l python w/blog-database.md
+$ byexample --pretty none -l python test/ds/blog-database.md
 <...>
 Expected:
 Loading...
@@ -575,15 +587,13 @@ Done
 
 Yes, changing the example solves this but what happen if you cannot change it?
 
-Then you can teach ``byexample`` to redirect the standard error.
-
-For this we need to change how to spawn a ``python`` interpreter using
-the ``shebang`` option:
+What you can do is to redirect the standard error of the interpreter,
+``python`` in this case, using the ``shebang`` option:
 
 ```
 $ byexample --pretty none -l python \
 >   --shebang "python:/bin/sh -c '%e %p %a 2>/dev/null'"  \
->   w/blog-database.md
+>   test/ds/blog-database.md
 <...>
 [PASS] Pass: 4 Fail: 0 Skip: 0
 
@@ -614,7 +624,6 @@ I had the same problem; it's for very specific situation and you should be
 away from this most of the time.
 
 ## Extending ``byexample``
-
 
 Currently we support:
 
