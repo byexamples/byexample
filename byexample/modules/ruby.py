@@ -216,18 +216,3 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
     def shutdown(self):
         self._shutdown_interpreter()
 
-
-if False:
-        re.compile(r'''
-            # Snippet consists of one PS1 line >> and zero or more PS2 lines
-            (?P<snippet>
-                (?:^(?P<indent> [ ]*) (?P<comm> [#][ ]+) >>[ ]   .*)    # PS1 line
-                (?:\n           [ ]*         \.\.    .*)*)  # zero or more PS2 lines
-            \n?
-            # Want consists of any non-blank lines that do not start with PS1
-            # The '=>' indicator is included (implicitly) and may not exist
-            (?P<expected> (?:(?![ ]*$)             # Not a blank line
-                          (?![ ]*   >>)   # Not a line starting with PS1
-                         .+$\n?                    # But any other line
-                      )*)
-            ''', re.MULTILINE | re.VERBOSE)
