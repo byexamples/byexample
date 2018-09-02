@@ -184,11 +184,10 @@ def human_exceptions(where_default, verbosity, quiet, exitcode):
 
 @contextlib.contextmanager
 def enhance_exceptions(where, owner, use_colors=False):
-    where = build_where_msg(where, owner, use_colors=use_colors)
     try:
         yield
     except Exception as e:
         if not hasattr(e, 'where'):
-            e.where = where
+            e.where = build_where_msg(where, owner, use_colors=use_colors)
         raise e
 
