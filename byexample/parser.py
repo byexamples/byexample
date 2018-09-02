@@ -13,6 +13,8 @@ class ExampleParser(ExtendOptionParserMixin):
         self.encoding  = encoding
         self.options   = options
 
+        self._optparser_extended_cache = None
+
     def __repr__(self):
         return '%s Parser' % tohuman(self.language)
 
@@ -1006,3 +1008,16 @@ class ExampleParser(ExtendOptionParserMixin):
 
         return opts
 
+    def get_extended_option_parser(self, parent_parser, **kw):
+        ''' This will call ExtendOptionParserMixin.get_extended_option_parser
+            and it will cache its result.
+
+            If you don't want to cache anything, you can override this method
+            and call ExtendOptionParserMixin.get_extended_option_parser directly.
+            '''
+        if self._optparser_extended_cache == None:
+            optparser_extended = ExtendOptionParserMixin.get_extended_option_parser(
+                                        self, parent_parser)
+            self._optparser_extended_cache = optparser_extended
+
+        return self._optparser_extended_cache
