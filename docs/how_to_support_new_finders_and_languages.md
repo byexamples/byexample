@@ -251,6 +251,22 @@ own specific options (``ArnoldC``'s specific).
 See the documentation of the class [OptionParser](https://github.com/byexamples/byexample/tree/master/byexample/options.py)
 for more information.
 
+> *Note:* the ``extend_option_parser`` in theory is called once for each
+> example. However ``byexample`` calls it just once for the entire execution
+> and caches the result for performance reasons.
+>
+> It is possible to tweak this or even to disable the cache entirely if you
+> have to.
+>
+> See ``PythonParser`` in [byexample/modules/python.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/python.py)
+> for an example of this.
+>
+> In the same line, the extraction and parsing of the options are also cached.
+> If two examples have the same options, they are parsed once.
+>
+> If you need to tweak or disable this you could override
+> the class [ExampleParser](https://github.com/byexamples/byexample/tree/master/byexample/parser.py)
+
 ### The Parser class
 
 Now we ensemble all the pieces together.
