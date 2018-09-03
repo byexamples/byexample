@@ -14,6 +14,7 @@ class ExampleParser(ExtendOptionParserMixin):
         self.options   = options
 
         self._optparser_extended_cache = None
+        self._opts_cache = {}
 
     def __repr__(self):
         return '%s Parser' % tohuman(self.language)
@@ -993,6 +994,9 @@ class ExampleParser(ExtendOptionParserMixin):
         if not isinstance(optlist, list):
             raise ValueError("The option list returned by the parser is not a list!. This probably means that there is a bug in the parser %s." % str(self))
 
+        return self._extend_parser_and_parse_options_strictly_and_cache(optlist)
+
+    def _extend_parser_and_parse_options_strictly(self, optlist):
         # we parse the example's options
         # in this case, at difference with extract_cmdline_options,
         # we parse it strictly because the example's options
@@ -1007,6 +1011,33 @@ class ExampleParser(ExtendOptionParserMixin):
             raise ValueError(str(e))
 
         return opts
+
+    def _extend_parser_and_parse_options_strictly_and_cache(self, optlist):
+        ''' This is a thin wrapper around _extend_parser_and_parse_options_strictly
+            to cache its results based on the optlist.
+
+            Note that two different lists may represent the same options set
+            like:
+                l1 = [-foo, a, +bar, "1 2 3"]   => -foo=1 and +bar="1 2 3"
+                l2 = [+bar, "1 2 3", -foo, a]   => -foo=1 and +bar="1 2 3"
+
+            This cache system is very naive and will save two entries for
+            those.
+
+            And it works under the assumption that if a given example's options
+            were parsed by X extended parser, the *same* options of another
+            example *would* be parsed by the same *X parser* and it *would*
+            yield the *same* result.
+
+            If the parser object or its behaviour changes in runtime, you
+            will need to override this method and change or disable the cache.
+            '''
+        try:
+            return self._opts_cache[tuple(optlist)]
+        except KeyError:
+            val = self._extend_parser_and_parse_options_strictly(optlist)
+            self._opts_cache[tuple(optlist)] = val
+            return val
 
     def get_extended_option_parser(self, parent_parser, **kw):
         ''' This will call ExtendOptionParserMixin.get_extended_option_parser
