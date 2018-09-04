@@ -11,6 +11,7 @@ script: make travis-test
 branches:
     only:
         - master
+        - next
 addons:
     apt_packages:
         - pandoc
