@@ -1,6 +1,4 @@
-from .cmdline import parse_args
-from .common import human_exceptions
-from .init import init
+from .regex import RegexCache
 
 class Status:
     ok = 0
@@ -9,14 +7,19 @@ class Status:
     error = 3
 
 def main(args=None):
-    args = parse_args(args)
-    human_args = (args.verbosity, args.quiet, Status.error)
-    with human_exceptions('During the initialization phase:', *human_args):
-        testfiles, harvester, executor, options = init(args)
+    with RegexCache('init.cache'):
+        from .cmdline import parse_args
+        from .common import human_exceptions
+        from .init import init
+
+        args = parse_args(args)
+        human_args = (args.verbosity, args.quiet, Status.error)
+        with human_exceptions('During the initialization phase:', *human_args):
+            testfiles, harvester, executor, options = init(args)
 
     exit_status = Status.ok
     for filename in testfiles:
-        with human_exceptions("File '%s':" % filename, *human_args):
+        with RegexCache(filename + '.cache'), human_exceptions("File '%s':" % filename, *human_args):
             examples = harvester.get_examples_from_file(filename)
             if args.dry:
                 executor.dry_execute(examples, filename)
