@@ -138,7 +138,7 @@ class PexepctMixin(object):
 
         self.last_output = []
 
-    def _spawn_interpreter(self, cmd, delaybeforesend=0.010,
+    def _spawn_interpreter(self, cmd, delaybeforesend=None,
                                         wait_first_prompt=True,
                                         first_prompt_timeout=10):
         self._drop_output() # there shouldn't be any output yet but...
