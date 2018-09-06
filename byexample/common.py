@@ -1,7 +1,7 @@
 import pprint, traceback, contextlib, sys
-from doctest import _indent
 
 def build_where_msg(where, owner, msg=None, use_colors=False):
+    from doctest import _indent
     tmp = []
     try:
         tmp.append('File "%s", line %i' % (where.filepath, where.start_lineno))
@@ -190,4 +190,6 @@ def enhance_exceptions(where, owner, use_colors=False):
         if not hasattr(e, 'where'):
             e.where = build_where_msg(where, owner, use_colors=use_colors)
         raise e
+
+
 
