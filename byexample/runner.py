@@ -145,6 +145,7 @@ class PexepctMixin(object):
         self.interpreter = pexpect.spawn(cmd, echo=False,
                                                 encoding=self.encoding)
         self.interpreter.delaybeforesend = delaybeforesend
+        self.interpreter.delayafterread = None
 
         if wait_first_prompt:
             self._expect_prompt(timeout=first_prompt_timeout, prompt_re=self.PS1_re)
