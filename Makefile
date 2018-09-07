@@ -36,7 +36,7 @@ modules-test: clean_test
 
 docs-test: clean_test
 	@$(python_bin) test/r.py --pretty $(pretty) --ff -l $(languages) *.md
-	@$(python_bin) test/r.py --pretty $(pretty) --ff -l $(languages) --skip docs/huff/usage.md -- `find docs -name "*.md"`
+	@$(python_bin) test/r.py --pretty $(pretty) --ff -l $(languages) `find docs -name "*.md"`
 	@make -s clean_test
 
 travis-test: clean_test lib-test modules-test docs-test
@@ -47,23 +47,24 @@ travis-test: clean_test lib-test modules-test docs-test
 
 coverage: clean_test
 	@rm -f .coverage
+	@cp test/r.py .
 	@echo "Run the byexample's tests with the Python interpreter."
 	@echo "to start the coverage, use a hook in test/ to initialize the coverage"
 	@echo "engine at the begin of the execution (and to finalize it at the end)"
-	@$(python_bin) test/r.py --modules test/ -q --ff -l python byexample/*.py
+	@$(python_bin) r.py --modules test/ -q --ff -l python byexample/*.py
 	@echo
 	@echo "Run the rest of the tests with an environment variable to make"
 	@echo "r.py to initialize the coverage too"
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) test/r.py -q --ff -l $(languages) `find docs -name "*.md"`
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) test/r.py -q --ff -l $(languages) *.md
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l $(languages) `find docs -name "*.md"`
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -q --ff -l $(languages) *.md
 	@echo
 	@echo "Run again, but with different flags to force the"
 	@echo "execution of different parts of byexample"
-	@BYEXAMPLE_COVERAGE_TEST=1 BYEXAMPLE_PROGRESS_ASCII=1 $(python_bin) test/r.py -vvvvvvvvvvvv --ff --no-enhance-diff -l python,shell README.md > /dev/null
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) test/r.py --pretty none -vvvvvvvvvvvv --ff -l python,shell README.md > /dev/null
+	@BYEXAMPLE_COVERAGE_TEST=1 BYEXAMPLE_PROGRESS_ASCII=1 $(python_bin) r.py -vvvvvvvvvvvv --ff --no-enhance-diff -l python,shell README.md > /dev/null
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py --pretty none -vvvvvvvvvvvv --ff -l python,shell README.md > /dev/null
 	@echo
 	@echo "Results:"
-	@coverage report --omit=byexample/huff.py
+	@coverage report --include="byexample/*"
 	@make -s clean_test
 
 dist:
@@ -75,6 +76,7 @@ upload: dist
 	twine upload dist/*.tar.gz dist/*.whl
 
 clean_test:
+	@rm -f r.py
 	@rm -Rf w/
 	@mkdir -p w/
 
