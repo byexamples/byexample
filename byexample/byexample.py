@@ -1,4 +1,5 @@
-from .regex import RegexCache
+from .cache import RegexCache
+import os
 
 class Status:
     ok = 0
@@ -7,7 +8,8 @@ class Status:
     error = 3
 
 def main(args=None):
-    with RegexCache('init.cache'):
+    cache_disabled = os.getenv('BYEXAMPLE_CACHE_DISABLED', "1") != "0"
+    with RegexCache('init.cache', cache_disabled):
         from .cmdline import parse_args
         from .common import human_exceptions
         from .init import init
@@ -19,7 +21,7 @@ def main(args=None):
 
     exit_status = Status.ok
     for filename in testfiles:
-        with RegexCache(filename + '.cache'), human_exceptions("File '%s':" % filename, *human_args):
+        with RegexCache(filename + '.cache', cache_disabled), human_exceptions("File '%s':" % filename, *human_args):
             examples = harvester.get_examples_from_file(filename)
             if args.dry:
                 executor.dry_execute(examples, filename)
