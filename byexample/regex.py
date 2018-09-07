@@ -7,7 +7,11 @@ except ImportError:
     import pickle
 
 class RegexCache(object):
-    def __init__(self, filename):
+    def __init__(self, filename, disabled=False):
+        self.disabled = disabled
+        if self.disabled:
+            return
+
         self.filename = filename
         self.dirty = False
 
@@ -19,7 +23,7 @@ class RegexCache(object):
             self.dirty = True
 
     def sync(self):
-        if self.dirty:
+        if self.dirty and not self.disabled:
             with open(self.filename, 'wb') as f:
                 f.write(pickle.dumps(self._cache))
 
@@ -98,6 +102,9 @@ class RegexCache(object):
         )
 
     def __enter__(self):
+        if self.disabled:
+            return self
+
         # PATCH! TODO is a better way?!?
         self._original__sre_compile__compile = sre_compile.compile
         sre_compile.compile = self.get
@@ -106,6 +113,9 @@ class RegexCache(object):
         return self
 
     def __exit__(self, *args, **kargs):
+        if self.disabled:
+            return
+
         sre_compile.compile = self._original__sre_compile__compile
         self.sync()
         #print("Cache [%s]: %i regexs on exit" % (self.filename, len(self._cache)))
