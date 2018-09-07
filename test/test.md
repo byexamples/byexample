@@ -104,6 +104,18 @@ File docs/how_to_hook_to_events_with_concerns.md, 2/2 test ran in <...> seconds
 ## Coverage tests
 
 ```shell
-$ pretty=none make coverage         # byexample: +pass
+$ pretty=none make coverage         # byexample: +rm=~
+<...>
+Run the byexample's tests with the Python interpreter.
+to start the coverage, use a hook in test/ to initialize the coverage
+engine at the begin of the execution (and to finalize it at the end)
+~
+Run the rest of the tests with an environment variable to make
+r.py to initialize the coverage too
+~
+Run again, but with different flags to force the
+execution of different parts of byexample
+~
+<...>
 
 ```
