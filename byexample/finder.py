@@ -225,7 +225,7 @@ class ExampleHarvest(object):
                 ```
            In that case both examples have the same language.
            But there is a good case when that may not hold: using a markdown
-           for ona language (due its highligth syntax) and writting the real
+           for one language (due its highligth syntax) and writting the real
            example inside using a prompt:
                 ```shell
                 >>> 1 + 2
@@ -292,7 +292,7 @@ class ExampleHarvest(object):
 
            The border case is when both examples have the same source code but
            are examples of two different languages.
-           It is too ambiguo so we fail
+           It is too ambiguous so we fail
 
            >>> A = build_example('# python comment', '', 'python', start_lineno=1)
            >>> B = build_example('# python comment', '', 'shell', start_lineno=1)
@@ -445,10 +445,12 @@ class ExampleHarvest(object):
 
         for match in finder.get_matches(string):
             example_str = string[match.start():match.end()]
+            if example_str.endswith('\n'):
+                example_str = example_str[:-1]
 
             # start_lineno and end_lineno are inclusive
             start_lineno += string[charno:match.start()].count('\n')
-            end_lineno = start_lineno + example_str.count('\n') - 1
+            end_lineno = start_lineno + example_str.count('\n')
 
             # update charno here
             charno = match.start()
