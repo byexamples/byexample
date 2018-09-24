@@ -37,7 +37,7 @@ class FencedMatchFinder(ExampleFinder):
             (?: [ ]*\n )*                         # ignore any empty line
 
             # finally, the end marker
-            ^[ ]*```[ ]*$
+            ^[ ]*```[ ]*$\n?
             ''', re.MULTILINE | re.VERBOSE)
 
     def get_language_of(self, options, match, where):
