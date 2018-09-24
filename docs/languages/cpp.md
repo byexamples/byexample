@@ -48,3 +48,13 @@ out:
 2
 ```
 
+## Gotchas
+
+To print boolean expressions you need to surround them with parenthesis
+
+```cpp
+(1 == 2)
+
+out:
+(bool) false
+```
