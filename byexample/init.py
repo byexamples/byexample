@@ -144,7 +144,7 @@ def get_default_options_parser(cmdline_args):
     options_parser.add_flag("enhance-diff", help="improve how the diff are shown.")
     options_parser.add_flag("interact", help="interact with the runner/interpreter manually if an example fails.")
     options_parser.add_argument("+rm", action='append', help="remove a character from the got and expected strings.")
-    options_parser.add_argument("+timeout", type=int, help="timeout in seconds to complete the example.")
+    options_parser.add_argument("+timeout", type=float, help="timeout in seconds to complete the example.")
     options_parser.add_argument("+diff", choices=['none', 'unified', 'ndiff', 'context'],
                                         help="select diff algorithm.")
     options_parser.add_argument("+delaybeforesend", type=_float_zero_to_none,
