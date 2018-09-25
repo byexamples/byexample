@@ -5,3 +5,5 @@ __pycache__
 .*.swp
 README.rst
 w/*
+byexample.egg-info
+todo
