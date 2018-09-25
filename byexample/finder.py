@@ -223,6 +223,7 @@ class ExampleHarvest(object):
                 3
 
                 ```
+
            In that case both examples have the same language.
            But there is a good case when that may not hold: using a markdown
            for one language (due its highligth syntax) and writting the real
@@ -232,6 +233,7 @@ class ExampleHarvest(object):
                 3
 
                 ```
+
            So we remove the example of the generic finder (FencedMatchFinder) as
            we assume that the specific may have more precise information
            (the correct source code and the correct expected string)
@@ -299,7 +301,7 @@ class ExampleHarvest(object):
 
            >>> examples = f.check_example_overlap([A, B], 'foo.rst')
            Traceback<...>
-           ValueError: In foo.rst, examples at line 1 (found by <...>) and at line 1 (found by <...>) overlap each other.
+           ValueError: In foo.rst, examples at lines 1-3 (found by <...>) and at lines 1-3 (found by <...>) overlap each other.
 
         - in any other case, we fail too
 
@@ -310,14 +312,14 @@ class ExampleHarvest(object):
 
            >>> examples = f.check_example_overlap([A, B], 'foo.rst')
            Traceback<...>
-           ValueError: In foo.rst, examples at line 1 (found by <...>) and at line 1 (found by <...>) overlap each other.
+           ValueError: In foo.rst, examples at lines 1-4 (found by <...>) and at lines 1-5 (found by <...>) overlap each other.
 
            >>> A = build_example('a\nb', '', 'sh', start_lineno=1)      # span 2
            >>> B = build_example('b\nc', '', 'sh', start_lineno=2)      # span 2
 
            >>> examples = f.check_example_overlap([A, B], 'foo.rst')
            Traceback<...>
-           ValueError: In foo.rst, examples at line 2 (found by <...>) and at line 1 (found by <...>) overlap each other.
+           ValueError: In foo.rst, examples at lines 2-5 (found by <...>) and at lines 1-4 (found by <...>) overlap each other.
 
           For a Collision 2:
 
@@ -326,7 +328,7 @@ class ExampleHarvest(object):
 
            >>> examples = f.check_example_overlap([A, B], 'foo.rst')
            Traceback<...>
-           ValueError: In foo.rst, examples at line 2 (found by <...>) and at line 1 (found by <...>) overlap each other.
+           ValueError: In foo.rst, examples at lines 2-4 (found by <...>) and at lines 1-5 (found by <...>) overlap each other.
 
           For a Collision 3:
 
@@ -335,7 +337,7 @@ class ExampleHarvest(object):
 
            >>> examples = f.check_example_overlap([A, B], 'foo.rst')
            Traceback<...>
-           ValueError: In foo.rst, examples at line 1 (found by <...>) and at line 1 (found by <...>) overlap each other.
+           ValueError: In foo.rst, examples at lines 1-4 (found by <...>) and at lines 1-4 (found by <...>) overlap each other.
 
         '''
 
@@ -410,10 +412,10 @@ class ExampleHarvest(object):
                         del examples[i-1]
                         break
 
-                msg = "In %s, examples at line %i (found by %s) and " +\
-                      "at line %i (found by %s) overlap each other."
-                msg = msg % (filepath, example.start_lineno,
-                             example.finder, prev.start_lineno,
+                msg = "In %s, examples at lines %i-%i (found by %s) and " +\
+                      "at lines %i-%i (found by %s) overlap each other."
+                msg = msg % (filepath, example.start_lineno, example.end_lineno,
+                             example.finder, prev.start_lineno, prev.end_lineno,
                              prev.finder)
                 raise ValueError(msg)
 
@@ -542,8 +544,8 @@ class ExampleFinder(object):
             Traceback (most recent call last):
             <...>
             ValueError: The line 2 is misaligned (wrong indentation). Expected at least 2 spaces.
-            001   >>> 1 + 2
-            002 3
+             001    >>> 1 + 2
+            [002] 3
 
         The only exception to this are the empty lines
             >>> check_and_remove_indent('  >>> 1 + 2\n\n  3', '  ', (1, 2, 'foo.rst'))
@@ -562,7 +564,9 @@ class ExampleFinder(object):
 
                 radio = 2
                 context = lines[max(lineno-radio, 0):lineno+radio+1]
-                context = [("%03i " % (i + start_lineno)) + l
+                context = [
+                            (("[%03i] " if i == lineno else " %03i  ") % \
+                                                        (i + start_lineno)) + l
                             for i, l in enumerate(context, max(lineno-radio, 0))]
 
                 msg = msg % (start_lineno + lineno,
