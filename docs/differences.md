@@ -34,7 +34,6 @@ This example is to show you something about GPL
     these rights or asking you to surrender the rights.  Therefore, you have
     certain responsibilities if you distribute copies of the software, or if
     you modify it: responsibilities to respect the freedom of others.
-
 ```
 
 We can corroborate that the test passes or not running ``byexample``
@@ -53,7 +52,6 @@ these rights or asking you to surrender the rights.  Therefore, you don't have
 certain responsibilities if you distribute copies of the software, or if
 you modify it: responsibilities to respect the freedom of others.
 <...>
-
 ```
 
 Do you see where are the typos/errors?
@@ -82,7 +80,6 @@ Differences:
   certain responsibilities if you distribute copies of the software, or if
   you modify it: responsibilities to respect the freedom of others.
 <...>
-
 ```
 
 Now it is easier: someone replaced 'others' by 'no-one' and put a 'don't' to
@@ -108,7 +105,6 @@ This example is to show you something about GPL
     or <prevent2>.  Therefore, you have
     certain responsibilities if you distribute copies of the software, or if
     you modify it: <responsibilities>.
-
 ```
 
 ```
@@ -128,7 +124,6 @@ these rights or asking you to surrender the rights.  Therefore, you don't have
 certain responsibilities if you distribute copies of the software, or if
 you modify it: responsibilities to respect the freedom of others.
 <...>
-
 ```
 
 The test fails as expected: we didn't fix the typos in the ``lic.doc``.
@@ -163,7 +158,6 @@ Differences:
   certain responsibilities if you distribute copies of the software, or if
   you modify it: responsibilities to respect the freedom of others.
 <...>
-
 ```
 
 ``byexample`` sees that there is enough text surrounding the tags ``<protect>``
@@ -181,7 +175,6 @@ In addition to the default diff algorithm and the ``ndiff`` algorithm,
 ```
 $ byexample -h                      # byexample: +norm-ws
 usage: <byexample> [-d {none,unified,ndiff,context}] <...>
-
 ```
 
 The ``unified`` diff algorithm:
@@ -201,7 +194,6 @@ Differences:
  certain responsibilities if you distribute copies of the software, or if
  you modify it: responsibilities to respect the freedom of others.
 <...>
-
 ```
 
 And the ``context`` diff algorithm:
@@ -224,5 +216,4 @@ Differences:
   certain responsibilities if you distribute copies of the software, or if
   you modify it: responsibilities to respect the freedom of others.
 <...>
-
 ```

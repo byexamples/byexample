@@ -26,7 +26,6 @@ and ``..`` as the secondary prompt.
 
 >> g(1, 2, 3)
 => 6
-
 ```
 
 ### Ruby comments
@@ -39,7 +38,6 @@ and ``..`` as the secondary prompt.
 #
 # >> 1 + 2
 # => 3
-
 ```
 
 But inside of nested comments the examples are ignored
@@ -47,7 +45,6 @@ But inside of nested comments the examples are ignored
 ```ruby
 # # >> puts 'this is never executed'
 #
-
 ```
 
 ## The object returned
@@ -68,7 +65,6 @@ therefor they are not checked:
 
 >> puts "hello"
 hello
-
 ```
 
 Now, compare it with this. It is the same example but the objects returned
@@ -81,7 +77,6 @@ are checked too.
 >> puts "hello"
 hello
 => nil
-
 ```
 
 If you want to check all the expressions, you can force to print all the
@@ -114,7 +109,6 @@ semicolons. It is easy to get confused with this weird effect.
 >> nil       # this dummy expression is enough to flush the previous one
 4
 => nil
-
 ```
 
 # Pretty print

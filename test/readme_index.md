@@ -13,9 +13,9 @@ Both should be almost the same
 
 ```shell
 $ diff README.md docs/index.md      # byexample: +norm-ws
-7,8d6
+6,7d5
 < # ``byexample``
-<
+< 
 
 ```
 

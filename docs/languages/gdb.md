@@ -1,7 +1,6 @@
 <!--
 Check that we have gcc installed first
 $ hash gcc                                          # byexample: +fail-fast
-
 -->
 
 # GDB the GNU debugger
@@ -21,12 +20,10 @@ int main(int argc, char* argv[]) {
         printf("%s\n", argv[argc-1]);
     return 0;
 }
-
 ```
 
 ```
 $ gcc -o w/param-echo.exe -ggdb -O0 test/ds/param-echo.c  # byexample: +timeout=10
-
 ```
 
 The program is quite simple, it just prints its parameters in reverse order
@@ -39,7 +36,6 @@ $ ./w/param-echo.exe foo bar
 bar
 foo
 ./w/param-echo.exe
-
 ```
 
 ## Find interactive examples
@@ -62,5 +58,4 @@ $1 = 3
 
 (gdb) print argv[1]
 $2 = "foo"
-
 ```

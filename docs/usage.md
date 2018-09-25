@@ -34,7 +34,6 @@ And of course, this is the hello world written in Python
 ~    >>> print('hello world  ')
 ~    hello world
 ~
-
 ```
 
 Now we want to be sure that the examples in the blog are correct.
@@ -54,7 +53,6 @@ Got:
 <...>
 File test/ds/python-tutorial.v1.md, 4/4 test ran in <...> seconds
 [FAIL] Pass: 2 Fail: 2 Skip: 0
-
 ```
 
 ``byexample`` will show the differences for each failing test and at the end
@@ -77,7 +75,6 @@ $ byexample --ff -l python test/ds/python-tutorial.v1.md
 <...>
 File test/ds/python-tutorial.v1.md, 4/4 test ran in <...> seconds
 [FAIL] Pass: 2 Fail: 1 Skip: 1
-
 ```
 
 ## Wildcards and Captures
@@ -127,7 +124,6 @@ hello world$$
 <...>
 File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [FAIL] Pass: 3 Fail: 1 Skip: 0
-
 ```
 
 We fixed one but the last example also fails. And this time the difference
@@ -153,7 +149,6 @@ hello world
 Got:
 hello world  
 <...>
-
 ```
 
 Without the enhancement, is harder to spot the difference, isn't?
@@ -181,7 +176,6 @@ Differences:
 + hello world$$
 ?            ++
 <...>
-
 ```
 
 Check out [docs/differences](differences.md) for more info about this.
@@ -206,7 +200,6 @@ $ byexample -l python test/ds/python-tutorial.v3.md
 <...>
 File test/ds/python-tutorial.v3.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
-
 ```
 
 
@@ -232,7 +225,6 @@ Array(0...20)				# byexample: +norm-ws
 out:
 => [0,   1,  2,  3,  4,  5,  6,  7,  8,  9,
    10,  11, 12, 13, 14, 15, 16, 17, 18, 19]
-
 ```
 
 ### Paste
@@ -251,7 +243,6 @@ Generating: <random-number>
 
 >>> a == <random-number>     # byexample: +paste
 True
-
 ```
 
 You can even paste it in the expected of the next examples:
@@ -262,7 +253,6 @@ You can even paste it in the expected of the next examples:
 
 >>> a                 # byexample: +paste -tags
 <random-number>
-
 ```
 
 Disabling the capture you can be sure that the tags come from a previous example
@@ -293,7 +283,6 @@ See the difference between those two in these ``Python`` examples:
 
 >>> a = f() # the output is not ignored so we must check for it
 Choosing a random number...
-
 ```
 
 ### Timeout
@@ -303,7 +292,6 @@ The execution of each example has a timeout which can be changed by a flag
 ```python
 import time
 time.sleep(2.5) # simulates a slow operation # byexample: +timeout=3
-
 ```
 
 See what happen when an example timeout:
@@ -316,7 +304,6 @@ Got:
 Prompt not found: the code is taking too long to finish or there is a syntax error.
 <...>
 [FAIL] Pass: 0 Fail: 1 Skip: 0
-
 ```
 
 ### More options
@@ -331,7 +318,6 @@ $ byexample -l python --options "+norm-ws" test/ds/python-tutorial.v2.md
 <...>
 File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
-
 ```
 
 If the option is set per example using ``byexample: <opt>``, it will affect only
@@ -356,7 +342,6 @@ optional arguments:
   +py-doctest           enable the compatibility with doctest.
   +py-pretty-print      enable the pretty print enhancement.
   <...>
-
 ```
 
 ### Loading options from a file
@@ -370,7 +355,6 @@ per line and use ``=`` for the arguments.
 ```
 $ echo '-l=python'               > w/options_file
 $ echo '--options="+norm-ws"'   >> w/options_file
-
 ```
 
 Then load it with ``@`` and the file; you can use multiple files
@@ -381,7 +365,6 @@ $ byexample @w/options_file test/ds/python-tutorial.v2.md
 <...>
 File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
-
 ```
 
 
@@ -406,7 +389,6 @@ by the ``out:`` label.
  out:
  2
  ```
-
 `````
 
 In addition to that, most of the languages supported in ``byexample`` has their
@@ -418,7 +400,6 @@ an interpreter session like example.
 ```python
 >>> 1 + 1
 2
-
 ```
 
 Check out [where should I write the examples](where_should_I_write_the_example.md)
@@ -435,7 +416,6 @@ at the end which are not expected:
 ```python
 >>> print("bar\n\n")
 bar
-
 ```
 
 This is because most of the time an empty new line is added for aesthetics
@@ -456,7 +436,6 @@ ignore it with the ``rm`` option.
 hello
 ~
 world!
-
 ```
 
 ## Setup and Tear Down
@@ -490,7 +469,6 @@ Get the stocks' prices
 Do not forget to close the connection
 ~    >>> c.close()                             # byexample: -skip
 ~
-
 ```
 
 In a happy and perfect world this should run smoothly:
@@ -500,7 +478,6 @@ $ byexample -l python test/ds/db-stock-model.md
 <...>
 File test/ds/db-stock-model.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 5 Fail: 0 Skip: 0
-
 ```
 
 Now, if for some reason you cannot load the initial dump, it makes sense
@@ -523,13 +500,11 @@ $ byexample -l python test/ds/db-stock-model.md
 <...>
 File test/ds/db-stock-model.md, 5/5 test ran in <...> seconds
 [FAIL] Pass: 3 Fail: 1 Skip: 1
-
 ```
 
 <!--
 Revert the dump rename
 $ mv test/ds/renamed.sql test/ds/stock.sql      # byexample: -skip +pass
-
 -->
 
 > *Note:* If the example fails due a timeout or if it crashes, the execution
@@ -569,7 +544,6 @@ $ cat test/ds/blog-database.md                          # byexample: +rm=~
 ~    Loading...
 ~    Done
 ~
-
 ```
 
 Running this will fail because the debug print will be mixed with the normal
@@ -586,7 +560,6 @@ Loading...
 debug 314kb
 Done
 <...>
-
 ```
 
 Yes, changing the example solves this but what happen if you cannot change it?
@@ -600,7 +573,6 @@ $ byexample -l python \
 >   test/ds/blog-database.md
 <...>
 [PASS] Pass: 4 Fail: 0 Skip: 0
-
 ```
 
 Don't be scared, the expression ``python:/bin/sh -c '%e %p %a 2>/dev/null'``
@@ -704,5 +676,4 @@ optional arguments:
   -v                    verbosity level, add more flags to increase the level.
   -q, --quiet           quiet mode, do not print anything even if an example
                         fails; supress the progress output.
-
 ```

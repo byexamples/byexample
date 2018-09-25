@@ -89,7 +89,6 @@ class Differ(object):
             two
             ^n
                 three
-
         '''
 
         # delete any previous diff

@@ -150,7 +150,6 @@ class _LinearExpected(Expected):
 
         >>> exp.get_captures(ex, got, opts, 0)
         (' 12A B 34 C 1', {'a': '12', 'bc': '34', 'c': '1'})
-
         '''
     def __init__(self, *args, **kargs):
         Expected.__init__(self, *args, **kargs)
@@ -434,7 +433,6 @@ class _RegexExpected(Expected):
             'aa<foo>bb\ncc\ndd<foo>ee'
             >>> c
             {}
-
         '''
 
         regs = expected_regexs

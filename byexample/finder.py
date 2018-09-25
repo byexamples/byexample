@@ -232,7 +232,6 @@ class ExampleHarvest(object):
                 ```python
                 >>> 1 + 2
                 3
-
                 ```
 
            In that case both examples have the same language.
@@ -242,7 +241,6 @@ class ExampleHarvest(object):
                 ```shell
                 >>> 1 + 2
                 3
-
                 ```
 
            So we remove the example of the generic finder (FencedMatchFinder) as

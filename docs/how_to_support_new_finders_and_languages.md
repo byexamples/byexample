@@ -93,7 +93,6 @@ To accomplish this we need to create a regular expression to find the
 ...     ^[ ]*  ~~~  [ ]*$
 ...
 ...     ''', re.MULTILINE | re.VERBOSE)
-
 ```
 
 The capture's groups ``snippet``, ``indent`` and ``expected`` are mandatory.
@@ -180,7 +179,6 @@ define a ``target`` attribute and implement few methods:
 ...
 ...     def spurious_endings(self):
 ...         return spurious_endings(self) # defined above
-
 ```
 
 The ``target`` attribute may need a little explanation. All the
@@ -206,7 +204,6 @@ Let's see if our finder can find the ArnoldC snippet above.
 
 
 ```python
-
 >>> finder = ArnoldCFinder(0, 'utf-8')
 
 >>> filepath = 'docs/how_to_support_new_finders_and_languages.md'
@@ -231,7 +228,6 @@ YOU HAVE BEEN TERMINATED
 
 >>> print(expected)
 Hello World!
-
 ```
 
 The ``get_snippet_and_expected`` by default gets the ``snippet`` and the
@@ -268,8 +264,6 @@ This regular expression should capture that:
 ```python
 >>> opts_string_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
 ...                                                re.MULTILINE)
-
-
 ```
 
 The unnamed group should capture the option or options; how to extract
@@ -287,7 +281,6 @@ own specific options (``ArnoldC``'s specific).
 ...     parser.add_flag("norm-ws", default=False)
 ...     parser.add_flag("tags", default=True)
 ...     parser.add_argument("+rm", action='append', default=[])
-
 ```
 
 See the documentation of the class [OptionParser](https://github.com/byexamples/byexample/tree/master/byexample/options.py)
@@ -327,7 +320,6 @@ define a ``language`` attribute and implement the missing methods:
 ...
 ...     def extend_option_parser(self, parser):
 ...         return extend_option_parser(parser)
-
 ```
 
 The user can select which languages should be parsed and executed and which
@@ -346,7 +338,6 @@ Let's create the example:
 >>> runner = None # not yet
 >>> example = Example(finder, runner, parser,
 ...                   snippet, expected, indent, where)
-
 ```
 
 At this point, the example created is incomplete as its source code wasn't
@@ -360,7 +351,6 @@ AttributeError: 'Example' object has no attribute 'source'
 >>> example.options
 <...>
 AttributeError: 'Example' object has no attribute 'options'
-
 ```
 
 These attributes are completed using the parser. It is the parse who only
@@ -380,7 +370,6 @@ Hello World!
 
 >>> print(example.options)
 {'awesome': True, 'norm_ws': False, 'rm': [], 'tags': True}
-
 ```
 
 The ``process_snippet_and_expected`` method can be extended to perform the last
@@ -390,7 +379,6 @@ options.
 ```python
 >>> hasattr(ExampleParser, 'process_snippet_and_expected')
 True
-
 ```
 
 See ``GDBParser`` in [byexample/modules/gdb.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/gdb.py).
@@ -426,7 +414,6 @@ you do not need to install a real ``ArnoldC`` compiler.
 ...             output.append(to_print + '\n')
 ...
 ...     return '\n'.join(output)
-
 ```
 
 Now we ensemble the ``ExampleRunner`` subclass
@@ -444,7 +431,6 @@ Now we ensemble the ``ExampleRunner`` subclass
 ...
 ...     def shutdown(self):
 ...         pass
-
 ```
 
 The ``initialize`` and ``shutdown`` methods are called before and after the
@@ -473,7 +459,6 @@ What to do with them is up to you.
 
 >>> print("PASS" if found == example.expected.str else "FAIL")
 PASS
-
 ```
 
 ## That's all. Congrats!

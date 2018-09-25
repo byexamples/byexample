@@ -18,7 +18,6 @@ $ g () {
 
 $ g 1 2 3
 6
-
 ```
 
 ## Running in background
@@ -38,7 +37,6 @@ It is easy to do this using a redirection:
 ```shell
 $ sleep 1 >/dev/null 2>&1 &
 <...>
-
 ```
 
 Notice how the ``&`` operator tells the shell to put the process in the
@@ -54,7 +52,6 @@ $ echo "$!"
 
 $ jobs -l                           # byexample: +paste
 [1] + <pid> Running<...>
-
 ```
 
 Now there is a catch. Some shells like ``Bash`` output a message
@@ -69,7 +66,6 @@ Here is an example (the ``%%`` is replaced by the job id by the shell):
 ```shell
 $ kill %% ; wait                    # byexample: +timeout=4
 [1] + Terminated<...>
-
 ```
 
 ### Subshells
@@ -79,7 +75,6 @@ in background *inside* of a subshell:
 
 ```shell
 $ ( sleep 1 & ) >/dev/null 2>&1
-
 ```
 
 The ``&`` operator tells the shell to put the process in the background
@@ -93,7 +88,6 @@ Therefore the job list will be empty:
 
 ```shell
 $ jobs -l
-
 ```
 
 ### Disabling the job monitor
@@ -113,7 +107,6 @@ $ echo "$!"
 
 $ jobs -l                           # byexample: +paste
 [1] + <pid> Running<...>
-
 ```
 
 To prove this we can wait enough and see that no asynchronous message is print.
@@ -122,14 +115,12 @@ To prove this we can wait enough and see that no asynchronous message is print.
 $ sleep 2                           # byexample: +timeout=4
 $ echo "foreground"
 foreground
-
 ```
 
 You can re-enable it later
 
 ```shell
 $ set -m                            # byexample: +pass
-
 ```
 
 The downside of this solution is that disabling the monitoring also prevent us
@@ -150,7 +141,6 @@ To kill any running background process you can write:
 
 ```shell
 $ kill -9 $(jobs -p) && wait        # byexample: -skip +pass
-
 ```
 
 The ``-skip`` will make sure that this example gets executed while the ``+pass``
@@ -170,7 +160,6 @@ file as soon as they are saved in the log file.
 
 ```shell
 $ echo "some log line" > w/msg.log
-
 ```
 
 We could use ``tail -f`` for this. But if we do that, ``tail`` will never end,
@@ -182,7 +171,6 @@ of inactivity or silence the process will be stopped:
 ```shell
 $ tail -f w/msg.log             # byexample: +stop-on-silence
 some log line
-
 ```
 
 The process will be stopped, if you want that the process keeps running
@@ -197,13 +185,11 @@ $ echo "another log line" >> w/msg.log
 $ fg                            # byexample: +stop-on-silence
 tail -f w/msg.log
 another log line
-
 ```
 
 ```shell
 $ kill %% ; fg ; wait    # cleanup  # byexample: +pass
 $ jobs -l
-
 ```
 
 > **Note:** ``+stop-on-silence`` requires the job control and monitoring to be
@@ -240,7 +226,6 @@ bash
 
 $ exit
 exit
-
 ```
 
 The ``--norc`` flag is to make sure that ``bash`` will not load any ``.bashrc``

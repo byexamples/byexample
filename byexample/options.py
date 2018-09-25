@@ -136,7 +136,6 @@ class Options(collections.MutableMapping):
 
         >>> opt
         {'bar': 2, 'foo': 2}
-
     '''
 
     def __init__(self, *args, **kwargs):
@@ -232,7 +231,6 @@ class Options(collections.MutableMapping):
             >>> opt.up({'foo': 3, 'baz': 4})
             >>> opt.as_dict()
             {'bar': 2, 'baz': 4, 'foo': 3}
-
         '''
         if self.lower_levels_cached is None:
             collapsed = self.stack[-1].copy()
@@ -265,7 +263,6 @@ class Options(collections.MutableMapping):
 
             >>> opt.copy()
             {'bar': 2, 'foo': 1}
-
         '''
         clone = Options(self.stack[-1]) # bottom
 

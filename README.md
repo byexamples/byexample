@@ -35,7 +35,6 @@ First, you need to install it locally.
 
 ```
 $ pip install --user byexample                # install it # byexample: +skip
-
 ```
 
 Or if you prefer, you can install it inside a
@@ -51,7 +50,6 @@ All the snippets and examples will be collected, executed and checked.
 ```
 $ byexample -l python,ruby,shell README.md      # run it    # byexample: +skip
 [PASS] Pass: <...> Fail: <...> Skip: <...>
-
 ```
 
 You can select which languages to run, over which files, how to display the
@@ -68,7 +66,6 @@ It is just a snippet of code followed by the expected result:
 ```python
 >>> 1 + 2
 3
-
 ```
 
 or
@@ -78,7 +75,6 @@ or
 
 out:
 3
-
 ```
 
 The expression ``1 + 2`` is executed and the output compared with ``3`` to
@@ -105,7 +101,6 @@ an interpreter session like example.
 
 >>> add(1, 2)
 3
-
 ```
 
 Take a look to the documentation of each language [docs/languages](https://github.com/byexamples/byexample/tree/master/docs/languages/).
@@ -183,7 +178,6 @@ byexample 7.2.3 - GNU GPLv3
 <...>
 Copyright (C) Di Paola Martin - https://github.com/byexamples/byexample
 <...>
-
 ```
 
 ## License
@@ -194,7 +188,6 @@ This project is licensed under GPLv3
 $ head -n 2 LICENSE     # byexample: +norm-ws
           GNU GENERAL PUBLIC LICENSE
            Version 3, 29 June 2007
-
 ```
 
 See [LICENSE](https://github.com/byexamples/byexample/tree/master/LICENSE.md) for more details.

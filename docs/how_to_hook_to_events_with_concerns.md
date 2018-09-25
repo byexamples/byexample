@@ -56,7 +56,6 @@ the expected strings nor anything else.
 ...
 ...     def start_example(self, example, options):
 ...         self.f.write(example.source)
-
 ```
 
 See the documentation of the class ``Concern`` in

@@ -44,7 +44,6 @@ class ShebangTemplate(string.Template):
         >>> shebang = '/bin/sh -c \'%e %p %a >/dev/null\''
         >>> print(ShebangTemplate(shebang).quote_and_substitute(tokens))
         /bin/sh -c '/usr/bin/env '"'"'py'"'"'"'"'"'"'"'"'thon'"'"' -i -c '"'"'blue = '"'"'"'"'"'"'"'"'1'"'"'"'"'"'"'"'"''"'"' >/dev/null'
-
         '''
 
         self._tokens = {}

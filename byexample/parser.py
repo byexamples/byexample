@@ -284,7 +284,6 @@ class ExampleParser(ExtendOptionParserMixin):
 
             >>> c
             [1, 2, 2, 2]
-
         '''
         if not literals:
             return [], [], []
@@ -802,7 +801,6 @@ class ExampleParser(ExtendOptionParserMixin):
 
             >>> m.match('\n\n\n\n\n').groups()
             (None,)
-
         '''
         # remove any trailing new lines, we will add a regex to match any
         # posible empty line at the end later

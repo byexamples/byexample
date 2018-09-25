@@ -21,7 +21,6 @@ sup
 
 out:
 (double) 12.56<...>
-
 ```
 
 The last expression without ending with a ``;`` is interpreted by

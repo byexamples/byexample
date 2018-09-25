@@ -17,7 +17,6 @@ as the secondary prompts.
 
 >>> f()
 42
-
 ```
 
 ## Compatibility with ``doctest``
@@ -44,7 +43,6 @@ But because I'm enabling it from the example itself, I need use the
 ```python
 >>> [1, 2, 3]   # use byexample, not doctest --> # byexample: +py-doctest  +NORMALIZE_WHITESPACE
 [1,   2,   3]
-
 ```
 
 As you can see ``NORMALIZE_WHITESPACE`` is supported.
@@ -71,7 +69,6 @@ bar
 foo
 <BLANKLINE>
 bar
-
 ```
 
 And also the report flags: ``REPORT_UDIFF``, ``REPORT_CDIFF`` and ``REPORT_NDIFF``
@@ -84,7 +81,6 @@ But in the other hand, you can use the ``ELLIPSIS`` flag as usual.
 ```python
 >>> print("fooxxxbar")   # byexample: +py-doctest +ELLIPSIS
 foo...bar
-
 ```
 
 ### Compatibility overview
@@ -130,7 +126,6 @@ Exception: oh no!
 >>> non_existent_var
 Traceback <...>
 NameError: name 'non_existent_var' is not defined
-
 ```
 
 At difference with ``doctest``, syntax errors are also captured.
@@ -139,7 +134,6 @@ At difference with ``doctest``, syntax errors are also captured.
 >>> f(]        # invalid syntax
   File<...>
 SyntaxError: invalid syntax
-
 ```
 
 If you enabled the compatibility mode, any output that it looks like an
@@ -152,7 +146,6 @@ Traceback (most recent call last):
  -- stack trace
  -- ignored
 Exception: oh no!
-
 ```
 
 Also note that we will relax the check of the prefix of the exception message.
@@ -183,7 +176,6 @@ Error: oh no!
 >>> raise IndexError('oh no!')       # byexample: +py-doctest
 Traceback (most recent call last):
 Error: oh no!
-
 ```
 
 ## Migration to the ``byexample``'s way
@@ -233,7 +225,6 @@ The custom display hook will pretty print the object instead of using ``repr``
  'foo bar 7',
  'foo bar 8',
  'foo bar 9']
-
 ```
 
 If we don't do this, long and complex structures could be hard to print:
@@ -241,7 +232,6 @@ If we don't do this, long and complex structures could be hard to print:
 ```python
 >>> print(repr(l))
 ['foo bar 0', 'foo bar 1', <...>, 'foo bar 8', 'foo bar 9']
-
 ```
 
 This feature is disabled if you enabled the ``doctest`` compatibility mode but
@@ -300,7 +290,6 @@ The following is a valid example for ``Python 2.x`` and ``3.x`` as well.
 
 >>> u'u'
 'u'
-
 ```
 
 If it is really important to show the type of the string I would recommend to
@@ -309,7 +298,6 @@ make an explicit check or using ``repr``
 ```python
 >>> isinstance(b, bytes)
 True
-
 ```
 
 The pretty print is disabled if you are in compatibility mode with doctest.
@@ -334,7 +322,6 @@ executed and with the output returned by the interpreter.
 >>> sys
 Traceback <...>
 NameError: name 'sys' is not defined
-
 ```
 
 ### Empty lines
@@ -348,7 +335,6 @@ that the ``return`` statetment belongs to the function definition.
 ...
 ...
 ...   return a
-
 ```
 
 But ``Python`` interprets the empty line between ``a = 42`` and ``return a``
@@ -365,7 +351,6 @@ line so the whole example makes sense to ``Python``.
 ...
 ... print(i)
 1
-
 ```
 
 Keep in mind that "empty line" means that, if it is not working for you double
@@ -383,7 +368,6 @@ We can disable this fix with ``-py-remove-empty-lines``
     return a
     ^
 IndentationError: unexpected indent
-
 ```
 
 You may ask why if the ``byexample`` fix works, why anyone would like to disable
@@ -396,7 +380,6 @@ See the following multiline string definition
 ...
 ...   foo
 ... '''
-
 ```
 
 How many lines it has? 4 right? well....
@@ -407,7 +390,6 @@ How many lines it has? 4 right? well....
 
 >>> len(blob.split('\n'))
 3
-
 ```
 
 It has actually 4 but ``byexample`` suppress the empty line because it is
@@ -428,5 +410,4 @@ you need to disable it, you can
 
 >>> len(blob.split('\n'))
 4
-
 ```
