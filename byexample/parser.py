@@ -94,6 +94,10 @@ class ExampleParser(ExtendOptionParserMixin):
     def trailing_newlines_regex(self):
         return re.compile(r'\n+\Z', re.MULTILINE | re.DOTALL)
 
+    @constant
+    def trailing_single_newline_regex(self):
+        return re.compile(r'\n\Z', re.MULTILINE | re.DOTALL)
+
     def ellipsis_marker(self):
         return '...'
 
@@ -774,6 +778,31 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> m.match('   123  \n\n\n\n').groups()
             ('123',)
 
+        # Note: in a previous version of Byexample there was a bug when the
+        # the last capture was *after* a new line.
+        #
+        # The original regex was (?P<foo>.*?)(?<!\\n) which worked if
+        # the capture was not empty but when it wasn't, the whole failed.
+        #
+        # The problem is that (?<!\\n) means "not preceded by a new line"
+        # and if (?P<foo>.*?) matches the empty string, the regex (?<!\\n)
+        # follows immediately *after* the \n which fails the whole match.
+        #
+        # The fix was to set the tag matches *something* or the whole is
+        # optional:
+            >>> expected = '\n<foo>'
+            >>> regexs, _, _, _, _ = _as_regexs(expected, False, True, True)
+
+            >>> regexs
+            ['\\A', '\\\n', '(?:(?P<foo>.+?)(?<!\\n))?', '\\n*\\Z']
+
+            >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+            >>> m.match('\n123\n\n\n\n').groups()
+            ('123',)
+
+            >>> m.match('\n\n\n\n\n').groups()
+            (None,)
+
         '''
         # remove any trailing new lines, we will add a regex to match any
         # posible empty line at the end later
@@ -861,6 +890,10 @@ class ExampleParser(ExtendOptionParserMixin):
                             # update the post_capture too skipping the leading ws
                             post_capture = post_capture[skip_next_leading_ws_count:]
 
+                else:
+                    if not post_capture and self.trailing_single_newline_regex().search(pre_capture):
+                        need_match_at_least_one = True
+
                 if literals:
                     _res, _pos, _rcount = self._as_safe_regexs(literals, charno, normalize_whitespace)
                     regexs.extend(_res)
@@ -928,10 +961,13 @@ class ExampleParser(ExtendOptionParserMixin):
                             regex = r'(?:' + regex + ws_regex_str + r')?'
 
                         trailing_ws_absorved = True
-
-                if not post_capture and not normalize_whitespace:
+                elif not post_capture:
                     regex = regex + \
                             self.do_not_end_with_newline_regex_str()
+
+                    if self.trailing_single_newline_regex().search(pre_capture):
+                        assert need_match_at_least_one
+                        regex = r'(?:' + regex + r')?'
 
                 tags_by_idx[len(regexs)] = name
 

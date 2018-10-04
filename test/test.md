@@ -21,8 +21,8 @@ File byexample/finder.py, 67/67 test ran in <...> seconds
 File byexample/options.py, 64/64 test ran in <...> seconds
 [PASS] Pass: 64 Fail: 0 Skip: 0
 ~
-File byexample/parser.py, 126/126 test ran in <...> seconds
-[PASS] Pass: 126 Fail: 0 Skip: 0
+File byexample/parser.py, 132/132 test ran in <...> seconds
+[PASS] Pass: 132 Fail: 0 Skip: 0
 <...>
 
 
@@ -73,8 +73,8 @@ File docs/how_to_support_new_finders_and_languages.md, 39/39 test ran in <...> s
 File docs/index.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 2
 ~
-File docs/languages/cpp.md, 2/2 test ran in <...> seconds
-[PASS] Pass: 2 Fail: 0 Skip: 0
+File docs/languages/cpp.md, 3/3 test ran in <...> seconds
+[PASS] Pass: 3 Fail: 0 Skip: 0
 ~
 File docs/languages/gdb.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 9 Fail: 0 Skip: 0
