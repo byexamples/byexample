@@ -23,7 +23,7 @@ class RegexCache(object):
             self.dirty = True
 
     def sync(self):
-        if self.dirty and not self.disabled:
+        if self.dirty and not self.disabled and self.filename != None:
             with open(self.filename, 'wb') as f:
                 f.write(pickle.dumps(self._cache))
 
@@ -41,9 +41,9 @@ class RegexCache(object):
             but enables us to serialize (pickle) the bytecode to disk.
 
                 >>> import re
-                >>> from byexample.regex import RegexCache
+                >>> from byexample.cache import RegexCache
 
-                >>> get = RegexCache().get
+                >>> get = RegexCache(None).get
 
                 >>> r1 = re.compile(r'foo.*bar', re.DOTALL)
                 >>> r2 = get(r'foo.*bar', re.DOTALL)
