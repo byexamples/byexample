@@ -18,3 +18,4 @@ addons:
 env:
     global:
         - languages=python,shell
+        - BYEXAMPLE_CACHE_DISABLED=0
