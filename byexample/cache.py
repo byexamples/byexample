@@ -1,10 +1,47 @@
 import sre_parse
 import sre_compile
+import appdirs
+import os
+import sys
 
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
+
+def cache_filepath(filename, type):
+    ''' Create a valid file path based on <filename>.
+
+        The path will be formed based on the user's cache directory,
+        platform and python version and on the type of cache requested.
+
+        >>> from byexample.cache import cache_filepath
+        >>> cache_filepath('foo', 're')
+        '<user-cache-dir>/byexample/re-<platform>-<python-version>/foo'
+
+        The dir part of <filename> is ignored:
+
+        >>> cache_filepath('foo/bar/baz', 're')
+        '<user-cache-dir>/byexample/re-<platform>-<python-version>/baz'
+
+        Note: this function *will* create any directory needed.
+    '''
+
+    if type == 're':
+        _v = sys.version_info
+        version = "%s-%s-%02i%02i%02i" % (type, sys.platform, _v.major, _v.minor, _v.micro)
+    else:
+        raise ValueError("Unsupported cache type version '%s'." % str(type))
+
+    dir = appdirs.user_cache_dir(appname='byexample', version=version)
+    try:
+        os.makedirs(dir)
+    except OSError:
+        pass # note: for Python 3.2 and greater, use exist_ok=True (see makedirs)
+
+    filename = os.path.basename(filename)
+    return os.path.join(dir, filename)
+
 
 class RegexCache(object):
     def __init__(self, filename, disabled=False):

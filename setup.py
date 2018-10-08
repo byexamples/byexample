@@ -39,7 +39,8 @@ exec(open(path.join(here, 'byexample', '__init__.py')).read())
 # the following are the required dependencies
 # without them, we cannot run byexample
 required_deps=[
-    'pexpect>=4,<5',  # pexpect 4.x.x required
+    'pexpect>=4,<5',    # pexpect 4.x.x required
+    'appdirs>=1.4.3<2', # appdirs 1.4.x (x >= 3) required
     ]
 
 # these, on the other hand, are optional nice to have
