@@ -538,14 +538,10 @@ class ExampleFinder(object):
             '>>> 1 + 2\n3'
 
         If the string contains a line with a lower level of indentation,
-        raise an exception.
+        truncate the example at that point and ignore the rest.
 
             >>> check_and_remove_indent('  >>> 1 + 2\n3', '  ', (1, 2, 'foo.rst'))
-            Traceback (most recent call last):
-            <...>
-            ValueError: The line 2 is misaligned (wrong indentation). Expected at least 2 spaces.
-             001    >>> 1 + 2
-            [002] 3
+            '>>> 1 + 2'
 
         The only exception to this are the empty lines
             >>> check_and_remove_indent('  >>> 1 + 2\n\n  3', '  ', (1, 2, 'foo.rst'))
@@ -559,20 +555,7 @@ class ExampleFinder(object):
         indent_stripped = []
         for lineno, line in enumerate(lines):
             if not line.startswith(indent) and line:
-                msg = 'The line %i is misaligned (wrong indentation). ' +\
-                      'Expected at least %i spaces.\n%s'
-
-                radio = 2
-                context = lines[max(lineno-radio, 0):lineno+radio+1]
-                context = [
-                            (("[%03i] " if i == lineno else " %03i  ") % \
-                                                        (i + start_lineno)) + l
-                            for i, l in enumerate(context, max(lineno-radio, 0))]
-
-                msg = msg % (start_lineno + lineno,
-                                len(indent),
-                                '\n'.join(context))
-                raise ValueError(msg)
+                break
 
             indent_stripped.append(line[len(indent):])
 

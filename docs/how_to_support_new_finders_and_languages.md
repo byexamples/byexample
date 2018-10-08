@@ -104,8 +104,8 @@ The first should match the executable code, while the last the expected output
 if any that to compare.
 
 The ``indent`` group is to count how many spaces are not part of the example
-and they are just for indentation. Some languages like Python are sensible to
-this.
+and they are just for indentation: ``byexample`` will *drop* the first line that
+has a lower level of indentation and any subsequent line.
 
 ### Detect the language
 
