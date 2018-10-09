@@ -415,18 +415,14 @@ own additional finder.
 For example in ``Python`` you can use the prompts ``>>>`` and ``...`` to write
 an interpreter session like example.
 
-Those are find and extracted as well and typically the example spans only the
-line that has the prompt and the expected output goes immediately below until
-the first empty line.
-
-Here is the same example than before but using prompts:
-
 ```python
 >>> 1 + 1
 2
 
 ```
 
+Check out [where should I write the examples](where_should_I_write_the_example.md)
+section, it has a more in deep description.
 
 ### New lines at the end are ignored
 

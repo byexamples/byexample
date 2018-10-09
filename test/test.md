@@ -15,8 +15,8 @@ File byexample/differ.py, 17/17 test ran in <...> seconds
 File byexample/expected.py, 95/95 test ran in <...> seconds
 [PASS] Pass: 95 Fail: 0 Skip: 0
 ~
-File byexample/finder.py, 67/67 test ran in <...> seconds
-[PASS] Pass: 67 Fail: 0 Skip: 0
+File byexample/finder.py, 77/77 test ran in <...> seconds
+[PASS] Pass: 77 Fail: 0 Skip: 0
 ~
 File byexample/options.py, 64/64 test ran in <...> seconds
 [PASS] Pass: 64 Fail: 0 Skip: 0
@@ -67,11 +67,14 @@ File CONTRIBUTING.md, 5/5 test ran in <...> seconds
 File README.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 2
 ~
-File docs/how_to_support_new_finders_and_languages.md, 39/39 test ran in <...> seconds
-[PASS] Pass: 39 Fail: 0 Skip: 0
+File docs/how_to_support_new_finders_and_languages.md, 41/41 test ran in <...> seconds
+[PASS] Pass: 41 Fail: 0 Skip: 0
 ~
 File docs/index.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 2
+~
+File docs/where_should_I_write_the_examples.md, 9/9 test ran in <...> seconds
+[PASS] Pass: 9 Fail: 0 Skip: 0
 ~
 File docs/languages/cpp.md, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0

@@ -107,6 +107,45 @@ The ``indent`` group is to count how many spaces are not part of the example
 and they are just for indentation: ``byexample`` will *drop* the first line that
 has a lower level of indentation and any subsequent line.
 
+### Spurious ends
+
+It is likely that you may want to write your examples in a file and mark it
+with some *mark-up* to render the code with syntax highlight.
+
+For a Markdown you may wrap your example with ````` ``` ````` or ``~~~`` so
+it can be highlighted.
+
+If that's the case, you may write something like this:
+
+`````
+ ```python
+ >>> print("My first example!")
+ My first example!
+ ```
+`````
+
+Notice how there is *not* a newline that separates the example from
+the mark-up.
+
+``byexample`` is *agnostic* of the format of the file but it will try to
+remove those mark-ups if they are found at *the end* of an examples as it will
+assume that they are not part of the example but they are just
+part of the decoration.
+
+``byexample`` tries to be *user friendly*.
+
+But this has its limits; if this interfers with your finder,
+you can tweak it and redefine these *spurious endings*.
+
+In our ``ArnoldC`` example, we don't want to remove ``~~~`` because it *is*
+part of the example:
+
+```python
+>>> def spurious_endings(self):
+...     endings = ExampleFinder.spurious_endings(self)
+...     return endings - {'~~~'}
+```
+
 ### Detect the language
 
 Then, the finder needs to determinate in which language the example
@@ -124,7 +163,7 @@ For our purposes let's say that anything between ``~~~`` is always an
 
 Now we ensemble all the pieces together.
 We need to create a class, inherit from ``ExampleFinder``,
-define a ``target`` attribute and implement two methods:
+define a ``target`` attribute and implement few methods:
 
 ```python
 >>> from byexample.finder import ExampleFinder
@@ -134,10 +173,13 @@ define a ``target`` attribute and implement two methods:
 ...
 ...     def example_regex(self):
 ...         global example_re
-...         return example_re
+...         return example_re   # defined above
 ...
 ...     def get_language_of(self, options, match, where):
 ...         return 'ArnoldC'
+...
+...     def spurious_endings(self):
+...         return spurious_endings(self) # defined above
 
 ```
 
