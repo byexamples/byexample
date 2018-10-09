@@ -43,7 +43,7 @@ generic one:
 
 `````python
  ```python
- >> puts "hello"   # but this is ruby
+ $ echo "hello"   # but this is shell
  hello
  ```
 `````
