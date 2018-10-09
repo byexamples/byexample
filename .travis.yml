@@ -18,3 +18,14 @@ env:
     global:
         - languages=python,shell
         - BYEXAMPLE_CACHE_DISABLED=0
+
+matrix:
+    include:
+        - name: "Github pages"
+          language: ruby
+          rvm:
+            - 2.1
+          install: "echo ok"
+          script:
+            - 'echo -e ''source "https://rubygems.org"\ngem "github-pages"'' > Gemfile'
+            - "bundle install && cd docs && bundle exec jekyll build"

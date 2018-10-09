@@ -402,7 +402,7 @@ an interpreter session like example.
 2
 ```
 
-Check out [where should I write the examples](where_should_I_write_the_example.md)
+Check out [where should I write the examples](where_should_I_write_the_examples.md)
 section, it has a more in deep description.
 
 ### New lines at the end are ignored
