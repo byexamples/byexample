@@ -42,3 +42,7 @@ class FencedMatchFinder(ExampleFinder):
 
     def get_language_of(self, options, match, where):
         return match.group("language")
+
+    def spurious_endings(self):
+        endings = ExampleFinder.spurious_endings(self)
+        return endings - {'```', '~~~'}

@@ -1,6 +1,6 @@
 import collections, re
 from .common import log, build_where_msg, tohuman, \
-                    enhance_exceptions, print_example
+                    enhance_exceptions, print_example, constant
 
 from .parser import ExampleParser
 from .options import Options
@@ -588,8 +588,10 @@ class ExampleFinder(object):
     def check_keep_matching(self, example_str, match):
         r'''
         Given an example string, try to apply the match again.
+
         This is a health-check intended to be used after a call to
-        'check_and_remove_indent'
+        'check_and_remove_indent', 'remove_spurious_endings' and
+        other processing functions.
 
             >>> from byexample.finder import ExampleFinder
             >>> import re
@@ -625,12 +627,15 @@ class ExampleFinder(object):
         new_match = match.re.match(example_str)
         if not new_match:
             msg = 'The regex does not match the example after ' +\
-                  'removing the indentation (check_and_remove_indent). '
+                  'processing it (filtering & removing) done by ' +\
+                  'ExampleFinder.get_snippet_and_expected method. '
 
             raise ValueError(msg)
 
         if new_match.start() != 0 or new_match.end() != len(example_str):
-            msg = '%i bytes were left out after removing the indentation (check_and_remove_indent). ' +\
+            msg = '%i bytes were left out after processing it ' +\
+                  '(filtering & removing) done by '+\
+                  'ExampleFinder.get_snippet_and_expected method. ' +\
                   'Dropped bytes at the %s of example:\n%s\n'
 
             if new_match.start() != 0:
@@ -660,9 +665,53 @@ class ExampleFinder(object):
         # update the example_str removing any indentation;
         example_str = self.check_and_remove_indent(example_str, indent, where)
 
+        example_str = self.remove_spurious_endings(example_str)
+
         # check that we still can find the example
         # (allow to generate a new match)
         match = self.check_keep_matching(example_str, match)
 
         # finally, return the updated snippet and expected strings
         return match.group('snippet'), match.group('expected')
+
+    def remove_spurious_endings(self, expected_str):
+        '''
+            >>> from byexample.finder import ExampleFinder
+            >>> mfinder = ExampleFinder(0, 'utf8'); mfinder.target = 'python-prompt'
+            >>> remove_spurious_endings = mfinder.remove_spurious_endings
+
+            A spurious ending is a particular string that is found
+            in the last line.
+
+            It must be at the begin of the last line:
+            >>> remove_spurious_endings('>>> 1 + 2\n3\n```')
+            '>>> 1 + 2\n3\n'
+
+            And it must be the only thing in the line (with the exception
+            of any trailing whitespace):
+
+            >>> remove_spurious_endings('>>> 1 + 2\n3\n-->  ')
+            '>>> 1 + 2\n3\n'
+
+            But if the last line has something else, it will not be removed:
+            >>> remove_spurious_endings('>>> foo()\n<-- hello\nworld -->')
+            '>>> foo()\n<-- hello\nworld -->'
+
+            It will not be removed even it the last line has leading
+            whitespace:
+            >>> remove_spurious_endings('>>> foo()\n<-- hello\n   -->')
+            '>>> foo()\n<-- hello\n   -->'
+            '''
+
+        return self.spurious_ending_regex().sub('\n', expected_str)
+
+    @constant
+    def spurious_ending_regex(self):
+        # Be at the start of the line and be the last line of the expected
+        # string
+        endings = '|'.join(re.escape(e) for e in sorted(self.spurious_endings()))
+        return re.compile(r"(\n|\A)(%s)[ ]*\n?\Z" % endings, re.DOTALL | re.MULTILINE)
+
+    def spurious_endings(self):
+        return {"'''", '-->', '```', '~~~'}
+

@@ -1,7 +1,6 @@
 <!--
 Check that we have byexample installed first
 $ hash byexample                                    # byexample: +fail-fast
-
 -->
 
 # ``byexample``
@@ -111,7 +110,10 @@ an interpreter session like example.
 
 Take a look to the documentation of each language [docs/languages](https://github.com/byexamples/byexample/tree/master/docs/languages/).
 
-Check the [usage](https://byexamples.github.io/byexample/usage) page
+Check out [where should I write the examples](https://byexamples.github.io/byexample/where_should_I_write_the_example)
+section, it has a more in deep description.
+
+And also check the [usage](https://byexamples.github.io/byexample/usage) page
 for more examples.
 
 ## Languages supported
