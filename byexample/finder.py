@@ -5,9 +5,20 @@ from .common import log, build_where_msg, tohuman, \
 from .parser import ExampleParser
 from .options import Options
 
-Where = collections.namedtuple('Where', ['start_lineno',
-                                         'end_lineno',
-                                         'filepath'])
+class Where(object):
+    def __init__(self, start_lineno, end_lineno, filepath):
+        self.start_lineno = start_lineno
+        self.end_lineno = end_lineno
+        self.filepath = filepath
+
+    def as_tuple(self):
+        return (self.start_lineno, self.end_lineno, self.filepath)
+
+    def __iter__(self):
+        return iter(self.as_tuple())
+
+    def __repr__(self):
+        return repr(self.as_tuple())
 
 class Example(object):
     '''
@@ -531,20 +542,28 @@ class ExampleFinder(object):
         r'''
         Given an example string, remove its indentation
 
-            >>> from byexample.finder import ExampleFinder
+            >>> from byexample.finder import ExampleFinder, Where
             >>> mfinder = ExampleFinder(0, 'utf8'); mfinder.target = 'python-prompt'
             >>> check_and_remove_indent = mfinder.check_and_remove_indent
-            >>> check_and_remove_indent('  >>> 1 + 2\n  3', '  ', (1, 2, 'foo.rst'))
+
+            >>> where = Where(1, 2, 'foo.rst')
+            >>> check_and_remove_indent('  >>> 1 + 2\n  3', '  ', where)
             '>>> 1 + 2\n3'
+
+            >>> where
+            (1, 2, 'foo.rst')
 
         If the string contains a line with a lower level of indentation,
         truncate the example at that point and ignore the rest.
 
-            >>> check_and_remove_indent('  >>> 1 + 2\n3', '  ', (1, 2, 'foo.rst'))
+            >>> check_and_remove_indent('  >>> 1 + 2\n3', '  ', where)
             '>>> 1 + 2'
 
+            >>> where
+            (1, 1, 'foo.rst')
+
         The only exception to this are the empty lines
-            >>> check_and_remove_indent('  >>> 1 + 2\n\n  3', '  ', (1, 2, 'foo.rst'))
+            >>> check_and_remove_indent('  >>> 1 + 2\n\n  3', '  ', where)
             '>>> 1 + 2\n\n3'
 
         '''
@@ -555,9 +574,14 @@ class ExampleFinder(object):
         indent_stripped = []
         for lineno, line in enumerate(lines):
             if not line.startswith(indent) and line:
+                # shrink the example and update the new end line number
+                where.end_lineno = start_lineno + lineno - 1
                 break
 
             indent_stripped.append(line[len(indent):])
+
+        if not indent_stripped:
+            raise ValueError("Inconsistent state.")
 
         return '\n'.join(indent_stripped)
 
