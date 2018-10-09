@@ -65,7 +65,7 @@ def load_modules(dirnames, cfg):
             module = importer.find_module(name).load_module(name)
         except Exception as e:
             log("From '%s' loading '%s'...failed: %s" % (path, name, str(e)),
-                                                        verbosity-2)
+                                                        verbosity)
             continue
 
         stability = getattr(module, 'stability', 'undefined')
