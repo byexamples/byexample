@@ -419,7 +419,7 @@ class PythonInterpreter(ExampleRunner, PexepctMixin):
                                 PS1_re = self._PS1,
                                 any_PS_re = r'/byexample/py/ps\d> ')
 
-    def get_default_cmd(self, pretty_print, *args, **kargs):
+    def get_default_cmd(self, pretty_print, columns, *args, **kargs):
         # Important: do not use a single quote ' in the following python code
         # it will break it in real hard ways to debug.
         change_prompts = r'''
@@ -466,7 +466,7 @@ if %s:
                 # unpatch
                 self.builtins_module.repr = self.orig_repr
 
-    __byexample_pretty_print = __ByexamplePrettyPrint(indent=1, width=80, depth=None)
+    __byexample_pretty_print = __ByexamplePrettyPrint(indent=1, width=%i, depth=None)
     del __ByexamplePrettyPrint
 
     # change the displayhook to use pprint instead of repr
@@ -477,7 +477,7 @@ if %s:
 # remove introduced symbols
 del sys
 del _byexample_pprint
-''' % (self._PS1, self._PS2, pretty_print)
+''' % (self._PS1, self._PS2, pretty_print, columns)
 
         return  "%e %p %a", {
                     'e': "/usr/bin/env",
@@ -500,7 +500,7 @@ del _byexample_pprint
         pretty_print = (py_doctest and py_pretty_print) \
                         or not py_doctest
 
-        shebang, tokens = self.get_default_cmd(pretty_print)
+        shebang, tokens = self.get_default_cmd(pretty_print, options['geometry'][1])
         shebang = options['shebangs'].get(self.language, shebang)
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)

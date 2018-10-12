@@ -91,6 +91,9 @@ File docs/languages/python.md, 41/41 test ran in <...> seconds
 File docs/languages/shell.md, 30/30 test ran in <...> seconds
 [PASS] Pass: 30 Fail: 0 Skip: 0
 ~
+File docs/geometry.md, 4/4 test ran in <...> seconds
+[PASS] Pass: 4 Fail: 0 Skip: 0
+~
 File docs/usage.md, 44/44 test ran in <...> seconds
 [PASS] Pass: 43 Fail: 0 Skip: 1
 ~
