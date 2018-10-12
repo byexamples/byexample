@@ -20,7 +20,7 @@ _cov_instance.start()
                 break
 
 
-    def finish(self, failed, user_aborted, crashed, broken):
+    def finish(self, *args):
         for runner in self.runners:
             if runner.language == 'python':
                 coverage_end_code = r'''

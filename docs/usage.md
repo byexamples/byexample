@@ -307,7 +307,7 @@ This could be because the example just ran too slow (try add more time
 with +timeout=<n>) or the example is "syntactically incorrect" and
 the interpreter hang (may be you forgot a parenthesis or something like that?).
 <...>
-[FAIL] Pass: 0 Fail: 0 Skip: 0
+[ABORT] Pass: 0 Fail: 0 Skip: 0
 ```
 
 ### More options
@@ -512,9 +512,12 @@ $ mv test/ds/renamed.sql test/ds/stock.sql      # byexample: -skip +pass
 -->
 
 > *Note:* If the example fails due a timeout or if it crashes, the execution
-> will abort immediately without executing any example even if
+> will abort immediately *without* executing any example even if
 > they have ``-skip``. This is because these kind of failures may had left the
 > interpreter in a invalid state and the execution cannot be resumed.
+>
+> The best strategy would be create a [concern module](how_to_hook_to_events_with_concerns.md)
+> and hook to the ``finish`` event and perform there all the clean up, if any.
 
 
 ## Changing the runner: Shebang

@@ -4,7 +4,7 @@ import os
 class Status:
     ok = 0
     failed = 1
-    aborted_or_crashed = 2
+    aborted = 2
     error = 3
 
 def main(args=None):
@@ -29,15 +29,15 @@ def main(args=None):
                 continue
 
             result = executor.execute(examples, filename)
-            failed, aborted_or_crashed = result
+            failed, aborted = result
 
             if failed:
                 exit_status = max(exit_status, Status.failed)
 
-            if aborted_or_crashed:
-                exit_status = max(exit_status, Status.aborted_or_crashed)
+            if aborted:
+                exit_status = max(exit_status, Status.aborted)
 
-            if (failed or aborted_or_crashed) and options['fail_fast']:
+            if (failed or aborted) and options['fail_fast']:
                 break
 
     return exit_status

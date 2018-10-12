@@ -109,13 +109,13 @@ class Concern(ExtendOptionParserMixin):
         '''
         pass
 
-    def finish(self, failed, user_aborted, crashed, broken):
+    def finish(self, failed, user_aborted, crashed, broken, timedout):
         '''
         Called at the end of the execution of the examples
         given in the start call.
 
         The parameters say if the run execution failed or not
-        and if it was aborted by the user, crashed or the build
+        and if it was aborted by the user, crashed, timedout or the build
         was broken.
 
         The runners given in start are still up and running

@@ -44,13 +44,13 @@ class FileExecutor(object):
         self.initialize_runners(runners, options)
         try:
             self.concerns.start(examples, runners, filepath)
-            failed, user_aborted, crashed, broken = self._exec(examples, filepath,
+            failed, user_aborted, crashed, broken, timedout = self._exec(examples, filepath,
                                                                options, runners)
-            self.concerns.finish(failed, user_aborted, crashed, broken)
+            self.concerns.finish(failed, user_aborted, crashed, broken, timedout)
         finally:
             self.shutdown_runners(runners)
 
-        return failed, (user_aborted or crashed or broken)
+        return failed, (user_aborted or crashed or broken or timedout)
 
     def _exec(self, examples, filepath, options, runners):
         failing_fast = False
@@ -144,7 +144,7 @@ class FileExecutor(object):
                     del example
                     options.down()
 
-        return failed, user_aborted, crashed, broken
+        return failed, user_aborted, crashed, broken, timedout
 
     def _parse(self, example, options):
         try:

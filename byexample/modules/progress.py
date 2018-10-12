@@ -61,7 +61,7 @@ class SimpleReporter(Concern):
 
         self.fail = self.good = self.skipped = 0
 
-    def finish(self, failed, user_aborted, crashed, broken):
+    def finish(self, failed, user_aborted, crashed, broken, timedout):
         if self.num_examples == 0:
             if self.verbosity >= 1:
                 self._write("File %s, no test found\n" % self.filepath)
@@ -83,7 +83,7 @@ class SimpleReporter(Concern):
 
         ran_number = self.examplenro
         tot_number = self.num_examples
-        if user_aborted or crashed or broken:
+        if user_aborted or crashed or broken or timedout:
             status_str = colored("[ABORT]", 'red', self.use_colors)
         elif failed:
             status_str = colored("[FAIL]", 'red', self.use_colors)
@@ -240,9 +240,9 @@ class ProgressBarReporter(SimpleReporter):
                              disable=None # means disable if the output is not TTY
                              )
 
-    def finish(self, failed, user_aborted, crashed, broken):
+    def finish(self, failed, user_aborted, crashed, broken, timedout):
         self.bar.close()
-        SimpleReporter.finish(self, failed, user_aborted, crashed, broken)
+        SimpleReporter.finish(self, failed, user_aborted, crashed, broken, timedout)
 
     def start_example(self, example, options):
         SimpleReporter.start_example(self, example, options)
