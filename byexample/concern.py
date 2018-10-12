@@ -27,12 +27,14 @@ class Concern(ExtendOptionParserMixin):
 
          - start_example
          - end_example
-         - finally_example
 
          - user_aborted
          - failure
          - success
          - crashed
+         - timeout
+
+         - finally_example
 
          - start_interact
          - finish_interact
@@ -190,6 +192,14 @@ class Concern(ExtendOptionParserMixin):
         '''
         Called after the interactive session. If something went wrong,
         the exception will be passed, None if everything went fine.
+        '''
+        pass    # pragma: no cover
+
+    def timedout(self, example, exception):
+        '''
+        The given example timed out: this may happen because the example
+        just ran too slow or because it was syntactically incorrect and
+        hang the interpreter.
         '''
         pass    # pragma: no cover
 

@@ -92,7 +92,7 @@ class FileExecutor(object):
                             example.got = example.runner.run(example, options)
                         self.concerns.finish_example(example, options)
                     except TimeoutException as e:  # pragma: no cover
-                        example.got = "**Execution timed out**\n" + str(e)
+                        self.concerns.timedout(example, e)
                         timedout = True
                     except KeyboardInterrupt:      # pragma: no cover
                         self.concerns.user_aborted(example)
@@ -103,9 +103,9 @@ class FileExecutor(object):
                     finally:
                         self.concerns.finally_example(example, options)
 
-                    if user_aborted or crashed:    # pragma: no cover
+                    if user_aborted or crashed or timedout:   # pragma: no cover
                         failed = True
-                        break # always fail fast hard if the user aborted or code crashed
+                        break # always fail fast hard
 
                     # cache this *after* calling finish_example/finally_example
                     # those two may modify the got
@@ -114,10 +114,9 @@ class FileExecutor(object):
                     print_execution(example, got, self.verbosity-3)
 
                     # We can pass the test regardless of the output
-                    # however, a Timeout is always a fail
                     force_pass = options['pass']
-                    if not timedout and \
-                            (force_pass or example.expected.check_got_output(example, got, options, self.verbosity)):
+                    if force_pass or \
+                            example.expected.check_got_output(example, got, options, self.verbosity):
                         self.concerns.success(example, got, self.differ)
                     else:
                         self.concerns.failure(example, got, self.differ)
@@ -125,7 +124,7 @@ class FileExecutor(object):
 
                         # start an interactive session if the example fails
                         # and the user wanted this
-                        if options['interact'] and not timedout:
+                        if options['interact']:
                             self.concerns.start_interact(example, options)
                             ex = None
                             try:
@@ -134,10 +133,6 @@ class FileExecutor(object):
                                 ex = e
 
                             self.concerns.finish_interact(ex)
-
-                        # fail fast hard if we got a Timeout
-                        if timedout:
-                            break
 
                         # enter in failing fast mode if the user wants and the
                         # example failed

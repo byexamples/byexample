@@ -109,6 +109,20 @@ class SimpleReporter(Concern):
         self._write("Starting interactive session.\n")
         self._write("Escape character is '^]'.\n")
 
+    def timedout(self, example, exception):
+        self._write('\n')
+
+        msg = 'Execution timedout at example %i of %i.\n' % (
+                                    self.examplenro, self.num_examples)
+        msg += 'This could be because the example just ran too slow (try add more time\n' + \
+               'with +timeout=<n>) or the example is "syntactically incorrect" and\n' + \
+               'the interpreter hang (may be you forgot a parenthesis or something like that?).\n'
+
+        if exception.output:
+            msg += 'This is the last output obtained:\n%s\n' % str(exception.output)
+
+        self._print_error_header(example)
+        self._write(msg)
 
     def user_aborted(self, example):
         self._write('\n')
