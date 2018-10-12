@@ -174,7 +174,7 @@ Current version:
 
 ```shell
 $ byexample -V
-byexample 7.2.3 - GNU GPLv3
+byexample 7.3.0 - GNU GPLv3
 <...>
 Copyright (C) Di Paola Martin - https://github.com/byexamples/byexample
 <...>
