@@ -199,7 +199,8 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
         # run!
-        self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'])
+        self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'],
+                                     geometry=options['geometry'])
 
         # set the pretty print inspector
         if ruby_pretty_print:

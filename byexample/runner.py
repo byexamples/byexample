@@ -1,4 +1,4 @@
-import re, pexpect, sys, time, termios, operator, string, shlex
+import re, pexpect, sys, time, termios, operator, string, shlex, os
 from functools import reduce
 from .executor import TimeoutException
 from .common import tohuman
@@ -139,10 +139,16 @@ class PexepctMixin(object):
 
     def _spawn_interpreter(self, cmd, delaybeforesend=None,
                                         wait_first_prompt=True,
-                                        first_prompt_timeout=10):
+                                        first_prompt_timeout=10,
+                                        geometry=(24, 80)):
+        env = os.environ.copy()
+        env.update({'LINES': str(geometry[0]), 'COLUMNS': str(geometry[1])})
+
         self._drop_output() # there shouldn't be any output yet but...
         self.interpreter = pexpect.spawn(cmd, echo=False,
-                                                encoding=self.encoding)
+                                                encoding=self.encoding,
+                                                dimensions=geometry,
+                                                env=env)
         self.interpreter.delaybeforesend = delaybeforesend
         self.interpreter.delayafterread = None
 

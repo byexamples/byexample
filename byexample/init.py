@@ -134,6 +134,13 @@ def _float_zero_to_none(x):
 
     return float(x)
 
+def geometry(x):
+    lines, columns = [int(v.strip()) for v in str(x).split('x')]
+    if lines < 0 or columns < 0:
+        raise ValueError("Invalid geometry %s" % x)
+
+    return (lines, columns)
+
 def get_default_options_parser(cmdline_args):
     options_parser = OptionParser()
     options_parser.add_flag("fail-fast", help="if an example fails, fail and stop all the execution.")
@@ -149,6 +156,8 @@ def get_default_options_parser(cmdline_args):
                                         help="select diff algorithm.")
     options_parser.add_argument("+delaybeforesend", type=_float_zero_to_none,
                                     help="delay in seconds before sending a line to an runner/interpreter; 0 disable this (default).")
+    options_parser.add_argument("+geometry", type=geometry,
+                                    help="number of lines and columns of the terminal of the form LxC (default to 24x80).")
 
     return options_parser
 
@@ -167,7 +176,8 @@ def get_options(args, cfg):
                         'timeout': args.timeout,
                         'diff': args.diff,
                         'delaybeforesend': None,
-                        'shebangs': args.shebangs
+                        'shebangs': args.shebangs,
+                        'geometry': (24, 80)
                         })
     log("Options (cmdline): %s" % options, cfg['verbosity']-2)
 
