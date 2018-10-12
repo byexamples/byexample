@@ -278,7 +278,7 @@ def init(args):
     allowed_languages = get_allowed_languages(registry, args.languages)
 
     allowed_files = set(args.files) - set(args.skip)
-    testfiles = [f for f in args.files if f in allowed_files]
+    testfiles = list(sorted(f for f in args.files if f in allowed_files))
 
     if args.show_options:
         show_options(cfg, registry, allowed_languages)

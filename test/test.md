@@ -67,14 +67,20 @@ File CONTRIBUTING.md, 5/5 test ran in <...> seconds
 File README.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 2
 ~
+File docs/differences.md, 12/12 test ran in <...> seconds
+[PASS] Pass: 12 Fail: 0 Skip: 0
+~
+File docs/geometry.md, 4/4 test ran in <...> seconds
+[PASS] Pass: 4 Fail: 0 Skip: 0
+~
+File docs/how_to_hook_to_events_with_concerns.md, 2/2 test ran in <...> seconds
+[PASS] Pass: 2 Fail: 0 Skip: 0
+~
 File docs/how_to_support_new_finders_and_languages.md, 41/41 test ran in <...> seconds
 [PASS] Pass: 41 Fail: 0 Skip: 0
 ~
 File docs/index.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 2
-~
-File docs/where_should_I_write_the_examples.md, 9/9 test ran in <...> seconds
-[PASS] Pass: 9 Fail: 0 Skip: 0
 ~
 File docs/languages/cpp.md, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0
@@ -82,26 +88,20 @@ File docs/languages/cpp.md, 3/3 test ran in <...> seconds
 File docs/languages/gdb.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 9 Fail: 0 Skip: 0
 ~
-File docs/languages/ruby.md, 17/17 test ran in <...> seconds
-[PASS] Pass: 17 Fail: 0 Skip: 0
-~
 File docs/languages/python.md, 41/41 test ran in <...> seconds
 [PASS] Pass: 40 Fail: 0 Skip: 1
+~
+File docs/languages/ruby.md, 17/17 test ran in <...> seconds
+[PASS] Pass: 17 Fail: 0 Skip: 0
 ~
 File docs/languages/shell.md, 30/30 test ran in <...> seconds
 [PASS] Pass: 30 Fail: 0 Skip: 0
 ~
-File docs/geometry.md, 4/4 test ran in <...> seconds
-[PASS] Pass: 4 Fail: 0 Skip: 0
-~
 File docs/usage.md, 44/44 test ran in <...> seconds
 [PASS] Pass: 43 Fail: 0 Skip: 1
 ~
-File docs/differences.md, 12/12 test ran in <...> seconds
-[PASS] Pass: 12 Fail: 0 Skip: 0
-~
-File docs/how_to_hook_to_events_with_concerns.md, 2/2 test ran in <...> seconds
-[PASS] Pass: 2 Fail: 0 Skip: 0
+File docs/where_should_I_write_the_examples.md, 9/9 test ran in <...> seconds
+[PASS] Pass: 9 Fail: 0 Skip: 0
 <...>
 
 
