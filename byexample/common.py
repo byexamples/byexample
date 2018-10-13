@@ -163,7 +163,7 @@ def human_exceptions(where_default, verbosity, quiet, exitcode):
         To enhance the print, print the 'where' attribute of the
         exception (if it has one) or the 'where_default'.
 
-        Finally, exit the process with exitcode.
+        Finally, exit the process with exitcode unless it is None.
     '''
     try:
         yield
@@ -180,7 +180,9 @@ def human_exceptions(where_default, verbosity, quiet, exitcode):
 
             cls = str(e.__class__.__name__)
             print("{where}\n{cls}: {msg}".format(where=where, msg=msg, cls=cls))
-        sys.exit(exitcode)
+
+        if exitcode != None:
+            sys.exit(exitcode)
 
 @contextlib.contextmanager
 def enhance_exceptions(where, owner, use_colors=False):
