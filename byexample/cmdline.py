@@ -1,4 +1,4 @@
-import sys, argparse, os
+import sys, argparse, os, multiprocessing
 from . import __version__, __doc__, _author, _license, _url, _license_disclaimer
 
 class _CSV(argparse.Action):
@@ -33,6 +33,29 @@ def _key_val_type(item):
                 "Neither the key nor the value can be empty in '%s'." % item)
 
     return (key, val)
+
+def _jobs_type(item):
+    jobs_str = item.strip()
+    ncpus = 1
+    if jobs_str.startswith("cpu"):
+        try:
+            ncpus = multiprocessing.cpu_count()
+        except:
+            ncpus = 1
+
+        if jobs_str == "cpu":
+            jobs_str = "1"
+        else:
+            jobs_str = jobs_str[3:]
+
+    try:
+        jobs_num = int(jobs_str)
+        assert jobs_num > 0
+    except:
+        raise argparse.ArgumentTypeError(
+                "Invalid jobs specification '%s'. Use 'cpu', 'cpu<n>' or <n> (a positive number)." % item)
+
+    return jobs_num * ncpus
 
 def parse_args(args=None):
     '''Parse the arguments args and return the them.
@@ -111,6 +134,10 @@ def parse_args(args=None):
                              'the default values for environment, program name, ' + \
                              'and arguments (however no all ' + \
                              'the runners will honor this and some may break).')
+    parser.add_argument("-j", "--jobs",
+                        default=1,
+                        type=_jobs_type,
+                        help='run <jobs> in parallel (1 default); "cpu" means use all the cpus available; "cpu<n>" multiply it by <n> the cpus available')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", action='count', dest='verbosity', default=0,

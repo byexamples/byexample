@@ -266,6 +266,7 @@ def init(args):
             'output':     sys.stdout,
             'interact':   args.interact,
             'opts_from_cmdline': args.options_str,
+            'jobs':       args.jobs,
             }
 
     options = get_options(args, cfg)
