@@ -274,7 +274,7 @@ class ProgressBarReporter(SimpleReporter):
         else:
             # use multiprocessing.Process' id (number) as the position
             # of its bar
-            position = multiprocessing.current_process()._identity[0]
+            position = int(multiprocessing.current_process().name) + 1
 
         SimpleReporter.start(self, examples, runners, filepath)
 
