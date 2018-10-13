@@ -1,4 +1,4 @@
-import traceback, time, os, sys
+import traceback, time, os, sys, multiprocessing
 from byexample.common import colored, highlight_syntax
 from byexample.concern import Concern
 from doctest import _indent
@@ -33,10 +33,23 @@ except ImportError:
             # do not close the output file
             self.file.flush()
 
+
+class _DummyLock(object):
+    def __enter__(self):
+        return
+    def __exit__(self, *args):
+        pass
+
+    def acquire(self, *args, **kargs):
+        pass
+
+    def release(self, *args, **kargs):
+        pass
+
 class SimpleReporter(Concern):
     target = None # progress
 
-    def __init__(self, verbosity, encoding, **unused):
+    def __init__(self, verbosity, encoding, jobs, **unused):
         if 'use_progress_bar' in unused and unused['use_progress_bar']:
             self.target = None # disable ourselves
         else:
@@ -46,10 +59,17 @@ class SimpleReporter(Concern):
         self.use_colors = unused['use_colors']
         self.verbosity = verbosity
 
+        self.jobs = jobs
+        if self.jobs != 1:
+            self.write_lock = multiprocessing.RLock()
+        else:
+            self.write_lock = _DummyLock()
+
     def _write(self, msg):
         ''' Call me once and just once per concern's method '''
-        self.output.write(msg)
-        self.output.flush()
+        with self.write_lock:
+            self.output.write(msg)
+            self.output.flush()
 
     def _update(self, x):
         pass
@@ -218,33 +238,58 @@ class SimpleReporter(Concern):
 class ProgressBarReporter(SimpleReporter):
     target = None # progress
 
-    def __init__(self, verbosity, encoding, **unused):
-        SimpleReporter.__init__(self, verbosity, encoding, **unused)
+    def __init__(self, verbosity, encoding, jobs, **unused):
+        SimpleReporter.__init__(self, verbosity, encoding, jobs, **unused)
         if 'use_progress_bar' in unused and not unused['use_progress_bar']:
             self.target = None # disable ourselves
         else:
             self.target = 'progress'
 
+    def _clear_all_bars(self):
+        ''' Based on tqdm.clear method '''
+        # Notes:
+        #  moveto(x)  moves x lines down (insert x new lines \n)
+        #  moveto(-x) moves x lines up (insert x special char to go up)
+        #       all moveto are relative to the current position
+        #  ncols is the columns that the terminal has (assume that all the
+        #       bars have the same size)
+        for pos in range(1, self.jobs+1):
+            self.bar.moveto(pos)
+            self.bar.fp.write('\r' + (' ' * self.bar.ncols)) # clear printing spaces
+            self.bar.fp.write('\r')  # place cursor back at the beginning of line
+            self.bar.moveto(-pos)
+
     def _write(self, msg):
-        self.bar.write(msg, file=self.output, end="")
-        self.output.flush()
+        with self.write_lock:
+            self._clear_all_bars()
+            self.bar.write(msg, file=self.output, end="")
+            self.output.flush()
 
     def _update(self, x):
         self.bar.update(x)
 
     def start(self, examples, runners, filepath):
+        if self.jobs == 1:
+            position = None
+        else:
+            # use multiprocessing.Process' id (number) as the position
+            # of its bar
+            position = multiprocessing.current_process()._identity[0]
+
         SimpleReporter.start(self, examples, runners, filepath)
 
         bar_format = '{desc} |{bar}| [{n_fmt}/{total_fmt}{postfix}]'
         self.bar = tqdm(total=len(examples), file=self.output,
                              desc=filepath, leave=False,
                              bar_format=bar_format,
+                             position=position,
                              disable=None # means disable if the output is not TTY
                              )
+        self.bar.set_lock(self.write_lock)
 
     def finish(self, failed, user_aborted, crashed, broken, timedout):
-        self.bar.close()
         SimpleReporter.finish(self, failed, user_aborted, crashed, broken, timedout)
+        self.bar.close()
 
     def start_example(self, example, options):
         SimpleReporter.start_example(self, example, options)
