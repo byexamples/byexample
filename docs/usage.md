@@ -639,7 +639,7 @@ usage: <byexample> [-h] [-V] [--ff] [--dry] [--skip file [file ...]] [-m dir]
             [-d {none,unified,ndiff,context}] [--no-enhance-diff] -l language
             [--timeout TIMEOUT] [-o OPTIONS_STR] [--show-options]
             [--encoding ENCODING] [--pretty {none,all}] [--interact]
-            [--shebang runner:shebang] [-v | -q]
+            [--shebang runner:shebang] [-j JOBS] [-v | -q]
             [file [file ...]]
 positional arguments:
   file                  file that have the examples to run.
@@ -680,6 +680,9 @@ optional arguments:
                         default values for environment, program name, and
                         arguments (however no all the runners will honor this
                         and some may break).
+  -j JOBS, --jobs JOBS  run <jobs> in parallel (1 default); "cpu" means use
+                        all the cpus available; "cpu<...>" multiply it by <n>
+                        the cpus available.
   -v                    verbosity level, add more flags to increase the level.
   -q, --quiet           quiet mode, do not print anything even if an example
                         fails; supress the progress output.

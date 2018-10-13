@@ -137,7 +137,9 @@ def parse_args(args=None):
     parser.add_argument("-j", "--jobs",
                         default=1,
                         type=_jobs_type,
-                        help='run <jobs> in parallel (1 default); "cpu" means use all the cpus available; "cpu<n>" multiply it by <n> the cpus available')
+                        help='run <jobs> in parallel (1 default); ' +\
+                             '"cpu" means use all the cpus available; ' +\
+                             '"cpu<n>" multiply it by <n> the cpus available.')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", action='count', dest='verbosity', default=0,
