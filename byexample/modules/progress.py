@@ -47,6 +47,7 @@ class SimpleReporter(Concern):
         self.verbosity = verbosity
 
     def _write(self, msg):
+        ''' Call me once and just once per concern's method '''
         self.output.write(msg)
         self.output.flush()
 
@@ -67,7 +68,7 @@ class SimpleReporter(Concern):
                 self._write("File %s, no test found\n" % self.filepath)
             return
 
-        self._write('\n')
+        msg = '\n'
 
         elapsed   = max(time.time() - self.begin, 0)
         if elapsed < 300:
@@ -90,7 +91,7 @@ class SimpleReporter(Concern):
         else:
             status_str = colored("[PASS]", 'green', self.use_colors)
 
-        msg = "File %s, %i/%i test ran in %s\n%s Pass: %i Fail: %i Skip: %i\n" % (
+        msg += "File %s, %i/%i test ran in %s\n%s Pass: %i Fail: %i Skip: %i\n" % (
                     self.filepath,
                     ran_number, tot_number,
                     elapsed_str,
@@ -105,14 +106,15 @@ class SimpleReporter(Concern):
         self.current_merged_flags = options
 
     def start_interact(self, example, options):
-        self._write('\n')
-        self._write("Starting interactive session.\n")
-        self._write("Escape character is '^]'.\n")
+        msg = '\n'
+        msg += "Starting interactive session.\n"
+        msg += "Escape character is '^]'.\n"
+        self._write(msg)
 
     def timedout(self, example, exception):
-        self._write('\n')
+        msg = '\n'
 
-        msg = 'Execution timedout at example %i of %i.\n' % (
+        msg += 'Execution timedout at example %i of %i.\n' % (
                                     self.examplenro, self.num_examples)
         msg += 'This could be because the example just ran too slow (try add more time\n' + \
                'with +timeout=<n>) or the example is "syntactically incorrect" and\n' + \
@@ -121,26 +123,26 @@ class SimpleReporter(Concern):
         if exception.output:
             msg += 'This is the last output obtained:\n%s\n' % str(exception.output)
 
-        self._print_error_header(example)
+        msg += self._error_header(example)
         self._write(msg)
 
     def user_aborted(self, example):
-        self._write('\n')
+        msg = '\n'
 
-        msg = 'Execution aborted by the user at example %i of %i.\n' % (
+        msg += 'Execution aborted by the user at example %i of %i.\n' % (
                                     self.examplenro, self.num_examples)
-        self._print_error_header(example)
+        msg += self._error_header(example)
         self._write(msg)
 
     def crashed(self, example, exception):
-        self._write('\n')
+        msg = '\n'
 
         tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
         ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
-        msg = 'Execution of example %i of %i crashed.\n%s\n%s\n' % (
+        msg += 'Execution of example %i of %i crashed.\n%s\n%s\n' % (
                                     self.examplenro, self.num_examples,
                                     tb, ex)
-        self._print_error_header(example)
+        msg += self._error_header(example)
         self._write(msg)
 
     def start_parse(self, example, options):
@@ -152,31 +154,31 @@ class SimpleReporter(Concern):
         if exception == None:
             return
 
-        self._write('\n')
+        msg = '\n'
 
         ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
         if self.verbosity >= 1:
             tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
             ex = '\n'.join([tb, ex])
 
-        msg = 'Parse of example %i of %i failed.\n%s\n' % (
+        msg += 'Parse of example %i of %i failed.\n%s\n' % (
                                     self.examplenro, self.num_examples,
                                     ex)
-        self._print_error_header(self.current_parsing_example)
+        msg += self._error_header(self.current_parsing_example)
         self._write(msg)
 
     def finish_interact(self, exception):
         if exception == None:
             return
 
-        self._write('\n')
+        msg = '\n'
 
         ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
         if self.verbosity >= 1:
             tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
             ex = '\n'.join([tb, ex])
 
-        msg = 'Interactive session failed.\n%s\n' % (ex)
+        msg += 'Interactive session failed.\n%s\n' % (ex)
         self._write(msg)
 
     def success(self, example, got, differ):
@@ -185,27 +187,27 @@ class SimpleReporter(Concern):
 
     def failure(self, example, got, differ):
         self._update(1)
-        self._write("\n")
+        msg = "\n"
 
-        self._print_error_header(example)
-        diff = differ.output_difference(example, got, self.current_merged_flags,
+        msg += self._error_header(example)
+        msg += differ.output_difference(example, got, self.current_merged_flags,
                                          self.use_colors)
-        self._write(diff)
-        self._write('\n')
+        msg += '\n'
+        self._write(msg)
 
         self.fail += 1
 
-    def _print_error_header(self, example):
+    def _error_header(self, example):
         filepath = example.filepath
         lineno = example.start_lineno
 
-        self._write("*" * 70)
+        msg = "*" * 70
 
-        msg = '\nFile "%s", line %i\n' % (filepath, lineno)
-        self._write(msg)
+        msg += '\nFile "%s", line %i\n' % (filepath, lineno)
+        msg += "Failed example:\n"
+        msg += _indent(highlight_syntax(example, self.use_colors))
 
-        self._write("Failed example:\n")
-        self._write(_indent(highlight_syntax(example, self.use_colors)))
+        return msg
 
     def _get_traceback(self, exception):
         if hasattr(exception, '__traceback__'):
