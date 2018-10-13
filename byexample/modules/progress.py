@@ -3,36 +3,13 @@ from byexample.common import colored, highlight_syntax
 from byexample.concern import Concern
 from doctest import _indent
 
-stability = 'unstable'
-
 try:
     from tqdm import tqdm
-    if os.environ.get('BYEXAMPLE_PROGRESS_ASCII'):
-        raise ImportError() # fake error
-
+    progress_bar_available = True
 except ImportError:
-    class tqdm(object):
-        def __init__(self, file, *args, **kargs):
-            self.file = file
+    progress_bar_available = False
 
-        def write(self, msg, file, end):
-            file.write(msg)
-            if end:
-                file.write(end)
-
-            file.flush()
-
-        def set_postfix_str(self, msg):
-            pass
-
-        def update(self, n):
-            self.file.write('.' * n)
-            self.file.flush()
-
-        def close(self):
-            # do not close the output file
-            self.file.flush()
-
+stability = 'unstable'
 
 class _DummyLock(object):
     def __enter__(self):
@@ -50,7 +27,8 @@ class SimpleReporter(Concern):
     target = None # progress
 
     def __init__(self, verbosity, encoding, jobs, **unused):
-        if 'use_progress_bar' in unused and unused['use_progress_bar']:
+        if 'use_progress_bar' in unused and unused['use_progress_bar'] \
+                and progress_bar_available:
             self.target = None # disable ourselves
         else:
             self.target = 'progress'
@@ -240,7 +218,8 @@ class ProgressBarReporter(SimpleReporter):
 
     def __init__(self, verbosity, encoding, jobs, **unused):
         SimpleReporter.__init__(self, verbosity, encoding, jobs, **unused)
-        if 'use_progress_bar' in unused and not unused['use_progress_bar']:
+        if ('use_progress_bar' in unused and not unused['use_progress_bar']) \
+                or not progress_bar_available:
             self.target = None # disable ourselves
         else:
             self.target = 'progress'

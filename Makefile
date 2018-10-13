@@ -60,7 +60,7 @@ coverage: clean_test
 	@echo
 	@echo "Run again, but with different flags to force the"
 	@echo "execution of different parts of byexample"
-	@BYEXAMPLE_COVERAGE_TEST=1 BYEXAMPLE_PROGRESS_ASCII=1 $(python_bin) r.py -vvvvvvvvvvvv --ff --no-enhance-diff -l python,shell README.md > /dev/null
+	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -vvvvvvvvvvvv --ff --no-enhance-diff -l python,shell README.md > /dev/null
 	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py --pretty none -vvvvvvvvvvvv --ff -l python,shell README.md > /dev/null
 	@echo
 	@echo "Results:"
