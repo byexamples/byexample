@@ -133,6 +133,7 @@ class SimpleReporter(Concern):
 
     def timedout(self, example, exception):
         msg = '\n'
+        msg += self._error_header(example)
 
         msg += 'Execution timedout at example %i of %i.\n' % (
                                     self.examplenro, self.num_examples)
@@ -143,26 +144,25 @@ class SimpleReporter(Concern):
         if exception.output:
             msg += 'This is the last output obtained:\n%s\n' % str(exception.output)
 
-        msg += self._error_header(example)
         self._write(msg)
 
     def user_aborted(self, example):
         msg = '\n'
+        msg += self._error_header(example)
 
         msg += 'Execution aborted by the user at example %i of %i.\n' % (
                                     self.examplenro, self.num_examples)
-        msg += self._error_header(example)
         self._write(msg)
 
     def crashed(self, example, exception):
         msg = '\n'
+        msg += self._error_header(example)
 
         tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
         ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
         msg += 'Execution of example %i of %i crashed.\n%s\n%s\n' % (
                                     self.examplenro, self.num_examples,
                                     tb, ex)
-        msg += self._error_header(example)
         self._write(msg)
 
     def start_parse(self, example, options):
@@ -175,6 +175,7 @@ class SimpleReporter(Concern):
             return
 
         msg = '\n'
+        msg += self._error_header(self.current_parsing_example)
 
         ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
         if self.verbosity >= 1:
@@ -184,7 +185,6 @@ class SimpleReporter(Concern):
         msg += 'Parse of example %i of %i failed.\n%s\n' % (
                                     self.examplenro, self.num_examples,
                                     ex)
-        msg += self._error_header(self.current_parsing_example)
         self._write(msg)
 
     def finish_interact(self, exception):
