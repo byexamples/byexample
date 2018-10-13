@@ -37,6 +37,8 @@ class FileExecutor(object):
                 # build but ignore any output; even do not use the concerns
                 example.parse_yourself(concerns=None)
 
+        return False, False
+
     def execute(self, examples, filepath):
         options = self.options
         runners = list(set(e.runner for e in examples))
