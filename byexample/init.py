@@ -266,8 +266,13 @@ def init(args):
             'output':     sys.stdout,
             'interact':   args.interact,
             'opts_from_cmdline': args.options_str,
-            'jobs':       args.jobs,
             }
+
+    allowed_files = set(args.files) - set(args.skip)
+    testfiles = list(sorted(f for f in args.files if f in allowed_files))
+
+    # Do not spawn more jobs than testfiles
+    args.jobs = cfg['jobs'] = min(args.jobs, len(testfiles))
 
     options = get_options(args, cfg)
 
@@ -277,9 +282,6 @@ def init(args):
     registry = load_modules(args.modules_dirs, cfg)
 
     allowed_languages = get_allowed_languages(registry, args.languages)
-
-    allowed_files = set(args.files) - set(args.skip)
-    testfiles = list(sorted(f for f in args.files if f in allowed_files))
 
     if args.show_options:
         show_options(cfg, registry, allowed_languages)
