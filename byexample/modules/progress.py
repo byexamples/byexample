@@ -232,6 +232,9 @@ class ProgressBarReporter(SimpleReporter):
         #       all moveto are relative to the current position
         #  ncols is the columns that the terminal has (assume that all the
         #       bars have the same size)
+        if not hasattr(self.bar, 'fp'):
+            return
+
         for pos in range(1, self.jobs+1):
             self.bar.moveto(pos)
             self.bar.fp.write('\r' + (' ' * self.bar.ncols)) # clear printing spaces
