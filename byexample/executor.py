@@ -140,7 +140,11 @@ class FileExecutor(object):
                         # example failed
                         if fail_fast:
                             failing_fast = True
+                            options.up({'skip': True}) # dummy, but it allows a symmetric relationship between failing_fast and an extra up
                 finally:
+                    if failing_fast:
+                        options.down()
+
                     # allow the garbage collector to collect the example,
                     # do not keep it in memory
                     del example
