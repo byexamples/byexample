@@ -19,6 +19,7 @@ Currently ``byexample`` supports:
 
  - [Python](https://byexamples.github.io/byexample/languages/python) (compatible with ``doctest``)
  - [Ruby](https://byexamples.github.io/byexample/languages/ruby)
+ - [Javascript](https://byexamples.github.io/byexample/languages/javascript)
  - [Shell](https://byexamples.github.io/byexample/languages/shell) (``sh`` and ``bash``)
  - [GDB](https://byexamples.github.io/byexample/languages/gdb)
  - [C/C++](https://byexamples.github.io/byexample/languages/cpp) (using [cling](https://github.com/root-project/cling))
@@ -115,6 +116,7 @@ Currently we support:
 
  - [Python](https://byexamples.github.io/byexample/languages/python) (compatible with ``doctest``) -> *stable*
  - [Ruby](https://byexamples.github.io/byexample/languages/ruby) -> *experimental*
+ - [Javascript](https://byexamples.github.io/byexample/languages/javascript) -> *experimental*
  - [Shell](https://byexamples.github.io/byexample/languages/shell) (``sh`` and ``bash``) -> *stable*
  - [GDB](https://byexamples.github.io/byexample/languages/gdb) -> *experimental*
  - [C/C++](https://byexamples.github.io/byexample/languages/cpp) (using ``cling``) -> *experimental*
