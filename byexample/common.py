@@ -1,4 +1,4 @@
-import pprint, traceback, contextlib, sys
+import pprint, traceback, contextlib, sys, os
 
 def build_where_msg(where, owner, msg=None, use_colors=False):
     from doctest import _indent
@@ -193,5 +193,12 @@ def enhance_exceptions(where, owner, use_colors=False):
             e.where = build_where_msg(where, owner, use_colors=use_colors)
         raise e
 
-
+def abspath(*args):
+    ''' Return the absolute ṕath from the join of <args>.
+        The first item of <args> can be a filename which it will
+        be stripped off to keep just its dirname.
+        '''
+    base = os.path.dirname(args[0])
+    path = os.path.join(base, *args[1:])
+    return os.path.abspath(path)
 
