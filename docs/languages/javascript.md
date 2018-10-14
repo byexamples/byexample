@@ -18,10 +18,10 @@ and ``.`` as the secondary prompt.
 8
 ```
 
-The snippets can be inside of a ``Javascript`` comment.
+The snippets can be inside of a ``Javascript`` comment as well.
 
 The examples are detected as long as they
-begin with the correct prompts and they are separated by a new line
+begin with the correct prompts and they are separated by a blank line
 or has a lower indentation level:
 
 ```javascript
@@ -41,7 +41,7 @@ or has a lower indentation level:
 */
 ```
 
-## Undefinied is not printed
+## Undefined is not printed
 
 Functions definitions and other expression returns ``undefined``
 which can be annoying to keep checking for it each time.
@@ -80,10 +80,29 @@ An object definition without var will print itself:
 2
 ```
 
+### Comments may affect the output
+
+This may sound crazy but I found that if you add a ``// comment``
+or a ``/* comment */`` at the end of an example of a literal object
+(like a nested object), the output may not be the full object.
+
+This is important because ``byexample`` uses the ``// comment`` as a
+way to pass options and flags to the example.
+
+The best solution seems to use a temporal variable:
+
+```javascript
+> var tmp = [1, 2, 3];
+> tmp   // some comment
+[ 1, 2, 3 ]
+```
+
 ### Anonymous functions
 
-Functions can be created but the cannot be annonimous, this is
+Functions can be created but the cannot be anonymous, this is
 a ``nodejs`` limitation.
+
+This would fail:
 
 ```
 function () {
@@ -91,7 +110,7 @@ function () {
 }
 ```
 
-Anonymous function can be created as part of an larger example.
+Anonymous functions can be *created as part of* a larger example.
 
 ```javascript
 > var a = [1, 2, 3]
@@ -101,13 +120,31 @@ Anonymous function can be created as part of an larger example.
 
 ### Trailing whitespace
 
-Some objects are printed with a trailing whitespace. If you don't want to
-check them, use ``+rtrim``:
+Some objects are printed with a trailing whitespace: don't be scared if
+your example fails.
 
+``byexample`` will print a special marker ``$`` representing
+whitespace at the end of the text. You just need to add it to your example
+or use ``+norm-ws``.
+
+Here is an example with explicit trailing whitespaces (you may no notice them):
+ 
 ```javascript
-> {a: {b: {c: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', d: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}}}
+> var obj = {a: {b: {c: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', d: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}}}
+> obj
 { a: 
    { b: 
+      { c: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        d: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' } } }
+```
+
+An here is the same example without the trailing whitespaces but with
+the normalize whitespace option ``+norm-ws`` enabled:
+
+```javascript
+> obj  // byexample: +norm-ws
+{ a:
+   { b:
       { c: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         d: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' } } }
 ```
