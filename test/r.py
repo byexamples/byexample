@@ -4,7 +4,7 @@ try:
 
     @contextlib.contextmanager
     def coverage_measure():
-        cov = coverage.Coverage(source=['byexample'], auto_data=True)
+        cov = coverage.Coverage(source=['byexample'], auto_data=True, concurrency='multiprocessing')
         cov.start()
         try:
             yield

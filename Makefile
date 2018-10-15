@@ -46,7 +46,7 @@ travis-test: clean_test lib-test modules-test docs-test
 	@make -s clean_test
 
 coverage: clean_test
-	@rm -f .coverage
+	@rm -f .coverage .coverage.work.*
 	@cp test/r.py .
 	@echo "Run the byexample's tests with the Python interpreter."
 	@echo "to start the coverage, use a hook in test/ to initialize the coverage"
@@ -64,6 +64,7 @@ coverage: clean_test
 	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py --pretty none -vvvvvvvvvvvv --ff -l python,shell README.md > /dev/null
 	@echo
 	@echo "Results:"
+	@coverage combine
 	@coverage report --include="byexample/*"
 	@make -s clean_test
 
