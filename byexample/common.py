@@ -194,7 +194,7 @@ def enhance_exceptions(where, owner, use_colors=False):
         raise e
 
 def abspath(*args):
-    ''' Return the absolute ṕath from the join of <args>.
+    ''' Return the absolute path from the join of <args>.
         The first item of <args> can be a filename which it will
         be stripped off to keep just its dirname.
         '''
