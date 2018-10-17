@@ -35,5 +35,5 @@ def main(args=None):
         with human_exceptions('During the initialization phase:', *human_args):
             testfiles, harvester, executor, options = init(args)
 
-    jobs = Jobs(args.jobs)
+    jobs = Jobs(args.jobs, args.verbosity)
     return jobs.run(execute_examples, testfiles, options['fail_fast'])

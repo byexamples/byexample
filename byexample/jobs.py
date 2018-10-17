@@ -22,8 +22,9 @@ def worker(func, sigint_handler, input, output):
     output.join_thread()
 
 class Jobs(object):
-    def __init__(self, njobs):
+    def __init__(self, njobs, verbosity):
         self.njobs = njobs
+        self.verbosity = verbosity
 
     def spawn_jobs(self, func, items):
         ''' Spawn <njobs> jobs to process <items> in parallel/concurrently.
@@ -53,6 +54,10 @@ class Jobs(object):
         # feed the workers with enough data so all of them can start to work
         for item in items[:njobs]:
             self.input.put(item)
+
+        if self.verbosity >= 1:
+            for p in self.processes:
+                print("Worker %s (PID %i)." % (p.name, p.pid))
 
         return items[njobs:]
 
