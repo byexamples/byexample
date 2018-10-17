@@ -1,21 +1,24 @@
 from .cache import RegexCache, cache_filepath
-from .jobs import Jobs, Status
+from .jobs import Jobs, Status, allow_sigint
 import os
 
-def execute_examples(filename):
+def execute_examples(filename, sigint_handler):
     global cache_disabled, harvester, executor, options, human_args, dry
     from .common import human_exceptions
 
     human_args[-1] = None # exitcode == None
     with RegexCache(cache_filepath(filename, 're'), cache_disabled), \
-            human_exceptions("File '%s':" % filename, *human_args):
+            human_exceptions("File '%s':" % filename, *human_args), \
+            allow_sigint(sigint_handler):
         examples = harvester.get_examples_from_file(filename)
         if dry:
             return executor.dry_execute(examples, filename)
         else:
             return executor.execute(examples, filename)
 
-    return True, True
+    # user aborted with a KeyboardInterrupt or something else did puff
+    # (and error/exception ocurred)
+    return True, True, True
 
 def main(args=None):
     global cache_disabled, harvester, executor, options, human_args, dry

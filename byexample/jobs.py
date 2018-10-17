@@ -1,4 +1,5 @@
 from multiprocessing import Queue, Process
+import signal, contextlib
 
 class Status:
     ok = 0
@@ -6,7 +7,7 @@ class Status:
     aborted = 2
     error = 3
 
-def worker(func, input, output):
+def worker(func, sigint_handler, input, output):
     ''' Generic worker: call <func> for each item pulled from
         the <input> queue until a None gets pulled.
 
@@ -16,7 +17,7 @@ def worker(func, input, output):
         After receiving a None, close the <output> queue.
         '''
     for item in iter(input.get, None):
-        output.put(func(item))
+        output.put(func(item, sigint_handler))
     output.close()
     output.join_thread()
 
@@ -27,7 +28,7 @@ class Jobs(object):
     def spawn_jobs(self, func, items):
         ''' Spawn <njobs> jobs to process <items> in parallel/concurrently.
 
-            The processes are started and feeded with the first <njobs> items 
+            The processes are started and feeded with the first <njobs> items
             in <items>, the rest of them need to be pushed manually
             calling send_next_item_from; the result of each file processed can
             be fetched from the <output>.
@@ -38,11 +39,13 @@ class Jobs(object):
         njobs = self.njobs
         assert njobs <= len(items)
 
+        self.sigint_handler = self.ignore_sigint()
+
         self.input = Queue()
         self.output = Queue()
 
         self.processes = [Process(target=worker, name=str(n),
-                                             args=(func, self.input, self.output))
+                                             args=(func, self.sigint_handler, self.input, self.output))
                                              for n in range(njobs)]
         for p in self.processes:
             p.start()
@@ -52,6 +55,9 @@ class Jobs(object):
             self.input.put(item)
 
         return items[njobs:]
+
+    def ignore_sigint(self):
+        return signal.signal(signal.SIGINT, signal.SIG_IGN)
 
     def send_next_item_from(self, rest):
         self.input.put(rest[0])
@@ -117,3 +123,10 @@ class Jobs(object):
         rest = self.spawn_jobs(func, items)
         return self.loop(len(items), rest, fail_fast)
 
+@contextlib.contextmanager
+def allow_sigint(handler):
+    try:
+        signal.signal(signal.SIGINT, handler)
+        yield
+    finally:
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
