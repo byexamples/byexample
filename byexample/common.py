@@ -1,4 +1,4 @@
-import pprint, traceback, contextlib, sys, os
+import pprint, traceback, contextlib, os
 
 def build_where_msg(where, owner, msg=None, use_colors=False):
     from doctest import _indent
@@ -154,7 +154,7 @@ def constant(argumentless_method):
 
 
 @contextlib.contextmanager
-def human_exceptions(where_default, verbosity, quiet, exitcode):
+def human_exceptions(where_default, verbosity, quiet):
     ''' Print to stdout the message of the exception (if any)
         suppressing its traceback.
          - if verbosity is greather than zero, print the traceback.
@@ -163,15 +163,18 @@ def human_exceptions(where_default, verbosity, quiet, exitcode):
         To enhance the print, print the 'where' attribute of the
         exception (if it has one) or the 'where_default'.
 
-        Finally, exit the process with exitcode unless it is None.
+        The context manager will yield a dictionary with the
+        key 'exc' set to the exception caught if any or it will
+        remain empty if no exception is caught.
     '''
+    o = {}
     try:
-        yield
-    except KeyboardInterrupt:
+        yield o
+    except KeyboardInterrupt as e:
         if not quiet:
             print('Execution aborted by the user.')
-        if exitcode != None:
-            sys.exit(exitcode)
+
+        o['exc'] = e
     except Exception as e:
         if quiet:
             pass
@@ -186,8 +189,7 @@ def human_exceptions(where_default, verbosity, quiet, exitcode):
             cls = str(e.__class__.__name__)
             print("{where}\n{cls}: {msg}".format(where=where, msg=msg, cls=cls))
 
-        if exitcode != None:
-            sys.exit(exitcode)
+        o['exc'] = e
 
 @contextlib.contextmanager
 def enhance_exceptions(where, owner, use_colors=False):

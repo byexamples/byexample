@@ -98,16 +98,19 @@ class Jobs(object):
         exit_status = Status.ok
         end_sentinels_sent = False
         while nitems:
-            failed, aborted, user_aborted_or_error = self.output.get()
+            failed, aborted, user_aborted, error = self.output.get()
             nitems -= 1
 
             if failed:
                 exit_status = max(exit_status, Status.failed)
 
-            if aborted or user_aborted_or_error:
+            if aborted or user_aborted:
                 exit_status = max(exit_status, Status.aborted)
 
-            if ((failed or aborted) and fail_fast) or user_aborted_or_error:
+            if error:
+                exit_status = max(exit_status, Status.error)
+
+            if ((failed or aborted) and fail_fast) or user_aborted or error:
                 nitems -= len(rest)
                 rest = []
 

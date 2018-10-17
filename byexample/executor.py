@@ -37,7 +37,7 @@ class FileExecutor(object):
                 # build but ignore any output; even do not use the concerns
                 example.parse_yourself(concerns=None)
 
-        return False, False, False
+        return False, False, False, False
 
     def execute(self, examples, filepath):
         options = self.options
@@ -52,7 +52,7 @@ class FileExecutor(object):
         finally:
             self.shutdown_runners(runners)
 
-        return failed, (crashed or broken or timedout), user_aborted
+        return failed, (crashed or broken or timedout), user_aborted, False
 
     def _exec(self, examples, filepath, options, runners):
         failing_fast = False

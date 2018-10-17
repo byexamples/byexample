@@ -6,9 +6,8 @@ def execute_examples(filename, sigint_handler):
     global cache_disabled, harvester, executor, options, human_args, dry
     from .common import human_exceptions
 
-    human_args[-1] = None # exitcode == None
     with RegexCache(cache_filepath(filename, 're'), cache_disabled), \
-            human_exceptions("File '%s':" % filename, *human_args), \
+            human_exceptions("File '%s':" % filename, *human_args) as exc, \
             allow_sigint(sigint_handler):
         examples = harvester.get_examples_from_file(filename)
         if dry:
@@ -16,9 +15,9 @@ def execute_examples(filename, sigint_handler):
         else:
             return executor.execute(examples, filename)
 
-    # user aborted with a KeyboardInterrupt or something else did puff
-    # (and error/exception ocurred)
-    return True, True, True
+    user_aborted = isinstance(exc.get('exc'), KeyboardInterrupt)
+    error = not user_aborted
+    return True, True, user_aborted, error
 
 def main(args=None):
     global cache_disabled, harvester, executor, options, human_args, dry
@@ -31,9 +30,12 @@ def main(args=None):
 
         args = parse_args(args)
         dry = args.dry
-        human_args = [args.verbosity, args.quiet, Status.error]
-        with human_exceptions('During the initialization phase:', *human_args):
+        human_args = [args.verbosity, args.quiet]
+        with human_exceptions('During the initialization phase:', *human_args) as exc:
             testfiles, harvester, executor, options = init(args)
+
+        if exc:
+            sys.exit(Status.Error)
 
     jobs = Jobs(args.jobs, args.verbosity)
     return jobs.run(execute_examples, testfiles, options['fail_fast'])
