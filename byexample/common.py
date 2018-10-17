@@ -167,6 +167,11 @@ def human_exceptions(where_default, verbosity, quiet, exitcode):
     '''
     try:
         yield
+    except KeyboardInterrupt:
+        if not quiet:
+            print('Execution aborted by the user.')
+        if exitcode != None:
+            sys.exit(exitcode)
     except Exception as e:
         if quiet:
             pass
