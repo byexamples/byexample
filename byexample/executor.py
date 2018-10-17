@@ -37,7 +37,7 @@ class FileExecutor(object):
                 # build but ignore any output; even do not use the concerns
                 example.parse_yourself(concerns=None)
 
-        return False, False
+        return False, False, False
 
     def execute(self, examples, filepath):
         options = self.options
@@ -52,7 +52,7 @@ class FileExecutor(object):
         finally:
             self.shutdown_runners(runners)
 
-        return failed, (user_aborted or crashed or broken or timedout)
+        return failed, (crashed or broken or timedout), user_aborted
 
     def _exec(self, examples, filepath, options, runners):
         failing_fast = False
@@ -66,7 +66,7 @@ class FileExecutor(object):
 
             if example == None:
                 broken = True
-                break   # always fail fast hard if an example couldn't get parsed
+                break   # cancel if an example couldn't get parsed
 
             with enhance_exceptions(example, self, self.use_colors):
                 # are we in failing fast mode? if we do, skip all the
@@ -107,7 +107,7 @@ class FileExecutor(object):
 
                     if user_aborted or crashed or timedout:   # pragma: no cover
                         failed = True
-                        break # always fail fast hard
+                        break # cancel, the runner is in an undefined state
 
                     # cache this *after* calling finish_example/finally_example
                     # those two may modify the got
