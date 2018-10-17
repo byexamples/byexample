@@ -62,93 +62,96 @@ class FileExecutor(object):
         timedout = False
         broken = False
         for example in examples:
-            example = self._parse(example, options)
+            try:
+                example = self._parse(example, options)
 
-            if example == None:
-                broken = True
-                break   # cancel if an example couldn't get parsed
+                if example == None:
+                    broken = True
+                    break   # cancel if an example couldn't get parsed
 
-            with enhance_exceptions(example, self, self.use_colors):
-                # are we in failing fast mode? if we do, skip all the
-                # examples by default
-                if failing_fast:
-                    options.up({'skip': True})
-
-                # load the example's options here to allow it to override
-                # a 'skip' if the user wants to run this even in failing fast
-                # mode
-                options.up(example.options)
-                try:
-                    # ask to the example if we should fail fast if it fails
-                    # no matter what the user said from the command line
-                    fail_fast = options['fail_fast']
-
-                    if options['skip']:
-                        self.concerns.skip_example(example, options)
-                        continue
-
-                    print_example(example, True, self.verbosity-3)
-                    self.concerns.start_example(example, options)
-                    try:
-                        with enhance_exceptions(example, example.runner, self.use_colors):
-                            example.got = example.runner.run(example, options)
-                        self.concerns.finish_example(example, options)
-                    except TimeoutException as e:  # pragma: no cover
-                        self.concerns.timedout(example, e)
-                        timedout = True
-                    except KeyboardInterrupt:      # pragma: no cover
-                        self.concerns.user_aborted(example)
-                        user_aborted = True
-                    except Exception as e:         # pragma: no cover
-                        self.concerns.crashed(example, e)
-                        crashed = True
-                    finally:
-                        self.concerns.finally_example(example, options)
-
-                    if user_aborted or crashed or timedout:   # pragma: no cover
-                        failed = True
-                        break # cancel, the runner is in an undefined state
-
-                    # cache this *after* calling finish_example/finally_example
-                    # those two may modify the got
-                    got = example.got
-
-                    print_execution(example, got, self.verbosity-3)
-
-                    # We can pass the test regardless of the output
-                    force_pass = options['pass']
-                    if force_pass or \
-                            example.expected.check_got_output(example, got, options, self.verbosity):
-                        self.concerns.success(example, got, self.differ)
-                    else:
-                        self.concerns.failure(example, got, self.differ)
-                        failed = True
-
-                        # start an interactive session if the example fails
-                        # and the user wanted this
-                        if options['interact']:
-                            self.concerns.start_interact(example, options)
-                            ex = None
-                            try:
-                                example.runner.interact(example, options)
-                            except Exception as e:
-                                ex = e
-
-                            self.concerns.finish_interact(ex)
-
-                        # enter in failing fast mode if the user wants and the
-                        # example failed
-                        if fail_fast:
-                            failing_fast = True
-                            options.up({'skip': True}) # dummy, but it allows a symmetric relationship between failing_fast and an extra up
-                finally:
+                with enhance_exceptions(example, self, self.use_colors):
+                    # are we in failing fast mode? if we do, skip all the
+                    # examples by default
                     if failing_fast:
-                        options.down()
+                        options.up({'skip': True})
 
-                    # allow the garbage collector to collect the example,
-                    # do not keep it in memory
-                    del example
-                    options.down()
+                    # load the example's options here to allow it to override
+                    # a 'skip' if the user wants to run this even in failing fast
+                    # mode
+                    options.up(example.options)
+                    try:
+                        # ask to the example if we should fail fast if it fails
+                        # no matter what the user said from the command line
+                        fail_fast = options['fail_fast']
+
+                        if options['skip']:
+                            self.concerns.skip_example(example, options)
+                            continue
+
+                        print_example(example, True, self.verbosity-3)
+                        self.concerns.start_example(example, options)
+                        try:
+                            with enhance_exceptions(example, example.runner, self.use_colors):
+                                example.got = example.runner.run(example, options)
+                            self.concerns.finish_example(example, options)
+                        except TimeoutException as e:  # pragma: no cover
+                            self.concerns.timedout(example, e)
+                            timedout = True
+                        except Exception as e:         # pragma: no cover
+                            self.concerns.crashed(example, e)
+                            crashed = True
+                        finally:
+                            self.concerns.finally_example(example, options)
+
+                        if crashed or timedout:   # pragma: no cover
+                            failed = True
+                            break # cancel, the runner is in an undefined state
+
+                        # cache this *after* calling finish_example/finally_example
+                        # those two may modify the got
+                        got = example.got
+
+                        print_execution(example, got, self.verbosity-3)
+
+                        # We can pass the test regardless of the output
+                        force_pass = options['pass']
+                        if force_pass or \
+                                example.expected.check_got_output(example, got, options, self.verbosity):
+                            self.concerns.success(example, got, self.differ)
+                        else:
+                            self.concerns.failure(example, got, self.differ)
+                            failed = True
+
+                            # start an interactive session if the example fails
+                            # and the user wanted this
+                            if options['interact']:
+                                self.concerns.start_interact(example, options)
+                                ex = None
+                                try:
+                                    example.runner.interact(example, options)
+                                except Exception as e:
+                                    ex = e
+
+                                self.concerns.finish_interact(ex)
+
+                            # enter in failing fast mode if the user wants and the
+                            # example failed
+                            if fail_fast:
+                                failing_fast = True
+                                options.up({'skip': True}) # dummy, but it allows a symmetric relationship between failing_fast and an extra up
+                    finally:
+                        if failing_fast:
+                            options.down()
+
+                        # allow the garbage collector to collect the example's got,
+                        # do not keep it in memory
+                        if hasattr(example, 'got'):
+                            del example.got
+                        options.down()
+            except KeyboardInterrupt:      # pragma: no cover
+                self.concerns.user_aborted(example)
+                failed = user_aborted = True
+                break
 
         return failed, user_aborted, crashed, broken, timedout
 
