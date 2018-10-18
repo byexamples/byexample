@@ -109,11 +109,15 @@ class SimpleReporter(Concern):
         msg += "Escape character is '^]'.\n"
         self._write(msg)
 
+    def _bullet(self, color):
+        return colored("=>", color, self.use_colors)
+
     def timedout(self, example, exception):
         msg = '\n'
         msg += self._error_header(example)
 
-        msg += 'Execution timedout at example %i of %i.\n' % (
+        msg += '%s Execution timedout at example %i of %i.\n' % (
+                                    self._bullet('red'),
                                     self.examplenro, self.num_examples)
         msg += 'This could be because the example just ran too slow (try add more time\n' + \
                'with +timeout=<n>) or the example is "syntactically incorrect" and\n' + \
@@ -128,6 +132,7 @@ class SimpleReporter(Concern):
         msg = '\n'
         msg += self._error_header(example)
 
+        msg += self._bullet('red') + ' '
         msg += 'Execution aborted by the user at example %i of %i.\n' % (
                                     self.examplenro, self.num_examples)
         self._write(msg)
@@ -138,6 +143,7 @@ class SimpleReporter(Concern):
 
         tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
         ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
+        msg += self._bullet('red') + ' '
         msg += 'Execution of example %i of %i crashed.\n%s\n%s\n' % (
                                     self.examplenro, self.num_examples,
                                     tb, ex)
@@ -160,6 +166,7 @@ class SimpleReporter(Concern):
             tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
             ex = '\n'.join([tb, ex])
 
+        msg += self._bullet('red') + ' '
         msg += 'Parse of example %i of %i failed.\n%s\n' % (
                                     self.examplenro, self.num_examples,
                                     ex)
@@ -176,6 +183,7 @@ class SimpleReporter(Concern):
             tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
             ex = '\n'.join([tb, ex])
 
+        msg += self._bullet('red') + ' '
         msg += 'Interactive session failed.\n%s\n' % (ex)
         self._write(msg)
 

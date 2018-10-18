@@ -302,7 +302,7 @@ $ byexample -l python --timeout 0.0001 --ff test/ds/python-tutorial.v3.md
 File "test/ds/python-tutorial.v3.md", line 4
 Failed example:
     from __future__ import print_function
-Execution timedout at example 1 of 4.
+=> Execution timedout at example 1 of 4.
 This could be because the example just ran too slow (try add more time
 with +timeout=<n>) or the example is "syntactically incorrect" and
 the interpreter hang (may be you forgot a parenthesis or something like that?).
