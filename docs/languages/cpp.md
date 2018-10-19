@@ -47,6 +47,22 @@ out:
 2
 ```
 
+## Syntax errors
+
+``byexample`` will show you the syntax errors detected by ``cling``.
+You can even check for them as part of the normal output:
+
+```cpp
+for (i = 0; i < unknown; ++i) {
+    std::cout << i << std::endl;
+}
+
+out:
+<...>: error: use of undeclared identifier 'unknown'
+ for (i = 0; i < unknown; ++i) {
+                 ^
+```
+
 ## Gotchas
 
 To print boolean expressions you need to surround them with parenthesis

@@ -25,7 +25,7 @@ Example:
 
 """
 
-import re, pexpect, sys, time
+import re, sys, time, pyte
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
@@ -86,6 +86,10 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
         self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'],
                                      geometry=options['geometry'])
 
+        self._screen = pyte.Screen(*reversed(options['geometry']))
+        self._stream = pyte.Stream(self._screen)
+
+
     def shutdown(self):
         self._shutdown_interpreter()
 
@@ -94,46 +98,25 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
         # cling doesn't disable the TTY's echo so everything we type in
         # it will be reflected in the output.
         # so this breaks badly self._get_output
-        #
-        # fortunately clings only prints its prompt once per line (they aren't
-        # re painted) so self._exec_and_wait works out of the box
-        #
-        # still we need to fix the output
-        #
-        # self.last_output is a list of the text that showed up between
-        # the prompts. Each line may contain zero, one or multiple \r\n.
-        #
-        # the idea is that if we sent to the interpreter this:
-        #  int i = 1;
-        #  ++i;
-        # we probably got this:
-        # [cling]$ int?int i =?int i = 1;?\r\n[cling]$ ++?++i;???\r\n(int) 2
-        #
-        # so our self.last_output should look like this:
-        #        -  int?int i =?int i = 1;?\r\n
-        #        -  ++?++i;???\r\n(int) 2
 
-        # let's fix this
-
-        # first we mark all this prompt lines with a symbolic marker
-        # now, we should have:
-        #        - [cling]$ int?int i =?int i = 1;?\r\n
-        #        - [cling]$ ++?++i;???\r\n(int) 2
-        lines = ['[cling]$ ' + line for line in self.last_output]
+        # self.last_output is a list of strings found by pexpect
+        # after returning of each pexpect.expect
+        # in other words if we prefix each line with the prompt
+        # should get the original output from the process
+        lines = ('[cling]$ ' + line for line in self.last_output)
         self._drop_output()
 
-        # then we normalize the newlines and join/split to get
-        # no prompt lines but real lines
-        # so we should have:
-        #        - [cling]$ int?int i =?int i = 1;?
-        #        - [cling]$ ++?++i;???
-        #        - (int) 2
-        lines = self._universal_new_lines(''.join(lines)).split('\n')
+        # now, feed those lines to our ANSI Terminal emulator
+        for line in lines:
+            self._stream.feed(line)
 
-        # now we filter out the lines that starts with this marker
-        # which ends up in:
-        #        - (int) 2
-        lines = [line for line in lines if not line.startswith('[cling]$ ')]
+        # get each line in the Terminal's display and ignore each one that
+        # belong with our prompt: those are the "echo" lines that
+        # *we* sent to the cling and they are not part of *its* output.
+        lines = (line.rstrip() for line in self._screen.display
+                               if not line.startswith('[cling]$ '))
 
-        # finally, join everything together
+        # clean up the screen to not interfer with the rest of the
+        # examples.
+        self._screen.reset()
         return '\n'.join(lines)
