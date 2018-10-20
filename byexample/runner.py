@@ -1,7 +1,17 @@
-import re, pexpect, time, termios, operator, string, shlex, os, itertools, pyte
+import re, pexpect, time, termios, operator, string, shlex, os, itertools
 from functools import reduce
 from .executor import TimeoutException
 from .common import tohuman
+
+try:
+    from pyte import Stream, HistoryScreen
+except:
+    class Stream:
+        def __init__(self, *args, **kargs):
+            pass
+    class HistoryScreen:
+        def __init__(self, *args, **kargs):
+            pass
 
 try:
     from shlex import quote as shlex_quote
@@ -201,8 +211,8 @@ class PexepctMixin(object):
         return self._get_output()
 
     def _create_terminal(self, rows, cols):
-        self._screen = pyte.HistoryScreen(rows, cols, ratio=1)
-        self._stream = pyte.Stream(self._screen)
+        self._screen = HistoryScreen(rows, cols, ratio=1)
+        self._stream = Stream(self._screen)
 
     def _emulate_terminal(self, lines_to_feed):
         for line in lines_to_feed:
