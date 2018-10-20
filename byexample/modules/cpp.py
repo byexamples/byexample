@@ -25,7 +25,7 @@ Example:
 
 """
 
-import re, sys, time, pyte
+import re, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
@@ -86,15 +86,12 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
         self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'],
                                      geometry=options['geometry'])
 
-        self._screen = pyte.Screen(*reversed(options['geometry']))
-        self._stream = pyte.Stream(self._screen)
-
 
     def shutdown(self):
         self._shutdown_interpreter()
 
 
-    def _get_output(self):
+    def _get_output(self, emulate_terminal=True):
         # cling doesn't disable the TTY's echo so everything we type in
         # it will be reflected in the output.
         # so this breaks badly self._get_output
@@ -107,16 +104,12 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
         self._drop_output()
 
         # now, feed those lines to our ANSI Terminal emulator
-        for line in lines:
-            self._stream.feed(line)
+        lines = self._emulate_terminal(lines)
 
         # get each line in the Terminal's display and ignore each one that
         # belong with our prompt: those are the "echo" lines that
         # *we* sent to the cling and they are not part of *its* output.
-        lines = (line.rstrip() for line in self._screen.display
-                               if not line.startswith('[cling]$ '))
+        lines = (line for line in lines
+                               if not line.startswith('[cling]$'))
 
-        # clean up the screen to not interfer with the rest of the
-        # examples.
-        self._screen.reset()
         return '\n'.join(lines)

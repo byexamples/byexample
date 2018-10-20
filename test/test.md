@@ -82,8 +82,8 @@ File docs/how_to_support_new_finders_and_languages.md, 41/41 test ran in <...> s
 File docs/index.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 2
 ~
-File docs/languages/cpp.md, 3/3 test ran in <...> seconds
-[PASS] Pass: 3 Fail: 0 Skip: 0
+File docs/languages/cpp.md, 4/4 test ran in <...> seconds
+[PASS] Pass: 4 Fail: 0 Skip: 0
 ~
 File docs/languages/gdb.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 9 Fail: 0 Skip: 0

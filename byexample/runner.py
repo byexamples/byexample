@@ -1,4 +1,4 @@
-import re, pexpect, sys, time, termios, operator, string, shlex, os
+import re, pexpect, time, termios, operator, string, shlex, os, itertools, pyte
 from functools import reduce
 from .executor import TimeoutException
 from .common import tohuman
@@ -152,6 +152,8 @@ class PexepctMixin(object):
         self.interpreter.delaybeforesend = delaybeforesend
         self.interpreter.delayafterread = None
 
+        self._create_terminal(*reversed(geometry))
+
         if wait_first_prompt:
             self._expect_prompt(timeout=first_prompt_timeout, prompt_re=self.PS1_re)
             self._drop_output() # discard banner and things like that
@@ -198,6 +200,25 @@ class PexepctMixin(object):
 
         return self._get_output()
 
+    def _create_terminal(self, rows, cols):
+        self._screen = pyte.HistoryScreen(rows, cols, ratio=1)
+        self._stream = pyte.Stream(self._screen)
+
+    def _emulate_terminal(self, lines_to_feed):
+        for line in lines_to_feed:
+            self._stream.feed(line)
+
+        pages = []
+        while self._screen.history.top:
+            pages.append(self._screen.display)
+            self._screen.prev_page()
+
+        pages.append(self._screen.display)
+        lines = itertools.chain(*reversed(pages))
+
+        self._screen.reset()
+        return (line.rstrip() for line in lines)
+
     def _expect_prompt(self, timeout, prompt_re=None):
         ''' Wait for a <prompt_re> (any self.any_PS_re if <prompt_re> is None)
             and raise a timeout if we cannot find one.
@@ -226,8 +247,14 @@ class PexepctMixin(object):
                                     out)
 
 
-    def _get_output(self):
-        out = "".join(self.last_output)
+    def _get_output(self, emulate_terminal=False):
+        lines = self.last_output
+        if emulate_terminal:
+            lines = self._emulate_terminal(lines)
+            out = "\n".join(lines)
+        else:
+            out = "".join(lines)
+
         self._drop_output()
 
         # remove any other 'prompt' if any
@@ -235,7 +262,8 @@ class PexepctMixin(object):
             out = self.any_PS_re.sub('', out)
 
         # uniform the new line endings (aka universal new lines)
-        out = self._universal_new_lines(out)
+        if not emulate_terminal:
+            out = self._universal_new_lines(out)
 
         return out
 
