@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import re, pexpect, time, termios, operator, string, shlex, os, itertools
+import re, pexpect, time, termios, operator, string, shlex, os, itertools, contextlib
 from functools import reduce
 from .executor import TimeoutException
 from .common import tohuman
@@ -214,6 +214,39 @@ class PexepctMixin(object):
     def _create_terminal(self, rows, cols):
         self._screen = HistoryScreen(rows, cols, ratio=1)
         self._stream = Stream(self._screen)
+        self._terminal_default_geometry = (rows, cols)
+
+    @contextlib.contextmanager
+    def _change_terminal_geometry_ctx(self, rows, cols, force=False):
+        ''' Context manager to change the terminal geometry temporally.
+
+            Change to the new (rows, cols) and restore it back to the
+            default.
+
+            Nothing is changed if (rows, cols) is equal to the default
+            geometry unless you set force=True.
+
+            Override/extend the method _change_terminal_geometry to customize
+            what's to be done upon each window change.
+            '''
+        need_change = (self._terminal_default_geometry != (rows, cols) or force)
+        if need_change:
+            self._change_terminal_geometry(rows, cols)
+
+        try:
+            yield
+        finally:
+            if need_change:
+                self._change_terminal_geometry(*self._terminal_default_geometry)
+
+    def _change_terminal_geometry(self, rows, cols):
+        ''' Change the interpreter geometry or window size.
+
+            By default just send a SIGWINCH signal but you may want to
+            extend this with more things.
+            '''
+        self.interpreter.setwinsize(rows, cols)
+
 
     def _emulate_terminal(self, lines_to_feed):
         for line in lines_to_feed:
@@ -335,3 +368,4 @@ class PexepctMixin(object):
             if err.args[0] == errno.EINVAL:
                 raise IOError(err.args[0], '%s: %s.' % (err.args[1], errmsg))
             raise
+

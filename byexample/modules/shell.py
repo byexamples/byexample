@@ -90,8 +90,9 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
 
     def run(self, example, flags):
         try:
-            return self._exec_and_wait(example.source,
-                                    timeout=int(flags['timeout']))
+            with self._change_terminal_geometry_ctx(*flags['geometry']):
+                return self._exec_and_wait(example.source,
+                                        timeout=int(flags['timeout']))
         except TimeoutException as ex:
             if 'stop_on_silence' in flags and flags['stop_on_silence']:
                 # get the current output

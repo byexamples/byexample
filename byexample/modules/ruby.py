@@ -169,7 +169,8 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
 
         # there is no need to revert the echo=True if it was changed
         # because the execution of the next example will set it correctly
-        return self._exec_and_wait(src, timeout=int(flags['timeout']))
+        with self._change_terminal_geometry_ctx(*flags['geometry']):
+            return self._exec_and_wait(src, timeout=int(flags['timeout']))
 
     _EXPR_RESULT_RE = re.compile(r'^=>( |$)', re.MULTILINE | re.DOTALL)
 

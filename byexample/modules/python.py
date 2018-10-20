@@ -467,6 +467,9 @@ if %s:
                 # unpatch
                 self.builtins_module.repr = self.orig_repr
 
+        def update_width(self, width):
+            self._width = int(width)
+
     __byexample_pretty_print = __ByexamplePrettyPrint(indent=1, width=%i, depth=None)
     del __ByexamplePrettyPrint
 
@@ -489,8 +492,15 @@ del _byexample_pprint
                      ]}
 
     def run(self, example, flags):
-        return self._exec_and_wait(example.source,
-                                    timeout=int(flags['timeout']))
+        with self._change_terminal_geometry_ctx(*flags['geometry']):
+            return self._exec_and_wait(example.source,
+                                            timeout=int(flags['timeout']))
+
+    def _change_terminal_geometry(self, rows, cols):
+        # update the pretty printer with the new columns value
+        source = '__byexample_pretty_print.update_width(%i)' % cols
+        self._exec_and_wait(source, timeout=2)
+        PexepctMixin._change_terminal_geometry(self, rows, cols)
 
     def interact(self, example, options):
         PexepctMixin.interact(self)
