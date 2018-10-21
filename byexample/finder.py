@@ -153,11 +153,12 @@ class ExampleHarvest(object):
                                        \         .
     '''
     def __init__(self, allowed_languages, registry, verbosity,
-                        options, use_colors, **unused):
+                        options, use_colors, encoding, **unused):
         self.allowed_languages = allowed_languages
         self.verbosity = verbosity
         self.use_colors = use_colors
         self.available_finders = registry['finders'].values()
+        self.encoding = encoding
 
         self.parser_by_language = registry['parsers']
         self.runner_by_language = registry['runners']
@@ -168,8 +169,18 @@ class ExampleHarvest(object):
         return 'Example Harvester'
 
     def get_examples_from_file(self, filepath):
-        with open(filepath, 'rtU') as f:
+        try:
+            f = open(filepath, 'rtU', encoding=self.encoding)
+            already_encoded = True
+        except TypeError:
+            # Python 2.7
+            f = open(filepath, 'rbU')
+            already_encoded = False
+
+        with f as f:
             string = f.read()
+            if not already_encoded:
+                string = string.decode(self.encoding)
 
         return self.get_examples_from_string(string, filepath)
 
