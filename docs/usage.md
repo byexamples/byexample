@@ -670,8 +670,8 @@ optional arguments:
                         them.
   --show-options        show the available options for the selected languages
                         (with -l)
-  --encoding ENCODING   select the encoding (supported in Python 3 only, use
-                        the same encoding of stdout by default)
+  --encoding ENCODING   select the encoding; use the same encoding of stdout
+                        by default)
   --pretty {none,all}   control how to pretty print the output.
   --interact, --debug   interact with the runner/interpreter manually if an
                         example fails.

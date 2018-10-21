@@ -216,7 +216,7 @@ class ExampleHarvest(object):
 
             >>> from byexample.finder import ExampleHarvest
             >>> f = ExampleHarvest([], dict((k, {}) for k in \
-            ...                   ('parsers', 'finders', 'runners')), 0, 0, None)
+            ...                   ('parsers', 'finders', 'runners')), 0, 0, None, 'utf-8')
 
         Okay, back to the check_example_overlap documentation,
         given the examples sorted in that way, a collision is detected if

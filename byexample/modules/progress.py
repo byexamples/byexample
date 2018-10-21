@@ -1,7 +1,6 @@
 import traceback, time, os, sys, multiprocessing
-from byexample.common import colored, highlight_syntax
+from byexample.common import colored, highlight_syntax, indent
 from byexample.concern import Concern
-from doctest import _indent
 
 try:
     from tqdm import tqdm
@@ -211,7 +210,8 @@ class SimpleReporter(Concern):
 
         msg += '\nFile "%s", line %i\n' % (filepath, lineno)
         msg += "Failed example:\n"
-        msg += _indent(highlight_syntax(example, self.use_colors))
+
+        msg += indent(highlight_syntax(example, self.use_colors))
 
         return msg
 

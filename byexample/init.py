@@ -132,10 +132,6 @@ def get_allowed_languages(registry, selected):
     return selected
 
 def get_encoding(encoding, verbosity):
-    if sys.version_info[0] <= 2: # version major
-        # we don't support a different encoding
-        encoding = None
-
     log("Encoding: %s." % encoding, verbosity-2)
     return encoding
 

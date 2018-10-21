@@ -120,7 +120,7 @@ def parse_args(args=None):
                         help="show the available options for the selected languages (with -l)")
     parser.add_argument("--encoding",
                         default=sys.stdout.encoding,
-                        help='select the encoding (supported in Python 3 only, ' + \
+                        help='select the encoding; ' + \
                              'use the same encoding of stdout by default)')
     parser.add_argument("--pretty", choices=['none', 'all'],
                         default='all',
