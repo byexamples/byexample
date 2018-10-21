@@ -215,6 +215,7 @@ class PexepctMixin(object):
         self._screen = HistoryScreen(rows, cols, ratio=1)
         self._stream = Stream(self._screen)
         self._terminal_default_geometry = (rows, cols)
+        self._is_terminal_emulation_enabled = False
 
     @contextlib.contextmanager
     def _change_terminal_geometry_ctx(self, rows, cols, force=False):
@@ -245,6 +246,7 @@ class PexepctMixin(object):
             By default just send a SIGWINCH signal but you may want to
             extend this with more things.
             '''
+        self._screen.resize(rows, cols)
         self.interpreter.setwinsize(rows, cols)
 
 
@@ -261,7 +263,13 @@ class PexepctMixin(object):
         lines = itertools.chain(*reversed(pages))
 
         self._screen.reset()
-        return (line.rstrip() for line in lines)
+        if str == bytes:
+            # Python 2.7 support only: it works on str/bytes only
+            # XXX this is a limitation, if the output has a single non-ascii
+            # character this will blow up
+            return (str(line.rstrip()) for line in lines)
+        else:
+            return (line.rstrip() for line in lines)
 
     def _expect_prompt(self, timeout, prompt_re=None):
         ''' Wait for a <prompt_re> (any self.any_PS_re if <prompt_re> is None)
@@ -291,9 +299,9 @@ class PexepctMixin(object):
                                     out)
 
 
-    def _get_output(self, emulate_terminal=False):
+    def _get_output(self):
         lines = self.last_output
-        if emulate_terminal:
+        if self._is_terminal_emulation_enabled:
             lines = self._emulate_terminal(lines)
             out = "\n".join(lines)
         else:
@@ -306,7 +314,7 @@ class PexepctMixin(object):
             out = self.any_PS_re.sub('', out)
 
         # uniform the new line endings (aka universal new lines)
-        if not emulate_terminal:
+        if not self._is_terminal_emulation_enabled:
             out = self._universal_new_lines(out)
 
         return out

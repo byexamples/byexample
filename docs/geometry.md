@@ -134,8 +134,9 @@ File test/ds/small-terminal.md, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
 ```
 
-Keep in mind that even if ``byexample`` sets the geometry the runner/interpreter
-*may decide to ignore it*: [open an issue](https://github.com/byexamples/byexample/issues)
-if this is a problem related to the default printers of the runner.
+``byexample`` will pass to the runner the geometry in two special environment
+variables: ``LINES`` and ``COLUMNS``.
 
+This is only done at the begin, if you change the geometry later these
+variables may not be updated.
 

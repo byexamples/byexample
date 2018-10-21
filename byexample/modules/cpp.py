@@ -93,7 +93,7 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
         self._shutdown_interpreter()
 
 
-    def _get_output(self, emulate_terminal=True):
+    def _get_output(self):
         # cling doesn't disable the TTY's echo so everything we type in
         # it will be reflected in the output.
         # so this breaks badly self._get_output

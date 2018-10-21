@@ -166,6 +166,7 @@ def get_default_options_parser(cmdline_args):
                                     help="delay in seconds before sending a line to an runner/interpreter; 0 disable this (default).")
     options_parser.add_argument("+geometry", type=geometry,
                                     help="number of lines and columns of the terminal of the form LxC (default to 24x80).")
+    options_parser.add_flag("term-emu", help="use an ANSI terminal emulator to interpret the output.")
 
     return options_parser
 
@@ -185,7 +186,8 @@ def get_options(args, cfg):
                         'diff': args.diff,
                         'delaybeforesend': None,
                         'shebangs': args.shebangs,
-                        'geometry': (24, 80)
+                        'geometry': (24, 80),
+                        'term_emu': False
                         })
     log("Options (cmdline): %s" % options, cfg['verbosity']-2)
 

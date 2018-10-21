@@ -90,6 +90,7 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
 
     def run(self, example, flags):
         try:
+            self._is_terminal_emulation_enabled = flags['term_emu']
             with self._change_terminal_geometry_ctx(*flags['geometry']):
                 return self._exec_and_wait(example.source,
                                         timeout=int(flags['timeout']))
