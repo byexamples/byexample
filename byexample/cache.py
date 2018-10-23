@@ -10,6 +10,11 @@ try:
 except ImportError:
     import pickle
 
+try:
+    unicode
+except NameError:
+    unicode = str
+
 def cache_filepath(filename, type):
     ''' Create a valid file path based on <filename>.
 
@@ -98,7 +103,7 @@ class RegexCache(object):
             RegexCache.get uses internal, undocumented functions from re module.
 
         '''
-        if not isinstance(pattern, (str, bytes)):
+        if not isinstance(pattern, (str, bytes, unicode)):
             raise ValueError("Regex pattern must be a string or bytes but it is %s"
                                 % type(pattern))
 
