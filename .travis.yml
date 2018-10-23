@@ -10,7 +10,10 @@ script: make travis-test
 branches:
     only:
         - master
-        - next
+        - next-major
+        - next-minor
+        - next-patch
+        - tmp
 addons:
     apt_packages:
         - pandoc
