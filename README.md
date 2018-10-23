@@ -176,7 +176,7 @@ Current version:
 
 ```shell
 $ byexample -V
-byexample 7.4.1 (Python <...>) - GNU GPLv3
+byexample 7.4.2 (Python <...>) - GNU GPLv3
 <...>
 Copyright (C) Di Paola Martin - https://github.com/byexamples/byexample
 <...>
