@@ -3,6 +3,7 @@
 python_bin ?= python
 pretty ?= all
 languages ?= python,shell,ruby,gdb,cpp
+jobs ?= 1
 
 all:
 	@echo "Usage: make deps|meta-test|test|quick-test|dist|upload|doc|clean"
@@ -27,16 +28,16 @@ test: clean_test
 	@make -s clean_test
 
 lib-test: clean_test
-	@$(python_bin) test/r.py --pretty $(pretty) --ff -l python byexample/*.py
+	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l python byexample/*.py
 	@make -s clean_test
 
 modules-test: clean_test
-	@$(python_bin) test/r.py --pretty $(pretty) --ff -l $(languages) byexample/modules/*.py
+	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l $(languages) byexample/modules/*.py
 	@make -s clean_test
 
 docs-test: clean_test
-	@$(python_bin) test/r.py --pretty $(pretty) --ff -l $(languages) *.md
-	@$(python_bin) test/r.py --pretty $(pretty) --ff -l $(languages) `find docs -name "*.md"`
+	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l $(languages) *.md
+	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l $(languages) `find docs -name "*.md"`
 	@make -s clean_test
 
 travis-test: clean_test lib-test modules-test docs-test

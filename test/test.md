@@ -7,7 +7,7 @@ If you want to know how ``byexample`` works, it is the best place
 to start.
 
 ```shell
-$ pretty=none make lib-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
+$ jobs=1 pretty=none make lib-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
 <...>
 File byexample/differ.py, 17/17 test ran in <...> seconds
 [PASS] Pass: 17 Fail: 0 Skip: 0
@@ -32,7 +32,7 @@ Then, each module (Finder, Parser and Runner) provided by ``byexample`` has
 a little documentation and tests as well.
 
 ```shell
-$ pretty=none make modules-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
+$ jobs=1 pretty=none make modules-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
 <...>
 File byexample/modules/cpp.py, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
@@ -59,7 +59,7 @@ If what you are looking for is what is capable of, you definetly need
 to see the README.md and the rest of the documentation in ``docs/``
 
 ```shell
-$ pretty=none make docs-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
+$ jobs=1 pretty=none make docs-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
 <...>
 File CONTRIBUTING.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 0 Fail: 0 Skip: 5
@@ -113,7 +113,7 @@ File docs/where_should_I_write_the_examples.md, 9/9 test ran in <...> seconds
 ## Coverage tests
 
 ```shell
-$ pretty=none make coverage         # byexample: +rm=~
+$ jobs=1 pretty=none make coverage         # byexample: +rm=~
 <...>
 Run the byexample's tests with the Python interpreter.
 to start the coverage, use a hook in test/ to initialize the coverage
