@@ -64,13 +64,15 @@ def parse_args(args=None):
 
     search_default = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modules')
 
+    python_version = sys.version.split(' ', 1)[0]
     parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
     parser.add_argument('-V', '--version', nargs=0, action=_Print,
-            message='{prog} {version} - {license}\n\n{doc}'
+            message='{prog} {version} (Python {python_version}) - {license}\n\n{doc}'
                     '\n\n{license_disclaimer}'.format(
                                 prog=parser.prog,
                                 doc=__doc__,
                                 version=__version__,
+                                python_version=python_version,
                                 license=_license,
                                 license_disclaimer=_license_disclaimer.format(
                                         author=_author,
