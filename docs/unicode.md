@@ -9,9 +9,7 @@ $ alias byexample=byexample\ --pretty\ none
 
 # Unicode support
 
-``byexample`` has full support for unicode.
-
-Here are some examples:
+``byexample`` has full support for unicode examples.
 
 ```shell
 $ echo "por ejemplo"
@@ -24,8 +22,10 @@ $ echo "例によって"
 例によって
 ```
 
-The diff is also supported. Consider the following examples
-quite similar the previous but with small differences:
+If an example fails, ``byexample`` will show you the differences.
+These also work if the output is unicode.
+
+Consider the following examples in ``test/ds/bad-unicode.md``:
 
 ```shell
 $ cat test/ds/bad-unicode.md            # byexample: +rm=~
@@ -39,12 +39,13 @@ $ cat test/ds/bad-unicode.md            # byexample: +rm=~
 ~
 ~$ echo "例によっ!て"
 ~例によって
+
 ```
 
 Here are those examples failing:
 
 ```shell
-$ byexample -l shell --diff ndiff test/ds/bad-unicode.md    # byexample: +rm=~
+$ byexample -l shell,python --diff ndiff test/ds/bad-unicode.md    # byexample: +rm=~
 <...>
 Differences:
 - por ejemplo
@@ -70,10 +71,29 @@ Differences:
 **Note:** you may noticed, the ``ndiff`` algorithm will not put the marker ``+``
 in the correct position if the characters are *wide characters*.
 
-The following should fail too and its diff
-should show a pretty ? marker (see enhance-diff)
+## Encoding
 
->>> print("\x00\x1ffoo\x7f")
-xxfoox
+By default, ``byexample`` will use the same encoding that ``Python`` uses
+for its standard output, typically ``utf-8``.
 
-$ echo "\0777"
+You can change the encoding from the command line:
+
+```shell
+$ byexample -l shell --encoding utf-8 test/ds/bad-unicode.md
+<...>
+Expected:
+por ejemplo
+Got:
+por-éjemplo
+<...>
+Expected:
+по примеру
+Got:
+по-примеру!
+<...>
+Expected:
+例によって
+Got:
+例によっ!て
+<...>
+```
