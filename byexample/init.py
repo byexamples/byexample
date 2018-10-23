@@ -34,18 +34,29 @@ def are_tty_colors_supported(output):
            'm' not in os.getenv('TERM', '').split('-') and \
            get_colors() >= 8
 
-def is_a(target_class, key_attr):
+def is_a(target_class, key_attr, warn_missing_key_attr):
     '''
     Returns a function that will return True if its argument
     is a subclass of target_class and it has the attribute key_attr
+
+    If warn_missing_key_attr is True, log a warning if the "the argument"
+    is a subclass of target_class but it has not the attribute
+    key_attr.
     '''
     def _is_X(obj):
         if not inspect.isclass(obj):
             return False
 
-        return issubclass(obj, target_class) and \
-               obj is not target_class and \
-               hasattr(obj, key_attr)
+        class_ok = issubclass(obj, target_class) and \
+               obj is not target_class
+
+        attr_ok = hasattr(obj, key_attr)
+
+        if class_ok and not attr_ok:
+            log(" * Warning: class '%s' has not attribute '%s'." % \
+                    (obj.__name__, key_attr),  0)
+
+        return class_ok and attr_ok
 
     return _is_X
 
@@ -80,7 +91,7 @@ def load_modules(dirnames, cfg):
 
             # we are interested in any class that is a subclass of 'klass'
             # and it has an attribute 'key'
-            predicate = is_a(klass, key)
+            predicate = is_a(klass, key, verbosity-2)
 
             container = registry[what]
             klasses_found = inspect.getmembers(module, predicate)
