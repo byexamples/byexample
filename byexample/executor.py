@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from .common import log, print_example, print_execution, enhance_exceptions
 
 class TimeoutException(Exception):

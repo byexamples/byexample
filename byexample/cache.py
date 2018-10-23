@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import sre_parse
 import sre_compile
 import appdirs

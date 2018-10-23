@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from .common import tohuman
 from .options import ExtendOptionParserMixin
 

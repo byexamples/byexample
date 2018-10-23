@@ -25,6 +25,7 @@ Example:
 
 """
 
+from __future__ import unicode_literals
 import re, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import collections, argparse, shlex, pprint
 
 class Options(collections.MutableMapping):

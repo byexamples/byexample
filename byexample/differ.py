@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from .common import log, colored
 import string, re, difflib
 
@@ -14,8 +15,8 @@ finally:
     #   0 <= i <= 31 or 127 <= i <= 159
     #
     # whitespace control codes?: 9 <= i <= 13
-    ctrl_tr = [u'?' if (0 <= i <= 31 or 127 <= i <= 159) and not (9 <= i <= 13)
-                    else unichr(i) for i in range(160)]
+    ctrl_tr = {i:u'?' if (0 <= i <= 31 or 127 <= i <= 159) and not (9 <= i <= 13)
+                    else unichr(i) for i in range(160)}
 
 class Differ(object):
     def __init__(self, verbosity, **unused):
@@ -28,6 +29,7 @@ class Differ(object):
         output and the found or got.
 
         Depending of the flags the diff can be returned differently.
+            >>> from __future__ import unicode_literals
             >>> from byexample.differ import Differ
             >>> output_difference = Differ(verbosity=0).output_difference
 

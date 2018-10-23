@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import sys, argparse, os, multiprocessing
 from . import __version__, __doc__, _author, _license, _url, _license_disclaimer
 

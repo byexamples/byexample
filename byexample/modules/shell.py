@@ -20,6 +20,7 @@ Example:
   ```
 """
 
+from __future__ import unicode_literals
 import re, pexpect, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser

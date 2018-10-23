@@ -19,6 +19,7 @@ Example:
 
 """
 
+from __future__ import unicode_literals
 import re, pexpect, sys, time
 from byexample.common import log, constant
 from byexample.parser import ExampleParser, ExtendOptionParserMixin

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import traceback, time, os, sys, multiprocessing
 from byexample.common import colored, highlight_syntax, indent
 from byexample.concern import Concern

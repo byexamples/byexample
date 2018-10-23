@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import collections, re
 from .common import log, build_where_msg, tohuman, \
                     enhance_exceptions, print_example, constant

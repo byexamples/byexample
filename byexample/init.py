@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import sys, pkgutil, inspect, pprint, os
 
 from .options import Options, OptionParser

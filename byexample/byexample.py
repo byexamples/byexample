@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from .cache import RegexCache, cache_filepath
 from .jobs import Jobs, Status, allow_sigint
 import os, sys

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import re, pexpect, time, termios, operator, string, shlex, os, itertools
 from functools import reduce
 from .executor import TimeoutException

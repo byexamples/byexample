@@ -34,6 +34,7 @@ and '.' as the second prompt:
 
 '''
 
+from __future__ import unicode_literals
 import re
 from byexample.common import constant, abspath
 from byexample.parser import ExampleParser
