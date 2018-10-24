@@ -117,7 +117,7 @@ class RegexCache(object):
             with open(self.filename, 'xb') as f, flock(f):
                 # the open didn't fail, so it *must* be new:
                 # save an empty cache
-                f.write(pickle.dumps(cache))
+                pickle.dump(cache, f)
         except FileExistsError:
             pass
 
@@ -140,7 +140,7 @@ class RegexCache(object):
                 # write to disk the new updated cache, truncate
                 # and shrink it if the new is smaller than the original.
                 f.seek(0,0)
-                f.write(pickle.dumps(self._cache))
+                pickle.dump(self._cache, f)
                 f.truncate()
 
             self.dirty = False
