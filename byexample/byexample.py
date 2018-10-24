@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-from .cache import RegexCache, cache_filepath
+from .cache import RegexCache
 from .jobs import Jobs, Status, allow_sigint
 import os, sys
 
@@ -7,7 +7,7 @@ def execute_examples(filename, sigint_handler):
     global cache_disabled, harvester, executor, options, human_args, dry
     from .common import human_exceptions
 
-    with RegexCache(cache_filepath(filename, 're'), cache_disabled), \
+    with RegexCache(filename, cache_disabled), \
             human_exceptions("File '%s':" % filename, *human_args) as exc, \
             allow_sigint(sigint_handler):
         examples = harvester.get_examples_from_file(filename)
@@ -23,8 +23,8 @@ def execute_examples(filename, sigint_handler):
 def main(args=None):
     global cache_disabled, harvester, executor, options, human_args, dry
 
-    cache_disabled = os.getenv('BYEXAMPLE_CACHE_DISABLED', "1") != "0"
-    with RegexCache(cache_filepath('0', 're'), cache_disabled):
+    cache_disabled = os.getenv('BYEXAMPLE_CACHE_DISABLED', "0") != "0"
+    with RegexCache('0', cache_disabled):
         from .cmdline import parse_args
         from .common import human_exceptions
         from .init import init

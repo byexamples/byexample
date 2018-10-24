@@ -17,37 +17,6 @@ try:
 except NameError:
     unicode = str
 
-def cache_filepath(filename, type):
-    ''' Create a valid file path based on <filename>.
-
-        The path will be formed based on the user's cache directory,
-        platform and python version and on the type of cache requested.
-
-        >>> from byexample.cache import cache_filepath
-        >>> cache_filepath('foo', 're')
-        '<user-cache-dir>/byexample/re-<platform>-<python-version>/foo'
-
-        The dir part of <filename> is ignored:
-
-        >>> cache_filepath('foo/bar/baz', 're')
-        '<user-cache-dir>/byexample/re-<platform>-<python-version>/baz'
-
-        Note: this function *will* create any directory needed.
-    '''
-
-    if type == 're':
-        version = "%s-%s-%08i" % (type, sys.platform, sys.hexversion)
-    else:
-        raise ValueError("Unsupported cache type version '%s'." % str(type))
-
-    dir = appdirs.user_cache_dir(appname='byexample', version=version)
-    try:
-        os.makedirs(dir)
-    except OSError:
-        pass # note: for Python 3.2 and greater, use exist_ok=True (see makedirs)
-
-    filename = os.path.basename(filename)
-    return os.path.join(dir, filename)
 
 @contextlib.contextmanager
 def flock(file):
@@ -64,10 +33,39 @@ class RegexCache(object):
         if self.disabled:
             return
 
-        self.filename = filename
+        self.filename = self._cache_filepath(filename)
         self.dirty = False
 
         self._cache = self._load_cache_from_disk()
+
+    @classmethod
+    def _cache_filepath(cls, filename):
+        ''' Create a valid file path based on <filename>.
+
+            The path will be formed based on the user's cache directory,
+            platform and python version.
+
+            >>> from byexample.cache import RegexCache
+            >>> RegexCache._cache_filepath('foo')
+            '<user-cache-dir>/byexample/re-<platform>-<python-version>/foo'
+
+            The dir part of <filename> is ignored:
+
+            >>> RegexCache._cache_filepath('foo/bar/baz')
+            '<user-cache-dir>/byexample/re-<platform>-<python-version>/baz'
+
+            Note: this function *will* create any directory needed.
+        '''
+
+        version = "re-%s-%08i" % (sys.platform, sys.hexversion)
+        dir = appdirs.user_cache_dir(appname='byexample', version=version)
+        try:
+            os.makedirs(dir)
+        except OSError:
+            pass # note: for Python 3.2 and greater, use exist_ok=True (see makedirs)
+
+        filename = os.path.basename(filename)
+        return os.path.join(dir, filename)
 
     def _load_cache_from_disk(self):
         ''' Load the cache from disk, create an empty one if the
