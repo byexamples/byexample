@@ -4,10 +4,10 @@ from .jobs import Jobs, Status, allow_sigint
 import os, sys
 
 def execute_examples(filename, sigint_handler):
-    global cache_disabled, harvester, executor, options, human_args, dry
+    global cache_disabled, cache_verbose, harvester, executor, options, human_args, dry
     from .common import human_exceptions
 
-    with RegexCache(filename, cache_disabled), \
+    with RegexCache(filename, cache_disabled, cache_verbose), \
             human_exceptions("File '%s':" % filename, *human_args) as exc, \
             allow_sigint(sigint_handler):
         examples = harvester.get_examples_from_file(filename)
@@ -21,10 +21,11 @@ def execute_examples(filename, sigint_handler):
     return True, True, user_aborted, error
 
 def main(args=None):
-    global cache_disabled, harvester, executor, options, human_args, dry
+    global cache_disabled, cache_verbose, harvester, executor, options, human_args, dry
 
     cache_disabled = os.getenv('BYEXAMPLE_CACHE_DISABLED', "0") != "0"
-    with RegexCache('0', cache_disabled):
+    cache_verbose  = os.getenv('BYEXAMPLE_CACHE_VERBOSE', "0") != "0"
+    with RegexCache('0', cache_disabled, cache_verbose):
         from .cmdline import parse_args
         from .common import human_exceptions
         from .init import init

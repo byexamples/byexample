@@ -28,15 +28,18 @@ def flock(file):
 
 
 class RegexCache(object):
-    def __init__(self, filename, disabled=False):
+    def __init__(self, filename, disabled=False, cache_verbose=False):
         self.disabled = disabled
         if self.disabled:
             return
 
         self.filename = self._cache_filepath(filename)
         self.dirty = False
+        self.verbose = cache_verbose
 
         self._cache = self._load_cache_from_disk()
+        self._nkeys, self._hits = len(self._cache), 0
+        self._log("Cache '%s': %i entries" % (self.filename, self._nkeys))
 
     @classmethod
     def _cache_filepath(cls, filename):
@@ -67,6 +70,10 @@ class RegexCache(object):
         filename = os.path.basename(filename)
         return os.path.join(dir, filename)
 
+    def _log(self, msg):
+        if self.verbose:
+            print(msg)
+
     def _load_cache_from_disk(self):
         ''' Load the cache from disk, create an empty one if the
             cache doesn't exist.
@@ -93,7 +100,7 @@ class RegexCache(object):
             return pickle.loads(file.read())
         except:
             # possible corrupt cache, ignore it
-            print("Corrupted")
+            self._log("Warning. Cache file '%s' corrupted." % self.filename)
             return self._new_cache()
 
     def _new_cache(self):
@@ -106,6 +113,7 @@ class RegexCache(object):
             # 'x' means create a new file or fail
             # honestly, I'm not sure if 'x' is race-condition free
             # this is a best effort implementation
+            self._log("Cache file '%s' does not exist. Creating a new one..." % self.filename)
             with open(self.filename, 'xb') as f, flock(f):
                 # the open didn't fail, so it *must* be new:
                 # save an empty cache
@@ -117,6 +125,11 @@ class RegexCache(object):
 
     def sync(self):
         if self.dirty and not self.disabled and self.filename != None:
+            misses = len(self._cache) - self._nkeys
+            nohits = self._nkeys - self._hits
+
+            self._log("Cache '%s' updated: %i hits %i misses %i nohits." \
+                        % (self.filename, self._hits, misses, nohits))
             with open(self.filename, 'rb+') as f, flock(f):
                 # get a fresh disk version in case that other
                 # byexample instance had touched the cache
@@ -170,7 +183,9 @@ class RegexCache(object):
         key = (pattern, flags)
         try:
             bytecode = self._cache[key]
+            self._hits += 1
         except KeyError:
+            self._log("Cache '%s' miss: '%s'" % (self.filename, pattern))
             bytecode = self._pattern_to_bytecode(pattern, flags)
             self._cache[key] = bytecode
             self.dirty = True
@@ -178,7 +193,7 @@ class RegexCache(object):
         return self._bytecode_to_regex(pattern, bytecode)
 
     def _pattern_to_bytecode(self, pattern, flags=0):
-        if not isinstance(pattern, (str, bytes)):
+        if not isinstance(pattern, (str, bytes, unicode)):
             raise ValueError("Regex pattern must be a string or bytes but it is %s"
                                 % type(pattern))
 
@@ -212,7 +227,6 @@ class RegexCache(object):
         self._original__sre_compile__compile = sre_compile.compile
         sre_compile.compile = self.get
 
-        #print("Cache [%s]: %i regexs on enter" % (self.filename, len(self._cache)))
         return self
 
     def __exit__(self, *args, **kargs):
@@ -221,5 +235,4 @@ class RegexCache(object):
 
         sre_compile.compile = self._original__sre_compile__compile
         self.sync()
-        #print("Cache [%s]: %i regexs on exit" % (self.filename, len(self._cache)))
 
