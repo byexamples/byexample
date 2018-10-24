@@ -19,8 +19,8 @@ except NameError:
 
 
 @contextlib.contextmanager
-def flock(file):
-    fcntl.lockf(file.fileno(), fcntl.LOCK_EX)
+def flock(file, shared=False):
+    fcntl.lockf(file.fileno(), fcntl.LOCK_SH if shared else fcntl.LOCK_EX)
     try:
         yield
     finally:
@@ -81,7 +81,7 @@ class RegexCache(object):
             If the load/read fails, return a empty cache too.
             '''
         try:
-            with open(self.filename, 'rb+') as f, flock(f):
+            with open(self.filename, 'rb') as f, flock(f, shared=True):
                 return self._read_cache_or_empty(f)
         except FileNotFoundError:
             return self._create_empty_cache_in_disk()
