@@ -4,6 +4,8 @@ import sre_compile
 import appdirs
 import os
 import sys
+import contextlib
+import fcntl
 
 try:
     import cPickle as pickle
@@ -48,6 +50,14 @@ def cache_filepath(filename, type):
     filename = os.path.basename(filename)
     return os.path.join(dir, filename)
 
+@contextlib.contextmanager
+def flock(file):
+    fcntl.lockf(file.fileno(), fcntl.LOCK_EX)
+    try:
+        yield
+    finally:
+        fcntl.lockf(file.fileno(), fcntl.LOCK_UN)
+
 
 class RegexCache(object):
     def __init__(self, filename, disabled=False):
@@ -58,17 +68,70 @@ class RegexCache(object):
         self.filename = filename
         self.dirty = False
 
+        self._cache = self._load_cache_from_disk()
+
+    def _load_cache_from_disk(self):
+        ''' Load the cache from disk, create an empty one if the
+            cache doesn't exist.
+
+            If the load/read fails, return a empty cache too.
+            '''
         try:
-            with open(filename, 'rb') as f:
-                self._cache = pickle.loads(f.read())
+            with open(self.filename, 'rb+') as f, flock(f):
+                return self._read_cache_or_empty(f)
+        except FileNotFoundError:
+            return self._create_empty_cache_in_disk()
+
+    def _read_cache_or_empty(self, file):
+        ''' Read from the given file and load the cache.
+            Assumes that the file is open for reading and its read
+            pointer is at the begin of the file.
+
+            This does not set any lock: use flock yourself to avoid
+            a race condition.
+
+            Return an empty cache if the read fails.
+            '''
+        try:
+            return pickle.loads(file.read())
         except:
-            self._cache = {}
-            self.dirty = True
+            # possible corrupt cache, ignore it
+            print("Corrupted")
+            return self._new_cache()
+
+    def _new_cache(self):
+        return {}
+
+    def _create_empty_cache_in_disk(self):
+        ''' Create an empty cache in disk if doesn't exist yet. '''
+        cache = self._new_cache()
+        try:
+            # 'x' means create a new file or fail
+            # honestly, I'm not sure if 'x' is race-condition free
+            # this is a best effort implementation
+            with open(self.filename, 'xb') as f, flock(f):
+                # the open didn't fail, so it *must* be new:
+                # save an empty cache
+                f.write(pickle.dumps(cache))
+        except FileExistsError:
+            pass
+
+        return cache
 
     def sync(self):
         if self.dirty and not self.disabled and self.filename != None:
-            with open(self.filename, 'wb') as f:
+            with open(self.filename, 'rb+') as f, flock(f):
+                # get a fresh disk version in case that other
+                # byexample instance had touched the cache
+                cache = self._read_cache_or_empty(f)
+
+                cache.update(self._cache)
+
+                # write to disk the new updated cache, truncate
+                # and shrink it if the new is smaller than the original.
+                f.seek(0,0)
                 f.write(pickle.dumps(self._cache))
+                f.truncate()
 
             self.dirty = False
 
