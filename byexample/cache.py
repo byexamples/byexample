@@ -36,8 +36,7 @@ def cache_filepath(filename, type):
     '''
 
     if type == 're':
-        _v = sys.version_info
-        version = "%s-%s-%02i%02i%02i" % (type, sys.platform, _v.major, _v.minor, _v.micro)
+        version = "%s-%s-%08i" % (type, sys.platform, sys.hexversion)
     else:
         raise ValueError("Unsupported cache type version '%s'." % str(type))
 
