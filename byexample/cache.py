@@ -132,15 +132,19 @@ class RegexCache(object):
                         % (self.filename, self._hits, misses, nohits))
             with open(self.filename, 'rb+') as f, flock(f):
                 # get a fresh disk version in case that other
-                # byexample instance had touched the cache
-                cache = self._read_cache_or_empty(f)
-
-                cache.update(self._cache)
+                # byexample instance had touched the cache but
+                # do not keep updating if we have too many nohits (useless
+                # keys/entries)
+                if nohits < 1000:
+                    cache = self._read_cache_or_empty(f)
+                    cache.update(self._cache)
+                else:
+                    cache = self._cache
 
                 # write to disk the new updated cache, truncate
                 # and shrink it if the new is smaller than the original.
                 f.seek(0,0)
-                pickle.dump(self._cache, f)
+                pickle.dump(cache, f)
                 f.truncate()
 
             self.dirty = False
