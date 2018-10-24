@@ -34,7 +34,6 @@ class RegexCache(object):
             return
 
         self.filename = self._cache_filepath(filename)
-        self.dirty = False
         self.verbose = cache_verbose
 
         self._cache = self._load_cache_from_disk()
@@ -127,9 +126,9 @@ class RegexCache(object):
         misses = len(self._cache) - self._nkeys
         nohits = self._nkeys - self._hits
 
-        self._log("Cache '%s' stats: %i hits %i misses %i nohits." \
-                    % (self.filename, self._hits, misses, nohits))
-        if self.dirty and not self.disabled and self.filename != None:
+        self._log("Cache '%s' stats: %i entries %i hits %i misses %i nohits." \
+                    % (self.filename, len(self._cache), self._hits, misses, nohits))
+        if misses and not self.disabled and self.filename != None:
             self._log("Cache '%s' require sync." % self.filename)
             with open(self.filename, 'rb+') as f, flock(f):
                 # get a fresh disk version in case that other
@@ -148,7 +147,7 @@ class RegexCache(object):
                 pickle.dump(cache, f)
                 f.truncate()
 
-            self.dirty = False
+            self._nkeys, self._hits = len(self._cache), 0
 
     def get(self, pattern, flags=0):
         ''' RegexCache.get compiles a pattern into a regex object like
@@ -190,10 +189,8 @@ class RegexCache(object):
             bytecode = self._cache[key]
             self._hits += 1
         except KeyError:
-            self._log("Cache '%s' miss: '%s'" % (self.filename, pattern))
             bytecode = self._pattern_to_bytecode(pattern, flags)
             self._cache[key] = bytecode
-            self.dirty = True
 
         return self._bytecode_to_regex(pattern, bytecode)
 
