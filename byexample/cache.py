@@ -124,12 +124,13 @@ class RegexCache(object):
         return cache
 
     def sync(self):
-        if self.dirty and not self.disabled and self.filename != None:
-            misses = len(self._cache) - self._nkeys
-            nohits = self._nkeys - self._hits
+        misses = len(self._cache) - self._nkeys
+        nohits = self._nkeys - self._hits
 
-            self._log("Cache '%s' updated: %i hits %i misses %i nohits." \
-                        % (self.filename, self._hits, misses, nohits))
+        self._log("Cache '%s' stats: %i hits %i misses %i nohits." \
+                    % (self.filename, self._hits, misses, nohits))
+        if self.dirty and not self.disabled and self.filename != None:
+            self._log("Cache '%s' require sync." % self.filename)
             with open(self.filename, 'rb+') as f, flock(f):
                 # get a fresh disk version in case that other
                 # byexample instance had touched the cache but
