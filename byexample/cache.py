@@ -17,7 +17,6 @@ try:
 except NameError:
     unicode = str
 
-
 @contextlib.contextmanager
 def flock(file, shared=False):
     fcntl.lockf(file.fileno(), fcntl.LOCK_SH if shared else fcntl.LOCK_EX)
@@ -37,8 +36,40 @@ class RegexCache(object):
         self.verbose = cache_verbose
 
         self._cache = self._load_cache_from_disk()
-        self._nkeys, self._hits = len(self._cache), 0
+        self.clear_stats()
         self._log("Cache '%s': %i entries" % (self.filename, self._nkeys))
+
+    @contextlib.contextmanager
+    def synced(self, label=""):
+        ''' Clear the cache's stats on enter and sync the cache
+            on exit.
+            '''
+        self.clear_stats()
+        try:
+            yield self
+        finally:
+            self.sync(label)
+
+    @contextlib.contextmanager
+    def activated(self, auto_sync, label=""):
+        ''' Activate the cache (patch re.compile) on enter
+            and deactivate it on exit.
+
+            If auto_sync is True, also clear the cache's stats
+            on enter and sync the cache on exit.
+            '''
+        self._patch()
+        try:
+            if auto_sync:
+                with self.synced(label):
+                    yield self
+            else:
+                yield self
+        finally:
+            self._unpatch()
+
+    def clear_stats(self):
+        self._nkeys, self._hits = len(self._cache), 0
 
     @classmethod
     def _cache_filepath(cls, filename):
@@ -122,14 +153,14 @@ class RegexCache(object):
 
         return cache
 
-    def sync(self):
+    def sync(self, label=""):
         misses = len(self._cache) - self._nkeys
         nohits = self._nkeys - self._hits
 
-        self._log("Cache '%s' stats: %i entries %i hits %i misses %i nohits." \
-                    % (self.filename, len(self._cache), self._hits, misses, nohits))
+        self._log("[%s] Cache stats: %i entries %i hits %i misses %i nohits." \
+                    % (label, len(self._cache), self._hits, misses, nohits))
         if misses and not self.disabled and self.filename != None:
-            self._log("Cache '%s' require sync." % self.filename)
+            self._log("[%s] Cache require sync." % label)
             with open(self.filename, 'rb+') as f, flock(f):
                 # get a fresh disk version in case that other
                 # byexample instance had touched the cache but
@@ -147,7 +178,7 @@ class RegexCache(object):
                 pickle.dump(cache, f)
                 f.truncate()
 
-            self._nkeys, self._hits = len(self._cache), 0
+            self.clear_stats()
 
     def get(self, pattern, flags=0):
         ''' RegexCache.get compiles a pattern into a regex object like
@@ -221,7 +252,7 @@ class RegexCache(object):
             groupindex, indexgroup
         )
 
-    def __enter__(self):
+    def _patch(self):
         if self.disabled:
             return self
 
@@ -231,10 +262,9 @@ class RegexCache(object):
 
         return self
 
-    def __exit__(self, *args, **kargs):
+    def _unpatch(self, *args, **kargs):
         if self.disabled:
             return
 
         sre_compile.compile = self._original__sre_compile__compile
-        self.sync()
 
