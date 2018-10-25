@@ -12,8 +12,8 @@ and ``..`` as the secondary prompt.
 
 
 ```ruby
->> a = 1;
->> b = 2;
+>> a = 1
+>> b = 2
 >> a + b
 => 3
 
@@ -86,30 +86,6 @@ On the other hand, you can disable it for never see an object's print
 with ``+ruby-expr-print=false``.
 
 The default is ``+ruby-expr-print=auto``.
-
-## Semicolon side effect
-
-The semicolon ``;`` at the end of each expression will suppress the print of
-the returned object.
-
-But it has also a *side effect*: all the expressions that end with ``;`` are not
-executed until an expression without ``;`` is written.
-
-This is how ``irb`` works behind scenes, so be careful with the use of
-semicolons. It is easy to get confused with this weird effect.
-
-```ruby
->> a = 1;
->> b = 2;
->> a + b     # nice without side effects
-=> 3
-
->> puts '4'; # nothing is printed (what a surprise!)
-
->> nil       # this dummy expression is enough to flush the previous one
-4
-=> nil
-```
 
 # Pretty print
 

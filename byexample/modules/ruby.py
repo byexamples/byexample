@@ -161,10 +161,10 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         if self.expr_print_mode == 'auto':
             if self._detect_expression_print_expected(example):
                 print_expr = True
-                src = 'IRB.CurrentContext.echo = true;\n' + src
+                src = 'IRB.CurrentContext.echo = true; ' + src
             else:
                 print_expr = False
-                src = 'IRB.CurrentContext.echo = false;\n' + src
+                src = 'IRB.CurrentContext.echo = false; ' + src
 
         # there is no need to revert the echo=True if it was changed
         # because the execution of the next example will set it correctly
