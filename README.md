@@ -32,10 +32,10 @@ Currently ``byexample`` supports:
 
 ## How do I get started?
 
-First, you need to install it locally.
+First, you need to install it:
 
 ```
-$ pip install --user byexample                # install it # byexample: +skip
+$ pip install byexample                # install it # byexample: +skip
 ```
 
 Or if you prefer, you can install it inside a
