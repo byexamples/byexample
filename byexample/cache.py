@@ -29,11 +29,11 @@ def flock(file, shared=False):
 class RegexCache(object):
     def __init__(self, filename, disabled=False, cache_verbose=False):
         self.disabled = disabled
+        self.verbose = cache_verbose
         if self.disabled:
             return
 
         self.filename = self._cache_filepath(filename)
-        self.verbose = cache_verbose
 
         self._cache = self._load_cache_from_disk()
         self.clear_stats()
@@ -44,11 +44,15 @@ class RegexCache(object):
         ''' Clear the cache's stats on enter and sync the cache
             on exit.
             '''
+        if self.disabled:
+            yield self
+            return
+
         self.clear_stats()
         try:
             yield self
         finally:
-            self.sync(label)
+            self._sync(label)
 
     @contextlib.contextmanager
     def activated(self, auto_sync, label=""):
@@ -58,6 +62,10 @@ class RegexCache(object):
             If auto_sync is True, also clear the cache's stats
             on enter and sync the cache on exit.
             '''
+        if self.disabled:
+            yield self
+            return
+
         self._patch()
         try:
             if auto_sync:
@@ -153,13 +161,13 @@ class RegexCache(object):
 
         return cache
 
-    def sync(self, label=""):
+    def _sync(self, label=""):
         misses = len(self._cache) - self._nkeys
         nohits = self._nkeys - self._hits
 
         self._log("[%s] Cache stats: %i entries %i hits %i misses %i nohits." \
                     % (label, len(self._cache), self._hits, misses, nohits))
-        if misses and not self.disabled and self.filename != None:
+        if misses and self.filename != None:
             self._log("[%s] Cache require sync." % label)
             with open(self.filename, 'rb+') as f, flock(f):
                 # get a fresh disk version in case that other
@@ -253,8 +261,6 @@ class RegexCache(object):
         )
 
     def _patch(self):
-        if self.disabled:
-            return self
 
         # PATCH! TODO is a better way?!?
         self._original__sre_compile__compile = sre_compile.compile
@@ -263,8 +269,5 @@ class RegexCache(object):
         return self
 
     def _unpatch(self, *args, **kargs):
-        if self.disabled:
-            return
-
         sre_compile.compile = self._original__sre_compile__compile
 
