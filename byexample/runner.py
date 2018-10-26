@@ -163,7 +163,7 @@ class PexepctMixin(object):
         self.interpreter.delaybeforesend = delaybeforesend
         self.interpreter.delayafterread = None
 
-        self._create_terminal(*reversed(geometry))
+        self._create_terminal(*geometry)
 
         if wait_first_prompt:
             self._expect_prompt(timeout=first_prompt_timeout, prompt_re=self.PS1_re)
