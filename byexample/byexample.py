@@ -1,6 +1,6 @@
 from .cache import RegexCache, cache_filepath
 from .jobs import Jobs, Status, allow_sigint
-import os
+import os, sys
 
 def execute_examples(filename, sigint_handler):
     global cache_disabled, harvester, executor, options, human_args, dry
@@ -35,7 +35,7 @@ def main(args=None):
             testfiles, harvester, executor, options = init(args)
 
         if exc:
-            sys.exit(Status.Error)
+            sys.exit(Status.error)
 
     jobs = Jobs(args.jobs, args.verbosity)
     return jobs.run(execute_examples, testfiles, options['fail_fast'])
