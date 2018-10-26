@@ -19,6 +19,11 @@ But some programs may need a real terminal or at least an
 ``byexample`` can emulate an ANSI Terminal capable of interpret and emulate
 all the control sequences and escape codes.
 
+> **Note:** the terminal emulation has little support in ``Python 2.7``.
+> It should work but if you can use a modern ``Python`` version, better.
+
+## Removing color
+
 If you have an example that is printing text with color, you probably see
 something like:
 
@@ -34,6 +39,8 @@ $ echo "\033[31mmessage in red\033[0m"      # byexample: +term-emu
 message in red
 ```
 
+## Terminal boundaries
+
 Keep in mind that an *emulated terminal* will honor its own boundaries: if
 an example prints a string longer than the width of the terminal, the string
 will spawn multiple lines (a newline is added automatically).
@@ -43,4 +50,31 @@ $ echo "aaaaabbbbbcccccdddddaaaaabbbbbcccccdddddaaaaabbbbbcccccddddd" # byexampl
 aaaaabbbbbcccccdddddaaaaabbbbbcccccddddd
 aaaaabbbbbcccccddddd
 ```
+
+This is specially useful to work with ``ncurses`` or other
+technology-like programs.
+
+``man``, for example, uses a ``pager`` to print the manual page
+that spans all the width of the terminal:
+
+```shell
+$ man python                      # byexample: +term-emu +rm=~ +stop-on-silence
+PYTHON(1)                   General Commands Manual                  PYTHON(1)
+~
+NAME
+       python  - an interpreted, interactive, object-oriented programming lan‐
+       guage
+<...>
+```
+
+> Try the above example without ``+term-emu``.
+
+<!--
+$ kill %%     # byexample: -skip +pass
+-->
+
+## Performance
+
+The emulation it is typically 3 times slower than the normal mode.
+Keep that in mind and try to not enable it by default.
 

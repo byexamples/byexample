@@ -9,8 +9,8 @@ to start.
 ```shell
 $ jobs=1 pretty=none make lib-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
 <...>
-File byexample/differ.py, 17/17 test ran in <...> seconds
-[PASS] Pass: 17 Fail: 0 Skip: 0
+File byexample/differ.py, 18/18 test ran in <...> seconds
+[PASS] Pass: 18 Fail: 0 Skip: 0
 ~
 File byexample/expected.py, 95/95 test ran in <...> seconds
 [PASS] Pass: 95 Fail: 0 Skip: 0
@@ -70,8 +70,8 @@ File README.md, 9/9 test ran in <...> seconds
 File docs/differences.md, 12/12 test ran in <...> seconds
 [PASS] Pass: 12 Fail: 0 Skip: 0
 ~
-File docs/geometry.md, 4/4 test ran in <...> seconds
-[PASS] Pass: 4 Fail: 0 Skip: 0
+File docs/geometry.md, 12/12 test ran in <...> seconds
+[PASS] Pass: 12 Fail: 0 Skip: 0
 ~
 File docs/how_to_hook_to_events_with_concerns.md, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
@@ -96,6 +96,9 @@ File docs/languages/ruby.md, 12/12 test ran in <...> seconds
 ~
 File docs/languages/shell.md, 30/30 test ran in <...> seconds
 [PASS] Pass: 30 Fail: 0 Skip: 0
+~
+File docs/terminal-emulation.md, 7/7 test ran in <...> seconds
+[PASS] Pass: 7 Fail: 0 Skip: 0
 ~
 File docs/unicode.md, 8/8 test ran in <...> seconds
 [PASS] Pass: 8 Fail: 0 Skip: 0
