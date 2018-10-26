@@ -102,8 +102,10 @@ class RegexCache(object):
         dir = appdirs.user_cache_dir(appname='byexample', version=version)
         try:
             os.makedirs(dir)
-        except OSError:
-            pass # note: for Python 3.2 and greater, use exist_ok=True (see makedirs)
+        except OSError as e:
+            # XXX: for Python 3.2 and greater, use exist_ok=True (see makedirs)
+            if e.errno != errno.EEXIST:
+                raise
 
         filename = os.path.basename(filename)
         return os.path.join(dir, filename)
@@ -183,6 +185,7 @@ class RegexCache(object):
                 # write to disk the new updated cache, truncate
                 # and shrink it if the new is smaller than the original.
                 f.seek(0,0)
+                # XXX pickletools.optimize ??
                 pickle.dump(cache, f)
                 f.truncate()
 
