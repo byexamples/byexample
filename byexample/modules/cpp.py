@@ -85,8 +85,7 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
-        self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'],
-                                     geometry=options['geometry'])
+        self._spawn_interpreter(cmd, options)
 
 
     def shutdown(self):

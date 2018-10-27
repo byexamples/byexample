@@ -119,9 +119,7 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
         shebang = options['shebangs'].get(self.language, shebang)
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
-        self._spawn_interpreter(cmd, wait_first_prompt=False,
-                                delaybeforesend=options['delaybeforesend'],
-                                geometry=options['geometry'])
+        self._spawn_interpreter(cmd, options, wait_first_prompt=False)
 
         self._exec_and_wait(
 '''export PS1="/byexample/sh/ps1> "

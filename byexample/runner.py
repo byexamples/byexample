@@ -148,22 +148,22 @@ class PexepctMixin(object):
 
         self.last_output = []
 
-    def _spawn_interpreter(self, cmd, delaybeforesend=None,
-                                        wait_first_prompt=True,
-                                        first_prompt_timeout=10,
-                                        geometry=(24, 80)):
+    def _spawn_interpreter(self, cmd, options, wait_first_prompt=True,
+                                        first_prompt_timeout=10):
+        rows, cols = options['geometry']
+
         env = os.environ.copy()
-        env.update({'LINES': str(geometry[0]), 'COLUMNS': str(geometry[1])})
+        env.update({'LINES': str(rows), 'COLUMNS': str(cols)})
 
         self._drop_output() # there shouldn't be any output yet but...
         self.interpreter = pexpect.spawn(cmd, echo=False,
                                                 encoding=self.encoding,
-                                                dimensions=geometry,
+                                                dimensions=(rows, cols),
                                                 env=env)
-        self.interpreter.delaybeforesend = delaybeforesend
+        self.interpreter.delaybeforesend = options['delaybeforesend']
         self.interpreter.delayafterread = None
 
-        self._create_terminal(*geometry)
+        self._create_terminal(rows, cols)
 
         if wait_first_prompt:
             self._expect_prompt(timeout=first_prompt_timeout, prompt_re=self.PS1_re)

@@ -518,8 +518,7 @@ del _byexample_pprint
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
         # run!
-        self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'],
-                                     geometry=options['geometry'])
+        self._spawn_interpreter(cmd, options)
 
     def shutdown(self):
         self._shutdown_interpreter()

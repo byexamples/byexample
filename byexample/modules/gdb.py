@@ -110,8 +110,7 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
         shebang = options['shebangs'].get(self.language, shebang)
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
-        self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'],
-                                     geometry=options['geometry'])
+        self._spawn_interpreter(cmd, options)
 
         # gdb will not print the address of a variable by default
         self._exec_and_wait('set print address off\n', timeout=1)
