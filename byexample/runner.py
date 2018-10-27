@@ -189,6 +189,12 @@ class PexepctMixin(object):
         finally:
             termios.tcsetattr(self.interpreter.child_fd, termios.TCSANOW, attr)
 
+    def _run(self, example, options):
+        with self._change_terminal_geometry_ctx(options):
+            return self._run_impl(example, options)
+
+    def _run_impl(self, example, options):
+        raise NotImplementedError() # pragma: no cover
 
     def _drop_output(self):
         self.last_output = []

@@ -89,10 +89,11 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
                     }
 
     def run(self, example, options):
+        return PexepctMixin._run(self, example, options)
+
+    def _run_impl(self, example, options):
         try:
-            self._is_terminal_emulation_enabled = options['term_emu']
-            with self._change_terminal_geometry_ctx(options):
-                return self._exec_and_wait(example.source, options)
+            return self._exec_and_wait(example.source, options)
         except TimeoutException as ex:
             if 'stop_on_silence' in options and options['stop_on_silence']:
                 # get the current output

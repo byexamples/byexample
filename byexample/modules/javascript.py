@@ -95,8 +95,10 @@ class JavascriptInterpreter(ExampleRunner, PexepctMixin):
         self.encoding = encoding
 
     def run(self, example, options):
-        with self._change_terminal_geometry_ctx(options):
-            return self._exec_and_wait(example.source, options)
+        return PexepctMixin._run(self, example, options)
+
+    def _run_impl(self, example, options):
+        return self._exec_and_wait(example.source, options)
 
     def interact(self, example, options):
         PexepctMixin.interact(self)

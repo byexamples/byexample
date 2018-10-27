@@ -154,7 +154,9 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         self.encoding = encoding
 
     def run(self, example, options):
+        return PexepctMixin._run(self, example, options)
 
+    def _run_impl(self, example, options):
         # turn on/off the echo mode base on the setting from the
         # start; per example setting is not supported
         src = example.source
@@ -169,8 +171,7 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
 
         # there is no need to revert the echo=True if it was changed
         # because the execution of the next example will set it correctly
-        with self._change_terminal_geometry_ctx(options):
-            return self._exec_and_wait(src, options)
+        return self._exec_and_wait(src, options)
 
     _EXPR_RESULT_RE = re.compile(r'^=>( |$)', re.MULTILINE | re.DOTALL)
 

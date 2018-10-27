@@ -492,9 +492,10 @@ del _byexample_pprint
                      ]}
 
     def run(self, example, options):
-        self._is_terminal_emulation_enabled = options['term_emu']
-        with self._change_terminal_geometry_ctx(options):
-            return self._exec_and_wait(example.source, options)
+        return PexepctMixin._run(self, example, options)
+
+    def _run_impl(self, example, options):
+        return self._exec_and_wait(example.source, options)
 
     def _change_terminal_geometry(self, rows, cols, options):
         # update the pretty printer with the new columns value
