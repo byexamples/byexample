@@ -71,10 +71,9 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
                         ]
                     }
 
-    def run(self, example, flags):
-        with self._change_terminal_geometry_ctx(*flags['geometry']):
-            return self._exec_and_wait(example.source,
-                                        int(flags['timeout']))
+    def run(self, example, options):
+        with self._change_terminal_geometry_ctx(options):
+            return self._exec_and_wait(example.source, options)
 
     def interact(self, example, options):
         PexepctMixin.interact(self)
@@ -92,7 +91,7 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
         self._shutdown_interpreter()
 
 
-    def _get_output(self):
+    def _get_output(self, options):
         # cling doesn't disable the TTY's echo so everything we type in
         # it will be reflected in the output.
         # so this breaks badly self._get_output

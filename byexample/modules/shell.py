@@ -88,14 +88,13 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
                     'a': [],
                     }
 
-    def run(self, example, flags):
+    def run(self, example, options):
         try:
-            self._is_terminal_emulation_enabled = flags['term_emu']
-            with self._change_terminal_geometry_ctx(*flags['geometry']):
-                return self._exec_and_wait(example.source,
-                                        timeout=int(flags['timeout']))
+            self._is_terminal_emulation_enabled = options['term_emu']
+            with self._change_terminal_geometry_ctx(options):
+                return self._exec_and_wait(example.source, options)
         except TimeoutException as ex:
-            if 'stop_on_silence' in flags and flags['stop_on_silence']:
+            if 'stop_on_silence' in options and options['stop_on_silence']:
                 # get the current output
                 out = ex.output
 
@@ -105,7 +104,7 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
                 self.interpreter.sendcontrol('z')
 
                 # wait for the prompt, ignore any extra output
-                self._expect_prompt(timeout=int(flags['timeout']),
+                self._expect_prompt(options,
                                         prompt_re=self.PS1_re)
                 self._drop_output()
                 return out
@@ -126,7 +125,7 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
 export PS2="/byexample/sh/ps2> "
 export PS3="/byexample/sh/ps3> "
 export PS4="/byexample/sh/ps4> "
-''', timeout=10)
+''', options, timeout=10)
         self._drop_output() # discard banner and things like that
 
     def shutdown(self):

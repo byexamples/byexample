@@ -151,6 +151,7 @@ class PexepctMixin(object):
     def _spawn_interpreter(self, cmd, options, wait_first_prompt=True,
                                         first_prompt_timeout=10):
         rows, cols = options['geometry']
+        self._terminal_default_geometry = (rows, cols)
 
         env = os.environ.copy()
         env.update({'LINES': str(rows), 'COLUMNS': str(cols)})
@@ -163,10 +164,11 @@ class PexepctMixin(object):
         self.interpreter.delaybeforesend = options['delaybeforesend']
         self.interpreter.delayafterread = None
 
-        self._create_terminal(rows, cols)
+        self._create_terminal(options)
 
         if wait_first_prompt:
-            self._expect_prompt(timeout=first_prompt_timeout, prompt_re=self.PS1_re)
+            self._expect_prompt(options, timeout=first_prompt_timeout,
+                                prompt_re=self.PS1_re)
             self._drop_output() # discard banner and things like that
 
     def interact(self, send='\n', escape_character=chr(29),
@@ -197,32 +199,35 @@ class PexepctMixin(object):
         time.sleep(0.001)
         self.interpreter.terminate(force=True)
 
-    def _exec_and_wait(self, source, timeout):
+    def _exec_and_wait(self, source, options, timeout=None):
+        if timeout == None:
+            timeout = options['timeout']
+
         lines = source.split('\n')
         for line in lines[:-1]:
             self.interpreter.sendline(line)
 
             begin = time.time()
-            self._expect_prompt(timeout)
+            self._expect_prompt(options, timeout)
             timeout -= max(time.time() - begin, 0)
 
         self.interpreter.sendline(lines[-1])
-        self._expect_prompt(timeout, prompt_re=self.PS1_re)
+        self._expect_prompt(options, timeout, prompt_re=self.PS1_re)
 
-        return self._get_output()
+        return self._get_output(options)
 
-    def _create_terminal(self, rows, cols):
+    def _create_terminal(self, options):
+        rows, cols = options['geometry']
+
         self._screen = HistoryScreen(rows, cols, ratio=1)
         self._stream = Stream(self._screen)
-        self._terminal_default_geometry = (rows, cols)
-        self._is_terminal_emulation_enabled = False
 
     @contextlib.contextmanager
-    def _change_terminal_geometry_ctx(self, rows, cols, force=False):
+    def _change_terminal_geometry_ctx(self, options, force=False):
         ''' Context manager to change the terminal geometry temporally.
 
             Change to the new (rows, cols) and restore it back to the
-            default.
+            default (read from options).
 
             Nothing is changed if (rows, cols) is equal to the default
             geometry unless you set force=True.
@@ -230,17 +235,19 @@ class PexepctMixin(object):
             Override/extend the method _change_terminal_geometry to customize
             what's to be done upon each window change.
             '''
+        rows, cols = options['geometry']
         need_change = (self._terminal_default_geometry != (rows, cols) or force)
         if need_change:
-            self._change_terminal_geometry(rows, cols)
-
-        try:
+            self._change_terminal_geometry(rows, cols, options)
+            try:
+                yield
+            finally:
+                self._change_terminal_geometry(*self._terminal_default_geometry,
+                                                options)
+        else:
             yield
-        finally:
-            if need_change:
-                self._change_terminal_geometry(*self._terminal_default_geometry)
 
-    def _change_terminal_geometry(self, rows, cols):
+    def _change_terminal_geometry(self, rows, cols, options):
         ''' Change the interpreter geometry or window size.
 
             By default just send a SIGWINCH signal but you may want to
@@ -271,16 +278,19 @@ class PexepctMixin(object):
         else:
             return (line.rstrip() for line in lines)
 
-    def _expect_prompt(self, timeout, prompt_re=None):
+    def _expect_prompt(self, options, timeout=None, prompt_re=None):
         ''' Wait for a <prompt_re> (any self.any_PS_re if <prompt_re> is None)
             and raise a timeout if we cannot find one.
 
             After the successful expect, collect the 'before' output into
             self.last_output
         '''
+        if timeout == None:
+            timeout = options['timeout']
+
         _timeout_msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s"
         if timeout <= 0:
-            out = self._get_output()
+            out = self._get_output(options)
             raise TimeoutException(_timeout_msg % ''.join(self.last_output)[-1000:],
                                     out)
 
@@ -294,14 +304,16 @@ class PexepctMixin(object):
         self.last_output.append(self.interpreter.before)
 
         if what == Timeout:
-            out = self._get_output()
+            out = self._get_output(options)
             raise TimeoutException(_timeout_msg % ''.join(self.last_output)[-1000:],
                                     out)
 
 
-    def _get_output(self):
+    def _get_output(self, options):
+        terminal_emulation_enabled = options['term_emu']
+
         lines = self.last_output
-        if self._is_terminal_emulation_enabled:
+        if terminal_emulation_enabled:
             lines = self._emulate_terminal(lines)
             out = "\n".join(lines)
         else:
@@ -314,7 +326,7 @@ class PexepctMixin(object):
             out = self.any_PS_re.sub('', out)
 
         # uniform the new line endings (aka universal new lines)
-        if not self._is_terminal_emulation_enabled:
+        if not terminal_emulation_enabled:
             out = self._universal_new_lines(out)
 
         return out

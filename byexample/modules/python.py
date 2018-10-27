@@ -491,17 +491,16 @@ del _byexample_pprint
                             "-c", change_prompts,  # run this before anything else
                      ]}
 
-    def run(self, example, flags):
-        self._is_terminal_emulation_enabled = flags['term_emu']
-        with self._change_terminal_geometry_ctx(*flags['geometry']):
-            return self._exec_and_wait(example.source,
-                                            timeout=int(flags['timeout']))
+    def run(self, example, options):
+        self._is_terminal_emulation_enabled = options['term_emu']
+        with self._change_terminal_geometry_ctx(options):
+            return self._exec_and_wait(example.source, options)
 
-    def _change_terminal_geometry(self, rows, cols):
+    def _change_terminal_geometry(self, rows, cols, options):
         # update the pretty printer with the new columns value
         source = '__byexample_pretty_print.update_width(%i)' % cols
-        self._exec_and_wait(source, timeout=2)
-        PexepctMixin._change_terminal_geometry(self, rows, cols)
+        self._exec_and_wait(source, options, timeout=2)
+        PexepctMixin._change_terminal_geometry(self, rows, cols, options)
 
     def interact(self, example, options):
         PexepctMixin.interact(self)

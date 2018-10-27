@@ -153,7 +153,7 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
 
         self.encoding = encoding
 
-    def run(self, example, flags):
+    def run(self, example, options):
 
         # turn on/off the echo mode base on the setting from the
         # start; per example setting is not supported
@@ -169,8 +169,8 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
 
         # there is no need to revert the echo=True if it was changed
         # because the execution of the next example will set it correctly
-        with self._change_terminal_geometry_ctx(*flags['geometry']):
-            return self._exec_and_wait(src, timeout=int(flags['timeout']))
+        with self._change_terminal_geometry_ctx(options):
+            return self._exec_and_wait(src, options)
 
     _EXPR_RESULT_RE = re.compile(r'^=>( |$)', re.MULTILINE | re.DOTALL)
 
@@ -206,14 +206,17 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         # set the pretty print inspector
         if ruby_pretty_print:
             self._exec_and_wait('IRB.CurrentContext.inspect_mode = :pp\n',
+                                    options,
                                     timeout=2)
 
         # disable the echo if we don't want it (false) or we may want it
         # but it will depend on the example (auto)
         if self.expr_print_mode in ('auto', 'false'):
-            self._exec_and_wait('IRB.CurrentContext.echo = false\n', timeout=2)
+            self._exec_and_wait('IRB.CurrentContext.echo = false\n',
+                                    options, timeout=2)
         else:
-            self._exec_and_wait('IRB.CurrentContext.echo = true\n', timeout=2)
+            self._exec_and_wait('IRB.CurrentContext.echo = true\n',
+                                    options, timeout=2)
 
     def shutdown(self):
         self._shutdown_interpreter()

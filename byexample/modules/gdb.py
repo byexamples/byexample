@@ -90,7 +90,7 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
                         ]
                     }
 
-    def run(self, example, flags):
+    def run(self, example, options):
         if not example.source:
             return ''
 
@@ -99,8 +99,8 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
         if example.source.endswith('\n'):
             source = example.source[:-1]
 
-        with self._change_terminal_geometry_ctx(*flags['geometry']):
-            return self._exec_and_wait(source, timeout=int(flags['timeout']))
+        with self._change_terminal_geometry_ctx(options):
+            return self._exec_and_wait(source, options)
 
     def interact(self, example, options):
         PexepctMixin.interact(self)
@@ -113,13 +113,13 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
         self._spawn_interpreter(cmd, options)
 
         # gdb will not print the address of a variable by default
-        self._exec_and_wait('set print address off\n', timeout=1)
+        self._exec_and_wait('set print address off\n', options, timeout=1)
 
         # gdb will stop at the first null when printing an array
-        self._exec_and_wait('set print null-stop on\n', timeout=1)
+        self._exec_and_wait('set print null-stop on\n', options, timeout=1)
 
         # gdb will not ask for "yes or no" confirmation
-        self._exec_and_wait('set confirm off\n', timeout=1)
+        self._exec_and_wait('set confirm off\n', options, timeout=1)
 
     def shutdown(self):
         self._shutdown_interpreter()
