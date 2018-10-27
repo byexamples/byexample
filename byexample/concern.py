@@ -55,7 +55,7 @@ class Concern(ExtendOptionParserMixin):
         '''
         return parser
 
-    def start(self, examples, runners, filepath):
+    def start(self, examples, runners, filepath, options):
         '''
         Called at the begin of the execution of the given examples
         found in the specific filepath with the given runners.

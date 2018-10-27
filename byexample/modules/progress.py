@@ -52,7 +52,7 @@ class SimpleReporter(Concern):
     def _update(self, x):
         pass
 
-    def start(self, examples, runners, filepath):
+    def start(self, examples, runners, filepath, options):
         self.num_examples = len(examples)
         self.examplenro = 0
         self.filepath = filepath
@@ -259,7 +259,7 @@ class ProgressBarReporter(SimpleReporter):
     def _update(self, x):
         self.bar.update(x)
 
-    def start(self, examples, runners, filepath):
+    def start(self, examples, runners, filepath, options):
         if self.jobs == 1:
             position = None
         else:
@@ -267,7 +267,7 @@ class ProgressBarReporter(SimpleReporter):
             # of its bar
             position = int(multiprocessing.current_process().name) + 1
 
-        SimpleReporter.start(self, examples, runners, filepath)
+        SimpleReporter.start(self, examples, runners, filepath, options)
 
         bar_format = '{desc} |{bar}| [{n_fmt}/{total_fmt}{postfix}]'
         self.bar = tqdm(total=len(examples), file=self.output,

@@ -225,7 +225,7 @@ class PexepctMixin(object):
     def _create_terminal(self, options):
         rows, cols = options['geometry']
 
-        self._screen = HistoryScreen(rows, cols, ratio=1)
+        self._screen = HistoryScreen(cols, rows, ratio=1)
         self._stream = Stream(self._screen)
 
     @contextlib.contextmanager
