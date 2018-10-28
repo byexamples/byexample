@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 import re, pexpect, time, termios, operator, string, shlex, os, itertools, contextlib
-from functools import reduce
+from functools import reduce, partial
 from .executor import TimeoutException
 from .common import tohuman
 
@@ -263,9 +263,28 @@ class PexepctMixin(object):
         self.interpreter.setwinsize(rows, cols)
 
 
-    def _emulate_terminal(self, lines_to_feed):
-        for line in lines_to_feed:
-            self._stream.feed(line)
+    @staticmethod
+    def _repl_tab_by_spaces(m, ctx):
+        tabsize = 8
+        at, _ = m.span()
+
+        at += ctx['n_extra_chars']
+        nspaces = ((at//tabsize) * tabsize + tabsize - at)
+
+        # we keep track of how many new chars we added,
+        # the "- 1" is because in each replace we are removing
+        # one char, the tab.
+        ctx['n_extra_chars'] += nspaces - 1
+
+        return " " * nspaces
+
+    @staticmethod
+    def _universal_new_lines(out):
+        return '\n'.join(out.splitlines())
+
+    def _emulate_ansi_terminal(self, chunks, join=True):
+        for chunk in chunks:
+            self._stream.feed(chunk)
 
         pages = []
         while self._screen.history.top:
@@ -280,9 +299,31 @@ class PexepctMixin(object):
             # Python 2.7 support only: it works on str/bytes only
             # XXX this is a limitation, if the output has a single non-ascii
             # character this will blow up
-            return (str(line.rstrip()) for line in lines)
+            lines = (str(line.rstrip()) for line in lines)
         else:
-            return (line.rstrip() for line in lines)
+            lines = (line.rstrip() for line in lines)
+
+        return '\n'.join(lines) if join else lines
+
+    def _emulate_dumb_terminal(self, chunks):
+        ctx = {'n_extra_chars': 0}
+        _repl_tab_by_spaces = partial(self._repl_tab_by_spaces, ctx=ctx)
+
+        chunks = (self._universal_new_lines(chunk) for chunk in chunks)
+        tmp = []
+        for lines in (chunk.split('\n') for chunk in chunks):
+            tmp2 = []
+            for line in (l.rstrip() for l in lines):
+                ctx['n_extra_chars'] = 0
+                line = re.sub(r'\t', _repl_tab_by_spaces, line)
+                tmp2.append(line)
+
+            tmp.append('\n'.join(tmp2))
+
+        return ''.join(tmp)
+
+    def _emulate_as_is_terminal(self, chunks):
+        return ''.join((self._universal_new_lines(chunk) for chunk in chunks))
 
     def _expect_prompt(self, options, timeout=None, prompt_re=None):
         ''' Wait for a <prompt_re> (any self.any_PS_re if <prompt_re> is None)
@@ -316,14 +357,14 @@ class PexepctMixin(object):
 
 
     def _get_output(self, options):
-        terminal_emulation_enabled = options['term_emu']
-
-        lines = self.last_output
-        if terminal_emulation_enabled:
-            lines = self._emulate_terminal(lines)
-            out = "\n".join(lines)
+        if options['term'] == 'dumb':
+            out = self._emulate_dumb_terminal(self.last_output)
+        elif options['term'] == 'ansi':
+            out = self._emulate_ansi_terminal(self.last_output)
+        elif options['term'] == 'as-is':
+            out = self._emulate_as_is_terminal(self.last_output)
         else:
-            out = "".join(lines)
+            raise TypeError("Unknown terminal type '+term=%s'." % options['term'])
 
         self._drop_output()
 
@@ -331,14 +372,7 @@ class PexepctMixin(object):
         if self.any_PS_re:
             out = self.any_PS_re.sub('', out)
 
-        # uniform the new line endings (aka universal new lines)
-        if not terminal_emulation_enabled:
-            out = self._universal_new_lines(out)
-
         return out
-
-    def _universal_new_lines(self, out):
-        return out.replace('\r\n', '\n').replace('\r', '\n')
 
     def _set_cooked_mode(self, state): # pragma: no cover
         # code borrowed from ptyprocess/ptyprocess.py, _setecho, and

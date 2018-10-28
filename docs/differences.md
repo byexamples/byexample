@@ -9,8 +9,8 @@ $ alias byexample=byexample\ --pretty\ none
 
 # Showing the differences
 
-``byexample`` will show what are the differences between the result that
-you are expecting and the result actually got
+``byexample`` will show the differences between the result that
+you are expecting and the result you actually got.
 
 Image that you have a file with the following text:
 
@@ -37,6 +37,7 @@ This example is to show you something about GPL
 ```
 
 We can corroborate that the test passes or not running ``byexample``
+(I deliberately added some typos):
 
 ```
 $ byexample -l shell test/ds/about-lic.doc

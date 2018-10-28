@@ -79,7 +79,7 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
 
         # cling's output requeries to be emulated by an ANSI Terminal
         # so we force this (see _get_output())
-        options['term_emu'] = True
+        options['term'] = 'ansi'
 
         return PexepctMixin._run(self, example, options)
 
@@ -117,7 +117,7 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
         self._drop_output()
 
         # now, feed those lines to our ANSI Terminal emulator
-        lines = self._emulate_terminal(lines)
+        lines = self._emulate_ansi_terminal(lines, join=False)
 
         # get each line in the Terminal's display and ignore each one that
         # belong with our prompt: those are the "echo" lines that

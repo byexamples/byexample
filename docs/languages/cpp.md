@@ -77,7 +77,7 @@ out:
 ## Terminal support
 
 To work with the current CPP interpreter, ``cling``, the terminal emulator is
-enabled by default (``+term-emu``) and cannot be disabled.
+enabled by default (``+term=ansi``) and cannot be disabled.
 
 Also, the terminal geometry cannot by changed after launching the interpreter
 so the option ``+geometry`` cannot be used in an example (but it can be
