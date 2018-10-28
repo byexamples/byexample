@@ -73,3 +73,12 @@ To print boolean expressions you need to surround them with parenthesis
 out:
 (bool) false
 ```
+
+## Terminal support
+
+To work with the current CPP interpreter, ``cling``, the terminal emulator is
+enabled by default (``+term-emu``) and cannot be disabled.
+
+Also, the terminal geometry cannot by changed after launching the interpreter
+so the option ``+geometry`` cannot be used in an example (but it can be
+used from the command line)

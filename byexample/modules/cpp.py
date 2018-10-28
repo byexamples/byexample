@@ -72,6 +72,15 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
                     }
 
     def run(self, example, options):
+        # the algorithm to filter the echos from the cling's output
+        # (see _get_output()) doesn't work if the terminal is resized
+        # so we disable this:
+        options['geometry'] = self._terminal_default_geometry
+
+        # cling's output requeries to be emulated by an ANSI Terminal
+        # so we force this (see _get_output())
+        options['term_emu'] = True
+
         return PexepctMixin._run(self, example, options)
 
     def _run_impl(self, example, options):
@@ -89,9 +98,11 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
         self._spawn_interpreter(cmd, options)
 
 
+    def _change_terminal_geometry(self, rows, cols, options):
+        raise Exception("This should never happen")
+
     def shutdown(self):
         self._shutdown_interpreter()
-
 
     def _get_output(self, options):
         # cling doesn't disable the TTY's echo so everything we type in
