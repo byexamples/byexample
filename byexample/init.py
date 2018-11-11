@@ -80,7 +80,7 @@ def load_modules(dirnames, cfg):
             continue
 
         stability = getattr(module, 'stability', 'undefined')
-        if stability not in ('experimental', 'unstable', 'stable', 'deprecated'):
+        if stability not in ('experimental', 'provisional', 'unstable', 'stable', 'deprecated'):
             stability = 'experimental/%s?' % str(stability)
 
         log("From '%s' loaded '%s' (%s)" % (path, name, stability), verbosity-1)

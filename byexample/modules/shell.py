@@ -27,7 +27,7 @@ from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
 from byexample.executor import TimeoutException
 
-stability = 'unstable'
+stability = 'provisional'
 
 class ShellPromptFinder(ExampleFinder):
     target = 'shell-prompt'

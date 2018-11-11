@@ -9,7 +9,7 @@ try:
 except ImportError:
     progress_bar_available = False
 
-stability = 'unstable'
+stability = 'provisional'
 
 class _DummyLock(object):
     def __enter__(self):
