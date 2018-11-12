@@ -262,22 +262,6 @@ class PexepctMixin(object):
         self._screen.resize(rows, cols)
         self.interpreter.setwinsize(rows, cols)
 
-
-    @staticmethod
-    def _repl_tab_by_spaces(m, ctx):
-        tabsize = 8
-        at, _ = m.span()
-
-        at += ctx['n_extra_chars']
-        nspaces = ((at//tabsize) * tabsize + tabsize - at)
-
-        # we keep track of how many new chars we added,
-        # the "- 1" is because in each replace we are removing
-        # one char, the tab.
-        ctx['n_extra_chars'] += nspaces - 1
-
-        return " " * nspaces
-
     @staticmethod
     def _universal_new_lines(out):
         return '\n'.join(out.splitlines())
@@ -306,21 +290,14 @@ class PexepctMixin(object):
         return '\n'.join(lines) if join else lines
 
     def _emulate_dumb_terminal(self, chunks):
-        ctx = {'n_extra_chars': 0}
-        _repl_tab_by_spaces = partial(self._repl_tab_by_spaces, ctx=ctx)
-
         chunks = (self._universal_new_lines(chunk) for chunk in chunks)
-        tmp = []
-        for lines in (chunk.split('\n') for chunk in chunks):
-            tmp2 = []
-            for line in (l.rstrip() for l in lines):
-                ctx['n_extra_chars'] = 0
-                line = re.sub(r'\t', _repl_tab_by_spaces, line)
-                tmp2.append(line)
+        chunks = (chunk.expandtabs(8) for chunk in chunks)
 
-            tmp.append('\n'.join(tmp2))
+        # remove trailing space from each line
+        lines_group = (chunk.split('\n') for chunk in chunks)
+        chunks = ('\n'.join(l.rstrip() for l in lines) for lines in lines_group)
 
-        return ''.join(tmp)
+        return ''.join(chunks)
 
     def _emulate_as_is_terminal(self, chunks):
         return ''.join((self._universal_new_lines(chunk) for chunk in chunks))

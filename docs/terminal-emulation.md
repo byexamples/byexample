@@ -51,7 +51,7 @@ taz
 ```
 
 If you need to check those, you can use ``+term=as-is`` to disable
-the terminal emulation
+the terminal emulation.
 
 ## As-is terminal
 
