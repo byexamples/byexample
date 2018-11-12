@@ -75,16 +75,6 @@ File test/ds/python-tutorial.v1.md, 4/4 test ran in <...> seconds
 [FAIL] Pass: 2 Fail: 1 Skip: 1
 ```
 
-## Wildcards and Captures
-
-You may noticed the use of ``<...>`` in the previous example. This tag matches
-any string and can be used to ignore unwanted long or non-deterministic strings.
-
-Like ``<...>``, the tags with a name like ``<name>`` matches anything but
-the matched string is also captured and can be pasted into another example
-later.
-
-
 ## Output differences
 
 Each test is found, parsed and executed. For each test or example that failed
@@ -96,73 +86,17 @@ In the previous example, the code executed was ``2j * 2`` and we expected
 
 Obviously our blog has a bug!
 
-
-We can fix ``2j * 2`` replacing the expected ``4`` by ``4j`` and re running
-the test.
+We can fix ``2j * 2`` replacing the expected ``4`` by ``4j`` and
+replacing ``6`` by ``6j`` in the next example
 
 Here is our second try:
 
 ```
-$ diff -U 1 test/ds/python-tutorial.v1.md test/ds/python-tutorial.v2.md  # byexample: +rm=~
-<...>
-~     >>> 2j * 2
-~-    4
-~+    4j
-~ 
-
-$ byexample -l python test/ds/python-tutorial.v2.md
-<...>
-Failed example:
-    print('hello world  ')
-<...>
-Expected:
-hello world
-Got:
-hello world$$
+$ byexample --ff -l python test/ds/python-tutorial.v2.md
 <...>
 File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
-[FAIL] Pass: 3 Fail: 1 Skip: 0
+[PASS] Pass: 4 Fail: 0 Skip: 0
 ```
-
-We fixed one but the last example also fails. And this time the difference
-is subtle.
-
-### Whitespace differences
-
-``byexample`` will highlight some whitespace characters both in the expected
-and in the got outputs to make easier to see the differences like this.
-
-In the last case, the example is printing 'hello world' followed by 2 trailing
-spaces, marked with a ``$``
-
-You can disable this enhancement if you are getting confuse for the extras ``$``s:
-
-```
-$ byexample --no-enhance-diff -l python test/ds/python-tutorial.v2.md
-<...>
-Failed example:
-    print('hello world  ')
-Expected:
-hello world
-Got:
-hello world  
-<...>
-```
-
-Without the enhancement, is harder to spot the difference, isn't?
-
-That's the reason that the default in ``byexample`` is to highlight this kind
-of hard-to-see characters
-
-
-## Option flags
-
-``byexample`` supports a set of flags or options that can change some
-parameters of the execution of the example.
-
-Some flags are generic, others are language-specific.
-
-
 
 ## What is considered an example?
 
@@ -200,40 +134,6 @@ an interpreter session like example.
 
 Check out [where should I write the examples](where_should_I_write_the_examples.md)
 section, it has a more in deep description.
-
-### New lines at the end are ignored
-
-``byexample`` will ignore any empty line(s) at the end of the expected string
-and from the got string from the executed examples.
-
-Look at this successful example even if the example prints several empty lines
-at the end which are not expected:
-
-```python
->>> print("bar\n\n")
-bar
-```
-
-This is because most of the time an empty new line is added for aesthetics
-purposes in the example or produced by the runner/interpreter as an artifact.
-
-### New lines in the middle of the expected string
-
-Most, if not all the examples use an empty line as delimiter to mark the end
-of the expected string.
-
-But what if you want to test a multiline text that has empty lines?
-
-You can use a special character like ``~`` and instruct ``byexample`` to
-ignore it with the ``rm`` option.
-
-```python
->>> print("hello\n\nworld!")    # byexample: +rm=~
-hello
-~
-world!
-```
-
 
 
 ## Extending ``byexample``

@@ -23,9 +23,9 @@ is 2 seconds and this one can be changed from the command line with
 See what happen when an example timeout:
 
 ```
-$ byexample -l python --timeout 0.0001 --ff test/ds/python-tutorial.v3.md
+$ byexample -l python --timeout 0.0001 --ff test/ds/python-tutorial.v1.md
 <...>
-File "test/ds/python-tutorial.v3.md", line 4
+File "test/ds/python-tutorial.v1.md", line 4
 Failed example:
     from __future__ import print_function
 => Execution timedout at example 1 of 4.

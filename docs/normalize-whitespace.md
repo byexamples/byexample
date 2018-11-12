@@ -22,9 +22,9 @@ do not count.
 
 ```python
 >>> print("Name Age kev 22 luc 23")     # byexample: +norm-ws
-    Name    Age
-    kev     22
-    luc     23
+Name    Age
+kev     22
+luc     23
 ```
 
 Here is another example, this time written in ``Ruby``:

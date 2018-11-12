@@ -5,13 +5,11 @@ The following is an example written in Python about arithmetics
     >>> 1 + 2
     3
 
-The next example show you about complex numbers in Python
+The next examples show you about complex numbers in Python
 
     >>> 2j * 2
     4
 
-And of course, this is the hello world written in Python
-
-    >>> print('hello world  ')
-    hello world
+    >>> 2j + 4j
+    6
 

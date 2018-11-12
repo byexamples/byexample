@@ -95,3 +95,37 @@ special tokens like ````` ``` `````, ``~~~``, ``'''`` and ``-->``.
 Check out [how to support new finders and languages](https://byexamples.github.io/byexample/how_to_support_new_finders_and_languages)
 to see the internals of these.
 
+### New lines at the end are ignored
+
+``byexample`` will ignore any empty line(s) at the end of the expected string
+and from the got string from the executed examples.
+
+Look at this successful example even if the example prints several empty lines
+at the end which are not expected:
+
+```python
+>>> print("bar\n\n")
+bar
+```
+
+This is because most of the time an empty new line is added for aesthetics
+purposes in the example or produced by the runner/interpreter as an artifact.
+
+### New lines in the middle of the expected string
+
+Most, if not all the examples use an empty line as delimiter to mark the end
+of the expected string.
+
+But what if you want to test a multiline text that has empty lines?
+
+You can use a special character like ``~`` and instruct ``byexample`` to
+ignore it with the ``rm`` option.
+
+```python
+>>> print("hello\n\nworld!")    # byexample: +rm=~
+hello
+~
+world!
+```
+
+
