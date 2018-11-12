@@ -95,7 +95,10 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
+        options.up()
+        options['geometry'] = (max(options['geometry'][0], 128), options['geometry'][1])
         self._spawn_interpreter(cmd, options)
+        options.down()
 
 
     def _change_terminal_geometry(self, rows, cols, options):

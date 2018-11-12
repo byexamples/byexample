@@ -82,3 +82,7 @@ enabled by default (``+term=ansi``) and cannot be disabled.
 Also, the terminal geometry cannot by changed after launching the interpreter
 so the option ``+geometry`` cannot be used in an example (but it can be
 used from the command line)
+
+The amount of rows of the terminal has a minimum value of 128 and this limit
+is really important: if your outputs have more than 128 lines you will need
+to increase the geometry or the results may be undefined.
