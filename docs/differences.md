@@ -55,14 +55,18 @@ you modify it: responsibilities to respect the freedom of others.
 <...>
 ```
 
-Do you see where are the typos/errors?
+Do you see where are the typos/errors? Hard isn't?
 
-By default ``byexample`` shows the two strings, the expected and the got.
+By default ``byexample`` shows the two strings, the *expected* that you
+wrote in the example and the *got* from the execution.
 
 For small strings is enough to spot the differences but for larger blobs
 like this one is a little harder.
 
-For this reason ``byexample`` allows you to change the diff algorithm:
+## Change the diff algorithm
+
+For this reason ``byexample`` allows you to change the diff algorithm
+with ``--diff``:
 
 ```
 $ byexample -l shell --diff ndiff test/ds/about-lic.doc   # byexample: +rm=~
@@ -108,6 +112,8 @@ This example is to show you something about GPL
     you modify it: <responsibilities>.
 ```
 
+If we run the example again:
+
 ```
 $ byexample -l shell test/ds/about-lic-with-tags.doc
 <...>
@@ -136,10 +142,11 @@ and ``<prevent2>`` are there exactly as we defined in the test.
 
 But the ``<protect>`` and ``<responsibilities>`` are not.
 
-``byexample`` captured the fragments "your rights" and "responsibilities to
-respect the freedom of others" and replaced the tags by the captured text.
+``byexample`` captured the fragments ``"your rights"`` and
+``"responsibilities to respect the freedom of others"``
+and replaced the tags by the captured text.
 
-This guess makes the differences shorter and more easy to spot:
+These *guesses* makes the differences shorter and more easy to spot:
 
 ```
 $ byexample -l shell --diff ndiff test/ds/about-lic-with-tags.doc   # byexample: +rm=~
@@ -168,10 +175,27 @@ are correct and can be used to update the diff.
 Keep in mind that the test is failing therefore, the captured strings
 may not be correct.
 
+You can disable this with the ``--no-enhance-diff`` from the command line.
+You will see a much harder to interpreter diff:
+
+```shell
+$ byexample -l shell --diff ndiff --no-enhance-diff test/ds/about-lic-with-tags.doc   # byexample: +rm=~
+<...>
+Differences:
+- To protect <protect>, we need to prevent others from <prevent1>
+- or <prevent2>.  Therefore, you have
++ To protect your rights, we need to prevent no-one from denying you
++ these rights or asking you to surrender the rights.  Therefore, you don't have
+  certain responsibilities if you distribute copies of the software, or if
+- you modify it: <responsibilities>.
++ you modify it: responsibilities to respect the freedom of others.
+<...>
+```
+
 ## Diff algorithms
 
-In addition to the default diff algorithm and the ``ndiff`` algorithm,
-``byexample`` implements two more.
+In addition to the default diff algorithm (``none``) and
+the ``ndiff`` algorithm, ``byexample`` implements two more.
 
 ```
 $ byexample -h                      # byexample: +norm-ws

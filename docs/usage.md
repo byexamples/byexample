@@ -24,15 +24,13 @@ The following is an example written in Python about arithmetics
 ~    >>> 1 + 2
 ~    3
 ~
-The next example show you about complex numbers in Python
+The next examples show you about complex numbers in Python
 ~
 ~    >>> 2j * 2
 ~    4
 ~
-And of course, this is the hello world written in Python
-~
-~    >>> print('hello world  ')
-~    hello world
+~    >>> 2j + 4j
+~    6
 ~
 ```
 
@@ -156,52 +154,6 @@ Without the enhancement, is harder to spot the difference, isn't?
 That's the reason that the default in ``byexample`` is to highlight this kind
 of hard-to-see characters
 
-### Diff algorithms
-
-``byexample`` supports diff algorithms.
-
-Instead of printing the expected and the got outputs separately,
-you can select one diff and print both outputs in the same context.
-
-For large outputs this is an awesome tool
-
-```
-$ byexample --diff ndiff -l python test/ds/python-tutorial.v2.md
-<...>
-Failed example:
-    print('hello world  ')
-<...>
-Differences:
-- hello world
-+ hello world$$
-?            ++
-<...>
-```
-
-Check out [docs/differences](differences.md) for more info about this.
-
-## Normalize whitespace
-
-We can tell ``byexample`` to relax the checks and replace all the sequences
-of spaces, tabs and new lines as a single space.
-
-We could use this to fix our failing example adding ``# byexample: +norm-ws``
-to the example:
-
-```
-$ diff -U 1 test/ds/python-tutorial.v2.md test/ds/python-tutorial.v3.md      # byexample: +rm=~
-<...>
-~-    >>> print('hello world  ')
-~+    >>> print('hello world  ')      # byexample: +norm-ws
-~     hello world
-~
-
-$ byexample -l python test/ds/python-tutorial.v3.md
-<...>
-File test/ds/python-tutorial.v3.md, 4/4 test ran in <...> seconds
-[PASS] Pass: 4 Fail: 0 Skip: 0
-```
-
 
 ## Option flags
 
@@ -210,135 +162,6 @@ parameters of the execution of the example.
 
 Some flags are generic, others are language-specific.
 
-### Normalize whitespace
-
-We already saw this one, replace any sequence of whitespace by a single one.
-
-This makes the test more robust against small differences
-(trailing spaces, space/tab mismatch)
-
-Here is another example, this time written in ``Ruby``:
-
-```ruby
-Array(0...20)				# byexample: +norm-ws
-
-out:
-=> [0,   1,  2,  3,  4,  5,  6,  7,  8,  9,
-   10,  11, 12, 13, 14, 15, 16, 17, 18, 19]
-```
-
-### Skip and Pass
-
-``skip`` will skip the example completely while ``pass`` will execute it
-normally but it will not check the output.
-
-See the difference between those two in these ``Python`` examples:
-
-```python
->>> def f():
-...    print("Choosing a random number...")
-...    return 42
-
->>> a = 1
->>> a = f() # this assignment will not be executed # byexample: +skip
-
->>> a
-1
-
->>> a = f() # execute the code but ignore the output # byexample: +pass
-
->>> a
-42
-
->>> a = f() # the output is not ignored so we must check for it
-Choosing a random number...
-```
-
-### Timeout
-
-The execution of each example has a timeout which can be changed by a flag
-
-```python
-import time
-time.sleep(2.5) # simulates a slow operation # byexample: +timeout=3
-```
-
-See what happen when an example timeout:
-
-```
-$ byexample -l python --timeout 0.0001 --ff test/ds/python-tutorial.v3.md
-<...>
-File "test/ds/python-tutorial.v3.md", line 4
-Failed example:
-    from __future__ import print_function
-=> Execution timedout at example 1 of 4.
-This could be because the example just ran too slow (try add more time
-with +timeout=<n>) or the example is "syntactically incorrect" and
-the interpreter hang (may be you forgot a parenthesis or something like that?).
-<...>
-[ABORT] Pass: 0 Fail: 0 Skip: 0
-```
-
-### More options
-
-``byexample`` has more options that control the behavior of the examples.
-
-If the option is set in the command line using ``-o <opt>``, it will affect all
-the examples.
-
-```
-$ byexample -l python --options "+norm-ws" test/ds/python-tutorial.v2.md
-<...>
-File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
-[PASS] Pass: 4 Fail: 0 Skip: 0
-```
-
-If the option is set per example using ``byexample: <opt>``, it will affect only
-the specific example.
-
-You can know what options are available for a given language running the help
-integrated in ``byexample``.
-
-For ``Python`` you could do:
-
-```
-$ byexample -l python --show-options
-byexample's options
--------------------
-optional arguments:
-  +fail-fast            if an example fails, fail and stop all the execution.
-  +norm-ws              ignore the amount of whitespaces.
-  <...>
-python's specific options
--------------------------
-optional arguments:
-  +py-doctest           enable the compatibility with doctest.
-  +py-pretty-print      enable the pretty print enhancement.
-  <...>
-```
-
-### Loading options from a file
-
-If the amount of options is a little overhelming for you, you can
-write them down to a file and let ``byexample`` load them for you.
-
-The only convention that you need to follow is to write one option
-per line and use ``=`` for the arguments.
-
-```
-$ echo '-l=python'               > w/options_file
-$ echo '--options="+norm-ws"'   >> w/options_file
-```
-
-Then load it with ``@`` and the file; you can use multiple files
-and combine them with more options from the command line:
-
-```
-$ byexample @w/options_file test/ds/python-tutorial.v2.md
-<...>
-File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
-[PASS] Pass: 4 Fail: 0 Skip: 0
-```
 
 
 ## What is considered an example?
