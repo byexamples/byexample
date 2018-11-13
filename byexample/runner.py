@@ -248,7 +248,8 @@ class PexepctMixin(object):
             try:
                 yield
             finally:
-                self._change_terminal_geometry(*self._terminal_default_geometry,
+                rows, cols = self._terminal_default_geometry
+                self._change_terminal_geometry(rows, cols,
                                                 options)
         else:
             yield
