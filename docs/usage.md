@@ -132,7 +132,7 @@ an interpreter session like example.
 2
 ```
 
-Check out [where should I write the examples](where_should_I_write_the_examples.md)
+Check out [where should I write the examples](where-should-I-write-the-examples.md)
 section, it has a more in deep description.
 
 
@@ -154,8 +154,8 @@ You can extend ``byexample`` adding:
  - support new languages and interpreters
  - new reports and other things
 
-Check out [how to support new finders and languages](how_to_support_new_finders_and_languages.md)
-and [how to hook to events with concerns](how_to_hook_to_events_with_concerns.md) for more info.
+Check out [how to support new finders and languages](how-to-support-new-finders-and-languages.md)
+and [how to hook to events with concerns](how-to-hook-to-events-with-concerns.md) for more info.
 
 It is easier than you think!
 

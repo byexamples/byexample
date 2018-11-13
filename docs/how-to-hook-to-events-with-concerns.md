@@ -15,7 +15,7 @@ What classes will depend of what you want to extend or customize.
 In this ``how-to`` we will see how to hook to events and perform arbitrary
 actions during the execution.
 
-Check [docs/how to support new finders and languages](how_to_support_new_finders_and_languages.md)
+Check [docs/how to support new finders and languages](how-to-support-new-finders-and-languages.md)
 for a ``how-to`` about the first two items.
 
 Let's show this by example.

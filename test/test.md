@@ -67,16 +67,19 @@ File CONTRIBUTING.md, 5/5 test ran in <...> seconds
 File README.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 2
 ~
-File docs/differences.md, 12/12 test ran in <...> seconds
-[PASS] Pass: 12 Fail: 0 Skip: 0
+File docs/capture-and-paste.md, 6/6 test ran in <...> seconds
+[PASS] Pass: 6 Fail: 0 Skip: 0
+~
+File docs/differences.md, 13/13 test ran in <...> seconds
+[PASS] Pass: 13 Fail: 0 Skip: 0
 ~
 File docs/geometry.md, 12/12 test ran in <...> seconds
 [PASS] Pass: 12 Fail: 0 Skip: 0
 ~
-File docs/how_to_hook_to_events_with_concerns.md, 2/2 test ran in <...> seconds
+File docs/how-to-hook-to-events-with-concerns.md, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
 ~
-File docs/how_to_support_new_finders_and_languages.md, 41/41 test ran in <...> seconds
+File docs/how-to-support-new-finders-and-languages.md, 41/41 test ran in <...> seconds
 [PASS] Pass: 41 Fail: 0 Skip: 0
 ~
 File docs/index.md, 9/9 test ran in <...> seconds
@@ -97,17 +100,35 @@ File docs/languages/ruby.md, 12/12 test ran in <...> seconds
 File docs/languages/shell.md, 30/30 test ran in <...> seconds
 [PASS] Pass: 30 Fail: 0 Skip: 0
 ~
-File docs/terminal-emulation.md, 7/7 test ran in <...> seconds
+File docs/normalize-whitespace.md, 3/3 test ran in <...> seconds
+[PASS] Pass: 3 Fail: 0 Skip: 0
+~
+File docs/options.md, 7/7 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 0
+~
+File docs/setup-and-tear-down.md, 7/7 test ran in <...> seconds
+[PASS] Pass: 7 Fail: 0 Skip: 0
+~
+File docs/shebang.md, 5/5 test ran in <...> seconds
+[PASS] Pass: 5 Fail: 0 Skip: 0
+~
+File docs/skip-and-pass.md, 7/7 test ran in <...> seconds
+[PASS] Pass: 6 Fail: 0 Skip: 1
+~
+File docs/terminal-emulation.md, 12/12 test ran in <...> seconds
+[PASS] Pass: 12 Fail: 0 Skip: 0
+~
+File docs/timeout.md, 5/5 test ran in <...> seconds
+[PASS] Pass: 4 Fail: 0 Skip: 1
 ~
 File docs/unicode.md, 8/8 test ran in <...> seconds
 [PASS] Pass: 8 Fail: 0 Skip: 0
 ~
-File docs/usage.md, 44/44 test ran in <...> seconds
-[PASS] Pass: 43 Fail: 0 Skip: 1
-~
-File docs/where_should_I_write_the_examples.md, 9/9 test ran in <...> seconds
+File docs/usage.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 9 Fail: 0 Skip: 0
+~
+File docs/where-should-I-write-the-examples.md, 11/11 test ran in <...> seconds
+[PASS] Pass: 11 Fail: 0 Skip: 0
 <...>
 
 

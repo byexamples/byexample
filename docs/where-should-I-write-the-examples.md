@@ -92,7 +92,7 @@ The initial expected string found by byexample would be ``3`` **plus**
 However, byexample will *ignore* the last line of an example if has some
 special tokens like ````` ``` `````, ``~~~``, ``'''`` and ``-->``.
 
-Check out [how to support new finders and languages](https://byexamples.github.io/byexample/how_to_support_new_finders_and_languages)
+Check out [how to support new finders and languages](https://byexamples.github.io/byexample/how-to-support-new-finders-and-languages)
 to see the internals of these.
 
 ### New lines at the end are ignored

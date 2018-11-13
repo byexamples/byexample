@@ -81,7 +81,7 @@ $ mv test/ds/renamed.sql test/ds/stock.sql      # byexample: -skip +pass
 > they have ``-skip``. This is because these kind of failures may had left the
 > interpreter in a invalid state and the execution cannot be resumed.
 >
-> The best strategy would be create a [concern module](how_to_hook_to_events_with_concerns.md)
+> The best strategy would be create a [concern module](how-to-hook-to-events-with-concerns.md)
 > and hook to the ``finish`` event and perform there all the clean up, if any.
 
 

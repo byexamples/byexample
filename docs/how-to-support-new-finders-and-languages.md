@@ -13,7 +13,7 @@ line.
 What classes will depend of what you want to extend or customize.
 
 In this ``how-to`` we will go through the first two items: how to support
-new finders and languages. Check [docs/how to hook to events with concerns](how_to_hook_to_events_with_concerns.md)
+new finders and languages. Check [docs/how to hook to events with concerns](how-to-hook-to-events-with-concerns.md)
 for a ``how-to`` about the last one.
 
 Let's show this by example.
@@ -206,7 +206,7 @@ Let's see if our finder can find the ArnoldC snippet above.
 ```python
 >>> finder = ArnoldCFinder(0, 'utf-8')
 
->>> filepath = 'docs/how_to_support_new_finders_and_languages.md'
+>>> filepath = 'docs/how-to-support-new-finders-and-languages.md'
 >>> where = (0,1,filepath)
 >>> matches = finder.get_matches(open(filepath, 'r').read())
 >>> matches = list(matches)
