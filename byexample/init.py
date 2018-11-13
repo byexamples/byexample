@@ -157,7 +157,6 @@ def get_default_options_parser(cmdline_args):
     options_parser.add_flag("skip", help="do not run the example.")
     options_parser.add_flag("tags", help="enable the tags <...>.")
     options_parser.add_flag("enhance-diff", help="improve how the diff are shown.")
-    options_parser.add_flag("interact", help="interact with the runner/interpreter manually if an example fails.")
     options_parser.add_argument("+rm", action='append', help="remove a character from the got and expected strings.")
     options_parser.add_argument("+timeout", type=float, help="timeout in seconds to complete the example.")
     options_parser.add_argument("+diff", choices=['none', 'unified', 'ndiff', 'context'],
@@ -182,7 +181,7 @@ def get_options(args, cfg):
                         'tags': True,
                         'rm': [],
                         'enhance_diff': args.enhance_diff,
-                        'interact': args.interact,
+                        'interact': False,
                         'timeout': args.timeout,
                         'diff': args.diff,
                         'delaybeforesend': None,
@@ -275,7 +274,7 @@ def init(args):
             'verbosity':  args.verbosity,
             'encoding':   encoding,
             'output':     sys.stdout,
-            'interact':   args.interact,
+            'interact':   False,
             'opts_from_cmdline': args.options_str,
             }
 

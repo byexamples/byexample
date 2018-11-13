@@ -126,8 +126,6 @@ def parse_args(args=None):
     parser.add_argument("--pretty", choices=['none', 'all'],
                         default='all',
                         help="control how to pretty print the output.")
-    parser.add_argument("--interact", "--debug", action='store_true',
-                        help="interact with the runner/interpreter manually if an example fails.")
     parser.add_argument("--shebang", action='append', metavar='runner:shebang',
                         dest='shebangs',
                         default=[],

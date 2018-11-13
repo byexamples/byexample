@@ -169,7 +169,7 @@ $ byexample -h                                          # byexample: +norm-ws
 usage: <byexample> [-h] [-V] [--ff] [--dry] [--skip file [file ...]] [-m dir]
             [-d {none,unified,ndiff,context}] [--no-enhance-diff] -l language
             [--timeout TIMEOUT] [-o OPTIONS_STR] [--show-options]
-            [--encoding ENCODING] [--pretty {none,all}] [--interact]
+            [--encoding ENCODING] [--pretty {none,all}]
             [--shebang runner:shebang] [-j JOBS] [-v | -q]
             [file [file ...]]
 positional arguments:
@@ -203,8 +203,6 @@ optional arguments:
   --encoding ENCODING   select the encoding; use the same encoding of stdout
                         by default)
   --pretty {none,all}   control how to pretty print the output.
-  --interact, --debug   interact with the runner/interpreter manually if an
-                        example fails.
   --shebang runner:shebang
                         change the command line of the given <runner> by
                         <shebang>; the tokens %e %p %a are replaced by the
