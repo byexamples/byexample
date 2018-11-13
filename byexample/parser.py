@@ -65,7 +65,7 @@ class ExampleParser(ExtendOptionParserMixin):
         *cannot* be used as a valid character in the name.
         Instead you should use minus '-'.
         '''
-        return re.compile(r"<(?P<name>(?:\w|-|\.)+)>")
+        return re.compile(r"<(?P<name>(?:[^\W_]|-|\.)+)>")
 
     @constant
     def leading_optional_whitespace_regex(self):
