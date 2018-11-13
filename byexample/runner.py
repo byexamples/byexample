@@ -283,8 +283,8 @@ class PexepctMixin(object):
         if str == bytes:
             # Python 2.7 support only: it works on str/bytes only
             # XXX this is a limitation, if the output has a single non-ascii
-            # character this will blow up
-            lines = (str(line.rstrip()) for line in lines)
+            # character this will blow up without the 'ignore'
+            lines = (str(line.rstrip().encode('ascii', 'ignore')) for line in lines)
         else:
             lines = (line.rstrip() for line in lines)
 
