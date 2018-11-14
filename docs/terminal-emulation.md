@@ -115,12 +115,11 @@ technology-like programs.
 that spans all the width of the terminal:
 
 ```shell
-$ man python                      # byexample: +term=ansi +rm=~ +stop-on-silence
-PYTHON(1)                   General Commands Manual                  PYTHON(1)
-~
+$ man --nh python              # byexample: +term=ansi +rm=~ +stop-on-silence
+<...>
 NAME
-       python  - an interpreted, interactive, object-oriented programming lan<...>
-       guage
+       python  -  an  interpreted,  interactive,  object-oriented  programming
+       language
 <...>
 ```
 
