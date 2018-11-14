@@ -119,7 +119,7 @@ $ man python                      # byexample: +term=ansi +rm=~ +stop-on-silence
 PYTHON(1)                   General Commands Manual                  PYTHON(1)
 ~
 NAME
-       python  - an interpreted, interactive, object-oriented programming lan‐
+       python  - an interpreted, interactive, object-oriented programming lan<...>
        guage
 <...>
 ```
@@ -141,7 +141,7 @@ however all the lines are captured.
 
 ```python
 >>> for i in range(1,11):       # byexample: +term=ansi +geometry=5x80
-...     print("line", i)
+...     print("line %i" % i)
 line 1
 line 2
 <...>
