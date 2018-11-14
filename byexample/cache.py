@@ -26,6 +26,24 @@ def flock(file, shared=False):
     finally:
         fcntl.lockf(file.fileno(), fcntl.LOCK_UN)
 
+def create_file_new_or_fail(name):
+    if unicode == str:
+        # For Python 3.x with can open a file using 'x' flag.
+        # 'x' means create a new file or fail
+        # honestly, I'm not sure if 'x' is race-condition free
+        # this is a best effort implementation
+        return open(name, 'xb')
+    else:
+        # For Python 2.x we rollback to a no-atomic operation
+        # try to open for reading, if fails means that doesn't exist, good,
+        # create it then; if exists, fail
+        try:
+            open(name, 'rb').close()
+        except:
+            return open(name, 'wb')
+
+        raise OSError(errno.EEXIST, "FileExistsError")
+
 
 class RegexCache(object):
     def __init__(self, filename, disabled=False, cache_verbose=False):
@@ -34,9 +52,13 @@ class RegexCache(object):
         if self.disabled:
             return
 
-        self.filename = self._cache_filepath(filename)
+        if filename:
+            self.filename = self._cache_filepath(filename)
+            self._cache = self._load_cache_from_disk()
+        else:
+            self.filename = None
+            self._cache = self._new_cache()
 
-        self._cache = self._load_cache_from_disk()
         self.clear_stats()
         self._log("Cache '%s': %i entries" % (self.filename, self._nkeys))
 
@@ -155,7 +177,7 @@ class RegexCache(object):
         cache = self._new_cache()
         try:
             self._log("Cache file '%s' does not exist. Creating a new one..." % self.filename)
-            with self._create_file_new_or_fail(self.filename) as f, flock(f):
+            with create_file_new_or_fail(self.filename) as f, flock(f):
                 # the open didn't fail, so it *must* be new:
                 # save an empty cache
                 pickle.dump(cache, f)
@@ -166,24 +188,6 @@ class RegexCache(object):
                 raise
 
         return cache
-
-    def _create_file_new_or_fail(self, name):
-        if unicode == str:
-            # For Python 3.x with can open a file using 'x' flag.
-            # 'x' means create a new file or fail
-            # honestly, I'm not sure if 'x' is race-condition free
-            # this is a best effort implementation
-            return open(name, 'xb')
-        else:
-            # For Python 2.x we rollback to a no-atomic operation
-            # try to open for reading, if fails means that doesn't exist, good,
-            # create it then; if exists, fail
-            try:
-                open(name, 'rb').close()
-            except:
-                return open(name, 'wb')
-
-            raise OSError(errno.EEXIST, "FileExistsError")
 
 
     def _sync(self, label=""):
