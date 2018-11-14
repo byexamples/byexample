@@ -4,15 +4,7 @@ from functools import reduce, partial
 from .executor import TimeoutException
 from .common import tohuman
 
-try:
-    from pyte import Stream, HistoryScreen
-except:
-    class Stream:
-        def __init__(self, *args, **kargs):
-            pass
-    class HistoryScreen:
-        def __init__(self, *args, **kargs):
-            pass
+from pyte import Stream, HistoryScreen
 
 try:
     from shlex import quote as shlex_quote
