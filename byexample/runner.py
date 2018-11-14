@@ -4,7 +4,7 @@ from functools import reduce, partial
 from .executor import TimeoutException
 from .common import tohuman
 
-from pyte import Stream, HistoryScreen
+from pyte import Stream, Screen
 
 try:
     from shlex import quote as shlex_quote
@@ -217,7 +217,7 @@ class PexepctMixin(object):
     def _create_terminal(self, options):
         rows, cols = options['geometry']
 
-        self._screen = HistoryScreen(cols, rows, ratio=1)
+        self._screen = Screen(cols, rows)
         self._stream = Stream(self._screen)
 
     @contextlib.contextmanager
@@ -263,14 +263,7 @@ class PexepctMixin(object):
         for chunk in chunks:
             self._stream.feed(chunk)
 
-        pages = []
-        while self._screen.history.top:
-            pages.append(self._screen.display)
-            self._screen.prev_page()
-
-        pages.append(self._screen.display)
-        lines = itertools.chain(*reversed(pages))
-
+        lines = self._screen.display
         self._screen.reset()
         if str == bytes:
             # Python 2.7 support only: it works on str/bytes only

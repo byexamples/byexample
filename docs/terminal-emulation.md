@@ -41,7 +41,7 @@ The dumb terminal removes any trailing whitespace, converts to spaces the tabs
 and uniforms the new lines.
 
 This fits for most of the examples reducing the need of adding tabs into the
-examples or relaxing the comparision using ``+norm-ws``.
+examples or relaxing the comparison using ``+norm-ws``.
 
 ```python
 >>> print("\tfoo\tbar\nbaz\tsaz    \rtaz")
@@ -132,29 +132,33 @@ $ kill %%     # byexample: -skip +pass
 
 ### Pagination
 
-``byexample`` will use emulate pagination so when the output is larger than
-the height of the terminal, no output is lost even if it does not fit
-in it.
+``byexample`` will not emulate pagination so when the output is larger than
+the height of the terminal, the lines on top will be discarded to leave
+room for the new at the bottom
 
 The following example prints more lines than the available in the terminal,
-however all the lines are captured.
+showing only the last ones.
 
 ```python
->>> for i in range(1,11):       # byexample: +term=ansi +geometry=5x80
+>>> for i in range(1,33):       # byexample: +term=ansi +geometry=5x80
 ...     print("line %i" % i)
-line 1
-line 2
-<...>
-line 10
+line 29
+line 30
+line 31
+line 32
 ```
+
+If this is a problem you can always increase the count of rows that
+the terminal has with ``+geometry``.
 
 <!--
 
 The following test make sure that the runner for C++
-is working as it uses a special mechanism for pagination
+is working as it uses a special mechanism for _get_output
+even if the terminal is too small
 
 ```cpp
-#include <iostream>
+#include <iostream>                 // byexample: +geometry=5x80
 for (int i = 1; i < 100; ++i) {
     std::cout << "line " << i << "\n";
 }
