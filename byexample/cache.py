@@ -6,6 +6,7 @@ import os
 import sys
 import contextlib
 import fcntl
+import errno
 
 try:
     import cPickle as pickle
@@ -15,7 +16,7 @@ except ImportError:
 try:
     unicode
 except NameError:
-    unicode = str
+    unicode = str       # aka, we are in Python 3.x
 
 @contextlib.contextmanager
 def flock(file, shared=False):
@@ -123,8 +124,11 @@ class RegexCache(object):
         try:
             with open(self.filename, 'rb') as f, flock(f, shared=True):
                 return self._read_cache_or_empty(f)
-        except FileNotFoundError:
-            return self._create_empty_cache_in_disk()
+        except IOError as e:
+            if e.errno == errno.ENOENT:    # aka Python 3.3's FileNotFoundError
+                return self._create_empty_cache_in_disk()
+            else:
+                raise
 
     def _read_cache_or_empty(self, file):
         ''' Read from the given file and load the cache.
@@ -150,18 +154,37 @@ class RegexCache(object):
         ''' Create an empty cache in disk if doesn't exist yet. '''
         cache = self._new_cache()
         try:
-            # 'x' means create a new file or fail
-            # honestly, I'm not sure if 'x' is race-condition free
-            # this is a best effort implementation
             self._log("Cache file '%s' does not exist. Creating a new one..." % self.filename)
-            with open(self.filename, 'xb') as f, flock(f):
+            with self._create_file_new_or_fail(self.filename) as f, flock(f):
                 # the open didn't fail, so it *must* be new:
                 # save an empty cache
                 pickle.dump(cache, f)
-        except FileExistsError:
-            pass
+        except OSError as e:
+            if e.errno == errno.EEXIST:     # aka Python 3.3's FileExistsError
+                pass
+            else:
+                raise
 
         return cache
+
+    def _create_file_new_or_fail(self, name):
+        if unicode == str:
+            # For Python 3.x with can open a file using 'x' flag.
+            # 'x' means create a new file or fail
+            # honestly, I'm not sure if 'x' is race-condition free
+            # this is a best effort implementation
+            return open(name, 'xb')
+        else:
+            # For Python 2.x we rollback to a no-atomic operation
+            # try to open for reading, if fails means that doesn't exist, good,
+            # create it then; if exists, fail
+            try:
+                open(name, 'rb').close()
+            except:
+                return open(name, 'wb')
+
+            raise OSError(errno.EEXIST, "FileExistsError")
+
 
     def _sync(self, label=""):
         misses = len(self._cache) - self._nkeys
