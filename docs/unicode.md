@@ -97,3 +97,13 @@ Got:
 例によっ!て
 <...>
 ```
+
+## Limitations
+
+If you are running ``byexample`` using ``Python 2.7`` *and* you
+enable the ANSI terminal emulation with ``+term=ansi``, any
+non-ascii character will be removed.
+
+This is a limitation of one of the ``byexample``'s dependencies and
+only apply under that specific scenario.
+
