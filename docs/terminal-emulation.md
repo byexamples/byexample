@@ -111,19 +111,34 @@ aaaabbbbaaaabbbbaaaabbbbaaaabbbb
 This is specially useful to work with ``ncurses`` or other
 technology-like programs.
 
-``man``, for example, uses a ``pager`` to print the manual page
-that spans all the width of the terminal:
+### ncurses support
+
+Some applications use advanced terminal features (like the ones
+that ``ncurses`` supports) and require a terminal emulator.
+
+Examples of this are ``less``, ``more``, ``top`` and ``man``.
 
 ```shell
-$ man --nh python              # byexample: +term=ansi +rm=~ +stop-on-silence
-<...>
-NAME
-       python  -  an  interpreted,  interactive,  object-oriented  programming
-       language
-<...>
+$ less test/ds/python-tutorial.v2.md # byexample: +term=ansi +rm=~ +stop-on-silence
+~This is a 101 Python tutorial
+~The following is an example written in Python about arithmetics
+~
+~    >>> from __future__ import print_function
+~    >>> 1 + 2
+~    3
+~
+~The next examples show you about complex numbers in Python
+~
+~    >>> 2j * 2
+~    4j
+~
+~    >>> 2j + 4j
+~    6j
+~
+~test/ds/python-tutorial.v2.md (END)
 ```
 
-> Try the above example without ``+term=ansi``.
+> Try the above example without ``+term=ansi`` and see what happen.
 
 <!--
 $ kill %%     # byexample: -skip +pass
