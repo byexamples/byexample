@@ -47,7 +47,6 @@ travis-test: clean_test lib-test modules-test docs-test
 	@make -s clean_test
 
 coverage: clean_test
-	@rm -f .coverage .coverage.work.*
 	@cp test/r.py .
 	@echo "Run the byexample's tests with the Python interpreter."
 	@echo "to start the coverage, use a hook in test/ to initialize the coverage"
@@ -78,6 +77,7 @@ upload: dist
 	twine upload dist/*.tar.gz dist/*.whl
 
 clean_test:
+	@rm -f .coverage .coverage.work.*
 	@rm -f r.py
 	@rm -Rf w/
 	@mkdir -p w/
