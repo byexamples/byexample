@@ -119,7 +119,7 @@ that ``ncurses`` supports) and require a terminal emulator.
 Examples of this are ``less``, ``more``, ``top`` and ``man``.
 
 ```shell
-$ less test/ds/python-tutorial.v2.md # byexample: +term=ansi +rm=~ +stop-on-silence
+$ less test/ds/python-tutorial.v2.md # byexample: +term=ansi +rm=~ +stop-on-silence +diff=ndiff
 ~This is a 101 Python tutorial
 ~The following is an example written in Python about arithmetics
 ~
@@ -135,7 +135,7 @@ $ less test/ds/python-tutorial.v2.md # byexample: +term=ansi +rm=~ +stop-on-sile
 ~    >>> 2j + 4j
 ~    6j
 ~
-~test/ds/python-tutorial.v2.md (END)
+~<...>(END)
 ```
 
 > Try the above example without ``+term=ansi`` and see what happen.
