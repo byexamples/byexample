@@ -1397,7 +1397,7 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> regexs, _, _, _ = _as_regexs(expected, True)
 
             >>> regexs
-            ('\\A', '(?P<foo>.*?)(?<!\\n)', '\\n*\\Z')
+            ('\\A', '(?:(?P<foo>.+?)(?<!\\n))?', '\\n*\\Z')
 
             >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
             >>> m.match('   123  \n\n\n\n').groups()
@@ -1407,7 +1407,7 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> regexs, _, _, _ = _as_regexs(expected, True)
 
             >>> regexs
-            ('\\A', '(?P<foo>.*?)(?<!\\n)', '\\n*\\Z')
+            ('\\A', '(?:(?P<foo>.+?)(?<!\\n))?', '\\n*\\Z')
 
             >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
             >>> m.match('123\n\n\n\n').groups()
@@ -1540,7 +1540,7 @@ class ExampleParser(ExtendOptionParserMixin):
                 c, t = saved_state
                 saved_state = ()
 
-                name = self.name_of_tag(t)
+                name = self.name_of_tag_or_None(t)
                 tags_by_idx[len(results)] = name
 
                 if name in names_seen:
@@ -1551,18 +1551,20 @@ class ExampleParser(ExtendOptionParserMixin):
 
                 if name:
                     names_seen.add(name)
-                    name = tag_name_as_regex_name(name)
 
                 if ttype == 'literals':
-                    push((c, self.non_capture_anything_regex_str(name, False), 0))
+                    retag = self.regex_of_tag(name, False, False, False)
+                    push((c, retag, 0))
                     saved_state = (charno, token)
                     state_label = 'LIT'
                 elif ttype == 'wspaces':
-                    push((c, self.non_capture_anything_regex_str(name, False), 0))
+                    retag = self.regex_of_tag(name, False, False, False)
+                    push((c, retag, 0))
                     push((charno, re.escape(token), len(token)))
                     state_label = 'INIT'
                 elif ttype == 'newlines':
-                    push((c, self.non_capture_anything_regex_str(name, False), 0))
+                    retag = self.regex_of_tag(name, False, False, False)
+                    push((c, retag, 0))
                     push((charno, re.escape(token), len(token)))
                     state_label = 'INIT'
                 elif ttype == 'tag':
@@ -1570,9 +1572,11 @@ class ExampleParser(ExtendOptionParserMixin):
                           "This is ambiguous."
                     raise ValueError(msg % charno)
                 elif ttype == 'end':
-                    push((c, self.non_capture_anything_regex_str(name, False), 0))
+                    retag = self.regex_of_tag(name, False, False, True)
+                    push((c, retag, 0))
                     push((charno, self.trailing_optional_newline_regex_str(), 0))
                     break
+
 
         # make sure that the tokenizer was exhausted
         assert next(tokenizer, None) == None
@@ -1580,7 +1584,7 @@ class ExampleParser(ExtendOptionParserMixin):
         charnos, regexs, rcounts = zip(*results)
         return regexs, charnos, rcounts, tags_by_idx
 
-    def name_of_tag(self, tag):
+    def name_of_tag_or_None(self, tag):
         name = self.capture_tag_regex().match(tag).group('name')
         if name == self.ellipsis_marker():
             name = None
