@@ -1587,6 +1587,92 @@ class ExampleParser(ExtendOptionParserMixin):
 
         return name
 
+    def regex_of_tag(self, name,
+            wspace_regex_on_left,
+            wspace_regex_on_right,
+            nline_regex_on_right):
+        '''
+            >>> from byexample.parser import ExampleParser
+            >>> import re
+
+            >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
+            >>> regex_of_tag = parser.regex_of_tag
+
+        A tag, named or unnamed, will try to capture anything.
+            >>> regex_of_tag('foo', False, False, False)
+            '(?P<foo>.*?)'
+
+            >>> regex_of_tag(None, False, False, False)
+            '(?:.*)'
+
+        The name of the tag is 'normalized': Python's regexs
+        must be valid Python names
+            >>> regex_of_tag('foo-bar', False, False, False)
+            '(?P<foo_bar>.*?)'
+
+        When a tag is preceded by a whitespace regex, the tag
+        must not capture any whitespace on his left.
+            >>> regex_of_tag('foo', True, False, False)
+            '(?:(?!\\s)(?P<foo>.+?))?'
+
+        If the whitespace regex is on his right, the tag must
+        not end in a whitespace
+            >>> regex_of_tag('foo', False, True, False)
+            '(?:(?P<foo>.+?)(?<!\\s))?'
+
+        A combination of those two yields a merge of the two
+        cases
+            >>> regex_of_tag('foo', True, True, False)
+            '(?:(?!\\s)(?P<foo>.+?)(?<!\\s))?'
+
+        If the tag is followed by a regex that consume any
+        newline, it must not consume them
+            >>> regex_of_tag('foo', False, False, True)
+            '(?:(?P<foo>.+?)(?<!\\n))?'
+
+        # Note: in a previous version of byexample there was a bug when the
+        # the last capture was *after* a new line.
+        #
+        # The original regex was (?P<foo>.*?)(?<!\\n) which worked if
+        # the capture was not empty but when it wasn't, the whole failed.
+        #
+        # The problem is that (?<!\\n) means "not preceded by a new line"
+        # and if (?P<foo>.*?) matches the empty string, the regex (?<!\\n)
+        # follows immediately *after* the \n which fails the whole match.
+        #
+        # In other words, '\n<foo>' would fail.
+        #
+        # The solution was to made the whole regex optional. The other
+        # cases.
+        '''
+
+        prefix = posfix = ""
+        if nline_regex_on_right:
+            assert not wspace_regex_on_left and not wspace_regex_on_right
+            posfix = r'(?<!\n)' # do not end with a newline
+
+        if wspace_regex_on_left:
+            assert not nline_regex_on_right
+            prefix = r'(?!\s)' # do not begin with a whitespace
+
+        if wspace_regex_on_right:
+            assert not nline_regex_on_right
+            posfix = r'(?<!\s)' # do not end with a whitespace
+
+        if name is None:
+            regex = r'(?:.{rep})'
+        else:
+            name = tag_name_as_regex_name(name)
+            regex = r'(?P<{name}>.{rep}?)'
+
+        if prefix or posfix:
+            regex = prefix + regex.format(name=name, rep='+') + posfix
+            regex = r'(?:' + regex + ')?'
+        else:
+            regex = regex.format(name=name, rep='*')
+
+        return regex
+
     def extract_cmdline_options(self, opts_from_cmdline):
         # now we can re-parse this argument 'options' from the command line
         # this will enable the user to set some options for a specific language
