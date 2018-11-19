@@ -68,6 +68,20 @@ class ExampleParser(ExtendOptionParserMixin):
         return re.compile(r"<(?P<name>(?:[^\W_]|-|\.)+)>")
 
     @constant
+    def capture_tag_regex_TMP(self):
+        '''
+        Return a regular expression to match a 'capture tag'.
+
+        Due implementation details the underscore character '_'
+        *cannot* be used as a valid character in the name.
+        Instead you should use minus '-'.
+        '''
+        return re.compile(r"(<(?:[^\W_]|-|\.)+>)")
+
+    def name_from_capture_tag(self, tag):
+        return tag[1:-1]
+
+    @constant
     def leading_optional_whitespace_regex(self):
         return re.compile(r'\A\s*', re.MULTILINE | re.DOTALL)
 
@@ -78,6 +92,14 @@ class ExampleParser(ExtendOptionParserMixin):
     @constant
     def one_or_more_whitespace_regex(self):
         return re.compile(r'\s+', re.MULTILINE | re.DOTALL)
+
+    @constant
+    def one_or_more_ws_capture_regex(self):
+        return re.compile(r'(\s+)', re.MULTILINE | re.DOTALL)
+
+    @constant
+    def one_or_more_nl_capture_regex(self):
+        return re.compile(r'(\n+)', re.MULTILINE | re.DOTALL)
 
     @constant
     def zero_or_more_whitespace_regex(self):
@@ -1013,6 +1035,75 @@ class ExampleParser(ExtendOptionParserMixin):
         rcounts.append(0)
 
         return regexs, charnos, rcounts, tags_by_idx, are_advanced_captures_used
+
+    def expected_tokenizer(self, expected_str):
+        ''' Iterate over the interesting tokens of the expected string:
+             - newlines     - wspaces     - literals    - tag
+
+            >>> from byexample.parser import ExampleParser
+            >>> import re
+
+            >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
+            >>> _tokenizer = parser.expected_tokenizer
+
+            >>> list(_tokenizer(''))
+            []
+
+            Return an iterable of tuples: (<charno>, <token type>, <token val>)
+            >>> list(_tokenizer(' '))
+            [(0, 'wspaces', ' ')]
+
+            Multiple chars are considered a single 'literals' token
+            >>> list(_tokenizer('abc'))
+            [(0, 'literals', 'abc')]
+
+            Each tuple contains the <charno>: the position in the string
+            where the token was found
+            >>> list(_tokenizer('abc def'))
+            [(0, 'literals', 'abc'), (3, 'wspaces', ' '), (4, 'literals', 'def')]
+
+            Multiple spaces are considered a single 'wspaces' token.
+            >>> list(_tokenizer(' abc  def\t'))          # byexample: +norm-ws
+            [(0, 'wspaces', ' '),  (1, 'literals', 'abc'),
+             (4, 'wspaces', '  '), (6, 'literals', 'def'), (9, 'wspaces', '\t')]
+
+            Each tuple contains the string that constitutes the token.
+            >>> list(_tokenizer('<foo><bar> \n\n<...> <...>def <...>'))  # byexample: +norm-ws
+            [(0,  'tag', '<foo>'),      (5,  'tag', '<bar>'), (10, 'wspaces', ' '),
+             (11, 'newlines', '\n\n'),  (13, 'tag', '<...>'),
+             (18, 'wspaces', ' '),      (19, 'tag', '<...>'), (24, 'literals', 'def'),
+             (27, 'wspaces', ' '),      (28, 'tag', '<...>')]
+        '''
+
+        charno = 0
+        for k, line_or_newlines in enumerate(self.one_or_more_nl_capture_regex().split(expected_str)):
+            if k % 2 == 1:
+                newlines = line_or_newlines
+                yield (charno, 'newlines', newlines)
+                charno += len(newlines)
+                continue
+
+            line = line_or_newlines
+            for j, word_or_spaces in enumerate(self.one_or_more_ws_capture_regex().split(line)):
+                if j % 2 == 1:
+                    wspaces = word_or_spaces
+                    yield (charno, 'wspaces', wspaces)
+                    charno += len(wspaces)
+                    continue
+
+                word = word_or_spaces
+                for i, lit_or_tag in enumerate(self.capture_tag_regex_TMP().split(word)):
+                    if i % 2 == 1:
+                        tag = lit_or_tag
+                        yield (charno, 'tag', tag)
+                        charno += len(tag)
+                        continue
+
+                    literals = lit_or_tag
+                    if literals:
+                        yield (charno, 'literals', literals)
+                        charno += len(literals)
+
 
     def extract_cmdline_options(self, opts_from_cmdline):
         # now we can re-parse this argument 'options' from the command line
