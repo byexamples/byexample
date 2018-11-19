@@ -1497,23 +1497,21 @@ class ExampleParser(ExtendOptionParserMixin):
         expected = trailing_re.sub('', expected)
 
         tokenizer = self.expected_tokenizer(expected, tags_enabled)
+        skip_read = False
 
         while 1:
-            charno, ttype, token = next(tokenizer)
+            if not skip_read:
+                charno, ttype, token = next(tokenizer)
+            else:
+                skip_read = False
+
             #print(state_label, saved_state, charno, ttype, token)
             if state_label == 'INIT':
                 assert not saved_state
                 if ttype == 'literals':
                     saved_state = (charno, token)
                     state_label = 'LIT'
-                elif ttype == 'wspaces':
-                    if norm_ws:
-                        if results[-1][-1]:
-                            continue
-                        push((charno, ws_regex, 1, True))
-                    else:
-                        push((charno, re.escape(token), len(token), False))
-                elif ttype == 'newlines':
+                elif ttype in ('wspaces', 'newlines'):
                     if norm_ws:
                         if results[-1][-1]:
                             continue
@@ -1533,17 +1531,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
                 if ttype == 'literals':
                     assert False
-                elif ttype == 'wspaces':
-                    if norm_ws:
-                        r = len(t) + 1
-                        t = re.escape(t) + ws_regex
-                        push((c, t, r, True))
-                    else:
-                        r = len(t) + len(token)
-                        t = re.escape(t + token)
-                        push((c, t, r, False))
-                    state_label = 'INIT'
-                elif ttype == 'newlines':
+                elif ttype in ('wspaces', 'newlines'):
                     if norm_ws:
                         r = len(t) + 1
                         t = re.escape(t) + ws_regex
@@ -1596,10 +1584,7 @@ class ExampleParser(ExtendOptionParserMixin):
                             True and norm_ws,
                             False)
                     push((c, retag, 0, False))
-                    if norm_ws:
-                        push((charno, ws_regex, 1, True))
-                    else:
-                        push((charno, re.escape(token), len(token), False))
+                    skip_read = True
                     state_label = 'INIT'
                 elif ttype == 'newlines':
                     retag = self.regex_of_tag(
@@ -1608,10 +1593,7 @@ class ExampleParser(ExtendOptionParserMixin):
                             True and norm_ws,
                             True and not norm_ws)
                     push((c, retag, 0, False))
-                    if norm_ws:
-                        push((charno, ws_regex, 1, True))
-                    else:
-                        push((charno, re.escape(token), len(token), False))
+                    skip_read = True
                     state_label = 'INIT'
                 elif ttype == 'tag':
                     msg = "Two consecutive capture tags were found at %ith character. " +\
