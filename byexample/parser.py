@@ -1036,7 +1036,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
         return regexs, charnos, rcounts, tags_by_idx, are_advanced_captures_used
 
-    def expected_tokenizer(self, expected_str):
+    def expected_tokenizer(self, expected_str, tags_enabled):
         ''' Iterate over the interesting tokens of the expected string:
              - newlines     - wspaces     - literals    - tag
 
@@ -1046,33 +1046,42 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
             >>> _tokenizer = parser.expected_tokenizer
 
-            >>> list(_tokenizer(''))
-            []
+            >>> list(_tokenizer('', True))
+            [(0, 'end', None)]
 
             Return an iterable of tuples: (<charno>, <token type>, <token val>)
-            >>> list(_tokenizer(' '))
-            [(0, 'wspaces', ' ')]
+            >>> list(_tokenizer(' ', True))
+            [(0, 'wspaces', ' '), (1, 'end', None)]
 
             Multiple chars are considered a single 'literals' token
-            >>> list(_tokenizer('abc'))
-            [(0, 'literals', 'abc')]
+            >>> list(_tokenizer('abc', True))
+            [(0, 'literals', 'abc'), (3, 'end', None)]
 
             Each tuple contains the <charno>: the position in the string
             where the token was found
-            >>> list(_tokenizer('abc def'))
-            [(0, 'literals', 'abc'), (3, 'wspaces', ' '), (4, 'literals', 'def')]
+            >>> list(_tokenizer('abc def', True))       # byexample: +norm-ws
+            [(0, 'literals', 'abc'), (3, 'wspaces', ' '),
+             (4, 'literals', 'def'), (7, 'end', None)]
 
             Multiple spaces are considered a single 'wspaces' token.
-            >>> list(_tokenizer(' abc  def\t'))          # byexample: +norm-ws
+            >>> list(_tokenizer(' abc  def\t', True))          # byexample: +norm-ws
             [(0, 'wspaces', ' '),  (1, 'literals', 'abc'),
-             (4, 'wspaces', '  '), (6, 'literals', 'def'), (9, 'wspaces', '\t')]
+             (4, 'wspaces', '  '), (6, 'literals', 'def'), (9, 'wspaces', '\t'),
+             (10, 'end', None)]
 
             Each tuple contains the string that constitutes the token.
-            >>> list(_tokenizer('<foo><bar> \n\n<...> <...>def <...>'))  # byexample: +norm-ws
+            >>> list(_tokenizer('<foo><bar> \n\n<...> <...>def <...>', True))  # byexample: +norm-ws -tags
             [(0,  'tag', '<foo>'),      (5,  'tag', '<bar>'), (10, 'wspaces', ' '),
              (11, 'newlines', '\n\n'),  (13, 'tag', '<...>'),
              (18, 'wspaces', ' '),      (19, 'tag', '<...>'), (24, 'literals', 'def'),
-             (27, 'wspaces', ' '),      (28, 'tag', '<...>')]
+             (27, 'wspaces', ' '),      (28, 'tag', '<...>'), (33, 'end', None)]
+
+            If <tags_enabled> is False, the tags are considered literals
+            >>> list(_tokenizer('<foo><bar> \n\n<...> <...>def <...>', False))  # byexample: +norm-ws -tags
+            [(0,  'literals', '<foo><bar>'), (10, 'wspaces', ' '),
+             (11, 'newlines', '\n\n'),       (13, 'literals', '<...>'),
+             (18, 'wspaces', ' '),           (19, 'literals', '<...>def'),
+             (27, 'wspaces', ' '),           (28, 'literals', '<...>'), (33, 'end', None)]
         '''
 
         charno = 0
@@ -1092,6 +1101,11 @@ class ExampleParser(ExtendOptionParserMixin):
                     continue
 
                 word = word_or_spaces
+                if not tags_enabled and word:
+                    yield (charno, 'literals', word)
+                    charno += len(word)
+                    continue
+
                 for i, lit_or_tag in enumerate(self.capture_tag_regex_TMP().split(word)):
                     if i % 2 == 1:
                         tag = lit_or_tag
@@ -1103,6 +1117,8 @@ class ExampleParser(ExtendOptionParserMixin):
                     if literals:
                         yield (charno, 'literals', literals)
                         charno += len(literals)
+        yield (charno, 'end', None)
+
 
 
     def extract_cmdline_options(self, opts_from_cmdline):
