@@ -1634,20 +1634,20 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> regex_of_tag('foo', False, False, True)
             '(?:(?P<foo>.+?)(?<!\\n))?'
 
-        # Note: in a previous version of byexample there was a bug when the
-        # the last capture was *after* a new line.
+        # Note: in a previous version of byexample the regexs were like
+        #   (?P<foo>.*?)(?<!\\n)
         #
-        # The original regex was (?P<foo>.*?)(?<!\\n) which worked if
-        # the capture was not empty but when it wasn't, the whole failed.
+        # This works but it *may fail* if the capture is empty.
         #
-        # The problem is that (?<!\\n) means "not preceded by a new line"
-        # and if (?P<foo>.*?) matches the empty string, the regex (?<!\\n)
-        # follows immediately *after* the \n which fails the whole match.
+        # The problem is that (?<!\\n) means "not preceded by a new line".
+        # If (?P<foo>.*?) matches *the empty string*, the regex (?<!\\n)
+        # will be on the strings *before* the tag and if that ends in a newline
+        # the whole match fails always.
         #
         # In other words, '\n<foo>' would fail.
         #
-        # The solution was to made the whole regex optional. The other
-        # cases.
+        # The solution was to change the internal regex as 'one or more' to
+        # ensure that it will never be empty and wrap all as 'optional'
         '''
 
         prefix = posfix = ""
