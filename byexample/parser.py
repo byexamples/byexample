@@ -1120,6 +1120,472 @@ class ExampleParser(ExtendOptionParserMixin):
         yield (charno, 'end', None)
 
 
+    def expected_as_regexs_TMP(self, expected, tags_enabled):
+        '''
+        From the expected string create a list of regular expressions that
+        joined with the flags re.MULTILINE | re.DOTALL, matches
+        that string.
+
+        This method returns four things:
+            - a list of regexs: for literals, captures, wildcards, ...
+            - a list with the character numbers, the positions in the expected
+              string from where it was created each regex
+            - a list of rcounts (see below)
+            - a dict of non-literal 'regexs' names (capturing and non-capturing)
+              also know as "tags" indexed by position.
+              For non-capturing the name will be None.
+
+            >>> from byexample.parser import ExampleParser
+            >>> import re
+
+            >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
+            >>> _as_regexs = parser.expected_as_regexs_TMP
+
+            >>> expected = 'a<foo>b<bar>c'
+            >>> regexs, charnos, rcounts, tags_by_idx = _as_regexs(expected, True)
+
+        We return the regexs
+
+            >>> regexs
+            ('\\A', 'a', '(?P<foo>.*?)', 'b', '(?P<bar>.*?)', 'c', '\\n*\\Z')
+
+            >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+            >>> m.match('axxbyyyc').groups()
+            ('xx', 'yyy')
+
+        And we can see the charnos or the position in the original expected
+        string from where each regex was built
+
+            >>> charnos
+            (0, 0, 1, 6, 7, 12, 13)
+
+            >>> len(expected) == charnos[-1]
+            True
+
+        And the rcount of each regex. A rcount or 'real count' count how many
+        literals are. See _as_safe_regexs for more information about this but
+        in a nutshell, rcount == len(line) if normalize_whitespace is False;
+        if not, it is the len(line) but counting the secuence of whitespaces as
+        +1.
+
+        We can see the names of the capturing regexs (named capture tags)
+
+            >>> list(sorted(n for n in tags_by_idx.values() if n != None))
+            ['bar', 'foo']
+
+        And we can see the positions of the tags in the regex list
+        of all the non-literal regexs or "tags". The value of each
+        item is the name of tag or None if it is unnamed
+
+            >>> tags_by_idx
+            {2: 'foo', 4: 'bar'}
+
+        The following example shows what happen when we use a non-capturing tag
+        (ellipsis tag) also known as unnamed tag and what happen when we use
+        a tag name with a - (Python regexs don't support this character):
+
+            >>> expected = 'a<...>b<foo-bar>c'
+            >>> regexs, _, _, tags_by_idx = _as_regexs(expected, True)
+
+            >>> regexs
+            ('\\A', 'a', '(?:.*)', 'b', '(?P<foo_bar>.*?)', 'c', '\\n*\\Z')
+
+            >>> list(sorted(n for n in tags_by_idx.values() if n != None))
+            ['foo-bar']
+
+            >>> tags_by_idx
+            {2: None, 4: 'foo-bar'}
+
+        Notice how the unnamed tag is mapped to None and how a name with a -
+        works out of the box with a subtle change: the regex name has a _
+        instead of a -.
+
+        Also notice that the unnamed tag's regex is greedy (.*) while the
+        named tag's one is non-greedy (.*?).
+        The reason of this is that typically the unnamed tag is used to
+        match long unwanted strings while the named tag is for small
+        and interesting strings.
+
+        This heuristic does not claim to be bulletproof however.
+
+        Multi line strings will yield splitted regexs: one regex per line.
+        This in on purpose to support the concept of incremental matching
+        (match the whole regex matching one regex at time)
+
+            >>> expected = 'a\n<foo>bcd\nefg<bar>hi'
+            >>> regexs, _, rcounts, _ = _as_regexs(expected, True)
+
+            >>> regexs          # byexample: +norm-ws
+            ('\\A',
+             'a\\\n',
+             '(?P<foo>.*?)',
+             'bcd\\\n',
+             'efg',
+             '(?P<bar>.*?)',
+             'hi',
+             '\\n*\\Z')
+
+        Notice also how the tags don't count as 'real counts' (zero).
+        The first and the last regex either.
+
+            >>> rcounts
+            (0, 2, 0, 4, 3, 0, 2, 0)
+
+        The normalize_whitespace and tags_enabled flags modify how the regexs
+        are built:
+         - if normalize_whitespace is true, replace all the consecutive
+           whitespaces by a single regular expression that matches any amount
+           of whitespaces. The net effect is that regardless of
+           the spaces in the expected, the regexp will ignore that.
+           However we preserve the new line as 'regex's boundaries'
+
+                   #>>> r, p, c, _ = _as_regexs('a  \n   b  \t\vc', True, True, True)
+
+                   #>>> r
+                   #['\\A', 'a\\s+', 'b\\s+', 'c', '\\s*\\Z']
+
+                   #>>> p
+                   #[0, 0, 7, 12, 13]
+
+                   #>>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
+                   #>>> m.match('a b c') is not None
+                   #True
+
+                   #And also, count the consecutive whitespaces as a +1 when the
+                   #rcount is computed (do not count each whitespace)
+
+                   #>>> c
+                   #[0, 2, 2, 1, 0]
+
+         - if tags_enabled is true, interpret the tags <...> as regexs.
+
+            >>> r, p, _, i = _as_regexs('a<foo>b<bar>c', True)
+            >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
+            >>> m.match('axxbyyyc').groups()
+            ('xx', 'yyy')
+
+            >>> [n for n in sorted(i.values()) if n != None]
+            ['bar', 'foo']
+
+            >>> i
+            {2: 'foo', 4: 'bar'}
+
+           Note that if two or more tags are consecutive,
+           we will raise an exception as this is ambiguous:
+
+            >>> # but here? foo is 'x' and bar 'xyyy'?, '' and 'xxyyy', or ....
+            >>> _as_regexs('a<foo><bar>c', True)
+            Traceback (most recent call last):
+            <...>
+            ValueError: <...>
+
+         - if tags_enabled is False, all the <...> tags are taken literally.
+
+            >>> r, p, _, i = _as_regexs('a<foo>b<bar>c', False)
+            >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
+            >>> m.match('axxbyyyc') is None # don't matched as <foo> is not xx
+            True
+
+            >>> m.match('a<foo>b<bar>c') is None # the strings <foo> <bar> are literals
+            False
+
+            >>> [n for n in sorted(i.values()) if n != None]
+            []
+
+            >>> i
+            {}
+
+
+           Otherwise we will fail:
+
+            >>> _as_regexs('a<foo>b<foo>c', True)
+            Traceback (most recent call last):
+            <...>
+            ValueError: <...>
+
+
+        The tags' regexs will behave differently if normalize_whitespace
+        is true or false.
+
+        In the default, normalize_whitespace == False, case, a regex will
+        include any amount of spaces, including new lines even if they are at
+        the begin or end of the match, always
+
+            >>> expected = 'a<foo>b'
+            >>> regexs, p, c, _ = _as_regexs(expected, True)
+
+            >>> regexs
+            ('\\A', 'a', '(?P<foo>.*?)', 'b', '\\n*\\Z')
+
+            >>> p
+            (0, 0, 1, 6, 7)
+
+            >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+            >>> m.match('a  \n 123\n\n b').groups()
+            ('  \n 123\n\n ',)
+
+        When normalize_whitespace is True it will depend if the tag is
+        preceded or followed by a whitespace.
+
+        When no whitespace is around the tag, the things work as if
+        normalize_whitespace was false
+
+                   #>>> expected = 'a<foo>b'
+                   #>>> regexs, p, _, _ = _as_regexs(expected, True, True, True)
+
+                   #>>> regexs
+                   #['\\A', 'a', '(?P<foo>.*?)', 'b', '\\s*\\Z']
+
+                   #>>> p
+                   #[0, 0, 1, 6, 7]
+
+                   #>>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+                   #>>> m.match('a  \n 123\n\n b').groups()
+                   #('  \n 123\n\n ',)
+
+        But if we add some whitespace
+
+                   #>>> expected = 'a <foo>b'
+                   #>>> regexs, p, _, _ = _as_regexs(expected, True, True, True)
+
+                   #>>> regexs
+                   #['\\A', 'a\\s+', '(?!\\s)(?P<foo>.*?)', 'b', '\\s*\\Z']
+
+                   #>>> p
+                   #[0, 0, 2, 7, 8]
+
+                   #>>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+                   #>>> m.match('a  \n 123\n\n b').groups()
+                   #('123\n\n ',)
+
+                   #>>> expected = 'a<foo> b'
+                   #>>> regexs, p, _, _ = _as_regexs(expected, True, True, True)
+
+                   #>>> regexs
+                   #['\\A', 'a', '(?P<foo>.*?)(?<!\\s)', '\\s+', 'b', '\\s*\\Z']
+
+                   #>>> p
+                   #[0, 0, 1, 6, 7, 8]
+
+                   #>>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+                   #>>> m.match('a  \n 123\n\n b').groups()
+                   #('  \n 123',)
+
+        If you want to ignore all the whitespace at the begin or end of the tag,
+        just add a whitespace around it
+
+                   #>>> expected = 'a\n<foo>\tb'
+                   #>>> regexs, p, _, _ = _as_regexs(expected, True, True, True)
+
+                   #>>> regexs
+                   #['\\A', 'a\\s+', '(?:(?!\\s)(?P<foo>.+?)(?<!\\s)\\s+)?', 'b', '\\s*\\Z']
+
+                   #>>> p
+                   #[0, 0, 2, 8, 9]
+
+                   #>>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+                   #>>> m.match('a  \n 123\n\n b').groups()
+                   #('123',)
+
+                   #>>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+                   #>>> m.match('a  \n \n\n b').groups('')
+                   #('',)
+
+        Any trailing new line will be ignored
+
+            >>> expected = '<foo>\n\n\n'
+            >>> regexs, _, _, _ = _as_regexs(expected, True)
+
+            >>> regexs
+            ('\\A', '(?P<foo>.*?)(?<!\\n)', '\\n*\\Z')
+
+            >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+            >>> m.match('   123  \n\n\n\n').groups()
+            ('   123  ',)
+
+            >>> expected = '<foo>'
+            >>> regexs, _, _, _ = _as_regexs(expected, True)
+
+            >>> regexs
+            ('\\A', '(?P<foo>.*?)(?<!\\n)', '\\n*\\Z')
+
+            >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+            >>> m.match('123\n\n\n\n').groups()
+            ('123',)
+
+        And if normalize_whitespace is True, any trailing whitespace.
+
+                   #>>> expected = '<foo>  \n\n'
+                   #>>> regexs, p, _, _ = _as_regexs(expected, True, True, True)
+
+                   #>>> regexs
+                   #['\\A', '(?P<foo>.*?)(?<!\\s)', '\\s*\\Z']
+
+                   #>>> p
+                   #[0, 0, 5]
+
+                   #>>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+                   #>>> m.match('   123  \n\n\n\n').groups()
+                   #('   123',)
+
+                   #>>> expected = ' <foo>  \n\n'
+                   #>>> regexs, p, _, _ = _as_regexs(expected, True, True, True)
+
+                   #>>> regexs
+                   #['\\A', '\\s+', '(?:(?!\\s)(?P<foo>.+?)(?<!\\s)\\s*)?', '\\Z']
+
+                   #>>> p
+                   #[0, 0, 1, 10]
+
+                   #>>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+                   #>>> m.match('   123  \n\n\n\n').groups()
+                   #('123',)
+
+                   #>>> expected = ' <foo>'
+                   #>>> regexs, p, _, _ = _as_regexs(expected, True, True, True)
+
+                   #>>> regexs
+                   #['\\A', '\\s+', '(?:(?!\\s)(?P<foo>.+?)(?<!\\s)\\s*)?', '\\Z']
+
+                   #>>> p
+                   #[0, 0, 1, 6]
+
+                   #>>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+                   #>>> m.match('   123  \n\n\n\n').groups()
+                   #('123',)
+
+        # Note: in a previous version of Byexample there was a bug when the
+        # the last capture was *after* a new line.
+        #
+        # The original regex was (?P<foo>.*?)(?<!\\n) which worked if
+        # the capture was not empty but when it wasn't, the whole failed.
+        #
+        # The problem is that (?<!\\n) means "not preceded by a new line"
+        # and if (?P<foo>.*?) matches the empty string, the regex (?<!\\n)
+        # follows immediately *after* the \n which fails the whole match.
+        #
+        # The fix was to set the tag matches *something* or the whole is
+        # optional:
+            >>> expected = '\n<foo>'
+            >>> regexs, _, _, _ = _as_regexs(expected, True)
+
+            >>> regexs
+            ('\\A', '\\\n', '(?:(?P<foo>.+?)(?<!\\n))?', '\\n*\\Z')
+
+            >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+            >>> m.match('\n123\n\n\n\n').groups()
+            ('123',)
+
+            >>> m.match('\n\n\n\n\n').groups()
+            (None,)
+        '''
+
+        results = [(0, r'\A', 0)]
+        push = results.append
+
+        tags_by_idx = {}
+        names_seen = set()
+
+        state_label = 'INIT'
+        saved_state = ()
+
+        trailing_re = self.trailing_newlines_regex()
+        expected = trailing_re.sub('', expected)
+
+        tokenizer = self.expected_tokenizer(expected, tags_enabled)
+
+        while 1:
+            charno, ttype, token = next(tokenizer)
+            #print(state_label, saved_state, charno, ttype, token)
+            if state_label == 'INIT':
+                assert not saved_state
+                if ttype == 'literals':
+                    saved_state = (charno, token)
+                    state_label = 'LIT'
+                elif ttype == 'wspaces':
+                    push((charno, re.escape(token), len(token)))
+                elif ttype == 'newlines':
+                    push((charno, re.escape(token), len(token)))
+                elif ttype == 'tag':
+                    saved_state = (charno, token)
+                    state_label = 'TAG'
+                elif ttype == 'end':
+                    push((charno, self.trailing_optional_newline_regex_str(), 0))
+                    break
+
+            elif state_label == 'LIT':
+                c, t = saved_state
+                saved_state = ()
+
+                if ttype == 'literals':
+                    assert False
+                elif ttype == 'wspaces':
+                    t += token
+                    push((c, re.escape(t), len(t)))
+                    state_label = 'INIT'
+                elif ttype == 'newlines':
+                    t += token
+                    push((c, re.escape(t), len(t)))
+                    state_label = 'INIT'
+                elif ttype == 'tag':
+                    push((c, re.escape(t), len(t)))
+                    saved_state = (charno, token)
+                    state_label = 'TAG'
+                elif ttype == 'end':
+                    push((c, re.escape(t), len(t)))
+                    push((charno, self.trailing_optional_newline_regex_str(), 0))
+                    break
+
+            elif state_label == 'TAG':
+                c, t = saved_state
+                saved_state = ()
+
+                name = self.name_of_tag(t)
+                tags_by_idx[len(results)] = name
+
+                if name in names_seen:
+                    msg = "The named capture tag '%s' is repeated in " +\
+                          "the %ith character."
+
+                    raise ValueError(msg % (name, charno))
+
+                if name:
+                    names_seen.add(name)
+                    name = tag_name_as_regex_name(name)
+
+                if ttype == 'literals':
+                    push((c, self.non_capture_anything_regex_str(name, False), 0))
+                    saved_state = (charno, token)
+                    state_label = 'LIT'
+                elif ttype == 'wspaces':
+                    push((c, self.non_capture_anything_regex_str(name, False), 0))
+                    push((charno, re.escape(token), len(token)))
+                    state_label = 'INIT'
+                elif ttype == 'newlines':
+                    push((c, self.non_capture_anything_regex_str(name, False), 0))
+                    push((charno, re.escape(token), len(token)))
+                    state_label = 'INIT'
+                elif ttype == 'tag':
+                    msg = "Two consecutive capture tags were found at %ith character. " +\
+                          "This is ambiguous."
+                    raise ValueError(msg % charno)
+                elif ttype == 'end':
+                    push((c, self.non_capture_anything_regex_str(name, False), 0))
+                    push((charno, self.trailing_optional_newline_regex_str(), 0))
+                    break
+
+        # make sure that the tokenizer was exhausted
+        assert next(tokenizer, None) == None
+
+        charnos, regexs, rcounts = zip(*results)
+        return regexs, charnos, rcounts, tags_by_idx
+
+    def name_of_tag(self, tag):
+        name = self.capture_tag_regex().match(tag).group('name')
+        if name == self.ellipsis_marker():
+            name = None
+
+        return name
 
     def extract_cmdline_options(self, opts_from_cmdline):
         # now we can re-parse this argument 'options' from the command line
