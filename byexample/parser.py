@@ -429,7 +429,7 @@ class ExampleParser(ExtendOptionParserMixin):
            >>> r, p, c, _ = _as_regexs('a  \n   b  \t\vc', True, True)
 
            >>> r
-           ('\\A', 'a\\s+', 'b\\s+', 'c', '\\s*\\Z')
+           ('\\A', 'a\\s+(?!\\s)', 'b\\s+(?!\\s)', 'c', '\\s*\\Z')
 
            >>> p
            (0, 0, 7, 12, 13)
@@ -536,7 +536,7 @@ class ExampleParser(ExtendOptionParserMixin):
            >>> regexs, p, _, _ = _as_regexs(expected, True, True)
 
            >>> regexs
-           ('\\A', 'a\\s+', '(?:(?!\\s)(?P<foo>.+?))?', 'b', '\\s*\\Z')
+           ('\\A', 'a\\s+(?!\\s)', '(?P<foo>.*?)', 'b', '\\s*\\Z')
 
            >>> p
            (0, 0, 2, 7, 8)
@@ -549,7 +549,7 @@ class ExampleParser(ExtendOptionParserMixin):
            >>> regexs, p, _, _ = _as_regexs(expected, True, True)
 
            >>> regexs
-           ('\\A', 'a', '(?:(?P<foo>.+?)(?<!\\s))?\\s+', 'b', '\\s*\\Z')
+           ('\\A', 'a', '(?:(?P<foo>.+?)(?<!\\s))?\\s+(?!\\s)', 'b', '\\s*\\Z')
 
            >>> p
            (0, 0, 1, 7, 8)
@@ -565,7 +565,7 @@ class ExampleParser(ExtendOptionParserMixin):
            >>> regexs, p, _, _ = _as_regexs(expected, True, True)
 
            >>> regexs
-           ('\\A', 'a\\s+', '(?:(?!\\s)(?P<foo>.+?)(?<!\\s)\\s+)?', 'b', '\\s*\\Z')
+           ('\\A', 'a\\s+(?!\\s)', '(?:(?P<foo>.+?)(?<!\\s))?\\s*(?!\\s)', 'b', '\\s*\\Z')
 
            >>> p
            (0, 0, 2, 8, 9)
@@ -574,8 +574,16 @@ class ExampleParser(ExtendOptionParserMixin):
            >>> m.match('a  \n 123\n\n b').groups()
            ('123',)
 
-           >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
            >>> m.match('a  \n \n\n b').groups('')
+           ('',)
+
+           >>> m.match('a  b').groups('')
+           ('',)
+
+           # The following is "wrong" as it should not match (2 whitespaces
+           # are expected at least), but it is a current limitation of
+           # the engine (1 whitespace is enough)
+           >>> m.match('a b').groups('')
            ('',)
 
         Any trailing new line will be ignored
@@ -619,7 +627,7 @@ class ExampleParser(ExtendOptionParserMixin):
            >>> regexs, p, _, _ = _as_regexs(expected, True, True)
 
            >>> regexs
-           ('\\A', '\\s+', '(?:(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s*\\Z')
+           ('\\A', '\\s+(?!\\s)', '(?:(?P<foo>.+?)(?<!\\s))?', '\\s*\\Z')
 
            >>> p
            (0, 0, 1, 6)
@@ -632,7 +640,7 @@ class ExampleParser(ExtendOptionParserMixin):
            >>> regexs, p, _, _ = _as_regexs(expected, True, True)
 
            >>> regexs
-           ('\\A', '\\s+', '(?:(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s*\\Z')
+           ('\\A', '\\s+(?!\\s)', '(?:(?P<foo>.+?)(?<!\\s))?', '\\s*\\Z')
 
            >>> p
            (0, 0, 1, 6)
@@ -677,7 +685,7 @@ class ExampleParser(ExtendOptionParserMixin):
         saved_state = ()
 
         norm_ws = normalize_whitespace  # alias
-        ws_regex= self.one_or_more_whitespace_regex().pattern
+        ws_regex= r'\s+(?!\s)'
 
         trailing_re = self.trailing_whitespace_regex() if norm_ws \
                       else self.trailing_newlines_regex()
@@ -752,26 +760,18 @@ class ExampleParser(ExtendOptionParserMixin):
                 ws_re_on_left = results[-1][-1]
 
                 if ttype == 'literals':
-                    retag = self.regex_of_tag(
-                            name,
-                            ws_re_on_left,
-                            False,
-                            False)
+                    retag = self.regex_of_tag(name, '')
                     push((c, retag, 0, False))
                     saved_state = (charno, token)
                     state_label = 'LIT'
                 elif ttype in ('wspaces', 'newlines'):
-                    retag = self.regex_of_tag(
-                            name,
-                            ws_re_on_left,
-                            True and norm_ws,
-                            False)
+                    retag = self.regex_of_tag(name, 's'*norm_ws)
                     if norm_ws:
                         if ws_re_on_left:
-                            # ws_re_on_left and ws_re_on_right so
-                            # retag should contain the regex for the whitespace
-                            # do not push it again
-                            push((c, retag, 0, True))
+                            # we made "optional" the trailing whitespace
+                            # (on right) because if the tag matches empty, the
+                            # regex on the left will take care of this
+                            push((c, retag+r'\s*(?!\s)', 0, True))
                         else:
                             push((c, retag+ws_regex, 0+1, True))
                     else:
@@ -784,12 +784,7 @@ class ExampleParser(ExtendOptionParserMixin):
                           "This is ambiguous."
                     raise ValueError(msg % charno)
                 elif ttype == 'end':
-                    retag = self.regex_of_tag(
-                            name,
-                            ws_re_on_left,
-                            True and norm_ws,
-                            True and not norm_ws,
-                            x=False)
+                    retag = self.regex_of_tag(name, 's' if norm_ws else 'n')
                     push((c, retag, 0, False))
                     push((charno, trailing_re.pattern, 0, False))
                     break
@@ -808,11 +803,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
         return name
 
-    def regex_of_tag(self, name,
-            wspace_regex_on_left,
-            wspace_regex_on_right,
-            nline_regex_on_right,
-            x=True):
+    def regex_of_tag(self, name, lookahead):
         '''
             >>> from byexample.parser import ExampleParser
             >>> import re
@@ -821,37 +812,25 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> regex_of_tag = parser.regex_of_tag
 
         A tag, named or unnamed, will try to capture anything.
-            >>> regex_of_tag('foo', False, False, False)
+            >>> regex_of_tag('foo', '')
             '(?P<foo>.*?)'
 
-            >>> regex_of_tag(None, False, False, False)
+            >>> regex_of_tag(None, '')
             '(?:.*)'
 
         The name of the tag is 'normalized': Python's regexs
         must be valid Python names
-            >>> regex_of_tag('foo-bar', False, False, False)
+            >>> regex_of_tag('foo-bar', '')
             '(?P<foo_bar>.*?)'
 
-        When a tag is preceded by a whitespace regex, the tag
-        must not capture any whitespace on his left.
-            >>> regex_of_tag('foo', True, False, False)
-            '(?:(?!\\s)(?P<foo>.+?))?'
-
-        If the whitespace regex is on his right, the tag must
+        If a whitespace regex is on his right, the tag must
         not end in a whitespace
-            >>> regex_of_tag('foo', False, True, False)
+            >>> regex_of_tag('foo', 's')
             '(?:(?P<foo>.+?)(?<!\\s))?'
-
-        A combination of those two yields a merge of the two
-        cases with the additional that the whitespace regex is
-        added, optionally, to the tag regex. (it is the caller's
-        resposability to not add another whitespace regex after this one)
-            >>> regex_of_tag('foo', True, True, False)
-            '(?:(?!\\s)(?P<foo>.+?)(?<!\\s)\\s+)?'
 
         If the tag is followed by a regex that consume any
         newline, it must not consume them
-            >>> regex_of_tag('foo', False, False, True)
+            >>> regex_of_tag('foo', 'n')
             '(?:(?P<foo>.+?)(?<!\\n))?'
 
         # Note: in a previous version of byexample the regexs were like
@@ -870,30 +849,23 @@ class ExampleParser(ExtendOptionParserMixin):
         # ensure that it will never be empty and wrap all as 'optional'
         '''
 
-        prefix = posfix = ""
-        if nline_regex_on_right:
-            assert not wspace_regex_on_left and not wspace_regex_on_right
-            posfix = r'(?<!\n)' # do not end with a newline
-
-        if wspace_regex_on_left:
-            assert not nline_regex_on_right
-            prefix = r'(?!\s)' # do not begin with a whitespace
-
-        if wspace_regex_on_right:
-            assert not nline_regex_on_right
+        assert lookahead in ('s', 'n', '')
+        if lookahead == 's':
             posfix = r'(?<!\s)' # do not end with a whitespace
-
-        if wspace_regex_on_left and wspace_regex_on_right and x:
-            posfix += r'\s+'
+        elif lookahead == 'n':
+            posfix = r'(?<!\n)' # do not end with a newline
+        else:
+            posfix = ""         # free
 
         if name is None:
             regex = r'(?:.{rep})'
         else:
             name = tag_name_as_regex_name(name)
             regex = r'(?P<{name}>.{rep}?)'
+            #regex = r'(?P<{name}>(?:[^\s\n]{rep}?|[^\n]{rep}?|.{rep}?))'
 
-        if prefix or posfix:
-            regex = prefix + regex.format(name=name, rep='+') + posfix
+        if posfix:
+            regex = regex.format(name=name, rep='+') + posfix
             regex = r'(?:' + regex + ')?'
         else:
             regex = regex.format(name=name, rep='*')
