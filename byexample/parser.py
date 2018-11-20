@@ -58,40 +58,15 @@ class ExampleParser(ExtendOptionParserMixin):
     def capture_tag_regex(self):
         '''
         Return a regular expression to match a 'capture tag'.
-        The regex must have a named group:
-          - name: the name of the tag.
 
         Due implementation details the underscore character '_'
         *cannot* be used as a valid character in the name.
         Instead you should use minus '-'.
         '''
-        return re.compile(r"<(?P<name>(?:[^\W_]|-|\.)+)>")
-
-    @constant
-    def capture_tag_regex_TMP(self):
-        '''
-        Return a regular expression to match a 'capture tag'.
-
-        Due implementation details the underscore character '_'
-        *cannot* be used as a valid character in the name.
-        Instead you should use minus '-'.
-        '''
-        return re.compile(r"(<(?:[^\W_]|-|\.)+>)")
-
-    def name_from_capture_tag(self, tag):
-        return tag[1:-1]
-
-    @constant
-    def leading_optional_whitespace_regex(self):
-        return re.compile(r'\A\s*', re.MULTILINE | re.DOTALL)
-
-    @constant
-    def leading_single_whitespace_regex(self):
-        return re.compile(r'\A\s', re.MULTILINE | re.DOTALL)
-
-    @constant
-    def one_or_more_whitespace_regex(self):
-        return re.compile(r'\s+', re.MULTILINE | re.DOTALL)
+        return {
+                'split': re.compile(r"(<(?:[^\W_]|-|\.)+>)"),
+                'full': re.compile(r"<(?P<name>(?:[^\W_]|-|\.)+)>"),
+                }
 
     @constant
     def one_or_more_ws_capture_regex(self):
@@ -102,52 +77,15 @@ class ExampleParser(ExtendOptionParserMixin):
         return re.compile(r'(\n+)', re.MULTILINE | re.DOTALL)
 
     @constant
-    def zero_or_more_whitespace_regex(self):
-        return re.compile(r'\s*', re.MULTILINE | re.DOTALL)
-
-    @constant
     def trailing_whitespace_regex(self):
         return re.compile(r'\s*\Z', re.MULTILINE | re.DOTALL)
-
-    @constant
-    def trailing_single_whitespace_regex(self):
-        return re.compile(r'\s\Z', re.MULTILINE | re.DOTALL)
 
     @constant
     def trailing_newlines_regex(self):
         return re.compile(r'\n*\Z', re.MULTILINE | re.DOTALL)
 
-    @constant
-    def trailing_single_newline_regex(self):
-        return re.compile(r'\n\Z', re.MULTILINE | re.DOTALL)
-
     def ellipsis_marker(self):
         return '...'
-
-    def do_not_begin_with_whitespace_regex_str(self):
-        return r'(?!\s)'
-
-    def do_not_end_with_whitespace_regex_str(self):
-        return r'(?<!\s)'
-
-    def do_not_end_with_newline_regex_str(self):
-        return r'(?<!\n)'
-
-    def trailing_optional_whitespace_regex_str(self):
-        return r"\s*\Z"
-
-    def trailing_optional_newline_regex_str(self):
-        return r'\n*\Z'
-
-    def end_of_string_regex_str(self):
-        return r'\Z'
-
-    def non_capture_anything_regex_str(self, name, at_least_one):
-        repetition = r'+' if at_least_one else r'*'
-        if name:
-            return r"(?P<%s>.%s?)" % (name, repetition)
-        else:
-            return r"(?:.%s)" % repetition
 
     def process_snippet_and_expected(self, snippet, expected):
         r'''
@@ -271,8 +209,12 @@ class ExampleParser(ExtendOptionParserMixin):
              (27, 'wspaces', ' '),           (28, 'literals', '<...>'), (33, 'end', None)]
         '''
 
+        nl_splitter = self.one_or_more_nl_capture_regex()
+        ws_splitter = self.one_or_more_ws_capture_regex()
+        tag_splitter = self.capture_tag_regex()['split']
+
         charno = 0
-        for k, line_or_newlines in enumerate(self.one_or_more_nl_capture_regex().split(expected_str)):
+        for k, line_or_newlines in enumerate(nl_splitter.split(expected_str)):
             if k % 2 == 1:
                 newlines = line_or_newlines
                 yield (charno, 'newlines', newlines)
@@ -280,7 +222,7 @@ class ExampleParser(ExtendOptionParserMixin):
                 continue
 
             line = line_or_newlines
-            for j, word_or_spaces in enumerate(self.one_or_more_ws_capture_regex().split(line)):
+            for j, word_or_spaces in enumerate(ws_splitter.split(line)):
                 if j % 2 == 1:
                     wspaces = word_or_spaces
                     yield (charno, 'wspaces', wspaces)
@@ -293,7 +235,7 @@ class ExampleParser(ExtendOptionParserMixin):
                     charno += len(word)
                     continue
 
-                for i, lit_or_tag in enumerate(self.capture_tag_regex_TMP().split(word)):
+                for i, lit_or_tag in enumerate(tag_splitter.split(word)):
                     if i % 2 == 1:
                         tag = lit_or_tag
                         yield (charno, 'tag', tag)
@@ -797,7 +739,7 @@ class ExampleParser(ExtendOptionParserMixin):
         return regexs, charnos, rcounts, tags_by_idx
 
     def name_of_tag_or_None(self, tag):
-        name = self.capture_tag_regex().match(tag).group('name')
+        name = self.capture_tag_regex()['full'].match(tag).group('name')
         if name == self.ellipsis_marker():
             name = None
 
