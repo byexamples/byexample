@@ -21,8 +21,8 @@ File byexample/finder.py, 77/77 test ran in <...> seconds
 File byexample/options.py, 64/64 test ran in <...> seconds
 [PASS] Pass: 64 Fail: 0 Skip: 0
 ~
-File byexample/parser.py, 132/132 test ran in <...> seconds
-[PASS] Pass: 132 Fail: 0 Skip: 0
+File byexample/parser.py, 130/130 test ran in <...> seconds
+[PASS] Pass: 130 Fail: 0 Skip: 0
 <...>
 
 
