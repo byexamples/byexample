@@ -549,10 +549,10 @@ class ExampleParser(ExtendOptionParserMixin):
            >>> regexs, p, _, _ = _as_regexs(expected, True, True)
 
            >>> regexs
-           ('\\A', 'a', '(?:(?P<foo>.+?)(?<!\\s))?', '\\s+', 'b', '\\s*\\Z')
+           ('\\A', 'a', '(?:(?P<foo>.+?)(?<!\\s))?\\s+', 'b', '\\s*\\Z')
 
            >>> p
-           (0, 0, 1, 6, 7, 8)
+           (0, 0, 1, 7, 8)
 
            >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
            >>> m.match('a  \n 123\n\n b').groups()
@@ -565,10 +565,10 @@ class ExampleParser(ExtendOptionParserMixin):
            >>> regexs, p, _, _ = _as_regexs(expected, True, True)
 
            >>> regexs
-           ('\\A', 'a\\s+', '(?:(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s+', 'b', '\\s*\\Z')
+           ('\\A', 'a\\s+', '(?:(?!\\s)(?P<foo>.+?)(?<!\\s)\\s+)?', 'b', '\\s*\\Z')
 
            >>> p
-           (0, 0, 2, 7, 8, 9)
+           (0, 0, 2, 8, 9)
 
            >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
            >>> m.match('a  \n 123\n\n b').groups()
@@ -684,13 +684,9 @@ class ExampleParser(ExtendOptionParserMixin):
         expected = trailing_re.sub('', expected)
 
         tokenizer = self.expected_tokenizer(expected, tags_enabled)
-        skip_read = False
 
         while 1:
-            if not skip_read:
-                charno, ttype, token = next(tokenizer)
-            else:
-                skip_read = False
+            charno, ttype, token = next(tokenizer)
 
             #print(state_label, saved_state, charno, ttype, token)
             if state_label == 'INIT':
@@ -764,23 +760,24 @@ class ExampleParser(ExtendOptionParserMixin):
                     push((c, retag, 0, False))
                     saved_state = (charno, token)
                     state_label = 'LIT'
-                elif ttype == 'wspaces':
+                elif ttype in ('wspaces', 'newlines'):
                     retag = self.regex_of_tag(
                             name,
                             ws_re_on_left,
                             True and norm_ws,
                             False)
-                    push((c, retag, 0, False))
-                    skip_read = True
-                    state_label = 'INIT'
-                elif ttype == 'newlines':
-                    retag = self.regex_of_tag(
-                            name,
-                            ws_re_on_left,
-                            True and norm_ws,
-                            True and not norm_ws)
-                    push((c, retag, 0, False))
-                    skip_read = True
+                    if norm_ws:
+                        if ws_re_on_left:
+                            # ws_re_on_left and ws_re_on_right so
+                            # retag should contain the regex for the whitespace
+                            # do not push it again
+                            push((c, retag, 0, True))
+                        else:
+                            push((c, retag+ws_regex, 0+1, True))
+                    else:
+                        push((c, retag, 0, False))
+                        push((charno, re.escape(token), len(token), False))
+
                     state_label = 'INIT'
                 elif ttype == 'tag':
                     msg = "Two consecutive capture tags were found at %ith character. " +\
@@ -791,7 +788,8 @@ class ExampleParser(ExtendOptionParserMixin):
                             name,
                             ws_re_on_left,
                             True and norm_ws,
-                            True and not norm_ws)
+                            True and not norm_ws,
+                            x=False)
                     push((c, retag, 0, False))
                     push((charno, trailing_re.pattern, 0, False))
                     break
@@ -813,7 +811,8 @@ class ExampleParser(ExtendOptionParserMixin):
     def regex_of_tag(self, name,
             wspace_regex_on_left,
             wspace_regex_on_right,
-            nline_regex_on_right):
+            nline_regex_on_right,
+            x=True):
         '''
             >>> from byexample.parser import ExampleParser
             >>> import re
@@ -844,9 +843,11 @@ class ExampleParser(ExtendOptionParserMixin):
             '(?:(?P<foo>.+?)(?<!\\s))?'
 
         A combination of those two yields a merge of the two
-        cases
+        cases with the additional that the whitespace regex is
+        added, optionally, to the tag regex. (it is the caller's
+        resposability to not add another whitespace regex after this one)
             >>> regex_of_tag('foo', True, True, False)
-            '(?:(?!\\s)(?P<foo>.+?)(?<!\\s))?'
+            '(?:(?!\\s)(?P<foo>.+?)(?<!\\s)\\s+)?'
 
         If the tag is followed by a regex that consume any
         newline, it must not consume them
@@ -881,6 +882,9 @@ class ExampleParser(ExtendOptionParserMixin):
         if wspace_regex_on_right:
             assert not nline_regex_on_right
             posfix = r'(?<!\s)' # do not end with a whitespace
+
+        if wspace_regex_on_left and wspace_regex_on_right and x:
+            posfix += r'\s+'
 
         if name is None:
             regex = r'(?:.{rep})'
