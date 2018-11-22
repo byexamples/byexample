@@ -3,6 +3,7 @@ import re, shlex, argparse
 from .common import log, tohuman, constant
 from .options import OptionParser, UnrecognizedOption, ExtendOptionParserMixin
 from .expected import _LinearExpected, _RegexExpected
+from .parser_state_machine import SM
 
 def tag_name_as_regex_name(name):
     return name.replace('-', '_')
@@ -731,12 +732,192 @@ class ExampleParser(ExtendOptionParserMixin):
                     push((charno, trailing_re.pattern, 0, False))
                     break
 
-
         # make sure that the tokenizer was exhausted
         assert next(tokenizer, None) == None
 
         charnos, regexs, rcounts, _ = zip(*results)
         return regexs, charnos, rcounts, tags_by_idx
+
+    def expected_as_regexs_TMP_NORM(self, expected, tags_enabled, normalize_whitespace):
+        '''
+        From the expected string create a list of regular expressions that
+        joined with the flags re.MULTILINE | re.DOTALL, matches
+        that string.
+
+        This method returns four things:
+            - a list of regexs: for literals, captures, wildcards, ...
+            - a list with the character numbers, the positions in the expected
+              string from where it was created each regex
+            - a list of rcounts (see below)
+            - a dict of non-literal 'regexs' names (capturing and non-capturing)
+              also know as "tags" indexed by position.
+              For non-capturing the name will be None.
+
+            >>> from byexample.parser import ExampleParser
+            >>> import re
+
+            >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
+            >>> _as_regexs = parser.expected_as_regexs_TMP_NORM
+
+        The normalize_whitespace and tags_enabled flags modify how the regexs
+        are built:
+         - if normalize_whitespace is true, replace all the consecutive
+           whitespaces by a single regular expression that matches any amount
+           of whitespaces. The net effect is that regardless of
+           the spaces in the expected, the regexp will ignore that.
+           However we preserve the new line as 'regex's boundaries'
+
+           >>> r, p, c, _ = _as_regexs('a  \n   b  \t\vc', True, True)
+
+           >>> r
+           ('\\A', 'a', '\\s+(?!\\s)', 'b', '\\s+(?!\\s)', 'c', '\\s*\\Z')
+
+           >>> p
+           (0, 0, 1, 7, 8, 12, 13)
+
+           >>> m = re.compile(''.join(r), re.MULTILINE | re.DOTALL)
+           >>> m.match('a b c') is not None
+           True
+
+           And also, count the consecutive whitespaces as a +1 when the
+           rcount is computed (do not count each whitespace)
+
+           >>> c
+           (0, 1, 1, 1, 1, 1, 0)
+
+        When normalize_whitespace is True it will depend if the tag is
+        preceded or followed by a whitespace.
+
+        When no whitespace is around the tag, the things work as if
+        normalize_whitespace was false
+
+           >>> expected = 'a<foo>b'
+           >>> regexs, p, _, _ = _as_regexs(expected, True, True)
+
+           >>> regexs
+           ('\\A', 'a', '(?P<foo>.*?)', 'b', '\\s*\\Z')
+
+           >>> p
+           (0, 0, 1, 6, 7)
+
+           >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+           >>> m.match('a  \n 123\n\n b').groups()
+           ('  \n 123\n\n ',)
+
+        But if we add some whitespace
+
+           >>> expected = 'a <foo>b'
+           >>> regexs, p, _, _ = _as_regexs(expected, True, True)
+
+           >>> regexs
+           ('\\A', 'a', '\\s+(?!\\s)', '(?P<foo>.*?)', 'b', '\\s*\\Z')
+
+           >>> p
+           (0, 0, 1, 2, 7, 8)
+
+           >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+           >>> m.match('a  \n 123\n\n b').groups()
+           ('123\n\n ',)
+
+           >>> expected = 'a<foo> b'
+           >>> regexs, p, _, _ = _as_regexs(expected, True, True)
+
+           >>> regexs
+           ('\\A', 'a', '(?P<foo>.*?)(?<!\\s)', '\\s+(?!\\s)', 'b', '\\s*\\Z')
+
+           >>> p
+           (0, 0, 1, 6, 7, 8)
+
+           >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+           >>> m.match('a  \n 123\n\n b').groups()
+           ('  \n 123',)
+
+        If you want to ignore all the whitespace at the begin or end of the tag,
+        just add a whitespace around it
+
+           >>> expected = 'a\n<foo>\tb'
+           >>> regexs, p, _, _ = _as_regexs(expected, True, True)
+
+           >>> regexs           # byexample: +norm-ws
+           ('\\A', 'a', '\\s', '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s+(?!\\s)', 'b', '\\s*\\Z')
+
+           >>> p
+           (0, 0, 1, 2, 7, 8, 9)
+
+           >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+           >>> m.match('a  \n 123\n\n b').groups()
+           ('123',)
+
+           >>> m.match('a  \n \n\n b').groups('')
+           ('',)
+
+           >>> m.match('a  b').groups('')
+           ('',)
+
+           >>> m.match('a b') is None
+           True
+
+        And if normalize_whitespace is True, any trailing whitespace.
+
+           >>> expected = '<foo>  \n\n'
+           >>> regexs, p, _, _ = _as_regexs(expected, True, True)
+
+           >>> regexs
+           ('\\A', '(?P<foo>.*?)(?<!\\s)', '\\s*\\Z')
+
+           >>> p
+           (0, 0, 5)
+
+           >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+           >>> m.match('   123  \n\n\n\n').groups()
+           ('   123',)
+
+           >>> expected = ' <foo>  \n\n'
+           >>> regexs, p, _, _ = _as_regexs(expected, True, True)
+
+           >>> regexs
+           ('\\A', '\\s', '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s*\\Z')
+
+           >>> p
+           (0, 0, 1, 6)
+
+           >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+           >>> m.match('   123  \n\n\n\n').groups()
+           ('123',)
+
+           >>> expected = ' <foo>'
+           >>> regexs, p, _, _ = _as_regexs(expected, True, True)
+
+           >>> regexs
+           ('\\A', '\\s', '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s*\\Z')
+
+           >>> p
+           (0, 0, 1, 6)
+
+           >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+           >>> m.match('   123  \n\n\n\n').groups()
+           ('123',)
+        '''
+
+        norm_ws = normalize_whitespace  # alias
+        assert norm_ws
+
+        trailing_re = self.trailing_whitespace_regex() if norm_ws \
+                      else self.trailing_newlines_regex()
+        expected = trailing_re.sub('', expected)
+
+        tokenizer = self.expected_tokenizer(expected, tags_enabled)
+
+        sm = SM(self)
+        while not sm.ended():
+            charno, ttype, token = next(tokenizer, (None, None, None))
+            sm.feed(charno, ttype, token)
+
+            assert (ttype == None and sm.ended()) or \
+                    (ttype != None and not sm.ended())
+
+        charnos, regexs, rcounts = zip(*sm.results)
+        return regexs, charnos, rcounts, sm.tags_by_idx
 
     def name_of_tag_or_None(self, tag):
         name = self.capture_tag_regex()['full'].match(tag).group('name')
