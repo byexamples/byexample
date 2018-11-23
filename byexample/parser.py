@@ -3,7 +3,7 @@ import re, shlex, argparse
 from .common import log, tohuman, constant
 from .options import OptionParser, UnrecognizedOption, ExtendOptionParserMixin
 from .expected import _LinearExpected, _RegexExpected
-from .parser_state_machine import SM_NormWS, SM
+from .parser_state_machine import SM_NormWS, SM_NotNormWS
 
 def tag_name_as_regex_name(name):
     return name.replace('-', '_')
@@ -1146,7 +1146,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
         tokenizer = self.expected_tokenizer(expected, tags_enabled)
 
-        sm = SM(self)
+        sm = SM_NotNormWS(self)
         while not sm.ended():
             charno, ttype, token = next(tokenizer, (None, None, None))
             sm.feed(charno, ttype, token)

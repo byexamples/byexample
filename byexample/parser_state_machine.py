@@ -4,7 +4,7 @@ INIT, WS, LIT, TAG, END, TWOTAGS, EXHAUSTED, ERROR = range(8)
 tWS = ('wspaces', 'newlines')
 tLIT = ('wspaces', 'newlines', 'literals')
 
-class SM_NormWS:
+class SM(object):
     def __init__(self, parser):
         self.stash = []
         self.results = []
@@ -12,8 +12,6 @@ class SM_NormWS:
         self.parser = parser
         self.tags_by_idx = {}
         self.names_seen = set()
-
-        self.emit(0, r'\A', 0)
 
     def ended(self):
         return self.state in (EXHAUSTED, ERROR)
@@ -26,16 +24,6 @@ class SM_NormWS:
 
     def emit(self, charno, regex, rcount):
         self.results.append((charno, regex, rcount))
-
-    def emit_ws(self, just_one=False):
-        charno, _ = self.pull()
-        if just_one:
-            rx = r'\s'
-        else:
-            rx = r'\s+(?!\s)'
-        rc = 1
-
-        self.emit(charno, rx, rc)
 
     def emit_literals(self):
         charno, l = self.pull()
@@ -81,6 +69,29 @@ class SM_NormWS:
         rx = r'{ws}*\Z'.format(ws=ws)
         rc = 0
         self.emit(charno, rx, rc)
+
+class SM_NormWS(SM):
+    def __init__(self, parser):
+        SM.__init__(self, parser)
+        self.emit(0, r'\A', 0)
+
+    def emit_ws(self, just_one=False):
+        charno, _ = self.pull()
+        if just_one:
+            rx = r'\s'
+        else:
+            rx = r'\s+(?!\s)'
+        rc = 1
+
+        self.emit(charno, rx, rc)
+
+    def emit_tag(self, mode):
+        assert mode in ('l', 'r', 'b', '0')
+        return SM.emit_tag(self, mode)
+
+    def emit_eof(self, ws):
+        assert ws == r'\s'
+        return SM.emit_eof(self, ws)
 
     def feed(self, charno, ttype, token):
         push = self.stash.append
@@ -185,7 +196,19 @@ class SM_NormWS:
         else:
             assert False
 
-class SM(SM_NormWS):
+class SM_NotNormWS(SM):
+    def __init__(self, parser):
+        SM.__init__(self, parser)
+        self.emit(0, r'\A', 0)
+
+    def emit_tag(self, mode):
+        assert mode in ('e', '0')
+        return SM.emit_tag(self, mode)
+
+    def emit_eof(self, ws):
+        assert ws == r'\n'
+        return SM.emit_eof(self, ws)
+
     def feed(self, charno, ttype, token):
         push = self.stash.append
         drop = self.drop
