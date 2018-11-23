@@ -2,8 +2,9 @@ import re
 
 INIT, WS, LIT, TAG, END, TWOTAGS, EXHAUSTED, ERROR = range(8)
 tWS = ('wspaces', 'newlines')
+tLIT = ('wspaces', 'newlines', 'literals')
 
-class SM:
+class SM_NormWS:
     def __init__(self, parser):
         self.stash = []
         self.results = []
@@ -44,7 +45,7 @@ class SM:
         self.emit(charno, rx, rc)
 
     def emit_tag(self, mode):
-        assert mode in ('l', 'r', 'b', '0')
+        assert mode in ('l', 'r', 'b', '0', 'e')
         charno, tag = self.pull()
 
         name = self.parser.name_of_tag_or_None(tag)
@@ -59,23 +60,25 @@ class SM:
         if name is not None:
             self.names_seen.add(name)
 
-        h = r'(?P<%s>' % name if name else r'(?:'
-
         if mode in ('l', '0'):
-            rx = h + r'.*?)'
+            rx = r'({capture}.*{greedy})'
         elif mode == 'r':
-            rx = h + r'.*?)(?<!\s)'
+            rx = r'({capture}.*{greedy})(?<!\s)'
         elif mode == 'b':
-            rx = r'(?:\s*(?!\s)' + h + r'.+?)(?<!\s))?'
+            rx = r'(?:\s*(?!\s)({capture}.+{greedy})(?<!\s))?'
+        elif mode == 'e':
+            rx = r'(?:({capture}.+{greedy})(?<!\n))?'
         else:
             assert False
 
+        rx = rx.format(capture=r'?P<%s>' % name.replace('-', '_') if name else r'?:',
+                greedy=r'?' if name else '')
         rc = 0
         self.emit(charno, rx, rc)
 
-    def emit_eof(self):
+    def emit_eof(self, ws):
         charno, _ = self.pull()
-        rx = r'\s*\Z'
+        rx = r'{ws}*\Z'.format(ws=ws)
         rc = 0
         self.emit(charno, rx, rc)
 
@@ -147,7 +150,7 @@ class SM:
             assert stash_size == 2
             assert ttype is None    # next token doesn't exist: tokenizer exhausted
             drop(last=True)
-            self.emit_eof()
+            self.emit_eof(ws=r'\s')
             self.state = EXHAUSTED
         elif self.state == (WS, TAG):
             assert stash_size == 3
@@ -182,3 +185,64 @@ class SM:
         else:
             assert False
 
+class SM(SM_NormWS):
+    def feed(self, charno, ttype, token):
+        push = self.stash.append
+        drop = self.drop
+
+        push((charno, token))
+        stash_size = len(self.stash)
+        if self.state == INIT:
+            assert stash_size == 1
+            if ttype in tLIT:
+                self.state = LIT
+            elif ttype == 'tag':
+                self.state = TAG
+            elif ttype == 'end':
+                self.state = END
+            else:
+                assert False
+        elif self.state == LIT:
+            assert stash_size == 2
+            if ttype in tLIT:
+                self.emit_literals()
+                self.state = LIT
+            elif ttype == 'tag':
+                self.emit_literals()
+                self.state = TAG
+            elif ttype == 'end':
+                self.emit_literals()
+                self.state = END
+            else:
+                assert False
+        elif self.state == TAG:
+            assert stash_size == 2
+            if ttype in tLIT:
+                self.emit_tag(mode='0')
+                self.state = LIT
+            elif ttype == 'tag':
+                self.state = TWOTAGS
+            elif ttype == 'end':
+                self.emit_tag(mode='e')
+                self.state = END
+            else:
+                assert False
+        elif self.state == END:
+            assert stash_size == 2
+            assert ttype is None    # next token doesn't exist: tokenizer exhausted
+            drop(last=True)
+            self.emit_eof(ws=r'\n')
+            self.state = EXHAUSTED
+        elif self.state == TWOTAGS:
+            assert stash_size == 3
+            self.state = ERROR
+            drop(last=True)  # don't care what we read next
+            drop(last=True) # don't care the second tag
+            charno, _ = self.pull()
+            msg = "Two consecutive capture tags were found at %ith character. " +\
+                  "This is ambiguous."
+            raise ValueError(msg % charno)
+        elif self.state in (EXHAUSTED, ERROR):
+            assert False
+        else:
+            assert False
