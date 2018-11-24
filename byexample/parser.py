@@ -69,22 +69,6 @@ class ExampleParser(ExtendOptionParserMixin):
                 'full': re.compile(r"<(?P<name>(?:[^\W_]|-|\.)+)>"),
                 }
 
-    @constant
-    def one_or_more_ws_capture_regex(self):
-        return re.compile(r'(\s+)', re.MULTILINE | re.DOTALL)
-
-    @constant
-    def one_or_more_nl_capture_regex(self):
-        return re.compile(r'(\n+)', re.MULTILINE | re.DOTALL)
-
-    @constant
-    def trailing_whitespace_regex(self):
-        return re.compile(r'\s*\Z', re.MULTILINE | re.DOTALL)
-
-    @constant
-    def trailing_newlines_regex(self):
-        return re.compile(r'\n*\Z', re.MULTILINE | re.DOTALL)
-
     def ellipsis_marker(self):
         return '...'
 
