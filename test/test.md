@@ -9,6 +9,9 @@ to start.
 ```shell
 $ jobs=1 pretty=none make lib-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
 <...>
+File byexample/cache.py, 11/11 test ran in <...> seconds
+[PASS] Pass: 11 Fail: 0 Skip: 0
+~
 File byexample/differ.py, 18/18 test ran in <...> seconds
 [PASS] Pass: 18 Fail: 0 Skip: 0
 ~
@@ -21,11 +24,15 @@ File byexample/finder.py, 77/77 test ran in <...> seconds
 File byexample/options.py, 64/64 test ran in <...> seconds
 [PASS] Pass: 64 Fail: 0 Skip: 0
 ~
-File byexample/parser.py, 129/129 test ran in <...> seconds
-[PASS] Pass: 129 Fail: 0 Skip: 0
+File byexample/parser.py, 16/16 test ran in <...> seconds
+[PASS] Pass: 16 Fail: 0 Skip: 0
+~
+File byexample/parser_sm.py, 127/127 test ran in <...> seconds
+[PASS] Pass: 127 Fail: 0 Skip: 0
+~
+File byexample/runner.py, 11/11 test ran in <...> seconds
+[PASS] Pass: 11 Fail: 0 Skip: 0
 <...>
-
-
 ```
 
 Then, each module (Finder, Parser and Runner) provided by ``byexample`` has

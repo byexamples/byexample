@@ -6,7 +6,7 @@ tWS = ('wspaces', 'newlines')
 tLIT = ('wspaces', 'newlines', 'literals')
 
 '''
->>> from byexample.parser_state_machine import SM, SM_NormWS, SM_NotNormWS
+>>> from byexample.parser_sm import SM, SM_NormWS, SM_NotNormWS
 >>> import re
 
 >>> _tag_regex = re.compile(r"<(?P<name>(?:[^\W_]|-|\.)+)>")

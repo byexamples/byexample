@@ -3,7 +3,7 @@ import re, shlex, argparse
 from .common import log, tohuman, constant
 from .options import OptionParser, UnrecognizedOption, ExtendOptionParserMixin
 from .expected import _LinearExpected, _RegexExpected
-from .parser_state_machine import SM_NormWS, SM_NotNormWS
+from .parser_sm import SM_NormWS, SM_NotNormWS
 
 def tag_name_as_regex_name(name):
     return name.replace('-', '_')
