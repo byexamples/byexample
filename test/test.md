@@ -27,8 +27,8 @@ File byexample/options.py, 64/64 test ran in <...> seconds
 File byexample/parser.py, 16/16 test ran in <...> seconds
 [PASS] Pass: 16 Fail: 0 Skip: 0
 ~
-File byexample/parser_sm.py, 127/127 test ran in <...> seconds
-[PASS] Pass: 127 Fail: 0 Skip: 0
+File byexample/parser_sm.py, 129/129 test ran in <...> seconds
+[PASS] Pass: 129 Fail: 0 Skip: 0
 ~
 File byexample/runner.py, 11/11 test ran in <...> seconds
 [PASS] Pass: 11 Fail: 0 Skip: 0

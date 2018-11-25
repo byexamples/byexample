@@ -211,7 +211,7 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> regexs, _, _, tags_by_idx = _as_regexs(expected, True, True)
 
             >>> regexs          # byexample: +norm-ws
-            ('\\A', 'a', '(?:.*)(?<!\\s)', '\\s+(?!\\s)', '(?P<foo_bar>.*?)', 'c', '\\s*\\Z')
+            ('\\A', 'a', '(?:.*?)(?<!\\s)', '\\s+(?!\\s)', '(?P<foo_bar>.*?)', 'c', '\\s*\\Z')
 
             >>> tags_by_idx
             {2: None, 4: 'foo-bar'}

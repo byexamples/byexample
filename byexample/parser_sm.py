@@ -89,7 +89,7 @@ class SM(object):
 
         return name
 
-    def emit_tag(self, ctx):
+    def emit_tag(self, ctx, endline):
         '''
             Emit the regex of a capture tag given a context,
             always with a rcount of zero.
@@ -99,25 +99,25 @@ class SM(object):
 
             Depending on the tag name, the regex can be non-capture.
             >>> sm.push(0, '<...>')
-            >>> sm.emit_tag(ctx='0')
-            (0, '(?:.*)', 0)
+            >>> sm.emit_tag(ctx='0', endline=False)
+            (0, '(?:.*?)', 0)
 
             If the tag is named, the regex will have that name. Keep in
             mind that the character '-' will be mapped to '_' because
             the regex names in Python must be valid Python names.
             >>> sm.push(1, '<foo-bar>')
-            >>> sm.emit_tag(ctx='0')
+            >>> sm.emit_tag(ctx='0', endline=False)
             (1, '(?P<foo_bar>.*?)', 0)
 
             When a tag have whitespace at its left, nothing happens
             >>> sm.push(2, '<bar>')
-            >>> sm.emit_tag(ctx='l')
+            >>> sm.emit_tag(ctx='l', endline=False)
             (2, '(?P<bar>.*?)', 0)
 
             But if the whitespace is at its right, the regex must not
             match it.
             >>> sm.push(3, '<baz>')
-            >>> sm.emit_tag(ctx='r')
+            >>> sm.emit_tag(ctx='r', endline=False)
             (3, '(?P<baz>.*?)(?<!\\s)', 0)
 
             Something similar happens if it is at the end: the regex must
@@ -125,21 +125,28 @@ class SM(object):
             Because it is possible that a newline is on his left, the regex
             must also protect itself in case that it matches empty.
             >>> sm.push(4, '<zaz>')
-            >>> sm.emit_tag(ctx='n')
+            >>> sm.emit_tag(ctx='n', endline=False)
             (4, '(?:(?P<zaz>.+?)(?<!\\n))?', 0)
 
             The more complex scenario happens when the tag is surrounded
             by whitespace. Like before, the regex must take care of what
             happen if matches empty.
             >>> sm.push(5, '<sax>')
-            >>> sm.emit_tag(ctx='b')
+            >>> sm.emit_tag(ctx='b', endline=False)
             (5, '(?:\\s*(?!\\s)(?P<sax>.+?)(?<!\\s))?', 0)
 
             Duplicated names are not allowed
             >>> sm.push(6, '<sax>')
-            >>> sm.emit_tag(ctx='0')
+            >>> sm.emit_tag(ctx='0', endline=False)
             Traceback<...>
             ValueError: The named capture tag 'sax' is repeated in the 6th character.
+
+            The regexs are non-greedy by default with one exception: if
+            the tag is unamed and it its at the end of a line
+            (<endline> is True) then the regex will be greedy:
+            >>> sm.push(0, '<...>')
+            >>> sm.emit_tag(ctx='0', endline=True)
+            (0, '(?:.*)', 0)
 
         '''
         assert ctx in ('l', 'r', 'b', '0', 'n')
@@ -168,8 +175,12 @@ class SM(object):
         else:
             assert False
 
+        greedy = r'?'   # not greedy
+        if not name and endline:
+            greedy = r''    # yes, greedy
+
         rx = rx.format(capture=r'?P<%s>' % name.replace('-', '_') if name else r'?:',
-                greedy=r'?' if name else '')
+                greedy=greedy)
         rc = 0
         return self.emit(charno, rx, rc)
 
@@ -304,9 +315,9 @@ class SM_NormWS(SM):
 
         return self.emit(charno, rx, rc)
 
-    def emit_tag(self, ctx):
+    def emit_tag(self, ctx, endline):
         assert ctx in ('l', 'r', 'b', '0')
-        return SM.emit_tag(self, ctx)
+        return SM.emit_tag(self, ctx, endline)
 
     def emit_eof(self, ws):
         assert ws == 's'
@@ -366,15 +377,15 @@ class SM_NormWS(SM):
         elif self.state == TAG:
             assert stash_size == 2
             if ttype in tWS:
-                self.emit_tag(ctx='r')
+                self.emit_tag(ctx='r', endline=(ttype=='newlines'))
                 self.state = WS
             elif ttype == 'literals':
-                self.emit_tag(ctx='0')
+                self.emit_tag(ctx='0', endline=False)
                 self.state = LIT
             elif ttype == 'tag':
                 self.state = TWOTAGS
             elif ttype == 'end':
-                self.emit_tag(ctx='r')
+                self.emit_tag(ctx='r', endline=True)
                 self.state = END
             else:
                 assert False
@@ -388,18 +399,18 @@ class SM_NormWS(SM):
             assert stash_size == 3
             if ttype in tWS:
                 self.emit_ws(just_one=True)
-                self.emit_tag(ctx='b')
+                self.emit_tag(ctx='b', endline=(ttype=='newlines'))
                 self.state = WS
             elif ttype == 'literals':
                 self.emit_ws()
-                self.emit_tag(ctx='l')
+                self.emit_tag(ctx='l', endline=False)
                 self.state = LIT
             elif ttype == 'tag':
                 drop() # drop the WS, we will not use it
                 self.state = TWOTAGS
             elif ttype == 'end':
                 self.emit_ws(just_one=True)
-                self.emit_tag(ctx='b')
+                self.emit_tag(ctx='b', endline=True)
                 self.state = END
             else:
                 assert False
@@ -606,9 +617,9 @@ class SM_NotNormWS(SM):
     def trailing_newlines_regex(self):
         return re.compile(r'\n*\Z', re.MULTILINE | re.DOTALL)
 
-    def emit_tag(self, ctx):
+    def emit_tag(self, ctx, endline):
         assert ctx in ('n', '0')
-        return SM.emit_tag(self, ctx)
+        return SM.emit_tag(self, ctx, endline)
 
     def emit_eof(self, ws):
         assert ws == 'n'
@@ -646,12 +657,12 @@ class SM_NotNormWS(SM):
         elif self.state == TAG:
             assert stash_size == 2
             if ttype in tLIT:
-                self.emit_tag(ctx='0')
+                self.emit_tag(ctx='0', endline=(ttype=='newlines'))
                 self.state = LIT
             elif ttype == 'tag':
                 self.state = TWOTAGS
             elif ttype == 'end':
-                self.emit_tag(ctx='n')
+                self.emit_tag(ctx='n', endline=True)
                 self.state = END
             else:
                 assert False
@@ -686,8 +697,8 @@ class SM_NotNormWS(SM):
             >>> expected = 'a<foo>b<b-b>c<...>d'
             >>> regexs, charnos, rcounts, tags_by_idx = _as_regexs(expected, True)
 
-            >>> regexs              # byexample: -tags
-            ('\\A', 'a', '(?P<foo>.*?)', 'b', '(?P<b_b>.*?)', 'c', '(?:.*)', 'd', '\\n*\\Z')
+            >>> regexs              # byexample: -tags +norm-ws
+            ('\\A', 'a', '(?P<foo>.*?)', 'b', '(?P<b_b>.*?)', 'c', '(?:.*?)', 'd', '\\n*\\Z')
 
             >>> match(regexs, 'axxbyyyczzd').groups()
             ('xx', 'yyy')
@@ -717,13 +728,14 @@ class SM_NotNormWS(SM):
             works out of the box with a subtle change: the regex name has a _
             instead of a -.
 
-            * Also notice that the unnamed tag's regex is greedy (.*) while the
-            * named tag's one is non-greedy (.*?).
-            * The reason of this is that typically the unnamed tag is used to
-            * match long unwanted strings while the named tag is for small
-            * and interesting strings.
-            *
-            * This heuristic does not claim to be bulletproof however.
+            Also notice that the unnamed tag's regex is greedy (.*) if
+            it is at the end of a line.
+
+            The reason of this is that typically the unnamed tag is used to
+            match long unwanted strings while the unamed tags in the middle
+            of a line or named tags are for small strings.
+
+            This heuristic does not claim to be bulletproof however.
 
             The regexs are split on each word boundary: spaces and newlines.
             This in on purpose to support the concept of incremental matching
