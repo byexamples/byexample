@@ -74,14 +74,26 @@ File CONTRIBUTING.md, 5/5 test ran in <...> seconds
 File README.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 2
 ~
+File docs/advanced/geometry.md, 12/12 test ran in <...> seconds
+[PASS] Pass: 12 Fail: 0 Skip: 0
+~
+File docs/advanced/greedy-lazy-tags.md, 7/7 test ran in <...> seconds
+[PASS] Pass: 7 Fail: 0 Skip: 0
+~
+File docs/advanced/shebang.md, 5/5 test ran in <...> seconds
+[PASS] Pass: 5 Fail: 0 Skip: 0
+~
+File docs/advanced/terminal-emulation.md, 12/12 test ran in <...> seconds
+[PASS] Pass: 12 Fail: 0 Skip: 0
+~
+File docs/advanced/unicode.md, 8/8 test ran in <...> seconds
+[PASS] Pass: 8 Fail: 0 Skip: 0
+~
 File docs/capture-and-paste.md, 6/6 test ran in <...> seconds
 [PASS] Pass: 6 Fail: 0 Skip: 0
 ~
 File docs/differences.md, 13/13 test ran in <...> seconds
 [PASS] Pass: 13 Fail: 0 Skip: 0
-~
-File docs/geometry.md, 12/12 test ran in <...> seconds
-[PASS] Pass: 12 Fail: 0 Skip: 0
 ~
 File docs/how-to-hook-to-events-with-concerns.md, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
@@ -116,20 +128,11 @@ File docs/options.md, 7/7 test ran in <...> seconds
 File docs/setup-and-tear-down.md, 7/7 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 0
 ~
-File docs/shebang.md, 5/5 test ran in <...> seconds
-[PASS] Pass: 5 Fail: 0 Skip: 0
-~
 File docs/skip-and-pass.md, 7/7 test ran in <...> seconds
 [PASS] Pass: 6 Fail: 0 Skip: 1
 ~
-File docs/terminal-emulation.md, 12/12 test ran in <...> seconds
-[PASS] Pass: 12 Fail: 0 Skip: 0
-~
 File docs/timeout.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 1
-~
-File docs/unicode.md, 8/8 test ran in <...> seconds
-[PASS] Pass: 8 Fail: 0 Skip: 0
 ~
 File docs/usage.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 9 Fail: 0 Skip: 0

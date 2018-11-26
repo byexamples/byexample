@@ -1,4 +1,4 @@
-# Tags
+# Greedy/Lazy Tags
 
 A tag is marked with the symbols ``<`` and ``>`` and can be of two types:
 named like ``<foo-name>`` or unamed like ``<...>``.
@@ -8,7 +8,7 @@ Both kind of tags can match anything but there is a small difference.
 
 Because the named tags are used to *capture* a given string
 and *paste* it later, it is assumed that a named tag is intended to
-match a small string, therefor the regex used is non-greedy (``.*?``).
+match a small string, therefor the regex used is non-greedy or lazy (``.*?``).
 
 The usage of unamed tags is more diffuse: they can be used to ignore
 small portions or large multiline ones.
