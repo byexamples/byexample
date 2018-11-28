@@ -330,11 +330,6 @@ class PexepctMixin(object):
             raise TypeError("Unknown terminal type '+term=%s'." % options['term'])
 
         self._drop_output()
-
-        # remove any other 'prompt' if any
-        if self.any_PS_re:
-            out = self.any_PS_re.sub('', out)
-
         return out
 
     def _set_cooked_mode(self, state): # pragma: no cover
