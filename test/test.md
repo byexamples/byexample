@@ -89,16 +89,31 @@ File docs/advanced/terminal-emulation.md, 12/12 test ran in <...> seconds
 File docs/advanced/unicode.md, 8/8 test ran in <...> seconds
 [PASS] Pass: 8 Fail: 0 Skip: 0
 ~
-File docs/capture-and-paste.md, 6/6 test ran in <...> seconds
+File docs/basic/capture-and-paste.md, 6/6 test ran in <...> seconds
 [PASS] Pass: 6 Fail: 0 Skip: 0
 ~
-File docs/differences.md, 13/13 test ran in <...> seconds
+File docs/basic/differences.md, 13/13 test ran in <...> seconds
 [PASS] Pass: 13 Fail: 0 Skip: 0
 ~
-File docs/how-to-hook-to-events-with-concerns.md, 2/2 test ran in <...> seconds
+File docs/basic/normalize-whitespace.md, 3/3 test ran in <...> seconds
+[PASS] Pass: 3 Fail: 0 Skip: 0
+~
+File docs/basic/options.md, 7/7 test ran in <...> seconds
+[PASS] Pass: 7 Fail: 0 Skip: 0
+~
+File docs/basic/setup-and-tear-down.md, 7/7 test ran in <...> seconds
+[PASS] Pass: 7 Fail: 0 Skip: 0
+~
+File docs/basic/skip-and-pass.md, 7/7 test ran in <...> seconds
+[PASS] Pass: 6 Fail: 0 Skip: 1
+~
+File docs/basic/timeout.md, 5/5 test ran in <...> seconds
+[PASS] Pass: 4 Fail: 0 Skip: 1
+~
+File docs/contrib/how-to-hook-to-events-with-concerns.md, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
 ~
-File docs/how-to-support-new-finders-and-languages.md, 41/41 test ran in <...> seconds
+File docs/contrib/how-to-support-new-finders-and-languages.md, 41/41 test ran in <...> seconds
 [PASS] Pass: 41 Fail: 0 Skip: 0
 ~
 File docs/index.md, 9/9 test ran in <...> seconds
@@ -119,25 +134,10 @@ File docs/languages/ruby.md, 12/12 test ran in <...> seconds
 File docs/languages/shell.md, 30/30 test ran in <...> seconds
 [PASS] Pass: 30 Fail: 0 Skip: 0
 ~
-File docs/normalize-whitespace.md, 3/3 test ran in <...> seconds
-[PASS] Pass: 3 Fail: 0 Skip: 0
-~
-File docs/options.md, 7/7 test ran in <...> seconds
+File docs/usage/usage.md, 7/7 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 0
 ~
-File docs/setup-and-tear-down.md, 7/7 test ran in <...> seconds
-[PASS] Pass: 7 Fail: 0 Skip: 0
-~
-File docs/skip-and-pass.md, 7/7 test ran in <...> seconds
-[PASS] Pass: 6 Fail: 0 Skip: 1
-~
-File docs/timeout.md, 5/5 test ran in <...> seconds
-[PASS] Pass: 4 Fail: 0 Skip: 1
-~
-File docs/usage.md, 9/9 test ran in <...> seconds
-[PASS] Pass: 9 Fail: 0 Skip: 0
-~
-File docs/where-should-I-write-the-examples.md, 11/11 test ran in <...> seconds
+File docs/usage/where-should-I-write-the-examples.md, 11/11 test ran in <...> seconds
 [PASS] Pass: 11 Fail: 0 Skip: 0
 <...>
 

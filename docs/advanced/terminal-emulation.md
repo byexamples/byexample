@@ -26,7 +26,8 @@ only the white spaces.
 It does not have the concept of a cursor, does not
 interpret escape codes and does not break lines automatically.
 
-Even if a geometry is defined with ``+geometry``, the *dumb terminal*
+Even if a [geometry](docs/advanced/geometry.md) is defined
+with ``+geometry``, the *dumb terminal*
 does not force any boundaries: the example
 can print a string longer than the width of the terminal.
 
@@ -41,7 +42,9 @@ The dumb terminal removes any trailing whitespace, converts to spaces the tabs
 and uniforms the new lines.
 
 This fits for most of the examples reducing the need of adding tabs into the
-examples or relaxing the comparison using ``+norm-ws``.
+examples or requering the
+[normalization of the whitespaces](docs/basic/normalize-whitespace.md)
+with ``+norm-ws``.
 
 ```python
 >>> print("\tfoo\tbar\nbaz\tsaz    \rtaz")
@@ -56,10 +59,10 @@ the terminal emulation.
 ## As-is terminal
 
 When ``+term=as-is`` is activated the output is passed *as is* without
-any modification except for *standardize* the new lines.
+any modification except for *standardization* of the new lines.
 
 It can be useful in some especial cases to check some of the white spaces
-removed by the dumb or the ansi terminals.
+removed by the dumb or the ANSI terminals.
 
 ```python
 >>> print("\tfoo\tbar\nbaz\tsaz    \rtaz")       # byexample: +term=as-is
@@ -98,7 +101,8 @@ message in red
 
 ### Terminal boundaries
 
-Keep in mind that an *emulated terminal* will honor its own boundaries: if
+Keep in mind that an *emulated terminal* will honor its own boundaries
+or [geometry](docs/advanced/geometry.md): if
 an example prints a string longer than the width of the terminal, the string
 will spawn multiple lines (a newline is added automatically).
 
@@ -114,12 +118,12 @@ technology-like programs.
 ### ncurses support
 
 Some applications use advanced terminal features (like the ones
-that ``ncurses`` supports) and require a terminal emulator.
+that use ``ncurses``) and require a terminal emulator.
 
-Examples of this are ``less``, ``more``, ``top`` and ``man``.
+Examples of this are programs like ``less``, ``more``, ``top`` and ``man``.
 
 ```shell
-$ less test/ds/python-tutorial.v2.md # byexample: +term=ansi +rm=~ +stop-on-silence +diff=ndiff
+$ less test/ds/python-tutorial.v2.md # byexample: +term=ansi +rm=~ +stop-on-silence
 ~This is a 101 Python tutorial
 ~The following is an example written in Python about arithmetics
 ~
@@ -162,8 +166,8 @@ line 31
 line 32
 ```
 
-If this is a problem you can always increase the count of rows that
-the terminal has with ``+geometry``.
+If this is a problem change the [geometry](docs/advanced/geometry.md):
+increase the count of rows that the terminal has with ``+geometry``.
 
 <!--
 

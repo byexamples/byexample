@@ -12,7 +12,8 @@ $ alias byexample=byexample\ --pretty\ none
 ``byexample`` will show the differences between the result that
 you are expecting and the result you actually got.
 
-Image that you have a file with the following text:
+Image that you have a file with the following fragment of the GPL
+license:
 
 ```
 $ cat test/ds/lic.doc
@@ -20,7 +21,6 @@ To protect your rights, we need to prevent no-one from denying you
 these rights or asking you to surrender the rights.  Therefore, you don't have
 certain responsibilities if you distribute copies of the software, or if
 you modify it: responsibilities to respect the freedom of others.
-
 ```
 
 Now let's image that you also have a document/test about GPL license
@@ -94,8 +94,8 @@ negate some sentence.
 
 ## Guessing the tags
 
-Now in the practice what your example may contain tags
-like ``<...>`` or ``<foo>``.
+Now in the practice what your example may contain
+[tags](docs/basic/capture-and-paste.md) like ``<...>`` or ``<foo>``.
 
 Those are used to ignore long uninteresting strings or to capture specific
 ones.
@@ -133,18 +133,20 @@ you modify it: responsibilities to respect the freedom of others.
 <...>
 ```
 
-The test fails as expected: we didn't fix the typos in the ``lic.doc``.
+The test keeps failing as expected: we didn't fix the typos in the ``lic.doc``.
 
-But what it is interesting is how ``byexample`` show us the differences.
+But what *it is interesting is how* ``byexample`` show us the differences.
 
 Read carefully the ``Expected`` string, notice how the tags ``<prevent1>``
-and ``<prevent2>`` are there exactly as we defined in the test.
+and ``<prevent2>`` are there *exactly* as we defined in the test.
 
-But the ``<protect>`` and ``<responsibilities>`` are not.
+Nothing interesting so far but the ``<protect>`` and ``<responsibilities>``
+where replaced by the correct text and they not shown as tags but just as
+texts.
 
-``byexample`` captured the fragments ``"your rights"`` and
+``byexample`` *captured* the fragments ``"your rights"`` and
 ``"responsibilities to respect the freedom of others"``
-and replaced the tags by the captured text.
+and *replaced* the tags by the captured text.
 
 These *guesses* makes the differences shorter and more easy to spot:
 
@@ -176,7 +178,7 @@ Keep in mind that the test is failing therefore, the captured strings
 may not be correct.
 
 You can disable this with the ``--no-enhance-diff`` from the command line.
-You will see a much harder to interpreter diff:
+You will see a much harder to interpreter diff with more errors:
 
 ```shell
 $ byexample -l shell --diff ndiff --no-enhance-diff test/ds/about-lic-with-tags.doc   # byexample: +rm=~

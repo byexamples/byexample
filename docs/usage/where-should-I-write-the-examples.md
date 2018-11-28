@@ -29,12 +29,12 @@ Take a look to the documentation of each language
 Here are some examples:
 
 ```python
->>> 1 + 2
+>>> 1 + 2   # python
 3
 ```
 
 ```ruby
->> 3 * 3
+>> 3 * 3    # ruby
 => 9
 ```
 
@@ -48,7 +48,7 @@ generic one:
  ```
 `````
 
-### Detect the end of an example
+## Detect the end of an example
 
 ``byexample`` detects the end of the example if:
 
@@ -59,20 +59,18 @@ generic one:
 This is an example showing those three cases:
 
 ```python
->>> 1   # example followed
+>>> 1   # example 1 delimited by the second >>>
 1
->>> 1   # by another line with a prompt
-1
+>>> 2   # example 2 delimited by a blank line
+2
 
-    >>> 2
-    2
+    >>> 3   # example 3 delimited by a text with a lower indentation level
+    3
 # this line has a lower indentation level
 # and mark the end of the example too
 
->>> 3
-3
-
-# extra blank line that separates the example
+>>> 4   # example 4 delimited by a blank line (see spurious endings)
+4
 ```
 
 ### Spurious endings
@@ -86,16 +84,16 @@ Consider the following example written in a *mixed* way:
  ```
 `````
 
-The initial expected string found by byexample would be ``3`` **plus**
+The initial expected string found by ``byexample`` would be ``3`` **plus**
 ````` ``` ````` because there is not a blank line that separate these two.
 
-However, byexample will *ignore* the last line of an example if has some
+However, ``byexample`` will *ignore* the last line of an example if has some
 special tokens like ````` ``` `````, ``~~~``, ``'''`` and ``-->``.
 
 Check out [how to support new finders and languages](https://byexamples.github.io/byexample/how-to-support-new-finders-and-languages)
 to see the internals of these.
 
-### New lines at the end are ignored
+## New lines at the end are ignored
 
 ``byexample`` will ignore any empty line(s) at the end of the expected string
 and from the got string from the executed examples.

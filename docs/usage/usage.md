@@ -57,9 +57,6 @@ File test/ds/python-tutorial.v1.md, 4/4 test ran in <...> seconds
 will print a summary showing how many examples were executed, how many passed,
 failed or where skipped.
 
-A skipped example means that the example has a ``+skip`` option and it was not
-executed.
-
 In normal circumstances there are two possible status: ``PASS`` and ``FAIL``.
 
 If something strange happen like the user pressed ``ctrl-c``, the underlying
@@ -75,21 +72,7 @@ File test/ds/python-tutorial.v1.md, 4/4 test ran in <...> seconds
 [FAIL] Pass: 2 Fail: 1 Skip: 1
 ```
 
-## Output differences
-
-Each test is found, parsed and executed. For each test or example that failed
-``byexample`` will print the example followed by the expected and the got
-outputs.
-
-In the previous example, the code executed was ``2j * 2`` and we expected
-``4`` but instead we got ``4j`` as a result.
-
-Obviously our blog has a bug!
-
-We can fix ``2j * 2`` replacing the expected ``4`` by ``4j`` and
-replacing ``6`` by ``6j`` in the next example
-
-Here is our second try:
+Fix the bugs an re-run
 
 ```
 $ byexample --ff -l python test/ds/python-tutorial.v2.md
@@ -97,67 +80,6 @@ $ byexample --ff -l python test/ds/python-tutorial.v2.md
 File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
 ```
-
-## What is considered an example?
-
-``byexample`` uses the concept of finders to find and extract examples from
-a given file.
-
-Currently ``byexample`` supports one generic finder based on the
-Markdown fenced block syntax.
-
-Anything that it is between ````` ```<language> ````` and ````` ``` ````` is
-considered an example and the language of syntax set.
-
-The fenced block contains the code to execute and the expected output separated
-by the ``out:`` label.
-
-`````
- ```python
- 1 + 1
-
- out:
- 2
- ```
-`````
-
-In addition to that, most of the languages supported in ``byexample`` has their
-own additional finder.
-
-For example in ``Python`` you can use the prompts ``>>>`` and ``...`` to write
-an interpreter session like example.
-
-```python
->>> 1 + 1
-2
-```
-
-Check out [where should I write the examples](where-should-I-write-the-examples.md)
-section, it has a more in deep description.
-
-
-## Extending ``byexample``
-
-Currently we support:
-
- - Python (compatible with ``doctest``) -> [docs](https://byexamples.github.io/byexample/languages/python)
- - Ruby -> [docs](https://byexamples.github.io/byexample/languages/ruby)
- - Javascript -> [docs](https://byexamples.github.io/byexample/languages/javascript)
- - Shell (``sh`` and ``bash``) -> [docs](https://byexamples.github.io/byexample/languages/shell)
- - GDB (the [GNU Debugger](https://www.gnu.org/software/gdb/download/)) -> [docs](https://byexamples.github.io/byexample/languages/gdb)
- - C++ (using [cling](https://github.com/root-project/cling) - *experimental*) -> [docs](https://byexamples.github.io/byexample/languages/cpp)
-
-But don't get limited to those.
-
-You can extend ``byexample`` adding:
- - new ways to find examples
- - support new languages and interpreters
- - new reports and other things
-
-Check out [how to support new finders and languages](how-to-support-new-finders-and-languages.md)
-and [how to hook to events with concerns](how-to-hook-to-events-with-concerns.md) for more info.
-
-It is easier than you think!
 
 ## Help included
 

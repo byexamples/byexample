@@ -7,7 +7,7 @@ $ alias byexample=byexample\ --pretty\ none
 --
 -->
 
-# Changing the runner: Shebang
+# Changing the Runner: Shebang
 
 The examples are executed by a specific runner based on the language of
 the examples.
@@ -41,7 +41,7 @@ $ cat test/ds/blog-database.md                          # byexample: +rm=~
 ```
 
 Running this will fail because the debug print will be mixed with the normal
-prints:
+prints and the example above expects only the *normal* outputs.
 
 ```
 $ byexample -l python test/ds/blog-database.md
@@ -93,3 +93,6 @@ If your shell-fu is a little rusty and the shebang is too magic, don't worry
 I had the same problem; *it's for very specific situations* and you should be
 away from this most of the time.
 
+If you need more specific customization you may want to consider to
+[create your own runner](docs/contrib/how-to-support-new-finders-and-languages.md).
+Go ahead, it is much easier than you think.

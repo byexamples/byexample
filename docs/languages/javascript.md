@@ -120,34 +120,10 @@ Anonymous functions can be *created as part of* a larger example.
 
 ### Trailing whitespace
 
-Some objects are printed with a trailing whitespace: don't be scared if
-your example fails.
+Some objects are printed with a trailing whitespace.
 
-``byexample`` will print a special marker ``$`` representing
-whitespace at the end of the text. You just need to add it to your example
-or use ``+norm-ws``.
-
-Here is an example with explicit trailing whitespaces (you may no notice them):
- 
-```javascript
-> var obj = {a: {b: {c: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', d: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}}}
-> obj
-{ a: 
-   { b: 
-      { c: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        d: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' } } }
-```
-
-An here is the same example without the trailing whitespaces but with
-the normalize whitespace option ``+norm-ws`` enabled:
-
-```javascript
-> obj  // byexample: +norm-ws
-{ a:
-   { b:
-      { c: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        d: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' } } }
-```
+This is not a problem unless you are using a ``as-is``
+[terminal emulation](docs/advanced/terminal-emulation.md).
 
 ### Too deep nested objects
 

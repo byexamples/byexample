@@ -10,7 +10,8 @@ $ alias byexample=byexample\ --pretty\ none
 # Terminal Geometry
 
 When ``byexample`` runs a set of examples he spawns one o more runners
-inside a *virtual terminal* of 24 lines of height and 80 columns of width.
+inside a [virtual terminal](docs/advanced/terminal-emulation.md)
+of 24 lines of height and 80 columns of width.
 
 The dimension or geometry can affect how the runner will print in the
 terminal.

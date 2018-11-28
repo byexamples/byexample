@@ -68,15 +68,16 @@ Differences:
 <...>
 ```
 
-**Note:** you may noticed, the ``ndiff`` algorithm will not put the marker ``+``
-in the correct position if the characters are *wide characters*.
+**Note:** the [``ndiff`` algorithm](docs/basic/differences.md)
+will not put the marker ``+`` in the correct position
+if the characters are *wide characters*.
 
 ## Encoding
 
 By default, ``byexample`` will use the same encoding that ``Python`` uses
 for its standard output, typically ``utf-8``.
 
-You can change the encoding from the command line:
+You can change the encoding from the command line with ``--encoding``:
 
 ```shell
 $ byexample -l shell --encoding utf-8 test/ds/bad-unicode.md
@@ -101,8 +102,8 @@ Got:
 ## Limitations
 
 If you are running ``byexample`` using ``Python 2.7`` *and* you
-enable the ANSI terminal emulation with ``+term=ansi``, any
-non-ascii character will be removed.
+enable the [ANSI terminal emulation](docs/advanced/terminal-emulation.md)
+with ``+term=ansi``, any non-ascii character will be removed.
 
 This is a limitation of one of the ``byexample``'s dependencies and
 only apply under that specific scenario.

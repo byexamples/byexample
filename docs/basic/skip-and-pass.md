@@ -25,3 +25,5 @@ See the difference between those two in these ``Python`` examples:
 Choosing a random number...
 ```
 
+See how to use ``-skip`` to support
+[clean ups](docs/basic/setup-and-tear-down.md).

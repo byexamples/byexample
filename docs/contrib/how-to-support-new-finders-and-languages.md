@@ -13,7 +13,8 @@ line.
 What classes will depend of what you want to extend or customize.
 
 In this ``how-to`` we will go through the first two items: how to support
-new finders and languages. Check [docs/how to hook to events with concerns](how-to-hook-to-events-with-concerns.md)
+new finders and languages. Check
+[how to hook to events with concerns](docs/contrib/how-to-hook-to-events-with-concerns.md)
 for a ``how-to`` about the last one.
 
 Let's show this by example.
@@ -29,7 +30,8 @@ What do we need?
 The first thing to teach ``byexample`` is how to find a ``ArnoldC``
 example.
 
-``byexample`` already has a generic finder, the fenced code block finder.
+``byexample`` already has a generic finder, the
+[fenced code block finder](docs/usage/where-should-I-write-the-examples.md).
 
 But just for fun, let's imagine that we want to do something different.
 Let's say that our examples are enclosed by the ``~~~`` strings: anything
@@ -145,6 +147,10 @@ part of the example:
 ...     return endings - {'~~~'}
 ```
 
+Check also how this is
+[seen and used](docs/usage/where-should-I-write-the-examples.md)
+by the user of your new language.
+
 ### Detect the language
 
 Then, the finder needs to determinate in which language the example
@@ -206,7 +212,7 @@ Let's see if our finder can find the ArnoldC snippet above.
 ```python
 >>> finder = ArnoldCFinder(0, 'utf-8')
 
->>> filepath = 'docs/how-to-support-new-finders-and-languages.md'
+>>> filepath = 'docs/contrib/how-to-support-new-finders-and-languages.md'
 >>> where = (0,1,filepath)
 >>> matches = finder.get_matches(open(filepath, 'r').read())
 >>> matches = list(matches)
@@ -251,7 +257,7 @@ extract the options that ``byexample`` uses to customize the example.
 
 ### Get the options
 
-An option or options can be of any form and be in any place.
+The [options](docs/basic/options.md) can be of any form and be in any place.
 
 Typically we can write the options in the comments of the code which obviously
 will depend of the language.
@@ -441,8 +447,8 @@ You may want to change how to setup the interpreter or the compiler based on
 the examples that it will execute or in the options passed from the command
 line.
 
-The ``options`` parameter are the parsed options (plus the options that
-come from the command line).
+The ``options`` parameter are the parsed options (plus the
+[options](docs/basic/options.md) that come from the command line).
 
 It is in the ``run`` method where the magic happen.
 

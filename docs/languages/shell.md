@@ -35,7 +35,7 @@ next examples.
 It is easy to do this using a redirection:
 
 ```shell
-$ sleep 1 >/dev/null 2>&1 &
+$ sleep 2 >/dev/null 2>&1 &
 <...>
 ```
 
@@ -143,8 +143,10 @@ To kill any running background process you can write:
 $ kill -9 $(jobs -p) && wait        # byexample: -skip +pass
 ```
 
-The ``-skip`` will make sure that this example gets executed while the ``+pass``
-will ignore any output so it will work even if there is no process to kill.
+The ``-skip`` will [make sure](docs/basic/setup-and-tear-down.md)
+that this example gets executed while the ``+pass``
+will [ignore any output](docs/basic/skip-and-pass.md)
+so it will work even if there is no process to kill.
 
 ## Stopping a process on inactivity or silence
 
@@ -236,10 +238,8 @@ If you are sure that it is ok, you can remove the flag.
 
 ## Using other shells (short story)
 
-``byexample`` allows you to use ``--shebang`` to control how to spawn
-a runner, in this case, the shell.
-
-See [usage](../usage.md) to see how ``--shebang`` is used.
+``byexample`` allows you to use ``--shebang`` to control
+[how to spawn a runner](docs/advanced/shebang.md), in this case, the shell.
 
 We support currently ``sh`` and ``bash``. It will probably work with others.
 

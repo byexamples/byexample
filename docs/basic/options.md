@@ -13,7 +13,7 @@ You can control certain behaviours of the examples through a set of
 options.
 
 If the option is set per example using ``byexample: <opt>``, it will affect only
-the specific example.
+that example.
 
 ```python
 >>> list(range(10))             # byexample: +norm-ws
@@ -61,7 +61,7 @@ Other languages and concerns may add their owns.
 
 ## Loading options from a file
 
-If the amount of options is a little overhelming for you, you can
+If the amount of options is a little overwhelming for you, you can
 write them down to a file and let ``byexample`` load them for you.
 
 The only convention that you need to follow is to write one option
@@ -82,6 +82,4 @@ $ byexample @test/ds/options_file test/ds/python-tutorial.v2.md
 File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
 ```
-
-
 

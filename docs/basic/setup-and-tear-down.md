@@ -9,7 +9,7 @@ $ alias byexample=byexample\ --pretty\ none
 
 # Setup and Tear Down
 
-Sometimes you need to handle resources for the tests: you need to make
+Sometimes you need to handle resources in the tests: you need to make
 sure that you have them before running any test and you need to release
 them at the end.
 
@@ -29,14 +29,14 @@ You could write:
 $ cat test/ds/db-stock-model.md                         # byexample: +rm=~
 This is a quick introduction to the database schema.
 ~    >>> import sqlite3
-~    >>> c = sqlite3.connect(':memory:')       # in memory, useful for testing
-~    >>> _ = c.executescript(open('test/ds/stock.sql').read())  # byexample: +fail-fast
+~    >>> c = sqlite3.connect(':memory:')
+~    >>> _ = c.executescript(open('test/ds/stock.sql').read())  # ---> # byexample: +fail-fast
 ~
 Get the stocks' prices
 ~    >>> _ = c.execute('select price from stocks')
 ~
 Do not forget to close the connection
-~    >>> c.close()                             # byexample: -skip
+~    >>> c.close()                         # ---> # byexample: -skip
 ~
 ```
 
@@ -53,14 +53,14 @@ Now, if for some reason you cannot load the initial dump, it makes sense
 to stop the whole execution: this is known as ``fail fast`` and it is
 archived with the ``+fail-fast`` flag.
 
-This should skip all the examples, however no matter what happen,
+This should *skip* all the examples, however no matter what happen,
 you always want to leave a clean environment and close the connection:
-you can force this saying that the example must not be skipped (``-skip``).
+you can force this saying that the example must *not* be skipped (``-skip``).
 
-Here is an example of what happen if for some reason the dump cannot
-be loaded: the example should fail and because ``+fail-safe`` is in effect for
-the ``c.executescript`` example, it should *skip* the rest of the
-examples except the last one because explicitly says *do not skip* me ``-skip``.
+Check what happen if we delete the sql file: the example ``c.executescript``
+should fail and because ``+fail-safe`` is in effect for, the rest of the
+example should be *skippped* except the last one because explicitly
+says *do not skip* me with ``-skip``.
 
 ```
 $ mv test/ds/stock.sql test/ds/renamed.sql
@@ -81,7 +81,7 @@ $ mv test/ds/renamed.sql test/ds/stock.sql      # byexample: -skip +pass
 > they have ``-skip``. This is because these kind of failures may had left the
 > interpreter in a invalid state and the execution cannot be resumed.
 >
-> The best strategy would be create a [concern module](how-to-hook-to-events-with-concerns.md)
+> The best strategy would be create a [concern module](docs/contrib/how-to-hook-to-events-with-concerns.md)
 > and hook to the ``finish`` event and perform there all the clean up, if any.
 
 

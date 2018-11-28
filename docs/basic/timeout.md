@@ -9,18 +9,21 @@ $ alias byexample=byexample\ --pretty\ none
 
 # Timeout
 
-The execution of each example has a timeout which can be changed
+The execution of each example has a timeout: if the example takes longer
+it will abort.
+
+This timeout can be changed of course.
 
 ```python
 import time
-time.sleep(2.5) # simulates a slow operation # byexample: +timeout=3
+time.sleep(2.5) # simulates a slow operation # byexample: +timeout=4
 ```
 
-The timeout can be controlled per example with ``+timeout``. The default
-is 2 seconds and this one can be changed from the command line with
-``--timeout``.
+The timeout can be controlled per example with ``+timeout`` or it
+can be changed from the command line with ``--timeout`` to affect the
+all the examples.
 
-See what happen when an example timeout:
+See a timeout in action:
 
 ```
 $ byexample -l python --timeout 0.0001 --ff test/ds/python-tutorial.v1.md
@@ -62,3 +65,7 @@ A timeout is considered a critical issue and it will *abort* the execution.
 
 This is because the interpreter may still hang so further executions
 will timeout too.
+
+No other example will be executed nor even if they have the ``-skip`` option
+which can be problematic for the
+[cleaning up](docs/basic/setup-and-tear-down.md) process.

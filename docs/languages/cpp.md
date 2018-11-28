@@ -76,10 +76,12 @@ out:
 
 ## Terminal support
 
-To work with the current CPP interpreter, ``cling``, the terminal emulator is
+To work with the current CPP interpreter, ``cling``, the ANSI
+[terminal emulator](docs/advanced/terminal-emulation.md) is
 enabled by default (``+term=ansi``) and cannot be disabled.
 
-Also, the terminal geometry cannot by changed after launching the interpreter
+Also, the [terminal geometry](docs/advanced/geometry.md)
+cannot by changed after launching the interpreter
 so the option ``+geometry`` cannot be used in an example (but it can be
 used from the command line)
 

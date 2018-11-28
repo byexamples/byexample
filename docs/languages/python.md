@@ -73,7 +73,8 @@ bar
 
 And also the report flags: ``REPORT_UDIFF``, ``REPORT_CDIFF`` and ``REPORT_NDIFF``
 
-As you may guess, the ``byexample``'s cature tags feature are disabled in this
+As you may guess, the ``byexample``'s
+[cature tags](docs/basic/capture-and-paste.md) feature are disabled in this
 compatibility mode.
 
 But in the other hand, you can use the ``ELLIPSIS`` flag as usual.
@@ -204,6 +205,11 @@ is a summary of the equivalent options:
 some pieces of the output. The ``tags`` flag of ``byexample`` should cover
 those cases and even more.
 
+See [norm-ws](docs/basic/normalize-whitespace.md),
+[tags](docs/basic/capture-and-paste.md),
+[skip](docs/basic/skip-and-pass.md),
+[pass](docs/basic/skip-and-pass.md) and
+[diff](docs/basic/differences.md) for more info.
 
 ## Pretty print display hook
 
