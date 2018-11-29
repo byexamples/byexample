@@ -68,7 +68,7 @@ Differences:
 <...>
 ```
 
-**Note:** the [``ndiff`` algorithm](docs/basic/differences.md)
+**Note:** the [``ndiff`` algorithm](docs/overview/differences.md)
 will not put the marker ``+`` in the correct position
 if the characters are *wide characters*.
 

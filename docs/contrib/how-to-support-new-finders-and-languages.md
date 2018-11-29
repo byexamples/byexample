@@ -31,7 +31,7 @@ The first thing to teach ``byexample`` is how to find a ``ArnoldC``
 example.
 
 ``byexample`` already has a generic finder, the
-[fenced code block finder](docs/usage/where-should-I-write-the-examples.md).
+[fenced code block finder](docs/overview/where-should-I-write-the-examples.md).
 
 But just for fun, let's imagine that we want to do something different.
 Let's say that our examples are enclosed by the ``~~~`` strings: anything
@@ -148,7 +148,7 @@ part of the example:
 ```
 
 Check also how this is
-[seen and used](docs/usage/where-should-I-write-the-examples.md)
+[seen and used](docs/overview/where-should-I-write-the-examples.md)
 by the user of your new language.
 
 ### Detect the language

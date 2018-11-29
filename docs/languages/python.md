@@ -209,7 +209,7 @@ See [norm-ws](docs/basic/normalize-whitespace.md),
 [tags](docs/basic/capture-and-paste.md),
 [skip](docs/basic/skip-and-pass.md),
 [pass](docs/basic/skip-and-pass.md) and
-[diff](docs/basic/differences.md) for more info.
+[diff](docs/overview/differences.md) for more info.
 
 ## Pretty print display hook
 
