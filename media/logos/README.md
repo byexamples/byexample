@@ -1,0 +1,6 @@
+The Python logo is a trademark of the Python Software Foundation. [1](https://www.python.org/community/logos/)
+The Node.js (Javascript) logo is a trademark of Joyent, Inc.[2](https://nodejs.org/es/about/resources/)
+The Ruby logo is Copyright © 2006, Yukihiro Matsumoto. [3](https://www.ruby-lang.org/en/about/logo/)
+The Bash logo. [4](https://github.com/odb/official-bash-logo)
+The GDB logo. [5](https://www.gnu.org/software/gdb/mascot/)
+The C++ logo created by Jeremy Kratz. [6](https://github.com/isocpp/logos)
