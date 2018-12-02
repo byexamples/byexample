@@ -95,7 +95,7 @@ negate some sentence.
 ## Guessing the tags
 
 Now in the practice what your example may contain
-[tags](docs/basic/capture-and-paste.md) like ``<...>`` or ``<foo>``.
+[tags](/{{ site.uprefix }}/basic/capture-and-paste) like ``<...>`` or ``<foo>``.
 
 Those are used to ignore long uninteresting strings or to capture specific
 ones.

@@ -47,7 +47,16 @@ But inside of nested comments the examples are ignored
 #
 ```
 
-## The object returned
+## Pretty print
+
+``byexample`` changes the default IRB's ``inspector`` and uses ``pp``
+(pretty print).
+
+If you want, you can use the IRB's default one with
+the option ``-ruby-pretty-print``
+
+
+### The object returned
 
 Because everything in Ruby is an expression, everything returns a result.
 
@@ -86,13 +95,4 @@ On the other hand, you can disable it for never see an object's print
 with ``+ruby-expr-print=false``.
 
 The default is ``+ruby-expr-print=auto``.
-
-# Pretty print
-
-``byexample`` changes the default IRB's ``inspector`` and uses ``pp``
-(pretty print).
-
-If you want, you can use the IRB's default one with
-the option ``-ruby-pretty-print``
-
 

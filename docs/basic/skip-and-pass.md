@@ -26,4 +26,4 @@ Choosing a random number...
 ```
 
 See how to use ``-skip`` to support
-[clean ups](docs/basic/setup-and-tear-down.md).
+[clean ups](/{{ site.uprefix }}/basic/setup-and-tear-down).

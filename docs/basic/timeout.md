@@ -68,4 +68,4 @@ will timeout too.
 
 No other example will be executed nor even if they have the ``-skip`` option
 which can be problematic for the
-[cleaning up](docs/basic/setup-and-tear-down.md) process.
+[cleaning up](/{{ site.uprefix }}/basic/setup-and-tear-down) process.

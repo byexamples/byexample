@@ -7,7 +7,7 @@ $ alias byexample=byexample\ --pretty\ none
 --
 -->
 
-# Changing the Runner: Shebang
+# Shebang
 
 The examples are executed by a specific runner based on the language of
 the examples.
@@ -94,5 +94,5 @@ I had the same problem; *it's for very specific situations* and you should be
 away from this most of the time.
 
 If you need more specific customization you may want to consider to
-[create your own runner](docs/contrib/how-to-support-new-finders-and-languages.md).
+[create your own runner](/{{ site.uprefix }}/contrib/how-to-support-new-finders-and-languages).
 Go ahead, it is much easier than you think.

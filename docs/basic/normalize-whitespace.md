@@ -1,4 +1,4 @@
-# Normalize whitespace
+# Normalize Whitespace
 
 Replace any sequence of whitespace by a single one.
 

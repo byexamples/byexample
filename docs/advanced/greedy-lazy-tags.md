@@ -1,12 +1,12 @@
-# Greedy/Lazy Tags
+# Greedy and Lazy Tags
 
 A tag is marked with the symbols ``<`` and ``>`` and can be of two types:
 named like ``<foo-name>`` or unamed like ``<...>``.
 
 Both kind of tags can match anything but there is a small difference.
 
-Because the named tags are used to [capture](docs/basic/capture-and-paste.md)
-a given string and [paste](docs/basic/capture-and-paste.md) it later,
+Because the named tags are used to [capture](/{{ site.uprefix }}/basic/capture-and-paste)
+a given string and [paste](/{{ site.uprefix }}/basic/capture-and-paste) it later,
 it is assumed that a named tag is intended to
 match a small string, therefor the regex used is non-greedy or lazy (``.*?``).
 

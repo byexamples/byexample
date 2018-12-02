@@ -47,7 +47,7 @@ This is not very random: 42
 ``byexample`` will always try to capture the most smaller string first.
 
 If your named tags are capturing more data than you want,
-you may want to know what [strategies](docs/advanced/greedy-lazy-tags.md)
+you may want to know what [strategies](/{{ site.uprefix }}/advanced/greedy-lazy-tags)
 ``byexample`` uses.
 
 Using unamed tags ``<...>`` or adding more context around the named tag fixes
@@ -61,4 +61,4 @@ This may lead to other example fail or abort because the tags
 that they used cannot be pasted.
 
 This can be a little problematic in the examples that are supposed
-to do the [clean up](docs/basic/setup-and-tear-down.md) with ``-skip``.
+to do the [clean up](/{{ site.uprefix }}/basic/setup-and-tear-down) with ``-skip``.

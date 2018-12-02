@@ -26,7 +26,7 @@ only the white spaces.
 It does not have the concept of a cursor, does not
 interpret escape codes and does not break lines automatically.
 
-Even if a [geometry](docs/advanced/geometry.md) is defined
+Even if a [geometry](/{{ site.uprefix }}/advanced/geometry) is defined
 with ``+geometry``, the *dumb terminal*
 does not force any boundaries: the example
 can print a string longer than the width of the terminal.
@@ -43,7 +43,7 @@ and uniforms the new lines.
 
 This fits for most of the examples reducing the need of adding tabs into the
 examples or requering the
-[normalization of the whitespaces](docs/basic/normalize-whitespace.md)
+[normalization of the whitespaces](/{{ site.uprefix }}/basic/normalize-whitespace)
 with ``+norm-ws``.
 
 ```python
@@ -102,7 +102,7 @@ message in red
 ### Terminal boundaries
 
 Keep in mind that an *emulated terminal* will honor its own boundaries
-or [geometry](docs/advanced/geometry.md): if
+or [geometry](/{{ site.uprefix }}/advanced/geometry): if
 an example prints a string longer than the width of the terminal, the string
 will spawn multiple lines (a newline is added automatically).
 
@@ -166,7 +166,7 @@ line 31
 line 32
 ```
 
-If this is a problem change the [geometry](docs/advanced/geometry.md):
+If this is a problem change the [geometry](/{{ site.uprefix }}/advanced/geometry):
 increase the count of rows that the terminal has with ``+geometry``.
 
 <!--

@@ -1,4 +1,4 @@
-# How to Hook to Events with Concerns
+# How to Hook to Events
 
 There are three different ways in which ``byexample`` can be extended:
 
@@ -15,7 +15,7 @@ What classes will depend of what you want to extend or customize.
 In this ``how-to`` we will see how to hook to events and perform arbitrary
 actions during the execution.
 
-Check [how to support new finders and languages](docs/contrib/how-to-support-new-finders-and-languages.md)
+Check [how to support new finders and languages](/{{ site.uprefix }}/contrib/how-to-support-new-finders-and-languages)
 for a ``how-to`` about the first two items.
 
 Let's show this by example.
