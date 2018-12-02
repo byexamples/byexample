@@ -23,7 +23,6 @@ deps:
 	pip install -e .
 
 test: clean_test
-	@$(python_bin) test/r.py --pretty $(pretty) --ff -l shell test/readme_index.md
 	@$(python_bin) test/r.py --timeout 60 --pretty $(pretty) --ff -l shell test/test.md
 	@make -s clean_test
 
