@@ -184,7 +184,7 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         return  "%e %p %a", {
                     'e': '/usr/bin/env',
                     'p': 'irb',
-                    'a': []
+                    'a': ['--noreadline']
                     }
 
     def initialize(self, options):
@@ -217,3 +217,13 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
     def shutdown(self):
         self._shutdown_interpreter()
 
+
+'''
+The following code is followed by several tabs (do not delete them).
+In 7.4.3 and before, this tabs were interpreted by IRB and triggered
+the 'autocomplete' suggestions, printing a lot of stuff to the terminal.
+Now this should not happen anymore so the following code should print
+nothing.
+>> a = "hello"				
+
+'''
