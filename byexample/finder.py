@@ -725,3 +725,18 @@ class ExampleFinder(object):
     def spurious_endings(self):
         return {"'''", '-->', '```', '~~~'}
 
+
+class ZoneFinder(object):
+    def __init__(self, verbosity, encoding, **unused):
+        self.verbosity = verbosity
+        self.encoding = encoding
+
+    def zone_regex(self):
+        raise NotImplementedError() # pragma: no cover
+
+    def get_matches(self, string):
+        return self.zone_regex().finditer(string)
+
+    def __repr__(self):
+        return '%s Zone Finder' % tohuman(self.target)
+
