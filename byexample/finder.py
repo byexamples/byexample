@@ -189,7 +189,11 @@ class ExampleHarvest(object):
         all_examples = []
         log("Finding examples...", self.verbosity-1)
         for finder in self.available_finders:
-            examples = self.get_example_using(finder, string, filepath)
+            examples = self.get_examples_using(
+                    finder,
+                    string,
+                    filepath,
+                    start_lineno=1)
             all_examples.extend(examples)
 
         # sort the examples in the same order
@@ -461,7 +465,7 @@ class ExampleHarvest(object):
     def _log_debug(self, what, where):
         log(build_where_msg(where, self, what), self.verbosity-3)
 
-    def get_examples_using(self, finder, string, filepath='<string>', start_lineno=1):
+    def get_examples_using(self, finder, string, filepath, start_lineno):
         return self.from_string_get_items_using(
                 finder,
                 string,
@@ -471,7 +475,7 @@ class ExampleHarvest(object):
                 start_lineno
                 )
 
-    def get_zones_using(self, zfinder, string, filepath='<string>', start_lineno=1):
+    def get_zones_using(self, zfinder, string, filepath, start_lineno):
         return self.from_string_get_items_using(
                 zfinder,
                 string,
