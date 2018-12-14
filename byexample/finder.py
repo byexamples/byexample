@@ -461,19 +461,84 @@ class ExampleHarvest(object):
     def _log_debug(self, what, where):
         log(build_where_msg(where, self, what), self.verbosity-3)
 
-    def get_example_using(self, finder, string, filepath='<string>'):
-        charno = 0
-        start_lineno = 1  # humans tend to count from 1
-        examples = []
+    def get_examples_using(self, finder, string, filepath='<string>', start_lineno=1):
+        return self.from_string_get_items_using(
+                finder,
+                string,
+                self.get_example,
+                'examples',
+                filepath,
+                start_lineno
+                )
 
-        for match in finder.get_matches(string):
-            example_str = string[match.start():match.end()]
-            if example_str.endswith('\n'):
-                example_str = example_str[:-1]
+    def get_zones_using(self, zfinder, string, filepath='<string>', start_lineno=1):
+        return self.from_string_get_items_using(
+                zfinder,
+                string,
+                self.get_zone,
+                'zones',
+                filepath,
+                start_lineno
+                )
+
+    def get_example(self, finder, match, where):
+        with enhance_exceptions(where, finder):
+            # let's find what language is about
+            language = finder.get_language_of(self.options, match, where)
+
+            if not language:
+                self._log_drop('language undefined', where)
+                return
+
+            if language not in self.allowed_languages:
+                self._log_drop('language %s not allowed' % language, where)
+                return
+
+            # who can parse it?
+            parser = self.parser_by_language.get(language)
+            if not parser:
+                self._log_drop('no parser found for %s language' % language, where)
+                return # TODO should be an error?
+
+            # who can execute it?
+            runner = self.runner_by_language.get(language)
+            if not runner:
+                self._log_drop('no runner found for %s language' % language, where)
+                return # TODO should be an error?
+
+            # save the indentation here
+            indent = match.group('indent')
+
+            # then, get the source (runneable code) and the expected (the string)
+            snippet, expected = finder.get_snippet_and_expected(match, where)
+
+            if expected == None:
+                expected = ""
+
+        with enhance_exceptions(where, parser):
+            # perfect, we have everything to build an example
+            example = Example(finder, runner, parser,
+                                    snippet, expected, indent, where)
+            return example
+
+    def get_zone(self, zfinder, match, where):
+        with enhance_exceptions(where, zfinder):
+            zone_str = zfinder.get_zone(match, where)
+            return Zone(zfinder, zone_str, where)
+
+    def from_string_get_items_using(self, matcher, string, getter, what,
+            filepath='<string>', start_lineno=1):
+        charno = 0
+        items = []
+
+        for match in matcher.get_matches(string):
+            str_matched = string[match.start():match.end()]
+            if str_matched.endswith('\n'):
+                str_matched = str_matched[:-1]
 
             # start_lineno and end_lineno are inclusive
             start_lineno += string[charno:match.start()].count('\n')
-            end_lineno = start_lineno + example_str.count('\n')
+            end_lineno = start_lineno + str_matched.count('\n')
 
             # update charno here
             charno = match.start()
@@ -481,53 +546,14 @@ class ExampleHarvest(object):
             # where we are, used for the messages of the exceptions
             where = Where(start_lineno, end_lineno, filepath)
 
-            with enhance_exceptions(where, finder):
-                # let's find what language is about
-                language = finder.get_language_of(self.options, match, where)
+            item = getter(matcher, match, where)
+            if item is not None:
+                items.append(item)
 
-                if not language:
-                    self._log_drop('language undefined', where)
-                    continue
+        log("File '%s': %i %s [%s]" % (filepath, len(items), what,
+                                        str(matcher)), self.verbosity-2)
 
-                if language not in self.allowed_languages:
-                    self._log_drop('language %s not allowed' % language, where)
-                    continue
-
-                # who can parse it?
-                parser = self.parser_by_language.get(language)
-                if not parser:
-                    self._log_drop('no parser found for %s language' % language, where)
-                    continue # TODO should be an error?
-
-                # who can execute it?
-                runner = self.runner_by_language.get(language)
-                if not runner:
-                    self._log_drop('no runner found for %s language' % language, where)
-                    continue # TODO should be an error?
-
-                # save the indentation here
-                indent = match.group('indent')
-
-                # then, get the source (runneable code) and the expected (the string)
-                snippet, expected = finder.get_snippet_and_expected(match, where)
-
-                if expected == None:
-                    expected = ""
-
-            with enhance_exceptions(where, parser):
-                # perfect, we have everything to build an example
-                example = Example(finder, runner, parser,
-                                        snippet, expected, indent, where)
-                examples.append(example)
-
-
-        log("File '%s': %i examples [%s]" % (filepath, len(examples), str(finder)),
-                                            self.verbosity-2)
-
-        return examples
-
-
-
+        return items
 
 class ExampleFinder(object):
     specific = True
