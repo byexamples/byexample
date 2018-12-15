@@ -108,7 +108,7 @@ Expected:
 Got:
 24x80
 <...>
-File "test/ds/small-terminal.md", line 5
+File "test/ds/small-terminal.md", line 6
 Failed example:
     ['aaaaa', 'aaaaa', 'aaaaa', 'aaaaa', 'aaaaa', 'aaaaa', 'aaaaa']
 <...>

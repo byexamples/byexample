@@ -26,7 +26,7 @@ It is also reasonable to *tear down* the database connection at the end.
 You could write:
 
 ```
-$ cat test/ds/db-stock-model.md                         # byexample: +rm=~
+$ cat test/ds/db-stock-model                         # byexample: +rm=~
 This is a quick introduction to the database schema.
 ~    >>> import sqlite3
 ~    >>> c = sqlite3.connect(':memory:')
@@ -43,9 +43,9 @@ Do not forget to close the connection
 In a happy and perfect world this should run smoothly:
 
 ```
-$ byexample -l python test/ds/db-stock-model.md
+$ byexample -l python test/ds/db-stock-model
 <...>
-File test/ds/db-stock-model.md, 5/5 test ran in <...> seconds
+File test/ds/db-stock-model, 5/5 test ran in <...> seconds
 [PASS] Pass: 5 Fail: 0 Skip: 0
 ```
 
@@ -65,9 +65,9 @@ says *do not skip* me with ``-skip``.
 ```
 $ mv test/ds/stock.sql test/ds/renamed.sql
 
-$ byexample -l python test/ds/db-stock-model.md
+$ byexample -l python test/ds/db-stock-model
 <...>
-File test/ds/db-stock-model.md, 5/5 test ran in <...> seconds
+File test/ds/db-stock-model, 5/5 test ran in <...> seconds
 [FAIL] Pass: 3 Fail: 1 Skip: 1
 ```
 

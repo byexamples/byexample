@@ -25,7 +25,7 @@ Consider the following example that prints interesting things to standard output
 and debug/uninterested things to standard error:
 
 ```
-$ cat test/ds/blog-database.md                          # byexample: +rm=~
+$ cat test/ds/blog-database                          # byexample: +rm=~
 ~    >>> from __future__ import print_function
 ~    >>> import sys
 ~
@@ -44,7 +44,7 @@ Running this will fail because the debug print will be mixed with the normal
 prints and the example above expects only the *normal* outputs.
 
 ```
-$ byexample -l python test/ds/blog-database.md
+$ byexample -l python test/ds/blog-database
 <...>
 Expected:
 Loading...
@@ -64,7 +64,7 @@ What you can do is to redirect the standard error of the interpreter,
 ```
 $ byexample -l python \
 >   --shebang "python:/bin/sh -c '%e %p %a 2>/dev/null'"  \
->   test/ds/blog-database.md
+>   test/ds/blog-database
 <...>
 [PASS] Pass: 4 Fail: 0 Skip: 0
 ```

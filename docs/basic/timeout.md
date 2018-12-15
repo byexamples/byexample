@@ -28,7 +28,7 @@ See a timeout in action:
 ```
 $ byexample -l python --timeout 0.0001 --ff test/ds/python-tutorial.v1.md
 <...>
-File "test/ds/python-tutorial.v1.md", line 4
+File "test/ds/python-tutorial.v1.md", line 5
 Failed example:
     from __future__ import print_function
 => Execution timedout at example 1 of 4.

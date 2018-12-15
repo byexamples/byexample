@@ -25,10 +25,10 @@ $ echo "例によって"
 If an example fails, ``byexample`` will show you the differences.
 These also work if the output is unicode.
 
-Consider the following examples in ``test/ds/bad-unicode.md``:
+Consider the following examples in ``test/ds/bad-unicode``:
 
 ```shell
-$ cat test/ds/bad-unicode.md            # byexample: +rm=~
+$ cat test/ds/bad-unicode            # byexample: +rm=~
 ~Those would fail:
 ~
 ~$ echo "por-éjemplo"
@@ -45,7 +45,7 @@ $ cat test/ds/bad-unicode.md            # byexample: +rm=~
 Here are those examples failing:
 
 ```shell
-$ byexample -l shell,python --diff ndiff test/ds/bad-unicode.md    # byexample: +rm=~
+$ byexample -l shell,python --diff ndiff test/ds/bad-unicode    # byexample: +rm=~
 <...>
 Differences:
 - por ejemplo
@@ -80,7 +80,7 @@ for its standard output, typically ``utf-8``.
 You can change the encoding from the command line with ``--encoding``:
 
 ```shell
-$ byexample -l shell --encoding utf-8 test/ds/bad-unicode.md
+$ byexample -l shell --encoding utf-8 test/ds/bad-unicode
 <...>
 Expected:
 por ejemplo

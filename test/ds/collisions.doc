@@ -1,0 +1,27 @@
+
+The # is a Shell prompt but also a comment in Python and Ruby
+The >>> is a Python prompt and >> and # >> are valid Ruby prompts
+
+The following is ambiguous because it could be a Shell or a Ruby
+example
+
+# >> 1 + 2
+err
+
+It is ambiguous even if one is larger than the other (the Shell
+example spans 2 lines, the first Ruby example just 1)
+
+# >> 1 + 2
+>>
+
+This case is not ambiguous: the first example is in Ruby and spans
+2 lines, the "second" should be a Shell example of 1 line but we
+consider take the first example as valid.
+
+>> puts "# 1 + 2"
+# 1 + 2
+
+If those two are actually two examples, we could print a warning
+saying that the Ruby example is shadowing the Shell example, "put
+and extra line in between them".
+
