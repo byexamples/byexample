@@ -110,7 +110,11 @@ def load_modules(dirnames, cfg):
                 for obj in objs:
                     key_value = getattr(obj, key)
                     if key_value:
-                        container[key_value] = obj
+                        if not isinstance(key_value, (list, tuple, set)):
+                            key_value = [key_value]
+
+                        for k in key_value:
+                            container[k] = obj
                         loaded_objs.append(obj)
 
                 log("\n".join((" - %s" % repr(i)) for i in loaded_objs), verbosity-1)
