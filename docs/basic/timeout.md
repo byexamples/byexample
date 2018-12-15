@@ -15,8 +15,8 @@ it will abort.
 This timeout can be changed of course.
 
 ```python
-import time
-time.sleep(2.5) # simulates a slow operation # byexample: +timeout=4
+>>> import time
+>>> time.sleep(2.5) # simulates a slow operation # byexample: +timeout=4
 ```
 
 The timeout can be controlled per example with ``+timeout`` or it

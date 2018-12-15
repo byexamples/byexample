@@ -1,25 +1,15 @@
 '''
 Javascript code (using nodejs).
 
-Inside of a Markdown Fenced Code:
-
-```javascript
-1 + 2;
-
-out:
+> 1 + 2;
 3
-```
 
 The "out:" label marks the begin of the expected output to compare.
 
 The semicolons are optional (as long as they are syntactically correct):
 
-```javascript
-'hello' + ' ' + 'world'
-
-out:
+> 'hello' + ' ' + 'world'
 'hello world'
-```
 
 Prompt based is allowed too using '>' as the first prompt
 and '.' as the second prompt:
@@ -30,7 +20,6 @@ and '.' as the second prompt:
 
 > mul(4, 2)
 8
-
 
 '''
 

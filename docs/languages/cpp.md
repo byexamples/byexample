@@ -14,12 +14,10 @@ Don't forget to send your feedback to the ``cling`` community.
 All the variables are global and can be accessed by other examples
 
 ```cpp
-double radio = 2.0;
-double sup = 3.14 * (radio * radio);
+?: double radio = 2.0;
+?: double sup = 3.14 * (radio * radio);
 
-sup
-
-out:
+?: sup
 (double) 12.56<...>
 ```
 
@@ -34,14 +32,12 @@ Here is an example of how to print something
 and check the output later:
 
 ```cpp
-#include <iostream>
+?: #include <iostream>
 
-int i;
-for (i = 0; i < 3; ++i) {
-    std::cout << i << std::endl;
-}
-
-out:
+?: int i;
+?: for (i = 0; i < 3; ++i) {
+::    std::cout << i << std::endl;
+:: }
 0
 1
 2
@@ -53,11 +49,9 @@ out:
 You can even check for them as part of the normal output:
 
 ```cpp
-for (i = 0; i < unknown; ++i) {
-    std::cout << i << std::endl;
-}
-
-out:
+?: for (i = 0; i < unknown; ++i) {
+::    std::cout << i << std::endl;
+:: }
 <...>: error: use of undeclared identifier 'unknown'
  for (i = 0; i < unknown; ++i) {
                  ^
@@ -70,9 +64,7 @@ out:
 To print boolean expressions you need to surround them with parenthesis
 
 ```cpp
-(1 == 2)
-
-out:
+?: (1 == 2)
 (bool) false
 ```
 

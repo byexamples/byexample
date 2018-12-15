@@ -29,17 +29,13 @@ Example:
   yes sr!
 
   Markdown's version (no prompt)
-  ```ruby
-  j = 2;
-  (0..3).each do |i|
-    j += i;
-  end;
+  >> j = 2
+  >> (0..3).each do |i|
+  ..  j += i
+  .. end
 
-  j + 3
-
-  out:
+  >> j + 3
   => 11
-  ```
 
   Pretty print
   >> { 1 => 2, 3=>{4=>"aaaaaaaa", 5=>Array(0..20)}}
@@ -67,16 +63,12 @@ Example:
   "foo bar 4"
 
   Heredocs
-  ```ruby
-  puts <<-FOO
+  >> puts <<-FOO
+  .. one
+  .. two
+  .. FOO
   one
   two
-  FOO
-
-  out:
-  one
-  two
-  ```
 
 """
 

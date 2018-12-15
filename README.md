@@ -67,15 +67,12 @@ It is just a snippet of code followed by the expected result:
 ```python
 >>> 1 + 2
 3
-```
 
-or
-
-```python
-1 + 2
-
-out:
-3
+>>> for i in range(3):
+...     print(i)
+0
+1
+2
 ```
 
 The expression ``1 + 2`` is executed and the output compared with ``3`` to

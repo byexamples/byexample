@@ -18,8 +18,8 @@ File byexample/differ.py, 18/18 test ran in <...> seconds
 File byexample/expected.py, 95/95 test ran in <...> seconds
 [PASS] Pass: 95 Fail: 0 Skip: 0
 ~
-File byexample/finder.py, 77/77 test ran in <...> seconds
-[PASS] Pass: 77 Fail: 0 Skip: 0
+File byexample/finder.py, 52/52 test ran in <...> seconds
+[PASS] Pass: 52 Fail: 0 Skip: 0
 ~
 File byexample/options.py, 64/64 test ran in <...> seconds
 [PASS] Pass: 64 Fail: 0 Skip: 0
@@ -41,17 +41,20 @@ a little documentation and tests as well.
 ```shell
 $ jobs=1 pretty=none make modules-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
 <...>
-File byexample/modules/cpp.py, 2/2 test ran in <...> seconds
-[PASS] Pass: 2 Fail: 0 Skip: 0
+File byexample/modules/cpp.py, 6/6 test ran in <...> seconds
+[PASS] Pass: 6 Fail: 0 Skip: 0
 ~
 File byexample/modules/gdb.py, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
 ~
-File byexample/modules/python.py, 3/3 test ran in <...> seconds
-[PASS] Pass: 3 Fail: 0 Skip: 0
+File byexample/modules/javascript.py, 4/4 test ran in <...> seconds
+[PASS] Pass: 4 Fail: 0 Skip: 0
 ~
-File byexample/modules/ruby.py, 15/15 test ran in <...> seconds
-[PASS] Pass: 15 Fail: 0 Skip: 0
+File byexample/modules/python.py, 5/5 test ran in <...> seconds
+[PASS] Pass: 5 Fail: 0 Skip: 0
+~
+File byexample/modules/ruby.py, 17/17 test ran in <...> seconds
+[PASS] Pass: 17 Fail: 0 Skip: 0
 ~
 File byexample/modules/shell.py, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0
@@ -83,8 +86,8 @@ File docs/advanced/greedy-lazy-tags.md, 7/7 test ran in <...> seconds
 File docs/advanced/shebang.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 5 Fail: 0 Skip: 0
 ~
-File docs/advanced/terminal-emulation.md, 12/12 test ran in <...> seconds
-[PASS] Pass: 12 Fail: 0 Skip: 0
+File docs/advanced/terminal-emulation.md, 13/13 test ran in <...> seconds
+[PASS] Pass: 13 Fail: 0 Skip: 0
 ~
 File docs/advanced/unicode.md, 8/8 test ran in <...> seconds
 [PASS] Pass: 8 Fail: 0 Skip: 0
@@ -104,8 +107,8 @@ File docs/basic/setup-and-tear-down.md, 7/7 test ran in <...> seconds
 File docs/basic/skip-and-pass.md, 7/7 test ran in <...> seconds
 [PASS] Pass: 6 Fail: 0 Skip: 1
 ~
-File docs/basic/timeout.md, 5/5 test ran in <...> seconds
-[PASS] Pass: 4 Fail: 0 Skip: 1
+File docs/basic/timeout.md, 6/6 test ran in <...> seconds
+[PASS] Pass: 5 Fail: 0 Skip: 1
 ~
 File docs/contrib/how-to-hook-to-events-with-concerns.md, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
@@ -116,17 +119,20 @@ File docs/contrib/how-to-support-new-finders-and-languages.md, 41/41 test ran in
 File docs/index.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 2
 ~
-File docs/languages/cpp.md, 4/4 test ran in <...> seconds
-[PASS] Pass: 4 Fail: 0 Skip: 0
+File docs/languages/cpp.md, 8/8 test ran in <...> seconds
+[PASS] Pass: 8 Fail: 0 Skip: 0
 ~
 File docs/languages/gdb.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 9 Fail: 0 Skip: 0
 ~
+File docs/languages/javascript.md, 15/15 test ran in <...> seconds
+[PASS] Pass: 15 Fail: 0 Skip: 0
+~
 File docs/languages/python.md, 41/41 test ran in <...> seconds
 [PASS] Pass: 40 Fail: 0 Skip: 1
 ~
-File docs/languages/ruby.md, 12/12 test ran in <...> seconds
-[PASS] Pass: 12 Fail: 0 Skip: 0
+File docs/languages/ruby.md, 11/11 test ran in <...> seconds
+[PASS] Pass: 11 Fail: 0 Skip: 0
 ~
 File docs/languages/shell.md, 30/30 test ran in <...> seconds
 [PASS] Pass: 30 Fail: 0 Skip: 0
@@ -137,8 +143,8 @@ File docs/overview/differences.md, 13/13 test ran in <...> seconds
 File docs/overview/usage.md, 7/7 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 0
 ~
-File docs/overview/where-should-I-write-the-examples.md, 11/11 test ran in <...> seconds
-[PASS] Pass: 11 Fail: 0 Skip: 0
+File docs/overview/where-should-I-write-the-examples.md, 14/14 test ran in <...> seconds
+[PASS] Pass: 14 Fail: 0 Skip: 0
 <...>
 
 

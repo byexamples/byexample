@@ -7,7 +7,7 @@ There are three different ways in which ``byexample`` can be extended:
  - how to perform arbitrary actions during the execution
 
 ``byexample`` uses the concept of modules: a python file with some classes
-defined there and it can be loaded using ``--modules <dir>`` from the command
+defined there and which can be loaded using ``--modules <dir>`` from the command
 line.
 
 What classes will depend of what you want to extend or customize.
@@ -30,8 +30,8 @@ What do we need?
 The first thing to teach ``byexample`` is how to find a ``ArnoldC``
 example.
 
-``byexample`` already has a generic finder, the
-[fenced code block finder](/{{ site.uprefix }}/overview/where-should-I-write-the-examples).
+Most of the languages supported by ``byexample`` use a *prompt* to mark
+the begin of an example.
 
 But just for fun, let's imagine that we want to do something different.
 Let's say that our examples are enclosed by the ``~~~`` strings: anything

@@ -7,17 +7,13 @@ Example:
   $ hello
   hello<...>world
 
-  ```shell
-  for i in 0 1 2 3; do
-      echo $i
-  done
-
-  out:
+  $ for i in 0 1 2 3; do
+  >    echo $i
+  > done
   0
   1
   2
   3
-  ```
 """
 
 from __future__ import unicode_literals

@@ -179,13 +179,10 @@ The following test make sure that the runner for C++
 is working as it uses a special mechanism for _get_output
 even if the terminal is too small
 
-```cpp
-#include <iostream>                 // byexample: +geometry=5x80
-for (int i = 1; i < 100; ++i) {
-    std::cout << "line " << i << "\n";
-}
-
-out:
+?: #include <iostream>                 // byexample: +geometry=5x80
+?: for (int i = 1; i < 100; ++i) {
+::    std::cout << "line " << i << "\n";
+:: }
 line 1
 line 2
 line 3
@@ -285,7 +282,6 @@ line 96
 line 97
 line 98
 line 99
-```
 
 -->
 

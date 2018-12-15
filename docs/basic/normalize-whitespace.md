@@ -30,9 +30,7 @@ luc     23
 Here is another example, this time written in ``Ruby``:
 
 ```ruby
-Array(0...20)				# byexample: +norm-ws
-
-out:
+>> Array(0...20)				# byexample: +norm-ws
 => [0,   1,  2,  3,  4,  5,  6,  7,  8,  9,
    10,  11, 12, 13, 14, 15, 16, 17, 18, 19]
 ```

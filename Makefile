@@ -2,7 +2,7 @@
 
 python_bin ?= python
 pretty ?= all
-languages ?= python,shell,ruby,gdb,cpp
+languages ?= python,shell,ruby,gdb,cpp,javascript
 jobs ?= 1
 
 all:

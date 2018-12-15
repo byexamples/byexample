@@ -6,16 +6,12 @@ Example:
   >>> hello()
   hello<...>world
 
-  ```python
-  j = 2
-  for i in range(4):
-      j += i
+  >>> j = 2
+  >>> for i in range(4):
+  ...    j += i
 
-  j + 3
-
-  out:
+  >>> j + 3
   11
-  ```
 
 """
 
