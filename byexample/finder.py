@@ -232,8 +232,9 @@ class ExampleHarvest(object):
                                             str(finder)), self.verbosity-2)
 
         # sort the examples in the same order
-        # that they were found in the file/string.
-        all_examples.sort(key=lambda this: this.start_lineno)
+        # that they were found in the file/string;
+        # see check_example_overlap
+        all_examples.sort(key=lambda this: (this.start_lineno, -this.end_lineno))
 
         all_examples = self.check_example_overlap(all_examples, filepath)
 
