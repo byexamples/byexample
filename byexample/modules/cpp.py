@@ -1,27 +1,18 @@
 """
 Example:
-  ```cpp
-  #include <iostream>
+  ?: #include <iostream>
 
-  const char *hello = "hello bla world";
-  std::cout << hello << std::endl;
-
-  out:
+  ?: const char *hello = "hello bla world";
+  ?: std::cout << hello << std::endl;
   hello<...>world
-  ```
 
-  ```cpp
-  int i, j = 2;
+  ?: int i, j = 2;
+  ?: for (i = 0; i < 4; ++i) {
+  ::   j += i;
+  :: }
 
-  for (i = 0; i < 4; ++i) {
-     j += i;
-  }
-
-  j + 3
-
-  out:
+  ?: j + 3
   (int) 11
-  ```
 
 """
 
@@ -30,8 +21,39 @@ import re, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
+from byexample.finder import ExampleFinder
 
 stability = 'experimental'
+
+class CppPromptFinder(ExampleFinder):
+    target = 'cpp-prompt'
+
+    @constant
+    def example_regex(self):
+        return re.compile(r'''
+            (?P<snippet>
+                (?:^(?P<indent> [ ]*) (?:\?:)[ ]  .*)         # PS1 line
+                (?:\n           [ ]*  ::             .*)*)    # PS2 lines
+            \n?
+            ## Want consists of any non-blank lines that do not start with PS1
+            (?P<expected> (?:(?![ ]*$)        # Not a blank line
+                          (?![ ]*(?:\?:))     # Not a line starting with PS1
+                          .+$\n?              # But any other line
+                      )*)
+            ''', re.MULTILINE | re.VERBOSE)
+
+    def get_language_of(self, *args, **kargs):
+        return 'cpp'
+
+    def get_snippet_and_expected(self, match, where):
+        snippet, expected = ExampleFinder.get_snippet_and_expected(self, match, where)
+
+        snippet = self._remove_prompts(snippet)
+        return snippet, expected
+
+    def _remove_prompts(self, snippet):
+        lines = snippet.split("\n")
+        return '\n'.join(line[3:] for line in lines)
 
 class CPPParser(ExampleParser):
     language = 'cpp'
