@@ -22,8 +22,8 @@ class Where(object):
         return repr(self.as_tuple())
 
 class Zone(object):
-    def __init__(self, zfinder, zone_str, where):
-        self.zfinder = zfinder
+    def __init__(self, zdelimiter, zone_str, where):
+        self.zdelimiter = zdelimiter
         self.str = zone_str
         self.where = where
 
@@ -169,7 +169,7 @@ class ExampleHarvest(object):
 
         self.parser_by_language = registry['parsers']
         self.runner_by_language = registry['runners']
-        self.zfinder_by_file_extension = registry['zfinders']
+        self.zdelimiter_by_file_extension = registry['zdelimiters']
 
         self.options = options
 
@@ -199,16 +199,16 @@ class ExampleHarvest(object):
             ext = ".txt"
 
         log("Finding examples...", self.verbosity-1)
-        if ext in self.zfinder_by_file_extension:
-            zfinder = self.zfinder_by_file_extension[ext]
+        if ext in self.zdelimiter_by_file_extension:
+            zdelimiter = self.zdelimiter_by_file_extension[ext]
             zones = self.get_zones_using(
-                        zfinder,
+                        zdelimiter,
                         string,
                         filepath,
                         start_lineno=1)
 
             log("File '%s': %i zones [%s]" % (filepath, len(zones),
-                                            str(zfinder)), self.verbosity-2)
+                                            str(zdelimiter)), self.verbosity-2)
 
         else:
             zones = [Zone(None, string, Where(1, None, filepath))]
@@ -257,7 +257,7 @@ class ExampleHarvest(object):
 
             >>> from byexample.finder import ExampleHarvest
             >>> f = ExampleHarvest([], dict((k, {}) for k in \
-            ...                   ('parsers', 'finders', 'runners', 'zfinders')),
+            ...                   ('parsers', 'finders', 'runners', 'zdelimiters')),
             ...                     0, 0, None, 'utf-8')
 
         Okay, back to the check_example_overlap documentation,
@@ -379,9 +379,9 @@ class ExampleHarvest(object):
                 start_lineno
                 )
 
-    def get_zones_using(self, zfinder, string, filepath, start_lineno):
+    def get_zones_using(self, zdelimiter, string, filepath, start_lineno):
         return self.from_string_get_items_using(
-                zfinder,
+                zdelimiter,
                 string,
                 self.get_zone,
                 'zones',
@@ -429,10 +429,10 @@ class ExampleHarvest(object):
                                     snippet, expected, indent, where)
             return example
 
-    def get_zone(self, zfinder, match, where):
-        with enhance_exceptions(where, zfinder):
-            zone_str = zfinder.get_zone(match, where)
-            return Zone(zfinder, zone_str, where)
+    def get_zone(self, zdelimiter, match, where):
+        with enhance_exceptions(where, zdelimiter):
+            zone_str = zdelimiter.get_zone(match, where)
+            return Zone(zdelimiter, zone_str, where)
 
     def from_string_get_items_using(self, matcher, string, getter, what,
             filepath='<string>', start_lineno=1):
@@ -656,7 +656,7 @@ class ExampleFinder(object):
         return {"'''", '-->', '```', '~~~'}
 
 
-class ZoneFinder(object):
+class ZoneDelimiter(object):
     def __init__(self, verbosity, encoding, **unused):
         self.verbosity = verbosity
         self.encoding = encoding
@@ -671,5 +671,5 @@ class ZoneFinder(object):
         return match.group('zone')
 
     def __repr__(self):
-        return '%s Zone Finder' % tohuman(self.target)
+        return '%s Zone Delimiter' % tohuman(self.target)
 

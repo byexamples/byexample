@@ -1,10 +1,10 @@
 from __future__ import unicode_literals
 import re
-from byexample.finder import ExampleFinder, ZoneFinder
+from byexample.finder import ZoneDelimiter
 
 stability = 'stable'
 
-class MarkdownFencedCodeFinder(ZoneFinder):
+class MarkdownFencedCodeDelimiter(ZoneDelimiter):
     target = {'.md'}
 
     def zone_regex(self):

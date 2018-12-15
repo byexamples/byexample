@@ -3,7 +3,7 @@ import sys, pkgutil, inspect, pprint, os
 
 from .options import Options, OptionParser
 from .runner import ExampleRunner
-from .finder import ExampleHarvest, ExampleFinder, ZoneFinder
+from .finder import ExampleHarvest, ExampleFinder, ZoneDelimiter
 from .executor import FileExecutor
 from .differ import Differ
 from .parser import ExampleParser
@@ -67,7 +67,7 @@ def load_modules(dirnames, cfg):
                 'finders': {},
                 'parsers': {},
                 'concerns': {},
-                'zfinders': {},
+                'zdelimiters': {},
                 }
     for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
         path = importer.path
@@ -89,7 +89,7 @@ def load_modules(dirnames, cfg):
         for klass, key, what in [(ExampleRunner, 'language', 'runners'),
                                  (ExampleParser, 'language', 'parsers'),
                                  (ExampleFinder, 'target', 'finders'),
-                                 (ZoneFinder, 'target', 'zfinders'),
+                                 (ZoneDelimiter, 'target', 'zdelimiters'),
                                  (Concern, 'target', 'concerns')]:
 
             # we are interested in any class that is a subclass of 'klass'
