@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import collections, re
+import collections, re, os
 from .common import log, build_where_msg, tohuman, \
                     enhance_exceptions, print_example, constant
 
@@ -20,6 +20,12 @@ class Where(object):
 
     def __repr__(self):
         return repr(self.as_tuple())
+
+class Zone(object):
+    def __init__(self, zfinder, zone_str, where):
+        self.zfinder = zfinder
+        self.str = zone_str
+        self.where = where
 
 class Example(object):
     '''
@@ -163,6 +169,7 @@ class ExampleHarvest(object):
 
         self.parser_by_language = registry['parsers']
         self.runner_by_language = registry['runners']
+        self.zfinder_by_file_extension = registry['zfinders']
 
         self.options = options
 
@@ -187,14 +194,42 @@ class ExampleHarvest(object):
 
     def get_examples_from_string(self, string, filepath='<string>'):
         all_examples = []
+        _, ext = os.path.splitext(filepath)
+        if not ext:
+            ext = ".txt"
+
         log("Finding examples...", self.verbosity-1)
+        if ext in self.zfinder_by_file_extension:
+            zfinder = self.zfinder_by_file_extension[ext]
+            zones = self.get_zones_using(
+                        zfinder,
+                        string,
+                        filepath,
+                        start_lineno=1)
+
+            log("File '%s': %i zones [%s]" % (filepath, len(zones),
+                                            str(zfinder)), self.verbosity-2)
+
+        else:
+            zones = [Zone(None, string, Where(1, None, filepath))]
+
+        if self.verbosity-3 >= 0:
+            for zone in zones:
+                log("Zone %s" % (zone.where), self.verbosity-3)
+
         for finder in self.available_finders:
-            examples = self.get_examples_using(
-                    finder,
-                    string,
-                    filepath,
-                    start_lineno=1)
-            all_examples.extend(examples)
+            nexamples = 0
+            for zone in zones:
+                examples = self.get_examples_using(
+                        finder,
+                        zone.str,
+                        zone.where.filepath,
+                        zone.where.start_lineno)
+                all_examples.extend(examples)
+                nexamples += len(examples)
+
+            log("File '%s': %i examples [%s]" % (filepath, nexamples,
+                                            str(finder)), self.verbosity-2)
 
         # sort the examples in the same order
         # that they were found in the file/string.
@@ -221,7 +256,8 @@ class ExampleHarvest(object):
 
             >>> from byexample.finder import ExampleHarvest
             >>> f = ExampleHarvest([], dict((k, {}) for k in \
-            ...                   ('parsers', 'finders', 'runners')), 0, 0, None, 'utf-8')
+            ...                   ('parsers', 'finders', 'runners', 'zfinders')),
+            ...                     0, 0, None, 'utf-8')
 
         Okay, back to the check_example_overlap documentation,
         given the examples sorted in that way, a collision is detected if
@@ -553,10 +589,6 @@ class ExampleHarvest(object):
             item = getter(matcher, match, where)
             if item is not None:
                 items.append(item)
-
-        log("File '%s': %i %s [%s]" % (filepath, len(items), what,
-                                        str(matcher)), self.verbosity-2)
-
         return items
 
 class ExampleFinder(object):
@@ -766,6 +798,9 @@ class ZoneFinder(object):
 
     def get_matches(self, string):
         return self.zone_regex().finditer(string)
+
+    def get_zone(self, match, where):
+        return match.group('zone')
 
     def __repr__(self):
         return '%s Zone Finder' % tohuman(self.target)
