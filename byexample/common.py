@@ -81,6 +81,10 @@ except ImportError:
         return example.source
 
 def tohuman(s):
+    if isinstance(s, (list, tuple, set)):
+        if isinstance(s, set):
+            s = sorted(list(s))
+        s = ', '.join(s)
     s = s.replace("-", " ").replace("_", " ")
     s = ' '.join(w.capitalize() for w in s.split())
 
