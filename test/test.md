@@ -110,6 +110,9 @@ File docs/basic/skip-and-pass.md, 7/7 test ran in <...> seconds
 File docs/basic/timeout.md, 6/6 test ran in <...> seconds
 [PASS] Pass: 5 Fail: 0 Skip: 1
 ~
+File docs/contrib/how-to-define-new-zones-where-to-find-examples.md, 3/3 test ran in <...> seconds
+[PASS] Pass: 3 Fail: 0 Skip: 0
+~
 File docs/contrib/how-to-hook-to-events-with-concerns.md, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
 ~

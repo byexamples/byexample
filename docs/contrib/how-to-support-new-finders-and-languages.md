@@ -2,22 +2,21 @@
 
 There are three different ways in which ``byexample`` can be extended:
 
- - how to find examples
- - how to support new languages
- - how to perform arbitrary actions during the execution
+ - define zones where to find examples
+ - support new languages: how to find them and how to run them
+ - perform arbitrary actions during the execution
 
 ``byexample`` uses the concept of modules: a python file with some classes
-defined there and which can be loaded using ``--modules <dir>`` from the command
+defined there and it can be loaded using ``--modules <dir>`` from the command
 line.
 
 What classes will depend of what you want to extend or customize.
 
-In this ``how-to`` we will go through the first two items: how to support
-new finders and languages. Check
-[how to hook to events with concerns](/{{ site.uprefix }}/contrib/how-to-hook-to-events-with-concerns)
-for a ``how-to`` about the last one.
+In this ``how-to`` we will see how to add a new language.
 
-Let's show this by example.
+Check [how to define new zones where to find examples](/{{ site.uprefix }}/contrib/how-to-define-new-zones-where-to-find-examples)
+and [how to hook to events with concerns](/{{ site.uprefix }}/contrib/how-to-hook-to-events-with-concerns)
+for a ``how-to`` about the first and last items.
 
 Imagine that we want to write examples in the mythical language ``ArnoldC``,
 a programming language which its instruction set are phrases of a famous
