@@ -31,7 +31,7 @@ class PythonDocStringDelimiter(ZoneDelimiter):
         return re.compile(r'''
             # Begin with a triple single or double quote
             ^[ ]*
-             [rRbBuU]?(?P<marker>(?:\'\'\') | (?:"""))
+             [bBuU]?[rR]?(?P<marker>(?:\'\'\') | (?:"""))
 
              # then, grab everything until the first end marker
              (?P<zone>.*?)

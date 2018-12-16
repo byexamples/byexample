@@ -15,6 +15,9 @@ comments: anything that it is between ````` ```<language> `````
 and ````` ``` ````` or between ``<!--`` and ``-->``. There is where
 you should write them.
 
+For Python files (``.py`` extension) you should write your examples
+in a docstring.
+
 For the rest of the files, the examples are searched in the entire file
 so you are free to write your examples anywhere.
 
@@ -56,11 +59,14 @@ text line
 
 I *highly* recommend to you to read the documentation of language of your choice in
 [docs/languages](https://github.com/byexamples/byexample/tree/master/docs/languages/)
-to learn more about how to write examples.
+to learn more about how to write examples and
+[docs/examples](https://github.com/byexamples/byexample/tree/master/docs/examples/)
+to see some examples.
 
-Check out [how to support new finders and languages](/{{ site.uprefix }}/contrib/how-to-support-new-finders-and-languages)
-if you want to extend the capabilities of ``byexample`` or if you are just
-curious of how this works.
+For the *advanced* reader or the curious mind, check out
+[how to support new finders and languages](/{{ site.uprefix }}/contrib/how-to-support-new-finders-and-languages)
+Take a look if you want to add new languages and extend the capabilities
+of ``byexample`` or if you are just curious of how this works.
 
 ## Full example
 
@@ -89,6 +95,12 @@ $ byexample -l python test/ds/first-example.md
 File test/ds/first-example.md, 1/1 test ran in <...> seconds
 [PASS] Pass: 1 Fail: 0 Skip: 0
 ```
+
+Once again I *highly* recommend to you to read the documentation of language
+of your choice in
+[docs/languages](https://github.com/byexamples/byexample/tree/master/docs/languages/)
+and see some examples in
+[docs/examples](https://github.com/byexamples/byexample/tree/master/docs/examples/).
 
 ## Detect the end of an example
 
