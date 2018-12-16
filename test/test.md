@@ -18,8 +18,8 @@ File byexample/differ.py, 18/18 test ran in <...> seconds
 File byexample/expected.py, 95/95 test ran in <...> seconds
 [PASS] Pass: 95 Fail: 0 Skip: 0
 ~
-File byexample/finder.py, 52/52 test ran in <...> seconds
-[PASS] Pass: 52 Fail: 0 Skip: 0
+File byexample/finder.py, 45/45 test ran in <...> seconds
+[PASS] Pass: 45 Fail: 0 Skip: 0
 ~
 File byexample/options.py, 64/64 test ran in <...> seconds
 [PASS] Pass: 64 Fail: 0 Skip: 0
@@ -113,8 +113,8 @@ File docs/basic/timeout.md, 6/6 test ran in <...> seconds
 File docs/contrib/how-to-hook-to-events-with-concerns.md, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
 ~
-File docs/contrib/how-to-support-new-finders-and-languages.md, 41/41 test ran in <...> seconds
-[PASS] Pass: 41 Fail: 0 Skip: 0
+File docs/contrib/how-to-support-new-finders-and-languages.md, 39/39 test ran in <...> seconds
+[PASS] Pass: 39 Fail: 0 Skip: 0
 ~
 File docs/index.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 2
