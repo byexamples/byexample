@@ -147,7 +147,28 @@ File docs/overview/where-should-I-write-the-examples.md, 14/14 test ran in <...>
 [PASS] Pass: 14 Fail: 0 Skip: 0
 <...>
 
+```
 
+## Example tests
+
+```shell
+$ jobs=1 pretty=none make examples-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
+<...>
+File docs/examples/cpp.cpp, 3/3 test ran in <...> seconds
+[PASS] Pass: 3 Fail: 0 Skip: 0
+~
+File docs/examples/javascript.js, 3/3 test ran in <...> seconds
+[PASS] Pass: 3 Fail: 0 Skip: 0
+~
+File docs/examples/markdown.md, 2/2 test ran in <...> seconds
+[PASS] Pass: 2 Fail: 0 Skip: 0
+~
+File docs/examples/python.py, 3/3 test ran in <...> seconds
+[PASS] Pass: 3 Fail: 0 Skip: 0
+~
+File docs/examples/ruby.rb, 3/3 test ran in <...> seconds
+[PASS] Pass: 3 Fail: 0 Skip: 0
+<...>
 ```
 
 ## Coverage tests

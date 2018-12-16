@@ -36,10 +36,14 @@ modules-test: clean_test
 
 docs-test: clean_test
 	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l $(languages) *.md
-	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l $(languages) `find docs -name "*.md"`
+	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l $(languages) --skip docs/examples/markdown.md -- `find docs -name "*.md"`
 	@make -s clean_test
 
-travis-test: clean_test lib-test modules-test docs-test
+examples-test: clean_test
+	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l $(languages) docs/examples/*
+	@make -s clean_test
+
+travis-test: clean_test lib-test modules-test docs-test examples-test
 	@# run the test separately so we can control which languages will
 	@# be used. In a Travis CI environment,  Ruby, GDB and C++ are
 	@# not supported

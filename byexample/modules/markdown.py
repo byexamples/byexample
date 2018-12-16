@@ -1,12 +1,14 @@
 from __future__ import unicode_literals
 import re
 from byexample.finder import ZoneDelimiter
+from byexample.common import constant
 
 stability = 'stable'
 
 class MarkdownFencedCodeDelimiter(ZoneDelimiter):
     target = {'.md'}
 
+    @constant
     def zone_regex(self):
         return re.compile(r'''
             # Begin with a markdown fenced-code marker or a html comment marker

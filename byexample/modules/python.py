@@ -27,6 +27,7 @@ stability = 'stable'
 class PythonDocStringDelimiter(ZoneDelimiter):
     target = {'.py'}
 
+    @constant
     def zone_regex(self):
         return re.compile(r'''
             # Begin with a triple single or double quote
