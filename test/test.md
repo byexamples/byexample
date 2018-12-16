@@ -53,8 +53,8 @@ File byexample/modules/javascript.py, 4/4 test ran in <...> seconds
 File byexample/modules/python.py, 5/5 test ran in <...> seconds
 [PASS] Pass: 5 Fail: 0 Skip: 0
 ~
-File byexample/modules/ruby.py, 17/17 test ran in <...> seconds
-[PASS] Pass: 17 Fail: 0 Skip: 0
+File byexample/modules/ruby.py, 11/11 test ran in <...> seconds
+[PASS] Pass: 11 Fail: 0 Skip: 0
 ~
 File byexample/modules/shell.py, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0
@@ -131,8 +131,8 @@ File docs/languages/javascript.md, 15/15 test ran in <...> seconds
 File docs/languages/python.md, 41/41 test ran in <...> seconds
 [PASS] Pass: 40 Fail: 0 Skip: 1
 ~
-File docs/languages/ruby.md, 11/11 test ran in <...> seconds
-[PASS] Pass: 11 Fail: 0 Skip: 0
+File docs/languages/ruby.md, 9/9 test ran in <...> seconds
+[PASS] Pass: 9 Fail: 0 Skip: 0
 ~
 File docs/languages/shell.md, 30/30 test ran in <...> seconds
 [PASS] Pass: 30 Fail: 0 Skip: 0

@@ -9,26 +9,6 @@ Example:
   >> hello
   => "hello<...>world"
 
-  The snippets are detected even if they are inside
-  of a Ruby comment (even if there are out!)
-
-  # >> def say bla
-  # ..   bla
-  # .. end
-  #
-  # >> puts say 'hi'
-  # hi
-  #
-  # >> say 'hello'
-  # => "hello"
-  # >> say 'hello?'
-  # => "hello?"
-  >> puts say 'hello!'
-  hello!
-  >> puts "yes sr!"
-  yes sr!
-
-  Markdown's version (no prompt)
   >> j = 2
   >> (0..3).each do |i|
   ..  j += i
@@ -114,14 +94,14 @@ class RubyPromptFinder(ExampleFinder):
         return re.compile(r'''
             # Snippet consists of one PS1 line >> and zero or more PS2 lines
             (?P<snippet>
-                (?:^(?P<indent> [ ]*) (?P<sharp>[#]?)[ ]* >>[ ]   .*)    # PS1 line
-                (?:\n           [ ]*  (?P=sharp)[ ]*     \.\.    .*)*)  # zero or more PS2 lines
+                (?:^(?P<indent> [ ]*) >>[ ]   .*)    # PS1 line
+                (?:\n           [ ]*  \.\.    .*)*)  # zero or more PS2 lines
             \n?
             # Want consists of any non-blank lines that do not start with PS1
             # The '=>' indicator is included (implicitly) and may not exist
-            (?P<expected> (?:(?![ ]*$)                    # Not a blank line
-                             (?![ ]* (?: [#]?[ ]*)  >>)   # Not a line starting with PS1
-                             [ ]* (?P=sharp) .+$\n?       # But any other line with the same prefix
+            (?P<expected> (?:(?![ ]*$)            # Not a blank line
+                             (?![ ]*   >>)        # Not a line starting with PS1
+                             .+$\n?               # But any other line
                       )*)
             ''', re.MULTILINE | re.VERBOSE)
 

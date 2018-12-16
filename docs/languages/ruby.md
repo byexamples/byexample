@@ -28,25 +28,6 @@ and ``..`` as the secondary prompt.
 => 6
 ```
 
-### Ruby comments
-
-``byexample`` also can detect the ``>>`` prompt inside of a ``Ruby`` comment
-
-```ruby
-# >> puts 'hi'
-# hi
-#
-# >> 1 + 2
-# => 3
-```
-
-But inside of nested comments the examples are ignored
-
-```ruby
-# # >> puts 'this is never executed'
-#
-```
-
 ## Pretty print
 
 ``byexample`` changes the default IRB's ``inspector`` and uses ``pp``
