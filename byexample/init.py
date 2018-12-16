@@ -303,6 +303,13 @@ def init(args):
         show_options(cfg, registry, allowed_languages)
         sys.exit(0)
 
+    if not testfiles:
+        if not cfg['quiet']:
+            log("No files were found (you passed %i files and %i were skipped)" %
+                    (len(set(args.files)), len(set(args.files) - allowed_files)),
+                    cfg['verbosity'])
+        sys.exit(1)
+
     # extend the option parser with all the parsers of the concerns.
     # do this *after* showing the options so we can show each parser's opt
     # separately
