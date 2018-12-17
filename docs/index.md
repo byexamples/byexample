@@ -108,7 +108,7 @@ Current version:
 
 ```shell
 $ byexample -V
-byexample 7.4.3 (Python <...>) - GNU GPLv3
+byexample 8.0.0-a1 (Python <...>) - GNU GPLv3
 <...>
 Copyright (C) Di Paola Martin - https://github.com/byexamples/byexample
 <...>
