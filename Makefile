@@ -2,7 +2,8 @@
 
 python_bin ?= python
 pretty ?= all
-languages ?= python,shell,ruby,gdb,cpp
+languages ?= python,shell,ruby,gdb,cpp,javascript
+jobs ?= 1
 
 all:
 	@echo "Usage: make deps|meta-test|test|quick-test|dist|upload|doc|clean"
@@ -22,31 +23,33 @@ deps:
 	pip install -e .
 
 test: clean_test
-	@$(python_bin) test/r.py --pretty $(pretty) --ff -l shell test/readme_index.md
 	@$(python_bin) test/r.py --timeout 60 --pretty $(pretty) --ff -l shell test/test.md
 	@make -s clean_test
 
 lib-test: clean_test
-	@$(python_bin) test/r.py --pretty $(pretty) --ff -l python byexample/*.py
+	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l python byexample/*.py
 	@make -s clean_test
 
 modules-test: clean_test
-	@$(python_bin) test/r.py --pretty $(pretty) --ff -l $(languages) byexample/modules/*.py
+	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l $(languages) byexample/modules/*.py
 	@make -s clean_test
 
 docs-test: clean_test
-	@$(python_bin) test/r.py --pretty $(pretty) --ff -l $(languages) *.md
-	@$(python_bin) test/r.py --pretty $(pretty) --ff -l $(languages) `find docs -name "*.md"`
+	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l $(languages) *.md
+	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l $(languages) --skip docs/examples/markdown.md -- `find docs -name "*.md"`
 	@make -s clean_test
 
-travis-test: clean_test lib-test modules-test docs-test
+examples-test: clean_test
+	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l $(languages) docs/examples/*
+	@make -s clean_test
+
+travis-test: clean_test lib-test modules-test docs-test examples-test
 	@# run the test separately so we can control which languages will
 	@# be used. In a Travis CI environment,  Ruby, GDB and C++ are
 	@# not supported
 	@make -s clean_test
 
 coverage: clean_test
-	@rm -f .coverage .coverage.work.*
 	@cp test/r.py .
 	@echo "Run the byexample's tests with the Python interpreter."
 	@echo "to start the coverage, use a hook in test/ to initialize the coverage"
@@ -77,6 +80,7 @@ upload: dist
 	twine upload dist/*.tar.gz dist/*.whl
 
 clean_test:
+	@rm -f .coverage .coverage.work.*
 	@rm -f r.py
 	@rm -Rf w/
 	@mkdir -p w/

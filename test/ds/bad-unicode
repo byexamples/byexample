@@ -1,0 +1,11 @@
+Those would fail:
+
+$ echo "por-éjemplo"
+por ejemplo
+
+$ echo "по-примеру!"
+по примеру
+
+$ echo "例によっ!て"
+例によって
+

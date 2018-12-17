@@ -1,25 +1,15 @@
 '''
 Javascript code (using nodejs).
 
-Inside of a Markdown Fenced Code:
-
-```javascript
-1 + 2;
-
-out:
+> 1 + 2;
 3
-```
 
 The "out:" label marks the begin of the expected output to compare.
 
 The semicolons are optional (as long as they are syntactically correct):
 
-```javascript
-'hello' + ' ' + 'world'
-
-out:
+> 'hello' + ' ' + 'world'
 'hello world'
-```
 
 Prompt based is allowed too using '>' as the first prompt
 and '.' as the second prompt:
@@ -31,16 +21,41 @@ and '.' as the second prompt:
 > mul(4, 2)
 8
 
-
 '''
 
+from __future__ import unicode_literals
 import re
 from byexample.common import constant, abspath
 from byexample.parser import ExampleParser
-from byexample.finder import ExampleFinder
+from byexample.finder import ExampleFinder, ZoneDelimiter
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
 
 stability = 'experimental'
+
+class JavascriptCommentDelimiter(ZoneDelimiter):
+    target = {'.js'}
+
+    @constant
+    def zone_regex(self):
+        return re.compile(r'''
+            # Begin with a /* marker
+            ^[ ]*
+             /\*
+
+             # then, grab everything
+             (?P<zone>.*?)
+
+             # and the close marker
+             \*/
+            ''', re.DOTALL | re.MULTILINE | re.VERBOSE)
+
+    @constant
+    def leading_asterisk(self):
+        return re.compile(r'^[ \*]+(?=[^ \*]|$)', re.MULTILINE)
+
+    def get_zone(self, match, where):
+        zone = ZoneDelimiter.get_zone(self, match, where)
+        return self.leading_asterisk().sub(' ', zone)
 
 class JavascriptPromptFinder(ExampleFinder):
     target = 'javascript-prompt'
@@ -93,8 +108,11 @@ class JavascriptInterpreter(ExampleRunner, PexepctMixin):
 
         self.encoding = encoding
 
-    def run(self, example, flags):
-        return self._exec_and_wait(example.source, timeout=int(flags['timeout']))
+    def run(self, example, options):
+        return PexepctMixin._run(self, example, options)
+
+    def _run_impl(self, example, options):
+        return self._exec_and_wait(example.source, options)
 
     def interact(self, example, options):
         PexepctMixin.interact(self)
@@ -113,8 +131,7 @@ class JavascriptInterpreter(ExampleRunner, PexepctMixin):
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
         # run!
-        self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'],
-                                     geometry=options['geometry'])
+        self._spawn_interpreter(cmd, options)
 
         self._drop_output() # discard banner and things like that
 

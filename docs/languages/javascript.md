@@ -2,7 +2,7 @@
 
 ``byexample`` can execute ``Javascript`` code using ``nodejs``.
 
-You can get it the interpreter from [here](https://nodejs.org/en/download/).
+You can get the interpreter from [here](https://nodejs.org/en/download/).
 
 ## Find interactive examples
 
@@ -41,7 +41,39 @@ or has a lower indentation level:
 */
 ```
 
-## Undefined is not printed
+## Pretty print
+
+``byexample`` uses the default *pretty printer* of ``nodejs``.
+
+
+### Definitions with and without var
+
+An object definition without ``var`` will print itself:
+
+```javascript
+> var o1 = 1
+> o2 = 2
+2
+```
+
+### Trailing whitespace
+
+Some objects are printed with a trailing whitespace.
+
+This is not a problem unless you are using a ``as-is``
+[terminal emulation](/{{ site.uprefix }}/advanced/terminal-emulation).
+
+### Too deep nested objects
+
+If an object is too nested, ``nodejs`` will just say ``[Object]``, this
+may or may not be a problem, just keep it in mind:
+
+```javascript
+> {a: {b: {c: {d: {}}}}}
+{ a: { b: { c: [Object] } } }
+```
+
+### Undefined is not printed
 
 Functions definitions and other expression returns ``undefined``
 which can be annoying to keep checking for it each time.
@@ -68,17 +100,8 @@ complex object, like an array with ``undefined`` values:
 [ 1, undefined, 2 ]
 ```
 
-## Observations
 
-### Definitions with and without var
-
-An object definition without var will print itself:
-
-```javascript
-> var o1 = 1
-> o2 = 2
-2
-```
+## Known limitations
 
 ### Comments may affect the output
 
@@ -117,45 +140,3 @@ Anonymous functions can be *created as part of* a larger example.
 > a.map(function (i) { return i * 2; })
 [ 2, 4, 6 ]
 ```
-
-### Trailing whitespace
-
-Some objects are printed with a trailing whitespace: don't be scared if
-your example fails.
-
-``byexample`` will print a special marker ``$`` representing
-whitespace at the end of the text. You just need to add it to your example
-or use ``+norm-ws``.
-
-Here is an example with explicit trailing whitespaces (you may no notice them):
- 
-```javascript
-> var obj = {a: {b: {c: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', d: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}}}
-> obj
-{ a: 
-   { b: 
-      { c: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        d: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' } } }
-```
-
-An here is the same example without the trailing whitespaces but with
-the normalize whitespace option ``+norm-ws`` enabled:
-
-```javascript
-> obj  // byexample: +norm-ws
-{ a:
-   { b:
-      { c: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        d: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' } } }
-```
-
-### Too deep nested objects
-
-If an object is too nested, ``nodejs`` will just say ``[Object]``, this
-may or may not be a problem, just keep it in mind:
-
-```javascript
-> {a: {b: {c: {d: {}}}}}
-{ a: { b: { c: [Object] } } }
-```
-

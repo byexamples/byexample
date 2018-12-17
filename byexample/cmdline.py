@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import sys, argparse, os, multiprocessing
 from . import __version__, __doc__, _author, _license, _url, _license_disclaimer
 
@@ -120,13 +121,11 @@ def parse_args(args=None):
                         help="show the available options for the selected languages (with -l)")
     parser.add_argument("--encoding",
                         default=sys.stdout.encoding,
-                        help='select the encoding (supported in Python 3 only, ' + \
+                        help='select the encoding; ' + \
                              'use the same encoding of stdout by default)')
     parser.add_argument("--pretty", choices=['none', 'all'],
                         default='all',
                         help="control how to pretty print the output.")
-    parser.add_argument("--interact", "--debug", action='store_true',
-                        help="interact with the runner/interpreter manually if an example fails.")
     parser.add_argument("--shebang", action='append', metavar='runner:shebang',
                         dest='shebangs',
                         default=[],

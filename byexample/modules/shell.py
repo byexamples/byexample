@@ -7,19 +7,16 @@ Example:
   $ hello
   hello<...>world
 
-  ```shell
-  for i in 0 1 2 3; do
-      echo $i
-  done
-
-  out:
+  $ for i in 0 1 2 3; do
+  >    echo $i
+  > done
   0
   1
   2
   3
-  ```
 """
 
+from __future__ import unicode_literals
 import re, pexpect, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
@@ -87,12 +84,14 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
                     'a': [],
                     }
 
-    def run(self, example, flags):
+    def run(self, example, options):
+        return PexepctMixin._run(self, example, options)
+
+    def _run_impl(self, example, options):
         try:
-            return self._exec_and_wait(example.source,
-                                    timeout=int(flags['timeout']))
+            return self._exec_and_wait(example.source, options)
         except TimeoutException as ex:
-            if 'stop_on_silence' in flags and flags['stop_on_silence']:
+            if 'stop_on_silence' in options and options['stop_on_silence']:
                 # get the current output
                 out = ex.output
 
@@ -102,7 +101,7 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
                 self.interpreter.sendcontrol('z')
 
                 # wait for the prompt, ignore any extra output
-                self._expect_prompt(timeout=int(flags['timeout']),
+                self._expect_prompt(options,
                                         prompt_re=self.PS1_re)
                 self._drop_output()
                 return out
@@ -116,16 +115,14 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
         shebang = options['shebangs'].get(self.language, shebang)
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
-        self._spawn_interpreter(cmd, wait_first_prompt=False,
-                                delaybeforesend=options['delaybeforesend'],
-                                geometry=options['geometry'])
+        self._spawn_interpreter(cmd, options, wait_first_prompt=False)
 
         self._exec_and_wait(
 '''export PS1="/byexample/sh/ps1> "
 export PS2="/byexample/sh/ps2> "
 export PS3="/byexample/sh/ps3> "
 export PS4="/byexample/sh/ps4> "
-''', timeout=10)
+''', options, timeout=10)
         self._drop_output() # discard banner and things like that
 
     def shutdown(self):

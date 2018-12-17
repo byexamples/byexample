@@ -1,10 +1,10 @@
-# How to support new finders and languages
+# Add New Languages
 
 There are three different ways in which ``byexample`` can be extended:
 
- - how to find examples
- - how to support new languages
- - how to perform arbitrary actions during the execution
+ - define zones where to find examples
+ - support new languages: how to find them and how to run them
+ - perform arbitrary actions during the execution
 
 ``byexample`` uses the concept of modules: a python file with some classes
 defined there and it can be loaded using ``--modules <dir>`` from the command
@@ -12,11 +12,11 @@ line.
 
 What classes will depend of what you want to extend or customize.
 
-In this ``how-to`` we will go through the first two items: how to support
-new finders and languages. Check [docs/how to hook to events with concerns](how_to_hook_to_events_with_concerns.md)
-for a ``how-to`` about the last one.
+In this ``how-to`` we will see how to add a new language.
 
-Let's show this by example.
+Check [how to define new zones where to find examples](/{{ site.uprefix }}/contrib/how-to-define-new-zones-where-to-find-examples)
+and [how to hook to events with concerns](/{{ site.uprefix }}/contrib/how-to-hook-to-events-with-concerns)
+for a ``how-to`` about the first and last items.
 
 Imagine that we want to write examples in the mythical language ``ArnoldC``,
 a programming language which its instruction set are phrases of a famous
@@ -29,7 +29,8 @@ What do we need?
 The first thing to teach ``byexample`` is how to find a ``ArnoldC``
 example.
 
-``byexample`` already has a generic finder, the fenced code block finder.
+Most of the languages supported by ``byexample`` use a *prompt* to mark
+the begin of an example.
 
 But just for fun, let's imagine that we want to do something different.
 Let's say that our examples are enclosed by the ``~~~`` strings: anything
@@ -106,57 +107,14 @@ The ``indent`` group is to count how many spaces are not part of the example
 and they are just for indentation: ``byexample`` will *drop* the first line that
 has a lower level of indentation and any subsequent line.
 
-### Spurious ends
-
-It is likely that you may want to write your examples in a file and mark it
-with some *mark-up* to render the code with syntax highlight.
-
-For a Markdown you may wrap your example with ````` ``` ````` or ``~~~`` so
-it can be highlighted.
-
-If that's the case, you may write something like this:
-
-`````
- ```python
- >>> print("My first example!")
- My first example!
- ```
-`````
-
-Notice how there is *not* a newline that separates the example from
-the mark-up.
-
-``byexample`` is *agnostic* of the format of the file but it will try to
-remove those mark-ups if they are found at *the end* of an examples as it will
-assume that they are not part of the example but they are just
-part of the decoration.
-
-``byexample`` tries to be *user friendly*.
-
-But this has its limits; if this interfers with your finder,
-you can tweak it and redefine these *spurious endings*.
-
-In our ``ArnoldC`` example, we don't want to remove ``~~~`` because it *is*
-part of the example:
-
-```python
->>> def spurious_endings(self):
-...     endings = ExampleFinder.spurious_endings(self)
-...     return endings - {'~~~'}
-```
-
 ### Detect the language
 
 Then, the finder needs to determinate in which language the example
 was written.
 
-A Finder can be a generic finder that can extract examples of any language
-(like from a Markdown fenced-code block) or it can be specific and tight to
-a single language (like a specific Finder to find an interactive Python
-session).
-
 For our purposes let's say that anything between ``~~~`` is always an
-``ArnoldC`` example.
+``ArnoldC`` example but the same finder could find examples of
+different languages.
 
 ### The Finder class
 
@@ -168,7 +126,6 @@ define a ``target`` attribute and implement few methods:
 >>> from byexample.finder import ExampleFinder
 >>> class ArnoldCFinder(ExampleFinder):
 ...     target = 'ArnoldC-session'
-...     specific = True
 ...
 ...     def example_regex(self):
 ...         global example_re
@@ -189,24 +146,12 @@ If two Finders try to find the same target, one will override the other.
 This is useful if you want to use a different Finder in replacement for
 an already created one: just create a class with the same ``target``.
 
-The other special attribute is ``specific``. If it is True, the finder is
-specific to a language, like in this case.
-If not, it is a generic Finder.
-
-If two finders find the same example, the example found by the more specific
-finder will be used.
-
-If there is not a winner, ``byexample`` will use some heuristics to find a
-single one and if it is still too unclear, ``byexample`` will print
-an error. (check [byexample/finder.py](https://github.com/byexamples/byexample/tree/master/byexample/finder.py))
-
 Let's see if our finder can find the ArnoldC snippet above.
-
 
 ```python
 >>> finder = ArnoldCFinder(0, 'utf-8')
 
->>> filepath = 'docs/how_to_support_new_finders_and_languages.md'
+>>> filepath = 'docs/contrib/how-to-support-new-finders-and-languages.md'
 >>> where = (0,1,filepath)
 >>> matches = finder.get_matches(open(filepath, 'r').read())
 >>> matches = list(matches)
@@ -251,7 +196,7 @@ extract the options that ``byexample`` uses to customize the example.
 
 ### Get the options
 
-An option or options can be of any form and be in any place.
+The [options](/{{ site.uprefix }}/basic/options) can be of any form and be in any place.
 
 Typically we can write the options in the comments of the code which obviously
 will depend of the language.
@@ -353,8 +298,8 @@ AttributeError: 'Example' object has no attribute 'source'
 AttributeError: 'Example' object has no attribute 'options'
 ```
 
-These attributes are completed using the parser. It is the parse who only
-knows how to extract these from a *raw* example because is a language
+These attributes are completed using the parser who is the only one that
+knows how to extract these options from a *raw* example because is a language
 specific task.
 
 ```python
@@ -441,8 +386,8 @@ You may want to change how to setup the interpreter or the compiler based on
 the examples that it will execute or in the options passed from the command
 line.
 
-The ``options`` parameter are the parsed options (plus the options that
-come from the command line).
+The ``options`` parameter are the parsed options (plus the
+[options](/{{ site.uprefix }}/basic/options) that come from the command line).
 
 It is in the ``run`` method where the magic happen.
 

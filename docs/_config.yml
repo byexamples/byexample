@@ -1,3 +1,9 @@
-theme: jekyll-theme-cayman
+theme: jekyll-theme-architect
+title: byexample
+description: Write snippets of code in your documentation and execute them as regression tests.
 github:
     owner_name: Martin Di Paola
+    owner_url: https://github.com/eldipa
+    repository_name: byexample
+    repository_url: https://github.com/byexamples/byexample
+uprefix: byexample

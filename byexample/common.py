@@ -1,7 +1,13 @@
-import pprint, traceback, contextlib, os
+from __future__ import unicode_literals
+import pprint, traceback, contextlib, os, re
+
+def indent(s, indent=4):
+    ''' Indent the given text.
+        See doctest._indent for the code that inspired this.
+        '''
+    return re.sub('(?m)^(?!$)', indent*' ', s)
 
 def build_where_msg(where, owner, msg=None, use_colors=False):
-    from doctest import _indent
     tmp = []
     try:
         tmp.append('File "%s", line %i' % (where.filepath, where.start_lineno))
@@ -14,7 +20,7 @@ def build_where_msg(where, owner, msg=None, use_colors=False):
         tmp.append((', ' + owner) if tmp else owner)
 
     try:
-        tmp.append('\n' + _indent(highlight_syntax(where, use_colors)))
+        tmp.append('\n' + indent(highlight_syntax(where, use_colors)))
     except Exception as e:
         pass
 
@@ -75,6 +81,10 @@ except ImportError:
         return example.source
 
 def tohuman(s):
+    if isinstance(s, (list, tuple, set)):
+        if isinstance(s, set):
+            s = sorted(list(s))
+        s = ', '.join(s)
     s = s.replace("-", " ").replace("_", " ")
     s = ' '.join(w.capitalize() for w in s.split())
 

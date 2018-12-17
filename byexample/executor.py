@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from .common import log, print_example, print_execution, enhance_exceptions
 
 class TimeoutException(Exception):
@@ -45,7 +46,7 @@ class FileExecutor(object):
 
         self.initialize_runners(runners, options)
         try:
-            self.concerns.start(examples, runners, filepath)
+            self.concerns.start(examples, runners, filepath, options)
             failed, user_aborted, crashed, broken, timedout = self._exec(examples, filepath,
                                                                options, runners)
             self.concerns.finish(failed, user_aborted, crashed, broken, timedout)

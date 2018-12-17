@@ -1,0 +1,86 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+$code-bg-color: #f3f6fa !default;
+$code-text-color: #567482 !default;
+$border-color: #dce6f0 !default;
+
+code {
+  padding: 2px 4px;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 0.9rem;
+  color: $code-text-color;
+  background-color: $code-bg-color;
+  border-radius: 0.3rem;
+}
+
+pre {
+padding: 0.8rem;
+margin-top: 0;
+margin-bottom: 1rem;
+font: 1rem Consolas, "Liberation Mono", Menlo, Courier, monospace;
+color: $code-text-color;
+word-wrap: normal;
+background-color: $code-bg-color;
+border: solid 1px $border-color;
+border-radius: 0.3rem;
+
+    > code {
+      padding: 0;
+      margin: 0;
+      font-size: 0.9rem;
+      color: $code-text-color;
+      word-break: normal;
+      white-space: pre;
+      background: transparent;
+      border: 0;
+    }
+}
+
+
+header h2 {
+  width: 710px;
+}
+
+/* Tablet Portrait size to standard 960 (devices and browsers) */
+@media only screen and (min-width: 768px) and (max-width: 959px) {
+  header h2 {
+    width: 550px;
+    font-size: 25px;
+  }
+
+  header {
+      padding-top: 25px;
+      padding-bottom: 25px;
+  }
+}
+
+.logos img, .demo img {
+    vertical-align: middle;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.demo img {
+    padding-bottom: 20px;
+}
+
+.logos h3 {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.logos h3:before {
+    content: none !important;
+}
+
+header a.button {
+    box-sizing: initial;
+}
+
+aside#sidebar h3 {
+    font-size: 12px;
+}

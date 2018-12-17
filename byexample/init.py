@@ -1,8 +1,9 @@
+from __future__ import unicode_literals
 import sys, pkgutil, inspect, pprint, os
 
 from .options import Options, OptionParser
 from .runner import ExampleRunner
-from .finder import ExampleHarvest, ExampleFinder
+from .finder import ExampleHarvest, ExampleFinder, ZoneDelimiter
 from .executor import FileExecutor
 from .differ import Differ
 from .parser import ExampleParser
@@ -66,6 +67,7 @@ def load_modules(dirnames, cfg):
                 'finders': {},
                 'parsers': {},
                 'concerns': {},
+                'zdelimiters': {},
                 }
     for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
         path = importer.path
@@ -87,6 +89,7 @@ def load_modules(dirnames, cfg):
         for klass, key, what in [(ExampleRunner, 'language', 'runners'),
                                  (ExampleParser, 'language', 'parsers'),
                                  (ExampleFinder, 'target', 'finders'),
+                                 (ZoneDelimiter, 'target', 'zdelimiters'),
                                  (Concern, 'target', 'concerns')]:
 
             # we are interested in any class that is a subclass of 'klass'
@@ -107,7 +110,11 @@ def load_modules(dirnames, cfg):
                 for obj in objs:
                     key_value = getattr(obj, key)
                     if key_value:
-                        container[key_value] = obj
+                        if not isinstance(key_value, (list, tuple, set)):
+                            key_value = [key_value]
+
+                        for k in key_value:
+                            container[k] = obj
                         loaded_objs.append(obj)
 
                 log("\n".join((" - %s" % repr(i)) for i in loaded_objs), verbosity-1)
@@ -132,10 +139,6 @@ def get_allowed_languages(registry, selected):
     return selected
 
 def get_encoding(encoding, verbosity):
-    if sys.version_info[0] <= 2: # version major
-        # we don't support a different encoding
-        encoding = None
-
     log("Encoding: %s." % encoding, verbosity-2)
     return encoding
 
@@ -160,7 +163,6 @@ def get_default_options_parser(cmdline_args):
     options_parser.add_flag("skip", help="do not run the example.")
     options_parser.add_flag("tags", help="enable the tags <...>.")
     options_parser.add_flag("enhance-diff", help="improve how the diff are shown.")
-    options_parser.add_flag("interact", help="interact with the runner/interpreter manually if an example fails.")
     options_parser.add_argument("+rm", action='append', help="remove a character from the got and expected strings.")
     options_parser.add_argument("+timeout", type=float, help="timeout in seconds to complete the example.")
     options_parser.add_argument("+diff", choices=['none', 'unified', 'ndiff', 'context'],
@@ -169,6 +171,8 @@ def get_default_options_parser(cmdline_args):
                                     help="delay in seconds before sending a line to an runner/interpreter; 0 disable this (default).")
     options_parser.add_argument("+geometry", type=geometry,
                                     help="number of lines and columns of the terminal of the form LxC (default to 24x80).")
+    options_parser.add_argument("+term", choices=['as-is', 'dumb', 'ansi'],
+                                        help="select a terminal emulator to interpret the output (default to 'dumb').")
 
     return options_parser
 
@@ -183,12 +187,13 @@ def get_options(args, cfg):
                         'tags': True,
                         'rm': [],
                         'enhance_diff': args.enhance_diff,
-                        'interact': args.interact,
+                        'interact': False,
                         'timeout': args.timeout,
                         'diff': args.diff,
                         'delaybeforesend': None,
                         'shebangs': args.shebangs,
-                        'geometry': (24, 80)
+                        'geometry': (24, 80),
+                        'term': 'dumb'
                         })
     log("Options (cmdline): %s" % options, cfg['verbosity']-2)
 
@@ -275,7 +280,7 @@ def init(args):
             'verbosity':  args.verbosity,
             'encoding':   encoding,
             'output':     sys.stdout,
-            'interact':   args.interact,
+            'interact':   False,
             'opts_from_cmdline': args.options_str,
             }
 
@@ -297,6 +302,13 @@ def init(args):
     if args.show_options:
         show_options(cfg, registry, allowed_languages)
         sys.exit(0)
+
+    if not testfiles:
+        if not cfg['quiet']:
+            log("No files were found (you passed %i files and %i were skipped)" %
+                    (len(set(args.files)), len(set(args.files) - allowed_files)),
+                    cfg['verbosity'])
+        sys.exit(1)
 
     # extend the option parser with all the parsers of the concerns.
     # do this *after* showing the options so we can show each parser's opt

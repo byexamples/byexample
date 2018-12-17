@@ -1,5 +1,22 @@
+from __future__ import unicode_literals
 from .common import log, colored
 import string, re, difflib
+
+try:
+    ctrl_tr = unichr(0) # dummy, it would fail in Python 3.x
+except:
+    unichr = chr    # for Python 3.x
+finally:
+    # what unicodes are control code?
+    #   import unicodedata
+    #   ctrl_codes = [i for i in range(sys.maxunicode+1)
+    #                   if unicodedata.category(unichr(i)) == 'Cc']
+    #
+    #   0 <= i <= 31 or 127 <= i <= 159
+    #
+    # whitespace control codes?: 9 <= i <= 13
+    ctrl_tr = {i:u'?' if (0 <= i <= 31 or 127 <= i <= 159) and not (9 <= i <= 13)
+                    else unichr(i) for i in range(160)}
 
 class Differ(object):
     def __init__(self, verbosity, **unused):
@@ -12,6 +29,7 @@ class Differ(object):
         output and the found or got.
 
         Depending of the flags the diff can be returned differently.
+            >>> from __future__ import unicode_literals
             >>> from byexample.differ import Differ
             >>> output_difference = Differ(verbosity=0).output_difference
 
@@ -200,10 +218,7 @@ class Differ(object):
         s = self.WS.sub(lambda m: '$' * (m.end(0) - m.start(0)), s)
 
         # any weird thing replace it by a '?'
-        others = set(range(256)) - set(ord(c) for c in string.printable)
-        tr = ''.join('?' if i in others else chr(i) for i in range(256))
-
-        s = s.translate(tr)
+        s = s.translate(ctrl_tr)
 
         # replace empty line by '^n'
         s = '\n'.join((l if l else '^n') for l in s.split('\n'))

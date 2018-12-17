@@ -54,9 +54,9 @@ $ byexample -l python,ruby,shell README.md      # run it    # byexample: +skip
 ```
 
 You can select which languages to run, over which files, how to display the
-[differences](https://byexamples.github.io/byexample/differences) and much more.
+[differences](https://byexamples.github.io/byexample/overview/differences) and much more.
 
-The [usage](https://byexamples.github.io/byexample/usage)
+The [usage](https://byexamples.github.io/byexample/overview/usage)
 document goes through almost all the flags that
 ``byexample`` program has, full of examples of course.
 
@@ -67,15 +67,12 @@ It is just a snippet of code followed by the expected result:
 ```python
 >>> 1 + 2
 3
-```
 
-or
-
-```python
-1 + 2
-
-out:
-3
+>>> for i in range(3):
+...     print(i)
+0
+1
+2
 ```
 
 The expression ``1 + 2`` is executed and the output compared with ``3`` to
@@ -106,10 +103,10 @@ an interpreter session like example.
 
 Take a look to the documentation of each language [docs/languages](https://github.com/byexamples/byexample/tree/master/docs/languages/).
 
-Check out [where should I write the examples](https://byexamples.github.io/byexample/where_should_I_write_the_examples)
+Check out [where should I write the examples](https://byexamples.github.io/byexample/overview/where-should-I-write-the-examples)
 section, it has a more in deep description.
 
-And also check the [usage](https://byexamples.github.io/byexample/usage) page
+And also check the [usage](https://byexamples.github.io/byexample/overview/usage) page
 for more examples.
 
 ## Languages supported
@@ -132,7 +129,7 @@ First off, thanks for using and considering contributing to ``byexample``.
 We love to receive contributions from our community. There are tons of ways you
 can contribute
 
- - add support to new languages (Javascript, Julia, just listen to you heart). Check this [how to](https://byexamples.github.io/byexample/how_to_support_new_finders_and_languages).
+ - add support to new languages (Javascript, Julia, just listen to you heart). Check this [how to](https://byexamples.github.io/byexample/how-to-support-new-finders-and-languages).
  - misspelling? Improve to the documentation is more than welcome.
  - add more examples. How do you use ``byexample``? Give us your feedback!
  - is ``byexample`` producing a hard-to-debug diff or you found a bug? Create an issue in github.
@@ -148,8 +145,8 @@ It is possible to extend ``byexample`` adding new ways to find examples in a
 document and/or to parse and run/interpret a new language or adding hooks to be
 called regardless of the language/interpreter.
 
-Check out [how to support new finders and languages](https://byexamples.github.io/byexample/how_to_support_new_finders_and_languages)
-and [how to hook to events with concerns](https://byexamples.github.io/byexample/how_to_hook_to_events_with_concerns) for
+Check out [how to support new finders and languages](https://byexamples.github.io/byexample/contrib/how-to-support-new-finders-and-languages)
+and [how to hook to events with concerns](https://byexamples.github.io/byexample/contrib/how-to-hook-to-events-with-concerns) for
 a quick tutorials that shows exactly how to do that.
 
 You could also share your work and [contribute](https://github.com/byexamples/byexample/tree/master/CONTRIBUTING.md) to

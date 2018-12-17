@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from byexample.concern import Concern
 import re
 from functools import partial
@@ -21,7 +22,7 @@ class Clipboard(Concern):
         parser.add_flag("paste", help="enable the paste mode of captured texts.")
         return parser
 
-    def start(self, examples, runners, filepath):
+    def start(self, examples, runners, filepath, options):
         self.clipboard = {}
 
     @staticmethod

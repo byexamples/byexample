@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from multiprocessing import Queue, Process
 import signal, contextlib
 

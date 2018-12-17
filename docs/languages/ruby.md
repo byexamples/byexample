@@ -28,26 +28,16 @@ and ``..`` as the secondary prompt.
 => 6
 ```
 
-### Ruby comments
+## Pretty print
 
-``byexample`` also can detect the ``>>`` prompt inside of a ``Ruby`` comment
+``byexample`` changes the default IRB's ``inspector`` and uses ``pp``
+(pretty print).
 
-```ruby
-# >> puts 'hi'
-# hi
-#
-# >> 1 + 2
-# => 3
-```
+If you want, you can use the IRB's default one with
+the option ``-ruby-pretty-print``
 
-But inside of nested comments the examples are ignored
 
-```ruby
-# # >> puts 'this is never executed'
-#
-```
-
-## The object returned
+### The object returned
 
 Because everything in Ruby is an expression, everything returns a result.
 
@@ -86,13 +76,4 @@ On the other hand, you can disable it for never see an object's print
 with ``+ruby-expr-print=false``.
 
 The default is ``+ruby-expr-print=auto``.
-
-# Pretty print
-
-``byexample`` changes the default IRB's ``inspector`` and uses ``pp``
-(pretty print).
-
-If you want, you can use the IRB's default one with
-the option ``-ruby-pretty-print``
-
 

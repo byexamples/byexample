@@ -6,26 +6,40 @@ Example:
   >>> hello()
   hello<...>world
 
-  ```python
-  j = 2
-  for i in range(4):
-      j += i
+  >>> j = 2
+  >>> for i in range(4):
+  ...    j += i
 
-  j + 3
-
-  out:
+  >>> j + 3
   11
-  ```
 
 """
 
+from __future__ import unicode_literals
 import re, pexpect, sys, time
 from byexample.common import log, constant
 from byexample.parser import ExampleParser, ExtendOptionParserMixin
-from byexample.finder import ExampleFinder
+from byexample.finder import ExampleFinder, ZoneDelimiter
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
 
 stability = 'stable'
+
+class PythonDocStringDelimiter(ZoneDelimiter):
+    target = {'.py'}
+
+    @constant
+    def zone_regex(self):
+        return re.compile(r'''
+            # Begin with a triple single or double quote
+            ^[ ]*
+             [bBuU]?[rR]?(?P<marker>(?:\'\'\') | (?:"""))
+
+             # then, grab everything until the first end marker
+             (?P<zone>.*?)
+
+             # finally, the end marker
+             [^\\](?P=marker) # then we must match the same kind of quotes
+            ''', re.DOTALL | re.MULTILINE | re.VERBOSE)
 
 class PythonPromptFinder(ExampleFinder):
     target = 'python-prompt'
@@ -340,7 +354,7 @@ class PythonParser(ExampleParser):
                 # we will enable the capture mode, check and warn if the example
                 # contains strings like <label> that may confuse byexample and
                 # or the user
-                if self.capture_tag_regex().search(expected_str):
+                if self.capture_tag_regex()['full'].search(expected_str):
                     log("[Warn] The expected strings has <label> strings that will not be considered literal but as capture tags.",
                             self.verbosity)
 
@@ -466,6 +480,9 @@ if %s:
                 # unpatch
                 self.builtins_module.repr = self.orig_repr
 
+        def update_width(self, width):
+            self._width = int(width)
+
     __byexample_pretty_print = __ByexamplePrettyPrint(indent=1, width=%i, depth=None)
     del __ByexamplePrettyPrint
 
@@ -487,9 +504,17 @@ del _byexample_pprint
                             "-c", change_prompts,  # run this before anything else
                      ]}
 
-    def run(self, example, flags):
-        return self._exec_and_wait(example.source,
-                                    timeout=int(flags['timeout']))
+    def run(self, example, options):
+        return PexepctMixin._run(self, example, options)
+
+    def _run_impl(self, example, options):
+        return self._exec_and_wait(example.source, options)
+
+    def _change_terminal_geometry(self, rows, cols, options):
+        # update the pretty printer with the new columns value
+        source = '__byexample_pretty_print.update_width(%i)' % cols
+        self._exec_and_wait(source, options, timeout=2)
+        PexepctMixin._change_terminal_geometry(self, rows, cols, options)
 
     def interact(self, example, options):
         PexepctMixin.interact(self)
@@ -506,8 +531,7 @@ del _byexample_pprint
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
         # run!
-        self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'],
-                                     geometry=options['geometry'])
+        self._spawn_interpreter(cmd, options)
 
     def shutdown(self):
         self._shutdown_interpreter()

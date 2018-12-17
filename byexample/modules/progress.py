@@ -1,7 +1,7 @@
+from __future__ import unicode_literals
 import traceback, time, os, sys, multiprocessing
-from byexample.common import colored, highlight_syntax
+from byexample.common import colored, highlight_syntax, indent
 from byexample.concern import Concern
-from doctest import _indent
 
 try:
     from tqdm import tqdm
@@ -52,7 +52,7 @@ class SimpleReporter(Concern):
     def _update(self, x):
         pass
 
-    def start(self, examples, runners, filepath):
+    def start(self, examples, runners, filepath, options):
         self.num_examples = len(examples)
         self.examplenro = 0
         self.filepath = filepath
@@ -211,7 +211,8 @@ class SimpleReporter(Concern):
 
         msg += '\nFile "%s", line %i\n' % (filepath, lineno)
         msg += "Failed example:\n"
-        msg += _indent(highlight_syntax(example, self.use_colors))
+
+        msg += indent(highlight_syntax(example, self.use_colors))
 
         return msg
 
@@ -258,7 +259,7 @@ class ProgressBarReporter(SimpleReporter):
     def _update(self, x):
         self.bar.update(x)
 
-    def start(self, examples, runners, filepath):
+    def start(self, examples, runners, filepath, options):
         if self.jobs == 1:
             position = None
         else:
@@ -266,7 +267,7 @@ class ProgressBarReporter(SimpleReporter):
             # of its bar
             position = int(multiprocessing.current_process().name) + 1
 
-        SimpleReporter.start(self, examples, runners, filepath)
+        SimpleReporter.start(self, examples, runners, filepath, options)
 
         bar_format = '{desc} |{bar}| [{n_fmt}/{total_fmt}{postfix}]'
         self.bar = tqdm(total=len(examples), file=self.output,

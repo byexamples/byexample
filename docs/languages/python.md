@@ -73,7 +73,8 @@ bar
 
 And also the report flags: ``REPORT_UDIFF``, ``REPORT_CDIFF`` and ``REPORT_NDIFF``
 
-As you may guess, the ``byexample``'s cature tags feature are disabled in this
+As you may guess, the ``byexample``'s
+[cature tags](/{{ site.uprefix }}/basic/capture-and-paste) feature are disabled in this
 compatibility mode.
 
 But in the other hand, you can use the ``ELLIPSIS`` flag as usual.
@@ -204,8 +205,13 @@ is a summary of the equivalent options:
 some pieces of the output. The ``tags`` flag of ``byexample`` should cover
 those cases and even more.
 
+See [norm-ws](/{{ site.uprefix }}/basic/normalize-whitespace),
+[tags](/{{ site.uprefix }}/basic/capture-and-paste),
+[skip](/{{ site.uprefix }}/basic/skip-and-pass),
+[pass](/{{ site.uprefix }}/basic/skip-and-pass) and
+[diff](/{{ site.uprefix }}/overview/differences) for more info.
 
-## Pretty print display hook
+## Pretty print
 
 By default, ``byexample`` uses a custom display hook based on the Python's
 ``pprint`` module.
@@ -245,7 +251,7 @@ versions. Keep that in mind.
 In the future, ``byexample`` may provide a different ``pprint`` stable
 implementation.
 
-## Bytes/Unicode marker
+### Bytes/Unicode marker
 
 ``Python 2.x`` uses ``u'`` and ``u"`` (and ``U'`` and ``U"``) to mark the begin of
 an unicode literal. Optionally one can use ``b'`` to mark the begin of a

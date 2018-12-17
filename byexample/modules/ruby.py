@@ -9,37 +9,13 @@ Example:
   >> hello
   => "hello<...>world"
 
-  The snippets are detected even if they are inside
-  of a Ruby comment (even if there are out!)
+  >> j = 2
+  >> (0..3).each do |i|
+  ..  j += i
+  .. end
 
-  # >> def say bla
-  # ..   bla
-  # .. end
-  #
-  # >> puts say 'hi'
-  # hi
-  #
-  # >> say 'hello'
-  # => "hello"
-  # >> say 'hello?'
-  # => "hello?"
-  >> puts say 'hello!'
-  hello!
-  >> puts "yes sr!"
-  yes sr!
-
-  Markdown's version (no prompt)
-  ```ruby
-  j = 2;
-  (0..3).each do |i|
-    j += i;
-  end;
-
-  j + 3
-
-  out:
+  >> j + 3
   => 11
-  ```
 
   Pretty print
   >> { 1 => 2, 3=>{4=>"aaaaaaaa", 5=>Array(0..20)}}
@@ -67,26 +43,48 @@ Example:
   "foo bar 4"
 
   Heredocs
-  ```ruby
-  puts <<-FOO
+  >> puts <<-FOO
+  .. one
+  .. two
+  .. FOO
   one
   two
-  FOO
-
-  out:
-  one
-  two
-  ```
 
 """
 
+from __future__ import unicode_literals
 import re, pexpect, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
-from byexample.finder import ExampleFinder
+from byexample.finder import ExampleFinder, ZoneDelimiter
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
 
 stability = 'experimental'
+
+class RubyCommentDelimiter(ZoneDelimiter):
+    target = {'.rb'}
+
+    @constant
+    def zone_regex(self):
+        return re.compile(r'''
+            # Begin with a # marker
+            ^[ ]*
+             \#
+
+             # then, grab everything that begins with a #
+             # until we cannot do it anymore
+             (?P<zone>  .*$\n?                  # first line
+                        (?:[ ]* \# .*$\n?)*     # the rest of the lines
+                    )
+            ''', re.MULTILINE | re.VERBOSE)
+
+    @constant
+    def leading_sharp(self):
+        return re.compile(r'^[ ]*#', re.MULTILINE)
+
+    def get_zone(self, match, where):
+        zone = ZoneDelimiter.get_zone(self, match, where)
+        return self.leading_sharp().sub(' ', zone)
 
 class RubyPromptFinder(ExampleFinder):
     target = 'ruby-prompt'
@@ -96,14 +94,14 @@ class RubyPromptFinder(ExampleFinder):
         return re.compile(r'''
             # Snippet consists of one PS1 line >> and zero or more PS2 lines
             (?P<snippet>
-                (?:^(?P<indent> [ ]*) (?P<sharp>[#]?)[ ]* >>[ ]   .*)    # PS1 line
-                (?:\n           [ ]*  (?P=sharp)[ ]*     \.\.    .*)*)  # zero or more PS2 lines
+                (?:^(?P<indent> [ ]*) >>[ ]   .*)    # PS1 line
+                (?:\n           [ ]*  \.\.    .*)*)  # zero or more PS2 lines
             \n?
             # Want consists of any non-blank lines that do not start with PS1
             # The '=>' indicator is included (implicitly) and may not exist
-            (?P<expected> (?:(?![ ]*$)                    # Not a blank line
-                             (?![ ]* (?: [#]?[ ]*)  >>)   # Not a line starting with PS1
-                             [ ]* (?P=sharp) .+$\n?       # But any other line with the same prefix
+            (?P<expected> (?:(?![ ]*$)            # Not a blank line
+                             (?![ ]*   >>)        # Not a line starting with PS1
+                             .+$\n?               # But any other line
                       )*)
             ''', re.MULTILINE | re.VERBOSE)
 
@@ -152,8 +150,10 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
 
         self.encoding = encoding
 
-    def run(self, example, flags):
+    def run(self, example, options):
+        return PexepctMixin._run(self, example, options)
 
+    def _run_impl(self, example, options):
         # turn on/off the echo mode base on the setting from the
         # start; per example setting is not supported
         src = example.source
@@ -168,7 +168,7 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
 
         # there is no need to revert the echo=True if it was changed
         # because the execution of the next example will set it correctly
-        return self._exec_and_wait(src, timeout=int(flags['timeout']))
+        return self._exec_and_wait(src, options)
 
     _EXPR_RESULT_RE = re.compile(r'^=>( |$)', re.MULTILINE | re.DOTALL)
 
@@ -199,20 +199,22 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
         # run!
-        self._spawn_interpreter(cmd, delaybeforesend=options['delaybeforesend'],
-                                     geometry=options['geometry'])
+        self._spawn_interpreter(cmd, options)
 
         # set the pretty print inspector
         if ruby_pretty_print:
             self._exec_and_wait('IRB.CurrentContext.inspect_mode = :pp\n',
+                                    options,
                                     timeout=2)
 
         # disable the echo if we don't want it (false) or we may want it
         # but it will depend on the example (auto)
         if self.expr_print_mode in ('auto', 'false'):
-            self._exec_and_wait('IRB.CurrentContext.echo = false\n', timeout=2)
+            self._exec_and_wait('IRB.CurrentContext.echo = false\n',
+                                    options, timeout=2)
         else:
-            self._exec_and_wait('IRB.CurrentContext.echo = true\n', timeout=2)
+            self._exec_and_wait('IRB.CurrentContext.echo = true\n',
+                                    options, timeout=2)
 
     def shutdown(self):
         self._shutdown_interpreter()

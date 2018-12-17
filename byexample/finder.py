@@ -1,4 +1,5 @@
-import collections, re
+from __future__ import unicode_literals
+import collections, re, os
 from .common import log, build_where_msg, tohuman, \
                     enhance_exceptions, print_example, constant
 
@@ -19,6 +20,12 @@ class Where(object):
 
     def __repr__(self):
         return repr(self.as_tuple())
+
+class Zone(object):
+    def __init__(self, zdelimiter, zone_str, where):
+        self.zdelimiter = zdelimiter
+        self.str = zone_str
+        self.where = where
 
 class Example(object):
     '''
@@ -153,14 +160,16 @@ class ExampleHarvest(object):
                                        \         .
     '''
     def __init__(self, allowed_languages, registry, verbosity,
-                        options, use_colors, **unused):
+                        options, use_colors, encoding, **unused):
         self.allowed_languages = allowed_languages
         self.verbosity = verbosity
         self.use_colors = use_colors
         self.available_finders = registry['finders'].values()
+        self.encoding = encoding
 
         self.parser_by_language = registry['parsers']
         self.runner_by_language = registry['runners']
+        self.zdelimiter_by_file_extension = registry['zdelimiters']
 
         self.options = options
 
@@ -168,21 +177,64 @@ class ExampleHarvest(object):
         return 'Example Harvester'
 
     def get_examples_from_file(self, filepath):
-        with open(filepath, 'rtU') as f:
+        try:
+            f = open(filepath, 'rtU', encoding=self.encoding)
+            already_encoded = True
+        except TypeError:
+            # Python 2.7
+            f = open(filepath, 'rbU')
+            already_encoded = False
+
+        with f as f:
             string = f.read()
+            if not already_encoded:
+                string = string.decode(self.encoding)
 
         return self.get_examples_from_string(string, filepath)
 
     def get_examples_from_string(self, string, filepath='<string>'):
         all_examples = []
+        _, ext = os.path.splitext(filepath)
+        if not ext:
+            ext = ".txt"
+
         log("Finding examples...", self.verbosity-1)
+        if ext in self.zdelimiter_by_file_extension:
+            zdelimiter = self.zdelimiter_by_file_extension[ext]
+            zones = self.get_zones_using(
+                        zdelimiter,
+                        string,
+                        filepath,
+                        start_lineno=1)
+
+            log("File '%s': %i zones [%s]" % (filepath, len(zones),
+                                            str(zdelimiter)), self.verbosity-2)
+
+        else:
+            zones = [Zone(None, string, Where(1, None, filepath))]
+
+        if self.verbosity-3 >= 0:
+            for zone in zones:
+                log("Zone %s" % (zone.where), self.verbosity-3)
+
         for finder in self.available_finders:
-            examples = self.get_example_using(finder, string, filepath)
-            all_examples.extend(examples)
+            nexamples = 0
+            for zone in zones:
+                examples = self.get_examples_using(
+                        finder,
+                        zone.str,
+                        zone.where.filepath,
+                        zone.where.start_lineno)
+                all_examples.extend(examples)
+                nexamples += len(examples)
+
+            log("File '%s': %i examples [%s]" % (filepath, nexamples,
+                                            str(finder)), self.verbosity-2)
 
         # sort the examples in the same order
-        # that they were found in the file/string.
-        all_examples.sort(key=lambda this: this.start_lineno)
+        # that they were found in the file/string;
+        # see check_example_overlap
+        all_examples.sort(key=lambda this: (this.start_lineno, -this.end_lineno))
 
         all_examples = self.check_example_overlap(all_examples, filepath)
 
@@ -205,148 +257,50 @@ class ExampleHarvest(object):
 
             >>> from byexample.finder import ExampleHarvest
             >>> f = ExampleHarvest([], dict((k, {}) for k in \
-            ...                   ('parsers', 'finders', 'runners')), 0, 0, None)
+            ...                   ('parsers', 'finders', 'runners', 'zdelimiters')),
+            ...                     0, 0, None, 'utf-8')
 
         Okay, back to the check_example_overlap documentation,
         given the examples sorted in that way, a collision is detected if
         the span lines of one example intersect with the span lines of other.
 
-                  Collision 1            Collision 2         Collision 3
+                  Collision 1            Collision 2          Collision 3
 
-              1...........5.....7       1...........5       1...........5
-              |  example  |             |  example  |       |  example  |
-              |     example     |           |  ex |         |  example  |
-                 |   example    |       1..2......4         1...........5
-              1..2..............7
-
-        What do we do will depend of the content of the examples, not only of
-        the type of collision:
-
-         - if one example is contained inside the other (Collision 2 or
-           Collision 3), we drop the example found by a generic finder.
-
-           This scenario can happen when a generic finder like FencedMatchFinder
-           finds a interpreter-session-like for the same language.
-           For example, the following FencedMatchFinder example collides with
-           example found by PythonPromptFinder.
-                ```python
-                >>> 1 + 2
-                3
-                ```
-
-           In that case both examples have the same language.
-           But there is a good case when that may not hold: using a markdown
-           for one language (due its highligth syntax) and writting the real
-           example inside using a prompt:
-                ```shell
-                >>> 1 + 2
-                3
-                ```
-
-           So we remove the example of the generic finder (FencedMatchFinder) as
-           we assume that the specific may have more precise information
-           (the correct source code and the correct expected string)
-
-           >>> A = build_example('1 + 2', '3', 'python', start_lineno=1)
-           >>> B = build_example('1 + 2', '3', 'python', start_lineno=1, specific=True)
-
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
-           >>> len(examples)
-           1
-
-           >>> examples
-           [Example [python] in file <...>, lines 1-3]
-
-           >>> examples[0].snippet
-           '1 + 2'
+              1...........3.....4     1.................4    1...........3.....4
+              | example A |           |    example B    |    | example A |
+              |     example B   |           | ex C|                | example D |
+              1.................4     1.....2.....3.....4    1.....2...........4
 
 
-         - if both examples have the same source code, expected string and
-           language, those both examples are equivalent, even if the span
-           lines are not the same (like in Collision 1 or Collision 2).
-           Therefore we will drop the second found
+            >>> A = build_example('1\n2',  '3',    'A', start_lineno=1)
+            >>> B = build_example('1\n2',  '3\n4', 'B', start_lineno=1)
+            >>> C = build_example('2',     '3',    'C', start_lineno=2)
+            >>> D = build_example('2\n3',  '4',    'D', start_lineno=2)
 
-           >>> A = build_example('1 + 2', '3', 'python', start_lineno=1)
-           >>> B = build_example('1 + 2', '3', 'python', start_lineno=2)
+        Collision 1: two examples begin in the same line where one
+        may be larger than the other. This is too ambiguous:
 
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
-           >>> len(examples)
-           1
+            >>> examples = f.check_example_overlap([B, A], 'foo.rst')
+            Traceback<...>
+            ValueError: In foo.rst, examples at lines 1-4 (found by <...>) and at lines 1-5 (found by <...>) overlap each other.
 
-           >>> examples
-           [Example [python] in file <...>, lines 1-3]
 
-         - if the example A has a source code that contains the example B's
-           source code and all the B's code is inside in A's one, we will
-           assume that the example A is the correct and B was a false positive
-           of the finder.
+        Collision 2: one example is a subset of the other and may both end
+        in the same line. It makes sense to drop the smaller one:
 
-           The idea is that it is hard to find an example's source by mistake,
-           given A and B, it is harder to find A's code therefore it is more
-           unlikely to be a false positive.
+            >>> examples = f.check_example_overlap([B, C], 'foo.rst')
+            >>> len(examples)
+            1
 
-           For example, when a Python comment that starts with # is confused
-           with a Shell root session that also starts with #.
+            >>> examples
+            [Example [B] in file <...>, lines 1-5]
 
-           >>> A = build_example('# python comment\n1 + 2', '3', 'python', start_lineno=1)
-           >>> B = build_example('# python comment', '1 + 2\n3', 'shell', start_lineno=1)
+        Collision 3: two examples overlap but they are not neither of those
+        two previous collisions.
 
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
-           >>> len(examples)
-           1
-
-           >>> examples
-           [Example [python] in file <...>, lines 1-4]
-
-           >>> examples[0].snippet
-           '# python comment\n1 + 2'
-
-           The border case is when both examples have the same source code but
-           are examples of two different languages.
-           It is too ambiguous so we fail
-
-           >>> A = build_example('# python comment', '', 'python', start_lineno=1)
-           >>> B = build_example('# python comment', '', 'shell', start_lineno=1)
-
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
-           Traceback<...>
-           ValueError: In foo.rst, examples at lines 1-3 (found by <...>) and at lines 1-3 (found by <...>) overlap each other.
-
-        - in any other case, we fail too
-
-          For a Collision 1:
-
-           >>> A = build_example('a\nb\nc', '', 'sh', start_lineno=1)   # span 3
-           >>> B = build_example('d\ne', '', 'sh', start_lineno=1)      # span 2
-
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
-           Traceback<...>
-           ValueError: In foo.rst, examples at lines 1-4 (found by <...>) and at lines 1-5 (found by <...>) overlap each other.
-
-           >>> A = build_example('a\nb', '', 'sh', start_lineno=1)      # span 2
-           >>> B = build_example('b\nc', '', 'sh', start_lineno=2)      # span 2
-
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
-           Traceback<...>
-           ValueError: In foo.rst, examples at lines 2-5 (found by <...>) and at lines 1-4 (found by <...>) overlap each other.
-
-          For a Collision 2:
-
-           >>> A = build_example('a\nb\nc', '', 'sh', start_lineno=1)   # span 3
-           >>> B = build_example('d', '', 'sh', start_lineno=2)         # span 1
-
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
-           Traceback<...>
-           ValueError: In foo.rst, examples at lines 2-4 (found by <...>) and at lines 1-5 (found by <...>) overlap each other.
-
-          For a Collision 3:
-
-           >>> A = build_example('a\nb', '', 'sh1', start_lineno=1)     # span 2
-           >>> B = build_example('a\nb', '', 'sh2', start_lineno=1)     # span 2
-
-           >>> examples = f.check_example_overlap([A, B], 'foo.rst')
-           Traceback<...>
-           ValueError: In foo.rst, examples at lines 1-4 (found by <...>) and at lines 1-4 (found by <...>) overlap each other.
+            >>> examples = f.check_example_overlap([A, D], 'foo.rst')
+            Traceback<...>
+            ValueError: In foo.rst, examples at lines 2-5 (found by <...>) and at lines 1-4 (found by <...>) overlap each other.
 
         '''
 
@@ -358,12 +312,12 @@ class ExampleHarvest(object):
 
             prev = examples[0]
             for i, example in enumerate(examples[1:], 1):
-                collision_type_1 = prev.end_lineno >= example.start_lineno
-                collision_type_3 = prev.end_lineno == example.end_lineno and \
-                                    prev.start_lineno == example.start_lineno
-                collision_type_2 = (collision_type_1 and \
-                                    example.end_lineno <= prev.end_lineno and \
-                                    not collision_type_3)
+                collision_type_1 = prev.start_lineno == example.start_lineno
+                collision_type_2 = not collision_type_1 and \
+                                    (example.end_lineno <= prev.end_lineno)
+                collision_type_3 = not collision_type_1 and \
+                                    not collision_type_2 and \
+                                    example.start_lineno <= prev.end_lineno
 
                 any_collision = collision_type_1 or collision_type_2 or collision_type_3
                 if not any_collision:
@@ -371,55 +325,21 @@ class ExampleHarvest(object):
                     continue
 
                 collision_free = not any_collision
-                same_language = example.runner.language == prev.runner.language
                 curr_where = Where(example.start_lineno, example.end_lineno, filepath)
                 prev_where = Where(prev.start_lineno, prev.end_lineno, filepath)
 
                 self._log_debug(" * Collision Type (1/2/3): %s/%s/%s\n"        \
                                 " * Languages (prev/current): %s/%s\n"         \
-                                " * Specific? (prev/current): %s/%s\n"
                                     % (collision_type_1, collision_type_2,
                                         collision_type_3, prev.runner.language,
-                                        example.runner.language, prev.finder.specific,
-                                        example.finder.specific), curr_where)
+                                        example.runner.language), curr_where)
                 print_example(prev, self.use_colors, self.verbosity-3)
                 print_example(example, self.use_colors, self.verbosity-3)
 
-                if collision_type_2 or collision_type_3:
-                    if example.finder.specific != prev.finder.specific:
-                        if example.finder.specific:
-                            del examples[i-1]
-                            _where = prev_where
-                        else:
-                            del examples[i]
-                            _where = curr_where
-
-                        self._log_drop("generic/specific overlap", _where)
-                        break
-
-                if same_language:
-                    if example.snippet == prev.snippet and \
-                            example.expected_str == prev.expected_str:
-
-                        del examples[i]
-                        self._log_drop("duplicated examples", curr_where)
-                        break
-
-                else:
-                    if example.snippet == prev.snippet:
-                        pass # too ambiguous
-
-                    elif example.snippet in prev.snippet:
-                        self._log_drop("inner example (%s)" %
-                                examples[i].runner.language, curr_where)
-                        del examples[i]
-                        break
-
-                    elif prev.snippet in example.snippet:
-                        self._log_drop("inner example (%s)" %
-                                examples[i-1].runner.language, prev_where)
-                        del examples[i-1]
-                        break
+                if collision_type_2:
+                    del examples[i]
+                    self._log_drop("inner example", curr_where)
+                    break
 
                 msg = "In %s, examples at lines %i-%i (found by %s) and " +\
                       "at lines %i-%i (found by %s) overlap each other."
@@ -449,19 +369,84 @@ class ExampleHarvest(object):
     def _log_debug(self, what, where):
         log(build_where_msg(where, self, what), self.verbosity-3)
 
-    def get_example_using(self, finder, string, filepath='<string>'):
-        charno = 0
-        start_lineno = 1  # humans tend to count from 1
-        examples = []
+    def get_examples_using(self, finder, string, filepath, start_lineno):
+        return self.from_string_get_items_using(
+                finder,
+                string,
+                self.get_example,
+                'examples',
+                filepath,
+                start_lineno
+                )
 
-        for match in finder.get_matches(string):
-            example_str = string[match.start():match.end()]
-            if example_str.endswith('\n'):
-                example_str = example_str[:-1]
+    def get_zones_using(self, zdelimiter, string, filepath, start_lineno):
+        return self.from_string_get_items_using(
+                zdelimiter,
+                string,
+                self.get_zone,
+                'zones',
+                filepath,
+                start_lineno
+                )
+
+    def get_example(self, finder, match, where):
+        with enhance_exceptions(where, finder):
+            # let's find what language is about
+            language = finder.get_language_of(self.options, match, where)
+
+            if not language:
+                self._log_drop('language undefined', where)
+                return
+
+            if language not in self.allowed_languages:
+                self._log_drop('language %s not allowed' % language, where)
+                return
+
+            # who can parse it?
+            parser = self.parser_by_language.get(language)
+            if not parser:
+                self._log_drop('no parser found for %s language' % language, where)
+                return # TODO should be an error?
+
+            # who can execute it?
+            runner = self.runner_by_language.get(language)
+            if not runner:
+                self._log_drop('no runner found for %s language' % language, where)
+                return # TODO should be an error?
+
+            # save the indentation here
+            indent = match.group('indent')
+
+            # then, get the source (runneable code) and the expected (the string)
+            snippet, expected = finder.get_snippet_and_expected(match, where)
+
+            if expected == None:
+                expected = ""
+
+        with enhance_exceptions(where, parser):
+            # perfect, we have everything to build an example
+            example = Example(finder, runner, parser,
+                                    snippet, expected, indent, where)
+            return example
+
+    def get_zone(self, zdelimiter, match, where):
+        with enhance_exceptions(where, zdelimiter):
+            zone_str = zdelimiter.get_zone(match, where)
+            return Zone(zdelimiter, zone_str, where)
+
+    def from_string_get_items_using(self, matcher, string, getter, what,
+            filepath='<string>', start_lineno=1):
+        charno = 0
+        items = []
+
+        for match in matcher.get_matches(string):
+            str_matched = string[match.start():match.end()]
+            if str_matched.endswith('\n'):
+                str_matched = str_matched[:-1]
 
             # start_lineno and end_lineno are inclusive
             start_lineno += string[charno:match.start()].count('\n')
-            end_lineno = start_lineno + example_str.count('\n')
+            end_lineno = start_lineno + str_matched.count('\n')
 
             # update charno here
             charno = match.start()
@@ -469,53 +454,10 @@ class ExampleHarvest(object):
             # where we are, used for the messages of the exceptions
             where = Where(start_lineno, end_lineno, filepath)
 
-            with enhance_exceptions(where, finder):
-                # let's find what language is about
-                language = finder.get_language_of(self.options, match, where)
-
-                if not language:
-                    self._log_drop('language undefined', where)
-                    continue
-
-                if language not in self.allowed_languages:
-                    self._log_drop('language %s not allowed' % language, where)
-                    continue
-
-                # who can parse it?
-                parser = self.parser_by_language.get(language)
-                if not parser:
-                    self._log_drop('no parser found for %s language' % language, where)
-                    continue # TODO should be an error?
-
-                # who can execute it?
-                runner = self.runner_by_language.get(language)
-                if not runner:
-                    self._log_drop('no runner found for %s language' % language, where)
-                    continue # TODO should be an error?
-
-                # save the indentation here
-                indent = match.group('indent')
-
-                # then, get the source (runneable code) and the expected (the string)
-                snippet, expected = finder.get_snippet_and_expected(match, where)
-
-                if expected == None:
-                    expected = ""
-
-            with enhance_exceptions(where, parser):
-                # perfect, we have everything to build an example
-                example = Example(finder, runner, parser,
-                                        snippet, expected, indent, where)
-                examples.append(example)
-
-
-        log("File '%s': %i examples [%s]" % (filepath, len(examples), str(finder)),
-                                            self.verbosity-2)
-
-        return examples
-
-
-
+            item = getter(matcher, match, where)
+            if item is not None:
+                items.append(item)
+        return items
 
 class ExampleFinder(object):
     specific = True
@@ -588,8 +530,7 @@ class ExampleFinder(object):
         Given an example string, try to apply the match again.
 
         This is a health-check intended to be used after a call to
-        'check_and_remove_indent', 'remove_spurious_endings' and
-        other processing functions.
+        'check_and_remove_indent' and other processing functions.
 
             >>> from byexample.finder import ExampleFinder
             >>> import re
@@ -663,8 +604,6 @@ class ExampleFinder(object):
         # update the example_str removing any indentation;
         example_str = self.check_and_remove_indent(example_str, indent, where)
 
-        example_str = self.remove_spurious_endings(example_str)
-
         # check that we still can find the example
         # (allow to generate a new match)
         match = self.check_keep_matching(example_str, match)
@@ -672,44 +611,21 @@ class ExampleFinder(object):
         # finally, return the updated snippet and expected strings
         return match.group('snippet'), match.group('expected')
 
-    def remove_spurious_endings(self, expected_str):
-        '''
-            >>> from byexample.finder import ExampleFinder
-            >>> mfinder = ExampleFinder(0, 'utf8'); mfinder.target = 'python-prompt'
-            >>> remove_spurious_endings = mfinder.remove_spurious_endings
 
-            A spurious ending is a particular string that is found
-            in the last line.
+class ZoneDelimiter(object):
+    def __init__(self, verbosity, encoding, **unused):
+        self.verbosity = verbosity
+        self.encoding = encoding
 
-            It must be at the begin of the last line:
-            >>> remove_spurious_endings('>>> 1 + 2\n3\n```')
-            '>>> 1 + 2\n3\n'
+    def zone_regex(self):
+        raise NotImplementedError() # pragma: no cover
 
-            And it must be the only thing in the line (with the exception
-            of any trailing whitespace):
+    def get_matches(self, string):
+        return self.zone_regex().finditer(string)
 
-            >>> remove_spurious_endings('>>> 1 + 2\n3\n-->  ')
-            '>>> 1 + 2\n3\n'
+    def get_zone(self, match, where):
+        return match.group('zone')
 
-            But if the last line has something else, it will not be removed:
-            >>> remove_spurious_endings('>>> foo()\n<-- hello\nworld -->')
-            '>>> foo()\n<-- hello\nworld -->'
-
-            It will not be removed even it the last line has leading
-            whitespace:
-            >>> remove_spurious_endings('>>> foo()\n<-- hello\n   -->')
-            '>>> foo()\n<-- hello\n   -->'
-            '''
-
-        return self.spurious_ending_regex().sub('\n', expected_str)
-
-    @constant
-    def spurious_ending_regex(self):
-        # Be at the start of the line and be the last line of the expected
-        # string
-        endings = '|'.join(re.escape(e) for e in sorted(self.spurious_endings()))
-        return re.compile(r"(\n|\A)(%s)[ ]*\n?\Z" % endings, re.DOTALL | re.MULTILINE)
-
-    def spurious_endings(self):
-        return {"'''", '-->', '```', '~~~'}
+    def __repr__(self):
+        return '%s Zone Delimiter' % tohuman(self.target)
 

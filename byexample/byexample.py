@@ -1,13 +1,14 @@
-from .cache import RegexCache, cache_filepath
+from __future__ import unicode_literals
+from .cache import RegexCache
 from .jobs import Jobs, Status, allow_sigint
 import os, sys
 
 def execute_examples(filename, sigint_handler):
-    global cache_disabled, harvester, executor, options, human_args, dry
+    global cache, harvester, executor, options, human_args, dry
     from .common import human_exceptions
 
-    with RegexCache(cache_filepath(filename, 're'), cache_disabled), \
-            human_exceptions("File '%s':" % filename, *human_args) as exc, \
+    with human_exceptions("File '%s':" % filename, *human_args) as exc, \
+            cache.synced(label=filename), \
             allow_sigint(sigint_handler):
         examples = harvester.get_examples_from_file(filename)
         if dry:
@@ -20,10 +21,13 @@ def execute_examples(filename, sigint_handler):
     return True, True, user_aborted, error
 
 def main(args=None):
-    global cache_disabled, harvester, executor, options, human_args, dry
+    global cache, harvester, executor, options, human_args, dry
 
     cache_disabled = os.getenv('BYEXAMPLE_CACHE_DISABLED', "1") != "0"
-    with RegexCache(cache_filepath('0', 're'), cache_disabled):
+    cache_verbose  = os.getenv('BYEXAMPLE_CACHE_VERBOSE', "0") != "0"
+    cache = RegexCache('0', cache_disabled, cache_verbose)
+
+    with cache.activated(auto_sync=True, label="0"):
         from .cmdline import parse_args
         from .common import human_exceptions
         from .init import init
@@ -37,5 +41,5 @@ def main(args=None):
         if exc:
             sys.exit(Status.error)
 
-    jobs = Jobs(args.jobs, args.verbosity)
-    return jobs.run(execute_examples, testfiles, options['fail_fast'])
+        jobs = Jobs(args.jobs, args.verbosity)
+        return jobs.run(execute_examples, testfiles, options['fail_fast'])

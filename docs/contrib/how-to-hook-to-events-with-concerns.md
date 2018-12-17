@@ -1,10 +1,10 @@
-# How to hook to events with Concerns
+# How to Hook to Events
 
 There are three different ways in which ``byexample`` can be extended:
 
- - how to find examples
- - how to support new languages
- - how to perform arbitrary actions during the execution
+ - define zones where to find examples
+ - support new languages: how to find them and how to run them
+ - perform arbitrary actions during the execution
 
 ``byexample`` uses the concept of modules: a python file with some classes
 defined there and it can be loaded using ``--modules <dir>`` from the command
@@ -15,7 +15,8 @@ What classes will depend of what you want to extend or customize.
 In this ``how-to`` we will see how to hook to events and perform arbitrary
 actions during the execution.
 
-Check [docs/how to support new finders and languages](how_to_support_new_finders_and_languages.md)
+Check [how to define new zones where to find examples](/{{ site.uprefix }}/contrib/how-to-define-new-zones-where-to-find-examples)
+and [how to support new finders and languages](/{{ site.uprefix }}/contrib/how-to-support-new-finders-and-languages)
 for a ``how-to`` about the first two items.
 
 Let's show this by example.
@@ -23,7 +24,7 @@ Let's show this by example.
 ## How to perform arbitrary actions during the execution: Concern
 
 During the execution of the whole set of examples, ``byexample`` will execute
-some callbacks or hooks at particular moments like before running an example or
+some callbacks or *hooks* at particular moments like before running an example or
 after it failed.
 
 The set of hooks are collected into the ``Concern`` interface (also known as
@@ -62,7 +63,7 @@ See the documentation of the class ``Concern`` in
 [byexample/concern.py](https://github.com/byexamples/byexample/tree/master/byexample/concern.py) to get a description of all the
 possible hooks and when they are called.
 
-``byexample`` uses this mechanism to generate a progress bar. Check
+``byexample`` uses this mechanism to generate a progress bar in
 [byexample/modules/progress.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/progress.py).
 
 
