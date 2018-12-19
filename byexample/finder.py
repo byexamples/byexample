@@ -196,24 +196,20 @@ class ExampleHarvest(object):
     def get_examples_from_string(self, string, filepath='<string>'):
         all_examples = []
         _, ext = os.path.splitext(filepath)
-        if not ext:
-            ext = ".txt"
 
         log("Finding examples...", self.verbosity-1)
-        if ext in self.zdelimiter_by_file_extension:
-            zdelimiter = self.zdelimiter_by_file_extension[ext]
-            zones = self.get_zones_using(
-                        zdelimiter,
-                        string,
-                        filepath,
-                        start_lineno=1)
+        zdelimiter = self.zdelimiter_by_file_extension.get(
+                ext,
+                self.zdelimiter_by_file_extension['no-delimiter']
+                )
+        zones = self.get_zones_using(
+                    zdelimiter,
+                    string,
+                    filepath,
+                    start_lineno=1)
 
-            log("File '%s': %i zones [%s]" % (filepath, len(zones),
-                                            str(zdelimiter)), self.verbosity-2)
-
-        else:
-            zdelimiter = None
-            zones = [Zone(None, string, Where(1, None, filepath, zdelimiter))]
+        log("File '%s': %i zones [%s]" % (filepath, len(zones),
+                                        str(zdelimiter)), self.verbosity-2)
 
         if self.verbosity-3 >= 0:
             for zone in zones:
@@ -224,7 +220,6 @@ class ExampleHarvest(object):
             for zone in zones:
                 examples = self.get_examples_using(
                         finder,
-                        zdelimiter,
                         zone.str,
                         zone.where.filepath,
                         zone.where.start_lineno)
@@ -372,15 +367,14 @@ class ExampleHarvest(object):
     def _log_debug(self, what, where):
         log(build_where_msg(where, self, what), self.verbosity-3)
 
-    def get_examples_using(self, finder, zdelimiter, string, filepath, start_lineno):
+    def get_examples_using(self, finder, string, filepath, start_lineno):
         return self.from_string_get_items_using(
                 finder,
                 string,
                 self.get_example,
                 'examples',
                 filepath,
-                start_lineno,
-                zdelimiter
+                start_lineno
                 )
 
     def get_zones_using(self, zdelimiter, string, filepath, start_lineno):
@@ -390,8 +384,7 @@ class ExampleHarvest(object):
                 self.get_zone,
                 'zones',
                 filepath,
-                start_lineno,
-                zdelimiter
+                start_lineno
                 )
 
     def get_example(self, finder, match, where):
@@ -633,4 +626,3 @@ class ZoneDelimiter(object):
 
     def __repr__(self):
         return '%s Zone Delimiter' % tohuman(self.target)   # TODO change this
-

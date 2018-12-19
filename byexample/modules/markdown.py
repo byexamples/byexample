@@ -3,7 +3,7 @@ import re
 from byexample.finder import ZoneDelimiter
 from byexample.common import constant
 
-stability = 'stable'
+stability = 'experimental'
 
 class MarkdownFencedCodeDelimiter(ZoneDelimiter):
     target = {'.md'}
