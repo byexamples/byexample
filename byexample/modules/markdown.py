@@ -19,14 +19,12 @@ class MarkdownFencedCodeDelimiter(ZoneDelimiter):
                 )
 
             # then, grab everything until the first end marker
-            (?P<zone>(?:.*?\n)*?)
+            (?P<zone>.*?)
 
             # finally, the end marker
-            ^[ ]*
-                (?(marker)    # if we matched a fenced-code maker previously
-                  (?P=marker) # then we must match the same amount of backticks
+            (?(marker)    # if we matched a fenced-code maker previously
+                  ^[ ]*(?P=marker) # then we must match the same amount of backticks
                   |(?:-->)    # otherwise, we must match the close of the html comment
-                )
-                [ ]*$\n?
-            ''', re.MULTILINE | re.VERBOSE)
+            )
+            ''', re.DOTALL | re.MULTILINE | re.VERBOSE)
 

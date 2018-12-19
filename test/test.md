@@ -163,8 +163,8 @@ File docs/examples/cpp.cpp, 3/3 test ran in <...> seconds
 File docs/examples/javascript.js, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0
 ~
-File docs/examples/markdown.md, 2/2 test ran in <...> seconds
-[PASS] Pass: 2 Fail: 0 Skip: 0
+File docs/examples/markdown.md, 3/3 test ran in <...> seconds
+[PASS] Pass: 3 Fail: 0 Skip: 0
 ~
 File docs/examples/python.py, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0

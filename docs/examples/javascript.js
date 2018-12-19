@@ -21,6 +21,7 @@ function awesome() {
         >> 2;           // this line will not be confused with a Ruby example
 }
 
+/* */
 // Byexample will not search for examples in this kind of
 // comments
 //
@@ -28,4 +29,4 @@ function awesome() {
 // >>> 3 * 4
 // infinite
 //
-
+/* */

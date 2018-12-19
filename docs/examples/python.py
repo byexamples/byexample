@@ -21,6 +21,7 @@ def awesome():
     return 1 \
         >> 2;          ## this line will not be confused with a Ruby example
 
+''' '''
 # >>> 1 + 2
 # No, this is not an example.
-
+''' '''
