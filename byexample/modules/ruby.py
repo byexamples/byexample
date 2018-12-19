@@ -86,6 +86,9 @@ class RubyCommentDelimiter(ZoneDelimiter):
         zone = ZoneDelimiter.get_zone(self, match, where)
         return self.leading_sharp().sub(' ', zone)
 
+    def __repr__(self):
+        return "Ruby Comment Delimiter"
+
 class RubyPromptFinder(ExampleFinder):
     target = 'ruby-prompt'
 

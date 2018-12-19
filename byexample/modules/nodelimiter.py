@@ -11,3 +11,6 @@ class NoDelimiter(ZoneDelimiter):
     @constant
     def zone_regex(self):
         return re.compile(r'\A(?P<zone>.*)\Z', re.DOTALL | re.MULTILINE)
+
+    def __repr__(self):
+        return "No Zone Delimiter"

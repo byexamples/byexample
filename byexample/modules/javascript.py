@@ -57,6 +57,9 @@ class JavascriptCommentDelimiter(ZoneDelimiter):
         zone = ZoneDelimiter.get_zone(self, match, where)
         return self.leading_asterisk().sub(' ', zone)
 
+    def __repr__(self):
+        return "Javascript Comment Delimiter"
+
 class JavascriptPromptFinder(ExampleFinder):
     target = 'javascript-prompt'
 

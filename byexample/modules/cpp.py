@@ -50,6 +50,9 @@ class CppCommentDelimiter(ZoneDelimiter):
         zone = ZoneDelimiter.get_zone(self, match, where)
         return self.leading_asterisk().sub(' ', zone)
 
+    def __repr__(self):
+        return "C/C++ Comment Delimiter"
+
 class CppPromptFinder(ExampleFinder):
     target = 'cpp-prompt'
 

@@ -41,6 +41,9 @@ class PythonDocStringDelimiter(ZoneDelimiter):
              [^\\](?P=marker) # then we must match the same kind of quotes
             ''', re.DOTALL | re.MULTILINE | re.VERBOSE)
 
+    def __repr__(self):
+        return "Python Doc-String Delimiter"
+
 class PythonPromptFinder(ExampleFinder):
     target = 'python-prompt'
 

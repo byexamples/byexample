@@ -28,3 +28,5 @@ class MarkdownFencedCodeDelimiter(ZoneDelimiter):
             )
             ''', re.DOTALL | re.MULTILINE | re.VERBOSE)
 
+    def __repr__(self):
+        return "Markdown Fenced-Code Delimiter"

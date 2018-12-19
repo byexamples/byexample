@@ -625,4 +625,4 @@ class ZoneDelimiter(object):
         return match.group('zone')
 
     def __repr__(self):
-        return '%s Zone Delimiter' % tohuman(self.target)   # TODO change this
+        return '%s Zone Delimiter' % tohuman(self.target)
