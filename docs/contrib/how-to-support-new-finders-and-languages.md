@@ -152,7 +152,7 @@ Let's see if our finder can find the ArnoldC snippet above.
 >>> finder = ArnoldCFinder(0, 'utf-8')
 
 >>> filepath = 'docs/contrib/how-to-support-new-finders-and-languages.md'
->>> where = (0,1,filepath)
+>>> where = (0,1,filepath,None)
 >>> matches = finder.get_matches(open(filepath, 'r').read())
 >>> matches = list(matches)
 

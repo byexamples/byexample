@@ -7,13 +7,14 @@ from .parser import ExampleParser
 from .options import Options
 
 class Where(object):
-    def __init__(self, start_lineno, end_lineno, filepath):
+    def __init__(self, start_lineno, end_lineno, filepath, zdelimiter):
         self.start_lineno = start_lineno
         self.end_lineno = end_lineno
         self.filepath = filepath
+        self.zdelimiter = zdelimiter
 
     def as_tuple(self):
-        return (self.start_lineno, self.end_lineno, self.filepath)
+        return (self.start_lineno, self.end_lineno, self.filepath, self.zdelimiter)
 
     def __iter__(self):
         return iter(self.as_tuple())
@@ -80,7 +81,7 @@ class Example(object):
         self.finder, self.runner, self.parser = finder, runner, parser
         self.snippet, self.expected_str, self.indentation = snippet, expected_str, indent
 
-        self.start_lineno, self.end_lineno, self.filepath = where
+        self.start_lineno, self.end_lineno, self.filepath, self.zdelimiter = where
 
         self.fully_parsed = False
 
@@ -89,7 +90,7 @@ class Example(object):
             raise ValueError("You cannot parse/build an example twice: " + \
                              repr(self))
 
-        where = Where(self.start_lineno, self.end_lineno, self.filepath)
+        where = Where(self.start_lineno, self.end_lineno, self.filepath, self.zdelimiter)
         self.parser.parse(self, concerns)
         self.fully_parsed = True
 
@@ -122,7 +123,7 @@ def _build_fake_example(snippet, expected, language='python', start_lineno=0,
     # fake the start-end lines where the example "was found"
     end_lineno = start_lineno
     end_lineno += (snippet + '\n' + expected).count('\n') + 1
-    where = Where(start_lineno, end_lineno, 'file.md')
+    where = Where(start_lineno, end_lineno, 'file.md', None)
 
     # create it
     e = Example(F, R, parser, snippet, expected, "", where)
@@ -211,7 +212,8 @@ class ExampleHarvest(object):
                                             str(zdelimiter)), self.verbosity-2)
 
         else:
-            zones = [Zone(None, string, Where(1, None, filepath))]
+            zdelimiter = None
+            zones = [Zone(None, string, Where(1, None, filepath, zdelimiter))]
 
         if self.verbosity-3 >= 0:
             for zone in zones:
@@ -222,6 +224,7 @@ class ExampleHarvest(object):
             for zone in zones:
                 examples = self.get_examples_using(
                         finder,
+                        zdelimiter,
                         zone.str,
                         zone.where.filepath,
                         zone.where.start_lineno)
@@ -325,8 +328,8 @@ class ExampleHarvest(object):
                     continue
 
                 collision_free = not any_collision
-                curr_where = Where(example.start_lineno, example.end_lineno, filepath)
-                prev_where = Where(prev.start_lineno, prev.end_lineno, filepath)
+                curr_where = Where(example.start_lineno, example.end_lineno, filepath, example.zdelimiter)
+                prev_where = Where(prev.start_lineno, prev.end_lineno, filepath, prev.zdelimiter)
 
                 self._log_debug(" * Collision Type (1/2/3): %s/%s/%s\n"        \
                                 " * Languages (prev/current): %s/%s\n"         \
@@ -369,14 +372,15 @@ class ExampleHarvest(object):
     def _log_debug(self, what, where):
         log(build_where_msg(where, self, what), self.verbosity-3)
 
-    def get_examples_using(self, finder, string, filepath, start_lineno):
+    def get_examples_using(self, finder, zdelimiter, string, filepath, start_lineno):
         return self.from_string_get_items_using(
                 finder,
                 string,
                 self.get_example,
                 'examples',
                 filepath,
-                start_lineno
+                start_lineno,
+                zdelimiter
                 )
 
     def get_zones_using(self, zdelimiter, string, filepath, start_lineno):
@@ -386,7 +390,8 @@ class ExampleHarvest(object):
                 self.get_zone,
                 'zones',
                 filepath,
-                start_lineno
+                start_lineno,
+                zdelimiter
                 )
 
     def get_example(self, finder, match, where):
@@ -435,7 +440,7 @@ class ExampleHarvest(object):
             return Zone(zdelimiter, zone_str, where)
 
     def from_string_get_items_using(self, matcher, string, getter, what,
-            filepath='<string>', start_lineno=1):
+            filepath='<string>', start_lineno=1, zdelimiter=None):
         charno = 0
         items = []
 
@@ -452,7 +457,7 @@ class ExampleHarvest(object):
             charno = match.start()
 
             # where we are, used for the messages of the exceptions
-            where = Where(start_lineno, end_lineno, filepath)
+            where = Where(start_lineno, end_lineno, filepath, zdelimiter)
 
             item = getter(matcher, match, where)
             if item is not None:
@@ -486,12 +491,12 @@ class ExampleFinder(object):
             >>> mfinder = ExampleFinder(0, 'utf8'); mfinder.target = 'python-prompt'
             >>> check_and_remove_indent = mfinder.check_and_remove_indent
 
-            >>> where = Where(1, 2, 'foo.rst')
+            >>> where = Where(1, 2, 'foo.rst', None)
             >>> check_and_remove_indent('  >>> 1 + 2\n  3', '  ', where)
             '>>> 1 + 2\n3'
 
             >>> where
-            (1, 2, 'foo.rst')
+            (1, 2, 'foo.rst', None)
 
         If the string contains a line with a lower level of indentation,
         truncate the example at that point and ignore the rest.
@@ -500,14 +505,14 @@ class ExampleFinder(object):
             '>>> 1 + 2'
 
             >>> where
-            (1, 1, 'foo.rst')
+            (1, 1, 'foo.rst', None)
 
         The only exception to this are the empty lines
             >>> check_and_remove_indent('  >>> 1 + 2\n\n  3', '  ', where)
             '>>> 1 + 2\n\n3'
 
         '''
-        start_lineno, _, _ = where
+        start_lineno, _, _, _ = where
 
         lines = example_str.split('\n')
 
@@ -542,7 +547,7 @@ class ExampleFinder(object):
             >>> code = '  >>> 1 + 2'
             >>> match = re.match(r'[ ]*>>> [^\n]*', code)
 
-            >>> code_i = check_and_remove_indent(code, '  ', (1, 2, 'foo.rst'))
+            >>> code_i = check_and_remove_indent(code, '  ', (1, 2, 'foo.rst', None))
             >>> code_i != code
             True
             >>> new_match = check_keep_matching(code_i, match)
