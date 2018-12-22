@@ -56,38 +56,10 @@ from __future__ import unicode_literals
 import re, pexpect, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
-from byexample.finder import ExampleFinder, ZoneDelimiter
+from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
 
 stability = 'experimental'
-
-class RubyCommentDelimiter(ZoneDelimiter):
-    target = {'.rb'}
-
-    @constant
-    def zone_regex(self):
-        return re.compile(r'''
-            # Begin with a # marker
-            ^[ ]*
-             \#
-
-             # then, grab everything that begins with a #
-             # until we cannot do it anymore
-             (?P<zone>  .*$\n?                  # first line
-                        (?:[ ]* \# .*$\n?)*     # the rest of the lines
-                    )
-            ''', re.MULTILINE | re.VERBOSE)
-
-    @constant
-    def leading_sharp(self):
-        return re.compile(r'^[ ]*#', re.MULTILINE)
-
-    def get_zone(self, match, where):
-        zone = ZoneDelimiter.get_zone(self, match, where)
-        return self.leading_sharp().sub(' ', zone)
-
-    def __repr__(self):
-        return "Ruby Comment Delimiter"
 
 class RubyPromptFinder(ExampleFinder):
     target = 'ruby-prompt'

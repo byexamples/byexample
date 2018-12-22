@@ -19,30 +19,10 @@ from __future__ import unicode_literals
 import re, pexpect, sys, time
 from byexample.common import log, constant
 from byexample.parser import ExampleParser, ExtendOptionParserMixin
-from byexample.finder import ExampleFinder, ZoneDelimiter
+from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
 
 stability = 'stable'
-
-class PythonDocStringDelimiter(ZoneDelimiter):
-    target = {'.py'}
-
-    @constant
-    def zone_regex(self):
-        return re.compile(r'''
-            # Begin with a triple single or double quote
-            ^[ ]*
-             [bBuU]?[rR]?(?P<marker>(?:\'\'\') | (?:"""))
-
-             # then, grab everything until the first end marker
-             (?P<zone>.*?)
-
-             # finally, the end marker
-             [^\\](?P=marker) # then we must match the same kind of quotes
-            ''', re.DOTALL | re.MULTILINE | re.VERBOSE)
-
-    def __repr__(self):
-        return "Python Doc-String Delimiter"
 
 class PythonPromptFinder(ExampleFinder):
     target = 'python-prompt'
