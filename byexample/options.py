@@ -297,16 +297,38 @@ class OptionParser(argparse.ArgumentParser):
         kw.setdefault('add_help', False)
 
         argparse.ArgumentParser.__init__(self, **kw)
+        self.__defaults = {}
 
     def add_flag(self, name, group_required=False, **kw):
+        has_default = False
+        if 'default' in kw:
+            has_default = True
+            tmp = kw.pop('default')
+
         g = self.add_mutually_exclusive_group(required=group_required)
-        g.add_argument("+" + name, action='store_true', **kw)
+        action = g.add_argument("+" + name, action='store_true', **kw)
         g.add_argument("-" + name, action='store_false', help=argparse.SUPPRESS)
+
+        if has_default:
+            self.__defaults[action.dest] = tmp
 
         return g
 
+    def add_argument(self, name, *args, **kw):
+        has_default = False
+        if 'default' in kw:
+            has_default = True
+            tmp = kw.pop('default')
+
+        action = argparse.ArgumentParser.add_argument(self, name, *args, **kw)
+
+        if has_default:
+            self.__defaults[action.dest] = tmp
+
+        return action
+
     def defaults(self):
-        return self.parse(None)
+        return Options(self.__defaults)
 
     def parse(self, source, strict):
         try:
