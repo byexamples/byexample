@@ -107,7 +107,7 @@ class RubyParser(ExampleParser):
                                                     re.MULTILINE)
 
     def extend_option_parser(self, parser):
-        parser.add_flag("ruby-pretty-print", help="enable the pretty print enhancement.")
+        parser.add_flag("ruby-pretty-print", default=True, help="enable the pretty print enhancement.")
         parser.add_argument("+ruby-expr-print", choices=['auto', 'true', 'false'],
                             default='auto',
                             help='print the expression\'s value (true); ' +\
@@ -163,7 +163,7 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
                     }
 
     def initialize(self, options):
-        ruby_pretty_print = options.get('ruby_pretty_print', True)
+        ruby_pretty_print = options['ruby_pretty_print']
 
         # always/yes; never/no; autoetect normalization
         self.expr_print_mode = options['ruby_expr_print']

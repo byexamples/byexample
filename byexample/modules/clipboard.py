@@ -19,7 +19,7 @@ class Clipboard(Concern):
         pass
 
     def extend_option_parser(self, parser):
-        parser.add_flag("paste", help="enable the paste mode of captured texts.")
+        parser.add_flag("paste", default=False, help="enable the paste mode of captured texts.")
         return parser
 
     def start(self, examples, runners, filepath, options):
@@ -36,7 +36,7 @@ class Clipboard(Concern):
 
     PASTE_RE = re.compile(r"<(?P<name>(?:\w|-|\.)+)>")
     def before_build_regex(self, example, options):
-        if not options.get('paste', False):
+        if not options['paste']:
             return
 
         repl = partial(self.repl_from_clipboard, clipboard=self.clipboard,
@@ -46,7 +46,7 @@ class Clipboard(Concern):
         # do not check for missings: we assume that they are capture tags
 
     def start_example(self, example, options):
-        if not options.get('paste', False):
+        if not options['paste']:
             return
 
         missing = []

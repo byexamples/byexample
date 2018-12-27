@@ -161,20 +161,20 @@ class PythonParser(ExampleParser):
         Add a few extra options and if self.compatibility_mode is True,
         add all the Python doctest's options.
         '''
-        parser.add_flag("py-doctest", help="enable the compatibility with doctest.")
-        parser.add_flag("py-pretty-print", help="enable the pretty print enhancement.")
-        parser.add_flag("py-remove-empty-lines", help="enable the deletion of empty lines (enabled by default).")
+        parser.add_flag("py-doctest", default=False, help="enable the compatibility with doctest.")
+        parser.add_flag("py-pretty-print", default=True, help="enable the pretty print enhancement.")
+        parser.add_flag("py-remove-empty-lines", default=True, help="enable the deletion of empty lines (enabled by default).")
 
         if getattr(self, 'compatibility_mode', True):
-            parser.add_flag("NORMALIZE_WHITESPACE", help="[doctest] alias for +norm-ws.")
-            parser.add_flag("SKIP", help="[doctest] alias for +skip.")
-            parser.add_flag("ELLIPSIS", help="[doctest] enables the ... wildcard.")
-            parser.add_flag("DONT_ACCEPT_BLANKLINE", help="[doctest] take <BLANKLINE> as literal.")
-            parser.add_flag("DONT_ACCEPT_TRUE_FOR_1", help="[doctest] ignored.")
-            parser.add_flag("IGNORE_EXCEPTION_DETAIL", help="[doctest] ignore the exception details.")
-            parser.add_flag("REPORT_UDIFF", help="[doctest] alias for +diff unified.")
-            parser.add_flag("REPORT_CDIFF", help="[doctest] alias for +diff context.")
-            parser.add_flag("REPORT_NDIFF", help="[doctest] alias for +diff ndiff.")
+            parser.add_flag("NORMALIZE_WHITESPACE", default=False, help="[doctest] alias for +norm-ws.")
+            parser.add_flag("SKIP", default=False, help="[doctest] alias for +skip.")
+            parser.add_flag("ELLIPSIS", default=False, help="[doctest] enables the ... wildcard.")
+            parser.add_flag("DONT_ACCEPT_BLANKLINE", default=False, help="[doctest] take <BLANKLINE> as literal.")
+            parser.add_flag("DONT_ACCEPT_TRUE_FOR_1", default=False, help="[doctest] ignored.")
+            parser.add_flag("IGNORE_EXCEPTION_DETAIL", default=False, help="[doctest] ignore the exception details.")
+            parser.add_flag("REPORT_UDIFF", default=False, help="[doctest] alias for +diff unified.")
+            parser.add_flag("REPORT_CDIFF", default=False, help="[doctest] alias for +diff context.")
+            parser.add_flag("REPORT_NDIFF", default=False, help="[doctest] alias for +diff ndiff.")
 
         return parser
 
@@ -217,7 +217,6 @@ class PythonParser(ExampleParser):
         Return a dictionary with the mapped flags; self.options is unchanged.
         '''
         options = self.options
-        options.mask_default(False)
         mapped = {}
         if options['py_doctest']:
             # map the following doctest's options to byexample's ones
@@ -251,7 +250,6 @@ class PythonParser(ExampleParser):
         if self.options['py_doctest'] and 'tags' not in mapped:
             mapped['tags'] = False
 
-        options.unmask_default()
         return mapped
 
     def _double_parse(self, parse_method, args, kwargs):
@@ -277,7 +275,7 @@ class PythonParser(ExampleParser):
         # the obtained previously (self.options)
         self.options.up(options)
 
-        if self.options.get('py_doctest', False):
+        if self.options['py_doctest']:
             # okay, the user really wanted to be in compatibility mode
             pass
         else:
@@ -320,7 +318,6 @@ class PythonParser(ExampleParser):
 
     def _mutate_expected_based_on_doctest_flags(self, expected_str):
         options = self.options
-        options.mask_default(False)
         if options['py_doctest']:
             if not options['DONT_ACCEPT_BLANKLINE']:
                 expected_str = self._blankline_tag_re.sub('', expected_str)
@@ -375,11 +372,10 @@ class PythonParser(ExampleParser):
                 # enable the capture, this should affect to this example only
                 options['tags'] = True
 
-        options.unmask_default()
         return expected_str
 
     def _remove_empty_line_if_enabled(self, snippet):
-        if self.options.get('py_remove_empty_lines', True):
+        if self.options['py_remove_empty_lines']:
             # remove the empty lines if they are followed by indented lines
             # if they are followed by non-indented lines, the empty lines means
             # "end the block" of code and they should not be removed or we will
@@ -496,8 +492,8 @@ del _byexample_pprint
         PexepctMixin.interact(self)
 
     def initialize(self, options):
-        py_doctest = options.get('py_doctest', False)
-        py_pretty_print = options.get('py_pretty_print', False)
+        py_doctest = options['py_doctest']
+        py_pretty_print = options['py_pretty_print']
         pretty_print = (py_doctest and py_pretty_print) \
                         or not py_doctest
 

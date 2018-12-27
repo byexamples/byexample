@@ -65,7 +65,7 @@ class ShellParser(ExampleParser):
                                                     re.MULTILINE)
 
     def extend_option_parser(self, parser):
-        parser.add_flag("stop-on-silence", help="stop the process after some period of inactivity or silence.")
+        parser.add_flag("stop-on-silence", default=False, help="stop the process after some period of inactivity or silence.")
 
 class ShellInterpreter(ExampleRunner, PexepctMixin):
     language = 'shell'
@@ -91,7 +91,7 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
         try:
             return self._exec_and_wait(example.source, options)
         except TimeoutException as ex:
-            if 'stop_on_silence' in options and options['stop_on_silence']:
+            if options['stop_on_silence']:
                 # get the current output
                 out = ex.output
 

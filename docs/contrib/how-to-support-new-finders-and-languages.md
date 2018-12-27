@@ -223,9 +223,6 @@ own specific options (``ArnoldC``'s specific).
 ```python
 >>> def extend_option_parser(parser):
 ...     parser.add_flag("awesome")
-...     parser.add_flag("norm-ws", default=False)
-...     parser.add_flag("tags", default=True)
-...     parser.add_argument("+rm", action='append', default=[])
 ```
 
 See the documentation of the class [OptionParser](https://github.com/byexamples/byexample/tree/master/byexample/options.py)
@@ -268,11 +265,12 @@ should not from the command line with the flag ``-l``.
 So we need to declare what language is our Parser for: that's the reason
 behind the ``language`` attribute.
 
-Let's create the example:
+Let's create the example (in the practice this is done by ``byexample`` behind
+the scenes so you do not to be worry about the details):
 
 ```python
 >>> from byexample.options import Options, OptionParser
->>> parser = ArnoldCParser(0, 'utf-8', Options(optparser=OptionParser(add_help=False)))
+>>> parser = ArnoldCParser(0, 'utf-8', Options(rm=[], norm_ws=False, tags=True, optparser=OptionParser(add_help=False)))
 
 >>> from byexample.finder import Example
 >>> runner = None # not yet
@@ -309,7 +307,7 @@ YOU HAVE BEEN TERMINATED
 Hello World!
 
 >>> print(example.options)
-{'awesome': True, 'norm_ws': False, 'rm': [], 'tags': True}
+{'awesome': True}
 ```
 
 The ``process_snippet_and_expected`` method can be extended to perform the last
