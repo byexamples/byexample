@@ -185,24 +185,17 @@ class PythonParser(ExampleParser):
         compatibility_mode = True if original_compatibility_mode == None \
                                   else original_compatibility_mode
 
-        # easy cake, the parsers are already cached
-        if self._optparser_extended_by_comp_mode_cache:
-            return self._optparser_extended_by_comp_mode_cache[compatibility_mode]
-
-        cached = {}
+        tmp = {}
 
         # fake the two compatibility mode (True and False)
         # and build an extended parser for each mode
         self.compatibility_mode = True
-        cached[self.compatibility_mode] = ExtendOptionParserMixin.get_extended_option_parser(
+        tmp[self.compatibility_mode] = ExtendOptionParserMixin.get_extended_option_parser(
                                                 self, parent_parser, **kw)
 
         self.compatibility_mode = False
-        cached[self.compatibility_mode] = ExtendOptionParserMixin.get_extended_option_parser(
+        tmp[self.compatibility_mode] = ExtendOptionParserMixin.get_extended_option_parser(
                                                 self, parent_parser, **kw)
-
-        # save the extended parsers in the cache
-        self._optparser_extended_by_comp_mode_cache = cached
 
         # restore the compatibility mode (even if it was unset)
         if original_compatibility_mode == None:
@@ -210,7 +203,7 @@ class PythonParser(ExampleParser):
         else:
             self.compatibility_mode = original_compatibility_mode
 
-        return cached[compatibility_mode]
+        return tmp[compatibility_mode]
 
     def _map_doctest_opts_to_byexample_opts(self):
         '''
