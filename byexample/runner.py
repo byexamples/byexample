@@ -288,7 +288,7 @@ class PexepctMixin(object):
     def _emulate_as_is_terminal(self, chunks):
         return ''.join((self._universal_new_lines(chunk) for chunk in chunks))
 
-    def _expect_prompt(self, options, timeout=None, prompt_re=None):
+    def _expect_prompt(self, options, timeout, prompt_re=None):
         ''' Wait for a <prompt_re> (any self.any_PS_re if <prompt_re> is None)
             and raise a timeout if we cannot find one.
 

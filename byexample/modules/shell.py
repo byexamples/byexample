@@ -101,7 +101,7 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
                 self.interpreter.sendcontrol('z')
 
                 # wait for the prompt, ignore any extra output
-                self._expect_prompt(options,
+                self._expect_prompt(options, timeout=2,
                                         prompt_re=self.PS1_re)
                 self._drop_output()
                 return out
