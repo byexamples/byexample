@@ -296,6 +296,9 @@ class OptionParser(argparse.ArgumentParser):
         # do not add -h/--help options
         kw.setdefault('add_help', False)
 
+        # do not allow for abbreviations of long options
+        kw.setdefault('allow_abbrev', False)
+
         argparse.ArgumentParser.__init__(self, **kw)
         self.__defaults = {}
 
