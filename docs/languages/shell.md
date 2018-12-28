@@ -148,7 +148,7 @@ that this example gets executed while the ``+pass``
 will [ignore any output](/{{ site.uprefix }}/basic/skip-and-pass)
 so it will work even if there is no process to kill.
 
-## Stopping a process on inactivity or silence
+## Stopping a process on timeout
 
 Sometimes is useful to run a long-running process in foreground
 and after some period of inactivity or silence, stop it and get
@@ -167,11 +167,11 @@ $ echo "some log line" > w/msg.log
 We could use ``tail -f`` for this. But if we do that, ``tail`` will never end,
 blocking the whole execution.
 
-In these cases we can use the ``+stop-on-silence`` option: after some period
-of inactivity or silence the process will be stopped:
+In these cases we can use the ``+stop-on-timeout`` option.
+After some period the example will timeout and the process will be stopped:
 
 ```shell
-$ tail -f w/msg.log             # byexample: +stop-on-silence
+$ tail -f w/msg.log             # byexample: +stop-on-timeout
 some log line
 ```
 
@@ -184,7 +184,7 @@ to keep reading the new entries in the log.
 ```shell
 $ echo "another log line" >> w/msg.log
 
-$ fg                            # byexample: +stop-on-silence
+$ fg                            # byexample: +stop-on-timeout
 tail -f w/msg.log
 another log line
 ```
@@ -194,8 +194,8 @@ $ kill %% ; fg ; wait    # cleanup  # byexample: +pass
 $ jobs -l
 ```
 
-> **Note:** ``+stop-on-silence`` requires the job control and monitoring to be
-> enabled (``set -m``).
+> **Note:** ``+stop-on-timeout`` requires the job control and monitoring to be
+> enabled (``set -m``). This should be the default in your shell.
 
 ## Internals
 
