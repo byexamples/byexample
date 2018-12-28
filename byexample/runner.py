@@ -205,11 +205,9 @@ class PexepctMixin(object):
             After the successful expect, collect the 'before' output into
             self.last_output
         '''
-        _timeout_msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s"
-        if timeout <= 0:
-            out = self._get_output()
-            raise TimeoutException(_timeout_msg % ''.join(self.last_output)[-1000:],
-                                    out)
+        # timeout of 0 or negative means do not wait, just do a single read and return back
+        assert timeout is not None
+        timeout = max(timeout, 0)
 
         if not prompt_re:
             prompt_re = self.any_PS_re
@@ -221,9 +219,10 @@ class PexepctMixin(object):
         self.last_output.append(self.interpreter.before)
 
         if what == Timeout:
+            msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s"
+            msg = msg % ''.join(self.last_output)[-1000:]
             out = self._get_output()
-            raise TimeoutException(_timeout_msg % ''.join(self.last_output)[-1000:],
-                                    out)
+            raise TimeoutException(msg, out)
 
 
     def _get_output(self):
