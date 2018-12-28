@@ -148,14 +148,14 @@ that this example gets executed while the ``+pass``
 will [ignore any output](/{{ site.uprefix }}/basic/skip-and-pass)
 so it will work even if there is no process to kill.
 
-## Stopping a process on timeout
+## Stopping a process on inactivity or silence
 
 Sometimes is useful to run a long-running process in foreground
 and after some period of inactivity or silence, stop it and get
 back the control of the shell.
 
-> Currently ``byexample`` waits until a time out raises (``+timeout``) to
-> stop the process.
+                > Currently ``byexample`` waits until a time out raises (``+timeout``) to
+                > stop the process.
 
 For example, imagine that we want to read the new entries of a log
 file as soon as they are saved in the log file.
@@ -165,17 +165,18 @@ $ echo "some log line" > w/msg.log
 ```
 
 We could use ``tail -f`` for this. But if we do that, ``tail`` will never end,
-blocking the whole execution.
+*blocking the whole execution*.
 
-In these cases we can use the ``+stop-on-timeout`` option.
-After some period the example will timeout and the process will be stopped:
+In these cases we can use the ``+stop-on-silence`` option.
+After some period of inactivity of the process, ``byexample`` will stop it
+returning back the control of the shell.
 
 ```shell
-$ tail -f w/msg.log             # byexample: +stop-on-timeout
+$ tail -f w/msg.log             # byexample: +stop-on-silence
 some log line
 ```
 
-The process will be stopped, if you want that the process keeps running
+The process will be *stopped*, if you want that the process keeps running
 in background execute ``bg``.
 
 Or you can resume it in foreground with ``fg``, this enable us
@@ -184,18 +185,53 @@ to keep reading the new entries in the log.
 ```shell
 $ echo "another log line" >> w/msg.log
 
-$ fg                            # byexample: +stop-on-timeout
+$ fg                            # byexample: +stop-on-silence
 tail -f w/msg.log
 another log line
 ```
 
+By default, ``+stop-on-silence`` waits for ``0.2`` seconds of inactivity.
+If your process is a little slower and sends data to the output
+less frequently you can increase the wait time:
+
 ```shell
-$ kill %% ; fg ; wait    # cleanup  # byexample: +pass
-$ jobs -l
+$ (sleep 0.4 ; echo "a slow line" >> w/msg.log) &
+
+$ fg                            # byexample: +stop-on-silence=0.5
+tail -f w/msg.log
+a slow line
 ```
+
+> **Note:** ``+stop-on-silence`` requires the job control and monitoring to be
+> enabled (``set -m``). This should be the default in your shell.
+
+> **Changed** in ``byexample 8.0.0``: before the ``+stop-on-silence`` had the
+> same behaviour than ``+stop-on-timeout`` stopping the process always on
+> timeout. But in ``8.0.0`` this option was fixed and the old behaviour can
+> be achieved using ``+stop-on-timeout``.
+
+### Stopping on timeout
+
+``+stop-on-silence`` will stop a process if this one times out, which
+it is basically another kind of inactivity.
+
+But sometimes you have a process that it is continually sending data
+and you want to stop it after some period of time.
+
+``+stop-on-silence`` will work, but it is not the correct tool for this job.
+
+Instead, ``+stop-on-timeout`` is the correct one: instead of checking
+periodically if there is activity or not, ``byexample`` will wait for the process
+to timeout and it will stop it later.
+
+> *New* in ``byexample 8.0.0``.
 
 > **Note:** ``+stop-on-timeout`` requires the job control and monitoring to be
 > enabled (``set -m``). This should be the default in your shell.
+
+<!--
+$ kill %% ; fg ; wait    # byexample: +pass -skip
+-->
 
 ## Internals
 

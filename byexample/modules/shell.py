@@ -66,6 +66,13 @@ class ShellParser(ExampleParser):
 
     def extend_option_parser(self, parser):
         parser.add_flag("stop-on-timeout", default=False, help="stop the process if it timeout.")
+        parser.add_argument(
+                "+stop-on-silence",
+                nargs='?',
+                default=False,
+                const=0.2,
+                type=float,
+                help="stop the process if it timeout.")
 
 class ShellInterpreter(ExampleRunner, PexepctMixin):
     language = 'shell'
@@ -88,10 +95,12 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
         return PexepctMixin._run(self, example, options)
 
     def _run_impl(self, example, options):
+        stop_on_timeout = options['stop_on_timeout'] is not False
+        stop_on_silence = options['stop_on_silence'] is not False
         try:
             return self._exec_and_wait(example.source, options)
         except TimeoutException as ex:
-            if options['stop_on_timeout']:
+            if stop_on_timeout or stop_on_silence:
                 # get the current output
                 out = ex.output
 
@@ -106,6 +115,31 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
                 self._drop_output()
                 return out
             raise
+
+    def _expect_prompt(self, options, timeout, prompt_re=None):
+        if options['stop_on_silence'] is not False:
+            silence_timeout = options['stop_on_silence']
+            prev = 0
+            while 1:
+                try:
+                    begin = time.time()
+                    return PexepctMixin._expect_prompt(self, options, silence_timeout, prompt_re)
+                except TimeoutException as ex:
+                    timeout -= max(time.time() - begin, 0)
+                    silence_timeout = min(silence_timeout, timeout)
+
+                    # a real timeout
+                    if timeout <= 0 or silence_timeout <= 0:
+                        raise
+
+                    # inactivity or silence detected
+                    if prev >= len(ex.output):
+                        raise
+
+                    prev = len(ex.output)
+
+        else:
+            return PexepctMixin._expect_prompt(self, options, timeout, prompt_re)
 
     def interact(self, example, options):
         PexepctMixin.interact(self)
