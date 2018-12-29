@@ -253,6 +253,12 @@ def get_options(args, cfg):
     cfg['options']= options
 
     log("Options (cmdline + byexample's defaults + --options): %s" % options, cfg['verbosity']-2)
+
+    options['x'] = {}
+    for k, v in vars(args).items():
+        if k.startswith('x_'):
+            options['x'][k[2:]] = v
+
     return options
 
 def show_options(cfg, registry, allowed_languages):

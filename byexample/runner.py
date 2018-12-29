@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 import re, pexpect, time, termios, operator, string, shlex, os, itertools, contextlib
 from functools import reduce, partial
 from .executor import TimeoutException
-from .common import tohuman, DFL_TIMEOUT
+from .common import tohuman
 
 from pyte import Stream, Screen
 
@@ -141,7 +141,10 @@ class PexepctMixin(object):
         self.last_output = []
 
     def _spawn_interpreter(self, cmd, options, wait_first_prompt=True,
-                                        first_prompt_timeout=DFL_TIMEOUT):
+                                        first_prompt_timeout=None):
+        if first_prompt_timeout is None:
+            first_prompt_timeout = options['x']['dfl_timeout']
+
         rows, cols = options['geometry']
         self._terminal_default_geometry = (rows, cols)
 

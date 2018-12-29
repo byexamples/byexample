@@ -1,8 +1,6 @@
 from __future__ import unicode_literals
 import pprint, traceback, contextlib, os, re
 
-DFL_TIMEOUT=8
-
 def indent(s, indent=4):
     ''' Indent the given text.
         See doctest._indent for the code that inspired this.

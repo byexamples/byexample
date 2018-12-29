@@ -111,7 +111,7 @@ def parse_args(args=None):
     parser.add_argument("--timeout",
                         default=2,
                         type=float,
-                        help='timeout in seconds to complete each example (2 by default); ' + \
+                        help='timeout in seconds to complete each example (%(default)s by default); ' + \
                              'this can be changed per example with this option.')
     parser.add_argument("-o", "--options",
                         dest='options_str',
@@ -122,7 +122,7 @@ def parse_args(args=None):
     parser.add_argument("--encoding",
                         default=sys.stdout.encoding,
                         help='select the encoding; ' + \
-                             'use the same encoding of stdout by default)')
+                             'use the same encoding of stdout by default')
     parser.add_argument("--pretty", choices=['none', 'all'],
                         default='all',
                         help="control how to pretty print the output.")
@@ -138,7 +138,7 @@ def parse_args(args=None):
     parser.add_argument("-j", "--jobs",
                         default=1,
                         type=_jobs_type,
-                        help='run <jobs> in parallel (1 default); ' +\
+                        help='run <jobs> in parallel (%(default)s by default); ' +\
                              '"cpu" means use all the cpus available; ' +\
                              '"cpu<n>" multiply it by <n> the cpus available.')
 
@@ -149,6 +149,11 @@ def parse_args(args=None):
                         help="quiet mode, do not print anything even if an example fails; "
                              "supress the progress output.")
 
+    group = parser.add_argument_group("Internal", "Advanced/experimental options.")
+    group.add_argument("-x-dfl-timeout",
+                        default=8,
+                        type=float,
+                        help='timeout in seconds for internal operations (default: %(default)s).')
     namespace = parser.parse_args(args)
 
     # Some extra checks

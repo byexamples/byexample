@@ -54,7 +54,7 @@ Example:
 
 from __future__ import unicode_literals
 import re, pexpect, sys, time
-from byexample.common import constant, DFL_TIMEOUT
+from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
@@ -176,20 +176,22 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         # run!
         self._spawn_interpreter(cmd, options)
 
+        dfl_timeout = options['x']['dfl_timeout']
+
         # set the pretty print inspector
         if ruby_pretty_print:
             self._exec_and_wait('IRB.CurrentContext.inspect_mode = :pp\n',
                                     options,
-                                    timeout=DFL_TIMEOUT)
+                                    timeout=dfl_timeout)
 
         # disable the echo if we don't want it (false) or we may want it
         # but it will depend on the example (auto)
         if self.expr_print_mode in ('auto', 'false'):
             self._exec_and_wait('IRB.CurrentContext.echo = false\n',
-                                    options, timeout=DFL_TIMEOUT)
+                                    options, timeout=dfl_timeout)
         else:
             self._exec_and_wait('IRB.CurrentContext.echo = true\n',
-                                    options, timeout=DFL_TIMEOUT)
+                                    options, timeout=dfl_timeout)
 
     def shutdown(self):
         self._shutdown_interpreter()
