@@ -142,12 +142,6 @@ def get_encoding(encoding, verbosity):
     log("Encoding: %s." % encoding, verbosity-2)
     return encoding
 
-def _float_zero_to_none(x):
-    if x == 0:
-        return None
-
-    return float(x)
-
 def geometry(x):
     lines, columns = [int(v.strip()) for v in str(x).split('x')]
     if lines < 0 or columns < 0:
@@ -196,11 +190,6 @@ def get_default_options_parser(cmdline_args):
             default=cmdline_args.diff,
             choices=['none', 'unified', 'ndiff', 'context'],
             help="select diff algorithm.")
-    options_parser.add_argument(
-            "+delaybeforesend",
-            default=None,
-            type=_float_zero_to_none,
-            help="delay in seconds before sending a line to an runner/interpreter; 0 disable this (default).")
     options_parser.add_argument(
             "+geometry",
             default=(24, 80),

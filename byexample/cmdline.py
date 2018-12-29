@@ -154,6 +154,11 @@ def parse_args(args=None):
                         default=8,
                         type=float,
                         help='timeout in seconds for internal operations (default: %(default)s).')
+    group.add_argument(
+            "-x-delaybeforesend",
+            default=None,
+            type=lambda n: None if n == 0 else float(n),
+            help="delay in seconds before sending a line to an runner/interpreter; 0 disable this (default).")
     namespace = parser.parse_args(args)
 
     # Some extra checks

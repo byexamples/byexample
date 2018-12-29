@@ -156,7 +156,7 @@ class PexepctMixin(object):
                                                 encoding=self.encoding,
                                                 dimensions=(rows, cols),
                                                 env=env)
-        self.interpreter.delaybeforesend = options['delaybeforesend']
+        self.interpreter.delaybeforesend = options['x']['delaybeforesend']
         self.interpreter.delayafterread = None
 
         self._create_terminal(options)
