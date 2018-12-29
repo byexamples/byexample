@@ -18,7 +18,7 @@ Example:
 
 from __future__ import unicode_literals
 import re, pexpect, sys, time
-from byexample.common import constant
+from byexample.common import constant, DFL_TIMEOUT
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
@@ -110,7 +110,7 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
                 self.interpreter.sendcontrol('z')
 
                 # wait for the prompt, ignore any extra output
-                self._expect_prompt(options, timeout=2,
+                self._expect_prompt(options, timeout=DFL_TIMEOUT,
                                         prompt_re=self.PS1_re)
                 self._drop_output()
                 return out
@@ -156,7 +156,7 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
 export PS2="/byexample/sh/ps2> "
 export PS3="/byexample/sh/ps3> "
 export PS4="/byexample/sh/ps4> "
-''', options, timeout=10)
+''', options, timeout=DFL_TIMEOUT)
         self._drop_output() # discard banner and things like that
 
     def shutdown(self):

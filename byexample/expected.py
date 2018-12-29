@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-from .common import log
+from .common import log, DFL_TIMEOUT
 import string, re, time
 
 def regex_name_as_tag_name(name):
@@ -262,7 +262,7 @@ class _RegexExpected(Expected):
                                       expected.str,
                                       got,
                                       min_rcount = 16,
-                                      timeout = 2)
+                                      timeout = DFL_TIMEOUT)
 
     def check_got_output(self, example, got, options, verbosity):
         self.check_good = False

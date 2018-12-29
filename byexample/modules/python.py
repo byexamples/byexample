@@ -17,7 +17,7 @@ Example:
 
 from __future__ import unicode_literals
 import re, pexpect, sys, time
-from byexample.common import log, constant
+from byexample.common import log, constant, DFL_TIMEOUT
 from byexample.parser import ExampleParser, ExtendOptionParserMixin
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
@@ -485,7 +485,7 @@ del _byexample_pprint
     def _change_terminal_geometry(self, rows, cols, options):
         # update the pretty printer with the new columns value
         source = '__byexample_pretty_print.update_width(%i)' % cols
-        self._exec_and_wait(source, options, timeout=2)
+        self._exec_and_wait(source, options, timeout=DFL_TIMEOUT)
         PexepctMixin._change_terminal_geometry(self, rows, cols, options)
 
     def interact(self, example, options):

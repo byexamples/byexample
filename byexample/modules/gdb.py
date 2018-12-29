@@ -8,7 +8,7 @@ Example:
 
 from __future__ import unicode_literals
 import re, pexpect, sys, time
-from byexample.common import constant
+from byexample.common import constant, DFL_TIMEOUT
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
@@ -115,13 +115,13 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
         self._spawn_interpreter(cmd, options)
 
         # gdb will not print the address of a variable by default
-        self._exec_and_wait('set print address off\n', options, timeout=1)
+        self._exec_and_wait('set print address off\n', options, timeout=DFL_TIMEOUT)
 
         # gdb will stop at the first null when printing an array
-        self._exec_and_wait('set print null-stop on\n', options, timeout=1)
+        self._exec_and_wait('set print null-stop on\n', options, timeout=DFL_TIMEOUT)
 
         # gdb will not ask for "yes or no" confirmation
-        self._exec_and_wait('set confirm off\n', options, timeout=1)
+        self._exec_and_wait('set confirm off\n', options, timeout=DFL_TIMEOUT)
 
     def shutdown(self):
         self._shutdown_interpreter()
