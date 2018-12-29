@@ -150,15 +150,24 @@ def parse_args(args=None):
                              "supress the progress output.")
 
     group = parser.add_argument_group("Internal", "Advanced/experimental options.")
-    group.add_argument("-x-dfl-timeout",
-                        default=8,
-                        type=float,
-                        help='timeout in seconds for internal operations (default: %(default)s).')
+    group.add_argument(
+            "-x-dfl-timeout",
+            metavar="TIMEOUT",
+            default=8,
+            type=float,
+            help='timeout in seconds for internal operations (default: %(default)s).')
     group.add_argument(
             "-x-delaybeforesend",
+            metavar="DELAY",
             default=None,
             type=lambda n: None if n == 0 else float(n),
             help="delay in seconds before sending a line to an runner/interpreter; 0 disable this (default).")
+    group.add_argument(
+            "-x-min-rcount",
+            metavar="N",
+            default=16,
+            type=int,
+            help="minimum match length around a capture tag to perform a guess (default: %(default)s).")
     namespace = parser.parse_args(args)
 
     # Some extra checks

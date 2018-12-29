@@ -261,7 +261,7 @@ class _RegexExpected(Expected):
                                       expected.rcounts,
                                       expected.str,
                                       got,
-                                      min_rcount = 16,
+                                      min_rcount = options['x']['min_rcount'],
                                       timeout = options['x']['dfl_timeout'])
 
     def check_got_output(self, example, got, options, verbosity):
