@@ -301,8 +301,8 @@ class PexepctMixin(object):
         if timeout == None:
             timeout = options['timeout']
 
-        # timeout of 0 means do not wait, just do a single read and return back
-        assert timeout >= 0
+        # timeout of 0 or negative means do not wait, just do a single read and return back
+        timeout = max(timeout, 0)
 
         if not prompt_re:
             prompt_re = self.any_PS_re
