@@ -16,18 +16,33 @@ class FileExecutor(object):
         self.options = options
 
     def initialize_runners(self, runners, options):
-        log("Initializing %i runners..." % len(runners),
-                                                    self.verbosity-1)
+        tmp = []
         for runner in runners:
-            log(" - %s" % str(runner), self.verbosity-1)
-            runner.initialize(options)
+            log("Initializing %s" % str(runner), 'chat', self.concerns)
+            try:
+                runner.initialize(options)
+                tmp.append(runner)
+            except:
+                self.shutdown_runners(tmp, stop_on_failure=False)
+                log("Initialization of %s failed." % str(runner), 'error', self.concerns)
+                raise
 
-    def shutdown_runners(self, runners):
-        log("Shutting down %i runners..." % len(runners),
-                                                    self.verbosity-1)
+    def shutdown_runners(self, runners, stop_on_failure=True):
+        tmp = list(runners)
         for runner in runners:
-            log(" - %s" % str(runner), self.verbosity-1)
-            runner.shutdown()
+            log("Shutting down %s" % str(runner), 'chat', self.concerns)
+            try:
+                runner.shutdown()
+                del tmp[0]
+            except:
+                del tmp[0]
+                if stop_on_failure:
+                    self.shutdown_runners(tmp, stop_on_failure=False)
+
+                log("Shutdown of %s failed." % str(runner), 'error', self.concerns)
+
+                if stop_on_failure:
+                    raise
 
     def __repr__(self):
         return 'File Executor'
