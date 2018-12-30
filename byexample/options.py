@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import collections, argparse, shlex, pprint
+import collections, argparse, shlex, pprint, sys
 
 class Options(collections.MutableMapping):
     r'''
@@ -297,7 +297,8 @@ class OptionParser(argparse.ArgumentParser):
         kw.setdefault('add_help', False)
 
         # do not allow for abbreviations of long options
-        kw.setdefault('allow_abbrev', False)
+        if sys.version_info[:2] >= (3, 5):
+            kw.setdefault('allow_abbrev', False)
 
         argparse.ArgumentParser.__init__(self, **kw)
         self.__defaults = {}
