@@ -151,9 +151,12 @@ class SimpleReporter(Concern):
 
     def start_parse(self, example, options):
         self.current_parsing_example = example
+        self.finish_parse_called = False
 
     def finish_parse(self, example, options, exception):
-        self.examplenro += 1
+        if not self.finish_parse_called:
+            self.examplenro += 1
+            self.finish_parse_called = True
 
         if exception == None:
             return
