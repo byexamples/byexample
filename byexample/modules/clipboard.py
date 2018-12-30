@@ -7,8 +7,10 @@ stability = 'experimental'
 
 class PasteError(Exception):
     def __init__(self, example, missing):
-        msg = "You enabled the 'paste' mode and I found some tags that you did not captured before." \
-              "\nMay be it is a misspelling of: %s" % ', '.join(missing)
+        n = "tag is" if len(missing) == 1 else "tags are"
+        msg = "You enabled the 'paste' mode and I found some tags\nthat you did not captured before:\n  %s" \
+              "\nMay be the example from where you copied was skipped or" \
+              "\nmay be the %s misspelled." % (', '.join(missing), n)
 
         Exception.__init__(self, msg)
 
@@ -45,8 +47,15 @@ class Clipboard(Concern):
 
         # do not check for missings: we assume that they are capture tags
 
-    def start_example(self, example, options):
-        if not options['paste']:
+    def finish_parse(self, example, options, exception):
+        if exception is not None:
+            return
+
+        options.up(example.options)
+        paste = options['paste']
+        options.down()
+
+        if not paste:
             return
 
         missing = []
