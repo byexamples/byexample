@@ -203,6 +203,24 @@ class SimpleReporter(Concern):
 
         self.fail += 1
 
+    def event(self, what, **data):
+        if what == 'log':
+            level = data['level']
+            if level == 'error':
+                hdr = colored("Err:", 'red', self.use_colors)
+            elif level == 'chat':
+                if self.verbosity < 2:
+                    return
+                hdr = colored("Chat:", 'cyan', self.use_colors)
+            elif level == 'warn':
+                hdr = colored("Warn:", 'yellow', self.use_colors)
+            else:
+                return
+
+            msg = "%s %s\n" % (hdr, data['msg'])
+            self._write(msg)
+
+
     def _error_header(self, example):
         filepath = example.filepath
         lineno = example.start_lineno
@@ -233,6 +251,8 @@ class ProgressBarReporter(SimpleReporter):
         else:
             self.target = 'progress'
 
+        self.bar = None
+
     def _clear_all_bars(self):
         ''' Based on tqdm.clear method '''
         # Notes:
@@ -252,9 +272,12 @@ class ProgressBarReporter(SimpleReporter):
 
     def _write(self, msg):
         with self.write_lock:
-            self._clear_all_bars()
-            self.bar.write(msg, file=self.output, end="")
-            self.output.flush()
+            if self.bar is None:
+                SimpleReporter._write(self, msg)
+            else:
+                self._clear_all_bars()
+                self.bar.write(msg, file=self.output, end="")
+                self.output.flush()
 
     def _update(self, x):
         self.bar.update(x)
@@ -281,6 +304,7 @@ class ProgressBarReporter(SimpleReporter):
     def finish(self, failed, user_aborted, crashed, broken, timedout):
         SimpleReporter.finish(self, failed, user_aborted, crashed, broken, timedout)
         self.bar.close()
+        self.bar = None
 
     def start_example(self, example, options):
         SimpleReporter.start_example(self, example, options)

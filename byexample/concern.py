@@ -242,6 +242,13 @@ class Concern(ExtendOptionParserMixin):
         '''
         pass    # pragma: no cover
 
+    def event(self, what, **data):
+        '''
+        Called on arbitrary moments, for arbitrary reasons defined
+        in <what> and optionally in <data>.
+        '''
+        pass    # pragma: no cover
+
 class ConcernComposite(Concern):
     def __init__(self, registry, **unused):
         self.concerns = registry['concerns'].values()
