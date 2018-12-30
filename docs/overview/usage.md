@@ -90,54 +90,72 @@ The help included in ``byexample`` should give you a quick overview of its
 capabilities
 
 ```
-$ byexample -h                                          # byexample: +norm-ws
-usage: <byexample> [-h] [-V] [--ff] [--dry] [--skip file [file ...]] [-m dir]
-            [-d {none,unified,ndiff,context}] [--no-enhance-diff] -l language
-            [--timeout TIMEOUT] [-o OPTIONS_STR] [--show-options]
-            [--encoding ENCODING] [--pretty {none,all}]
-            [--shebang runner:shebang] [-j JOBS] [-v | -q]
-            [file [file ...]]
+$ byexample -h                                # byexample: +norm-ws -tags +rm=~
+usage: byexample -l <languages> [--ff] [--timeout <secs>] [-j <n>] [--dry]
+                 [--skip <file> [<file> ...]]
+                 [-d {none,unified,ndiff,context}] [--no-enhance-diff]
+                 [-o <options>] [--show-options] [-m <dir>] [--encoding <enc>]
+                 [--pretty {none,all}] [-V] [-v | -q] [-h | -xh]
+~
+Write snippets of code in C++, Python, Ruby, and others as documentation and
+execute them as regression tests.
+~
 positional arguments:
-  file                  file that have the examples to run.
-optional arguments:
-  -h, --help            show this help message and exit
-  -V, --version         show <...> version and license, then exit
+  <file>                files that have the examples to run.
+~
+Language Selection:
+  -l <languages>, --language <languages>, --languages <languages>
+                        select which languages to parse and run. Comma
+                        separated syntax is also accepted.
+~
+Execution Options:
   --ff, --fail-fast     if an example fails, fail and stop all the execution.
+  --timeout <secs>      timeout in seconds to complete each example (2 by
+                        default); this can be changed per example with this
+                        option.
+  -j <n>, --jobs <n>    run <n> jobs in parallel (1 by default); <n> can be an
+                        integer or the string "cpu" or "cpu<n>": "cpu" means
+                        use all the cpus available; "cpu<n>" multiply it by
+                        <n> the cpus available.
   --dry                 do not run any example, only parse them.
-  --skip file [file ...]
+  --skip <file> [<file> ...]
                         skip these files
-  -m dir, --modules dir
-                        append a directory for searching modules there.
+~
+Diff Options:
   -d {none,unified,ndiff,context}, --diff {none,unified,ndiff,context}
                         select diff algorithm.
   --no-enhance-diff     by default, improves are made so the diff are easier
                         to to understand: non-printable characters are
                         visible; captured string shown, and more; this flag
                         disables all of that.
-  -l language, --language language
-                        select which languages to parse and run. Comma
-                        separated syntax is also accepted.
-  --timeout TIMEOUT     timeout in seconds to complete each example (2 by
-                        default); this can be changed per example with this
-                        option.
-  -o OPTIONS_STR, --options OPTIONS_STR
+~
+Miscellaneous Options:
+  -o <options>, --options <options>
                         add additional options; see --show-options to list
                         them.
   --show-options        show the available options for the selected languages
                         (with -l)
-  --encoding ENCODING   select the encoding; use the same encoding of stdout
-                        by default)
+  -m <dir>, --modules <dir>
+                        append a directory for searching modules there.
+  --encoding <enc>      select the encoding (default: UTF-8).
   --pretty {none,all}   control how to pretty print the output.
-  --shebang runner:shebang
-                        change the command line of the given <runner> by
-                        <shebang>; the tokens %e %p %a are replaced by the
-                        default values for environment, program name, and
-                        arguments (however no all the runners will honor this
-                        and some may break).
-  -j JOBS, --jobs JOBS  run <jobs> in parallel (1 default); "cpu" means use
-                        all the cpus available; "cpu<...>" multiply it by <n>
-                        the cpus available.
+  -V, --version         show byexample's version and license, then exit
+~
+Logging:
   -v                    verbosity level, add more flags to increase the level.
   -q, --quiet           quiet mode, do not print anything even if an example
-                        fails; supress the progress output.
+                        fails; suppress the progress output.
+~
+Help Options:
+  -h, --help            show this help message and exit
+  -xh                   show this help message plus the one for the advanced
+                        options and exit
+~
+Examples:
+  byexample -l python file.py
+  byexample -l python,ruby --ff --timeout=8 file.md
+  byexample -l python,ruby --show-options
+~
+See https://github.com/byexamples/byexample for the full documentation
+and more examples.
 ```

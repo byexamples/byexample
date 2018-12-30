@@ -137,9 +137,14 @@ class SM(object):
 
             Duplicated names are not allowed
             >>> sm.push(6, '<sax>')
-            >>> sm.emit_tag(ctx='0', endline=False)
+            >>> sm.emit_tag(ctx='0', endline=False)         # byexample: +rm=~
             Traceback<...>
-            ValueError: The named capture tag 'sax' is repeated in the 6th character.
+            ValueError: The same capture tag cannot be used twice
+            and 'sax' is repeated at the 6th character.
+            ~
+            May be you wanted to paste them and you forgot
+            '+paste' or may be you want to treat them as literals
+            and you forgot '-tags'.
 
             The regexs are non-greedy by default with one exception: if
             the tag is unamed and it its at the end of a line
@@ -156,8 +161,11 @@ class SM(object):
         self.tags_by_idx[len(self.results)] = name
 
         if name in self.names_seen:
-            msg = "The named capture tag '%s' is repeated in " +\
-                  "the %ith character."
+            msg = "The same capture tag cannot be used twice\n"+\
+                  "and '%s' is repeated at the %ith character.\n\n"+\
+                  "May be you wanted to paste them and you forgot\n"+\
+                  "'+paste' or may be you want to treat them as literals\n"+\
+                  "and you forgot '-tags'."
 
             raise ValueError(msg % (name, charno))
 
