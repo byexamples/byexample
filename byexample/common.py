@@ -30,13 +30,17 @@ def build_where_msg(where, owner, msg=None, use_colors=False):
     return ''.join(tmp)
 
 
-def log(msg, x):
-    if x >= 0:
-        print(msg)
+def log(msg, lvl, concerns=None):
+    if isinstance(lvl, int):
+        if lvl >= 0:
+            print(msg)
+
+    else:
+        concerns.event('log', msg=msg, level=lvl)
 
 def colored(s, color, use_colors):
     if use_colors:
-        c = {'green': 32, 'red': 31, 'yellow': 33}[color]
+        c = {'green': 32, 'red': 31, 'yellow': 33, 'cyan': 36}[color]
         return "\033[%sm%s\033[0m" % (c, s)
     else:
         return s

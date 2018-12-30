@@ -58,6 +58,75 @@ def _jobs_type(item):
 
     return jobs_num * ncpus
 
+class HelpExtraFormatter(argparse.HelpFormatter):
+    __hide = True
+    EPILOG = "==EPILOG=="
+
+    def __init__(self, *args, **kargs):
+        argparse.HelpFormatter.__init__(self, *args, **kargs)
+        self.__hidding_section = False
+
+    @classmethod
+    def hide(cls):
+        cls.__hide = True
+
+    @classmethod
+    def unhide(cls):
+        cls.__hide = False
+
+    def start_section(self, heading, *args, **kargs):
+        if heading == 'Advanced Options' and self.__hide:
+            self.__hidding_section = True
+        else:
+            argparse.HelpFormatter.start_section(self, heading, *args, **kargs)
+
+    def end_section(self, *args, **kargs):
+        if self.__hidding_section:
+            self.__hidding_section = False
+        else:
+            argparse.HelpFormatter.end_section(self, *args, **kargs)
+
+    def add_text(self, text, *args, **kargs):
+        if not self.__hidding_section:
+            if text == self.EPILOG:
+                self.__add_examples()
+            else:
+                argparse.HelpFormatter.add_text(self, text, *args, **kargs)
+
+    def add_argument(self, *args, **kargs):
+        if not self.__hidding_section:
+            argparse.HelpFormatter.add_argument(self, *args, **kargs)
+
+    def add_arguments(self, *args, **kargs):
+        if not self.__hidding_section:
+            argparse.HelpFormatter.add_arguments(self, *args, **kargs)
+
+    def add_usage(self, usage, actions, *args, **kargs):
+        if self.__hide:
+            actions = list(filter(lambda a: a.option_strings and not a.option_strings[0].startswith('-x-'), actions))
+        argparse.HelpFormatter.add_usage(self, usage, actions, *args, **kargs)
+
+    def __add_examples(self):
+        def raw_print(text):
+            return text
+
+        self.start_section("Examples")
+        self._add_item(raw_print, ["  byexample -l python file.py\n"])
+        self._add_item(raw_print, ["  byexample -l python,ruby --ff --timeout=8 file.md\n"])
+        self._add_item(raw_print, ["  byexample -l python,ruby --show-options\n"])
+        self._add_item(raw_print, ["\n"])
+        self._add_item(raw_print, ["See %s for the full documentation\nand more examples.\n" % _url])
+        self.end_section()
+
+
+class _HelpExtraAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        if option_string == "-xh":
+            HelpExtraFormatter.unhide()
+        parser.print_help()
+        parser.exit()
+
+
 def parse_args(args=None):
     '''Parse the arguments args and return the them.
        If args is None, parse the sys.argv[1:].
@@ -66,8 +135,118 @@ def parse_args(args=None):
     search_default = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modules')
 
     python_version = sys.version.split(' ', 1)[0]
-    parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
-    parser.add_argument('-V', '--version', nargs=0, action=_Print,
+    parser = argparse.ArgumentParser(
+            fromfile_prefix_chars='@',
+            add_help=False,
+            formatter_class=HelpExtraFormatter,
+            description=__doc__,
+            epilog=HelpExtraFormatter.EPILOG)
+
+    parser.add_argument(
+            "files",
+            nargs='*',
+            metavar='<file>',
+            help="files that have the examples to run.")
+
+    g = parser.add_argument_group("Language Selection")
+    g.add_argument(
+            "-l",
+            "--language",
+            "--languages",
+            metavar='<languages>',
+            dest='languages',
+            action=_CSV,
+            required=True,
+            default=[],
+            help='select which languages to parse and run. '+
+                 'Comma separated syntax is also accepted.')
+
+    g = parser.add_argument_group("Execution Options")
+    g.add_argument(
+            "--ff",
+            "--fail-fast",
+            action='store_true',
+            dest='fail_fast',
+            help="if an example fails, fail and stop all the execution.")
+    g.add_argument(
+            "--timeout",
+            metavar='<secs>',
+            default=2,
+            type=float,
+            help='timeout in seconds to complete each example (%(default)s by default); ' + \
+                 'this can be changed per example with this option.')
+    g.add_argument(
+            "-j",
+            "--jobs",
+            metavar='<n>',
+            default=1,
+            type=_jobs_type,
+            help='run <n> jobs in parallel (%(default)s by default); ' +\
+                 '<n> can be an integer or the string "cpu" or "cpu<n>": ' +\
+                 '"cpu" means use all the cpus available; ' +\
+                 '"cpu<n>" multiply it by <n> the cpus available.')
+    g.add_argument(
+            "--dry",
+            action='store_true',
+            help="do not run any example, only parse them.")
+    g.add_argument(
+            "--skip",
+            nargs='+',
+            metavar='<file>',
+            default=[],
+            help='skip these files')
+
+    g = parser.add_argument_group("Diff Options")
+    g.add_argument(
+            "-d",
+            "--diff",
+            choices=['none', 'unified', 'ndiff', 'context'],
+            default='none',
+            help='select diff algorithm.')
+    g.add_argument(
+            "--no-enhance-diff",
+            action='store_false',
+            dest='enhance_diff',
+            help='by default, improves are made so the diff are easier to ' +\
+                 'to understand: non-printable characters are visible; ' +\
+                 'captured string shown, and more; ' +\
+                 'this flag disables all of that.')
+
+    g = parser.add_argument_group("Miscellaneous Options")
+    g.add_argument(
+            "-o",
+            "--options",
+            metavar='<options>',
+            dest='options_str',
+            default="",
+            help='add additional options; see --show-options to list them.')
+    g.add_argument(
+            "--show-options",
+            action='store_true',
+            help="show the available options for the selected languages (with -l)")
+    g.add_argument(
+            "-m",
+            "--modules",
+            action='append',
+            metavar='<dir>',
+            dest='modules_dirs',
+            default=[search_default],
+            help='append a directory for searching modules there.')
+    g.add_argument(
+            "--encoding",
+            metavar='<enc>',
+            default=sys.stdout.encoding,
+            help='select the encoding (default: %(default)s).')
+    g.add_argument(
+            "--pretty",
+            choices=['none', 'all'],
+            default='all',
+            help="control how to pretty print the output.")
+    g.add_argument(
+            '-V',
+            '--version',
+            nargs=0,
+            action=_Print,
             message='{prog} {version} (Python {python_version}) - {license}\n\n{doc}'
                     '\n\n{license_disclaimer}'.format(
                                 prog=parser.prog,
@@ -78,77 +257,68 @@ def parse_args(args=None):
                                 license_disclaimer=_license_disclaimer.format(
                                         author=_author,
                                         url=_url)),
-                        help='show %(prog)s\'s version and license, then exit')
-    parser.add_argument("files", nargs='*', metavar='file',
-                        help="file that have the examples to run.")
-    parser.add_argument("--ff", "--fail-fast", action='store_true',
-                        dest='fail_fast',
-                        help="if an example fails, fail and stop all the execution.")
-    parser.add_argument("--dry", action='store_true',
-                        help="do not run any example, only parse them.")
-    parser.add_argument("--skip", nargs='+', metavar='file', default=[],
-                        help='skip these files')
-    parser.add_argument("-m", "--modules", action='append', metavar='dir',
-                        dest='modules_dirs',
-                        default=[search_default],
-                        help='append a directory for searching modules there.')
-    parser.add_argument("-d", "--diff", choices=['none', 'unified', 'ndiff', 'context'],
-                        default='none',
-                        help='select diff algorithm.')
-    parser.add_argument("--no-enhance-diff", action='store_false',
-                        dest='enhance_diff',
-                        help='by default, improves are made so the diff are easier to ' +\
-                             'to understand: non-printable characters are visible; ' +\
-                             'captured string shown, and more; ' +\
-                             'this flag disables all of that.')
-    parser.add_argument("-l", "--language", metavar='language',
-                        dest='languages',
-                        action=_CSV,
-                        required=True,
-                        default=[],
-                        help='select which languages to parse and run. '+
-                             'Comma separated syntax is also accepted.')
-    parser.add_argument("--timeout",
-                        default=2,
-                        type=float,
-                        help='timeout in seconds to complete each example (2 by default); ' + \
-                             'this can be changed per example with this option.')
-    parser.add_argument("-o", "--options",
-                        dest='options_str',
-                        default="",
-                        help='add additional options; see --show-options to list them.')
-    parser.add_argument("--show-options", action='store_true',
-                        help="show the available options for the selected languages (with -l)")
-    parser.add_argument("--encoding",
-                        default=sys.stdout.encoding,
-                        help='select the encoding; ' + \
-                             'use the same encoding of stdout by default)')
-    parser.add_argument("--pretty", choices=['none', 'all'],
-                        default='all',
-                        help="control how to pretty print the output.")
-    parser.add_argument("--shebang", action='append', metavar='runner:shebang',
-                        dest='shebangs',
-                        default=[],
-                        type=_key_val_type,
-                        help='change the command line of the given <runner> by ' + \
-                             '<shebang>; the tokens %%e %%p %%a are replaced by ' + \
-                             'the default values for environment, program name, ' + \
-                             'and arguments (however no all ' + \
-                             'the runners will honor this and some may break).')
-    parser.add_argument("-j", "--jobs",
-                        default=1,
-                        type=_jobs_type,
-                        help='run <jobs> in parallel (1 default); ' +\
-                             '"cpu" means use all the cpus available; ' +\
-                             '"cpu<n>" multiply it by <n> the cpus available.')
+            help='show %(prog)s\'s version and license, then exit')
 
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("-v", action='count', dest='verbosity', default=0,
-                        help="verbosity level, add more flags to increase the level.")
-    group.add_argument("-q", "--quiet", action='store_true',
-                        help="quiet mode, do not print anything even if an example fails; "
-                             "supress the progress output.")
+    g = parser.add_argument_group("Logging")
+    mutexg = g.add_mutually_exclusive_group()
+    mutexg.add_argument(
+            "-v",
+            action='count',
+            dest='verbosity',
+            default=0,
+            help="verbosity level, add more flags to increase the level.")
+    mutexg.add_argument(
+            "-q",
+            "--quiet",
+            action='store_true',
+            help="quiet mode, do not print anything even if an example fails; "
+                 "suppress the progress output.")
 
+    g = parser.add_argument_group("Help Options")
+    mutexg = g.add_mutually_exclusive_group()
+    mutexg.add_argument(
+            '-h',
+            '--help',
+            nargs=0,
+            action=_HelpExtraAction,
+            help='show this help message and exit')
+    mutexg.add_argument(
+            '-xh',
+            nargs=0,
+            action=_HelpExtraAction,
+            help="show this help message plus the one for the advanced options and exit")
+
+    g = parser.add_argument_group("Advanced Options")
+    g.add_argument(
+            "-x-shebang",
+            action='append',
+            metavar='<runner>:<shebang>',
+            dest='shebangs',
+            default=[],
+            type=_key_val_type,
+            help='change the command line of the given <runner> by ' + \
+                 '<shebang>; the tokens %%e %%p %%a are replaced by ' + \
+                 'the default values for environment, program name, ' + \
+                 'and arguments (however no all ' + \
+                 'the runners will honor this and some may break).')
+    g.add_argument(
+            "-x-dfl-timeout",
+            metavar="<secs>",
+            default=8,
+            type=float,
+            help='timeout in seconds for internal operations (default: %(default)s).')
+    g.add_argument(
+            "-x-delaybeforesend",
+            metavar="<secs>",
+            default=None,
+            type=lambda n: None if n == 0 else float(n),
+            help="delay in seconds before sending a line to an runner/interpreter; 0 disable this (default).")
+    g.add_argument(
+            "-x-min-rcount",
+            metavar="<n>",
+            default=16,
+            type=int,
+            help="minimum match length around a capture tag to perform a guess (default: %(default)s).")
     namespace = parser.parse_args(args)
 
     # Some extra checks

@@ -114,14 +114,16 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
         self._spawn_interpreter(cmd, options)
 
+        dfl_timeout = options['x']['dfl_timeout']
+
         # gdb will not print the address of a variable by default
-        self._exec_and_wait('set print address off\n', options, timeout=1)
+        self._exec_and_wait('set print address off\n', options, timeout=dfl_timeout)
 
         # gdb will stop at the first null when printing an array
-        self._exec_and_wait('set print null-stop on\n', options, timeout=1)
+        self._exec_and_wait('set print null-stop on\n', options, timeout=dfl_timeout)
 
         # gdb will not ask for "yes or no" confirmation
-        self._exec_and_wait('set confirm off\n', options, timeout=1)
+        self._exec_and_wait('set confirm off\n', options, timeout=dfl_timeout)
 
     def shutdown(self):
         self._shutdown_interpreter()

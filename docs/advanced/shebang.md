@@ -59,11 +59,11 @@ Done
 Yes, changing the example solves this but what happen if you cannot change it?
 
 What you can do is to redirect the standard error of the interpreter,
-``python`` in this case, using the ``shebang`` option:
+``python`` in this case, using the ``-x-shebang`` option:
 
 ```
 $ byexample -l python \
->   --shebang "python:/bin/sh -c '%e %p %a 2>/dev/null'"  \
+>   -x-shebang "python:/bin/sh -c '%e %p %a 2>/dev/null'"  \
 >   test/ds/blog-database
 <...>
 [PASS] Pass: 4 Fail: 0 Skip: 0

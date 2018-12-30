@@ -56,35 +56,10 @@ from __future__ import unicode_literals
 import re, pexpect, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
-from byexample.finder import ExampleFinder, ZoneDelimiter
+from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
 
 stability = 'experimental'
-
-class RubyCommentDelimiter(ZoneDelimiter):
-    target = {'.rb'}
-
-    @constant
-    def zone_regex(self):
-        return re.compile(r'''
-            # Begin with a # marker
-            ^[ ]*
-             \#
-
-             # then, grab everything that begins with a #
-             # until we cannot do it anymore
-             (?P<zone>  .*$\n?                  # first line
-                        (?:[ ]* \# .*$\n?)*     # the rest of the lines
-                    )
-            ''', re.MULTILINE | re.VERBOSE)
-
-    @constant
-    def leading_sharp(self):
-        return re.compile(r'^[ ]*#', re.MULTILINE)
-
-    def get_zone(self, match, where):
-        zone = ZoneDelimiter.get_zone(self, match, where)
-        return self.leading_sharp().sub(' ', zone)
 
 class RubyPromptFinder(ExampleFinder):
     target = 'ruby-prompt'
@@ -132,7 +107,7 @@ class RubyParser(ExampleParser):
                                                     re.MULTILINE)
 
     def extend_option_parser(self, parser):
-        parser.add_flag("ruby-pretty-print", help="enable the pretty print enhancement.")
+        parser.add_flag("ruby-pretty-print", default=True, help="enable the pretty print enhancement.")
         parser.add_argument("+ruby-expr-print", choices=['auto', 'true', 'false'],
                             default='auto',
                             help='print the expression\'s value (true); ' +\
@@ -188,7 +163,7 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
                     }
 
     def initialize(self, options):
-        ruby_pretty_print = options.get('ruby_pretty_print', True)
+        ruby_pretty_print = options['ruby_pretty_print']
 
         # always/yes; never/no; autoetect normalization
         self.expr_print_mode = options['ruby_expr_print']
@@ -201,20 +176,22 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         # run!
         self._spawn_interpreter(cmd, options)
 
+        dfl_timeout = options['x']['dfl_timeout']
+
         # set the pretty print inspector
         if ruby_pretty_print:
             self._exec_and_wait('IRB.CurrentContext.inspect_mode = :pp\n',
                                     options,
-                                    timeout=2)
+                                    timeout=dfl_timeout)
 
         # disable the echo if we don't want it (false) or we may want it
         # but it will depend on the example (auto)
         if self.expr_print_mode in ('auto', 'false'):
             self._exec_and_wait('IRB.CurrentContext.echo = false\n',
-                                    options, timeout=2)
+                                    options, timeout=dfl_timeout)
         else:
             self._exec_and_wait('IRB.CurrentContext.echo = true\n',
-                                    options, timeout=2)
+                                    options, timeout=dfl_timeout)
 
     def shutdown(self):
         self._shutdown_interpreter()

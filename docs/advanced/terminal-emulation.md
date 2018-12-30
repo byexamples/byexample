@@ -123,7 +123,7 @@ that use ``ncurses``) and require a terminal emulator.
 Examples of this are programs like ``less``, ``more``, ``top`` and ``man``.
 
 ```shell
-$ less test/ds/python-tutorial.v2.md # byexample: +term=ansi +rm=~ +stop-on-silence
+$ less test/ds/python-tutorial.v2.md # byexample: +term=ansi +rm=~ +stop-on-timeout
 ~This is a 101 Python tutorial
 ~The following is an example written in Python about arithmetics
 ~

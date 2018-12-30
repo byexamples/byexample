@@ -33,6 +33,7 @@ def main(args=None):
         from .init import init
 
         args = parse_args(args)
+
         dry = args.dry
         human_args = [args.verbosity, args.quiet]
         with human_exceptions('During the initialization phase:', *human_args) as exc:

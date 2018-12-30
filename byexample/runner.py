@@ -141,7 +141,10 @@ class PexepctMixin(object):
         self.last_output = []
 
     def _spawn_interpreter(self, cmd, options, wait_first_prompt=True,
-                                        first_prompt_timeout=10):
+                                        first_prompt_timeout=None):
+        if first_prompt_timeout is None:
+            first_prompt_timeout = options['x']['dfl_timeout']
+
         rows, cols = options['geometry']
         self._terminal_default_geometry = (rows, cols)
 
@@ -153,7 +156,7 @@ class PexepctMixin(object):
                                                 encoding=self.encoding,
                                                 dimensions=(rows, cols),
                                                 env=env)
-        self.interpreter.delaybeforesend = options['delaybeforesend']
+        self.interpreter.delaybeforesend = options['x']['delaybeforesend']
         self.interpreter.delayafterread = None
 
         self._create_terminal(options)
@@ -288,7 +291,7 @@ class PexepctMixin(object):
     def _emulate_as_is_terminal(self, chunks):
         return ''.join((self._universal_new_lines(chunk) for chunk in chunks))
 
-    def _expect_prompt(self, options, timeout=None, prompt_re=None):
+    def _expect_prompt(self, options, timeout, prompt_re=None):
         ''' Wait for a <prompt_re> (any self.any_PS_re if <prompt_re> is None)
             and raise a timeout if we cannot find one.
 
@@ -298,11 +301,8 @@ class PexepctMixin(object):
         if timeout == None:
             timeout = options['timeout']
 
-        _timeout_msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s"
-        if timeout <= 0:
-            out = self._get_output(options)
-            raise TimeoutException(_timeout_msg % ''.join(self.last_output)[-1000:],
-                                    out)
+        # timeout of 0 or negative means do not wait, just do a single read and return back
+        timeout = max(timeout, 0)
 
         if not prompt_re:
             prompt_re = self.any_PS_re
@@ -314,9 +314,10 @@ class PexepctMixin(object):
         self.last_output.append(self.interpreter.before)
 
         if what == Timeout:
+            msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s"
+            msg = msg % ''.join(self.last_output)[-1000:]
             out = self._get_output(options)
-            raise TimeoutException(_timeout_msg % ''.join(self.last_output)[-1000:],
-                                    out)
+            raise TimeoutException(msg, out)
 
 
     def _get_output(self, options):

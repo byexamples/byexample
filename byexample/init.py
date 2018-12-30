@@ -142,12 +142,6 @@ def get_encoding(encoding, verbosity):
     log("Encoding: %s." % encoding, verbosity-2)
     return encoding
 
-def _float_zero_to_none(x):
-    if x == 0:
-        return None
-
-    return float(x)
-
 def geometry(x):
     lines, columns = [int(v.strip()) for v in str(x).split('x')]
     if lines < 0 or columns < 0:
@@ -157,22 +151,55 @@ def geometry(x):
 
 def get_default_options_parser(cmdline_args):
     options_parser = OptionParser()
-    options_parser.add_flag("fail-fast", help="if an example fails, fail and stop all the execution.")
-    options_parser.add_flag("norm-ws", help="ignore the amount of whitespaces.")
-    options_parser.add_flag("pass", help="run the example but do not check its output.")
-    options_parser.add_flag("skip", help="do not run the example.")
-    options_parser.add_flag("tags", help="enable the tags <...>.")
-    options_parser.add_flag("enhance-diff", help="improve how the diff are shown.")
-    options_parser.add_argument("+rm", action='append', help="remove a character from the got and expected strings.")
-    options_parser.add_argument("+timeout", type=float, help="timeout in seconds to complete the example.")
-    options_parser.add_argument("+diff", choices=['none', 'unified', 'ndiff', 'context'],
-                                        help="select diff algorithm.")
-    options_parser.add_argument("+delaybeforesend", type=_float_zero_to_none,
-                                    help="delay in seconds before sending a line to an runner/interpreter; 0 disable this (default).")
-    options_parser.add_argument("+geometry", type=geometry,
-                                    help="number of lines and columns of the terminal of the form LxC (default to 24x80).")
-    options_parser.add_argument("+term", choices=['as-is', 'dumb', 'ansi'],
-                                        help="select a terminal emulator to interpret the output (default to 'dumb').")
+    options_parser.add_flag(
+            "fail-fast",
+            default=cmdline_args.fail_fast,
+            help="if an example fails, fail and stop all the execution.")
+    options_parser.add_flag(
+            "norm-ws",
+            default=False,
+            help="ignore the amount of whitespaces.")
+    options_parser.add_flag(
+            "pass",
+            default=False,
+            help="run the example but do not check its output.")
+    options_parser.add_flag(
+            "skip",
+            default=False,
+            help="do not run the example.")
+    options_parser.add_flag(
+            "tags",
+            default=True,
+            help="enable the tags <...>.")
+    options_parser.add_flag(
+            "enhance-diff",
+            default=cmdline_args.enhance_diff,
+            help="improve how the diff are shown.")
+    options_parser.add_argument(
+            "+rm",
+            default=[],
+            action='append',
+            help="remove a character from the got and expected strings.")
+    options_parser.add_argument(
+            "+timeout",
+            default=cmdline_args.timeout,
+            type=float,
+            help="timeout in seconds to complete the example.")
+    options_parser.add_argument(
+            "+diff",
+            default=cmdline_args.diff,
+            choices=['none', 'unified', 'ndiff', 'context'],
+            help="select diff algorithm.")
+    options_parser.add_argument(
+            "+geometry",
+            default=(24, 80),
+            type=geometry,
+            help="number of lines and columns of the terminal of the form LxC (default to 24x80).")
+    options_parser.add_argument(
+            "+term",
+            default='dumb',
+            choices=['as-is', 'dumb', 'ansi'],
+            help="select a terminal emulator to interpret the output (default to 'dumb').")
 
     return options_parser
 
@@ -180,27 +207,18 @@ def get_default_options_parser(cmdline_args):
 def get_options(args, cfg):
     # the options object should have a set of default values based
     # on the flags and values from the command line.
-    options = Options({ 'fail_fast': args.fail_fast,
-                        'norm_ws': False,
-                        'pass': False,
-                        'skip': False,
-                        'tags': True,
-                        'rm': [],
-                        'enhance_diff': args.enhance_diff,
+    options = Options({
                         'interact': False,
-                        'timeout': args.timeout,
-                        'diff': args.diff,
-                        'delaybeforesend': None,
                         'shebangs': args.shebangs,
-                        'geometry': (24, 80),
-                        'term': 'dumb'
                         })
     log("Options (cmdline): %s" % options, cfg['verbosity']-2)
 
     # create a parser for the rest of the options.
     optparser = get_default_options_parser(args)
     options['optparser'] = optparser
+    options.update(optparser.defaults())
 
+    log("Options (cmdline + byexample's defaults): %s" % options, cfg['verbosity']-2)
     # we parse the argument 'options' to allow the user to change
     # some options.
     #
@@ -223,7 +241,13 @@ def get_options(args, cfg):
     # completed later
     cfg['options']= options
 
-    log("Options (cmdline + --options): %s" % options, cfg['verbosity']-2)
+    log("Options (cmdline + byexample's defaults + --options): %s" % options, cfg['verbosity']-2)
+
+    options['x'] = {}
+    for k, v in vars(args).items():
+        if k.startswith('x_'):
+            options['x'][k[2:]] = v
+
     return options
 
 def show_options(cfg, registry, allowed_languages):
@@ -254,6 +278,12 @@ def extend_option_parser_with_concerns(cfg, registry):
     # starting from the byexample's one
     optparser = cfg['options']['optparser']
     for concern in concerns:
+        # update the options with the concerns's default ones and
+        # only with them; only after this merge concerns's parser with
+        # the previous parser
+        concern_optparser = concern.get_extended_option_parser(parent_parser=None)
+        cfg['options'].update(concern_optparser.defaults())
+
         optparser = concern.get_extended_option_parser(optparser)
 
     cfg['options']['optparser'] = optparser
@@ -263,6 +293,12 @@ def extend_options_with_language_specific(cfg, registry, allowed_languages):
     parsers = [p for p in registry['parsers'].values()
                if p.language in allowed_languages]
 
+    # update the defaults for all the parsers
+    for parser in parsers:
+        parser_optparser = parser.get_extended_option_parser(parent_parser=None)
+        cfg['options'].update(parser_optparser.defaults())
+
+    # update again but with the options that *may* had set in the command line
     for parser in parsers:
         opts = parser.extract_cmdline_options(cfg['opts_from_cmdline'])
         cfg['options'].update(opts)

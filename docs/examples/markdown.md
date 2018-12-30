@@ -22,6 +22,12 @@ you will not see it):
 4
 -->
 
+One line comments are ok but useless:
+
+<!-- -->
+
+<!-- >> 2 + 2 -->
+
 ### Final comments
 
 > This is not a Javascript example

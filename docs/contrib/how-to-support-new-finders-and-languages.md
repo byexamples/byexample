@@ -152,7 +152,7 @@ Let's see if our finder can find the ArnoldC snippet above.
 >>> finder = ArnoldCFinder(0, 'utf-8')
 
 >>> filepath = 'docs/contrib/how-to-support-new-finders-and-languages.md'
->>> where = (0,1,filepath)
+>>> where = (0,1,filepath,None)
 >>> matches = finder.get_matches(open(filepath, 'r').read())
 >>> matches = list(matches)
 
@@ -223,28 +223,20 @@ own specific options (``ArnoldC``'s specific).
 ```python
 >>> def extend_option_parser(parser):
 ...     parser.add_flag("awesome")
-...     parser.add_flag("norm-ws", default=False)
-...     parser.add_flag("tags", default=True)
-...     parser.add_argument("+rm", action='append', default=[])
 ```
 
 See the documentation of the class [OptionParser](https://github.com/byexamples/byexample/tree/master/byexample/options.py)
 for more information.
 
 > *Note:* the ``extend_option_parser`` in theory is called once for each
-> example. However ``byexample`` calls it just once for the entire execution
-> and caches the result for performance reasons.
+> example. However ``byexample`` calls it as few times as possible
+> for performance reasons.
 >
-> It is possible to tweak this or even to disable the cache entirely if you
-> have to.
+> The extraction and parsing of the options are cached: if two examples
+> have the same options, they are parsed once and therefor
+> the parser itself is extended just once.
 >
-> See ``PythonParser`` in [byexample/modules/python.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/python.py)
-> for an example of this.
->
-> In the same line, the extraction and parsing of the options are also cached.
-> If two examples have the same options, they are parsed once.
->
-> If you need to tweak or disable this you could override
+> If you need to tweak or disable this you could override methods of
 > the class [ExampleParser](https://github.com/byexamples/byexample/tree/master/byexample/parser.py)
 
 ### The Parser class
@@ -273,11 +265,12 @@ should not from the command line with the flag ``-l``.
 So we need to declare what language is our Parser for: that's the reason
 behind the ``language`` attribute.
 
-Let's create the example:
+Let's create the example (in the practice this is done by ``byexample`` behind
+the scenes so you do not to be worry about the details):
 
 ```python
 >>> from byexample.options import Options, OptionParser
->>> parser = ArnoldCParser(0, 'utf-8', Options(optparser=OptionParser(add_help=False)))
+>>> parser = ArnoldCParser(0, 'utf-8', Options(rm=[], norm_ws=False, tags=True, optparser=OptionParser(add_help=False)))
 
 >>> from byexample.finder import Example
 >>> runner = None # not yet
@@ -314,7 +307,7 @@ YOU HAVE BEEN TERMINATED
 Hello World!
 
 >>> print(example.options)
-{'awesome': True, 'norm_ws': False, 'rm': [], 'tags': True}
+{'awesome': True}
 ```
 
 The ``process_snippet_and_expected`` method can be extended to perform the last

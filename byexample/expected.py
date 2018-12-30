@@ -261,8 +261,8 @@ class _RegexExpected(Expected):
                                       expected.rcounts,
                                       expected.str,
                                       got,
-                                      min_rcount = 16,
-                                      timeout = 2)
+                                      min_rcount = options['x']['min_rcount'],
+                                      timeout = options['x']['dfl_timeout'])
 
     def check_got_output(self, example, got, options, verbosity):
         self.check_good = False
@@ -321,13 +321,13 @@ class _RegexExpected(Expected):
 
             >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, 1, 1)
 
-            >>> s                               # byexample: -tag
+            >>> s                               # byexample: -tags
             'aaAAbb<...>ddd<...>eeeCCcc'
 
             >>> got = r'aaAAbBBxxxddeeeCCcc'
             >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, 1, 1)
 
-            >>> s                               # byexample: -tag
+            >>> s                               # byexample: -tags
             'aa<...>bb<...>ddd<...>eeeCCcc'
 
         The definition of "safely" is a little weak. A capture tag may match
@@ -343,18 +343,18 @@ class _RegexExpected(Expected):
         and before the capture.
 
             >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=1, timeout=1)
-            >>> s                               # byexample: -tag
+            >>> s                               # byexample: -tags
             'aaAAbb<...>ddd<...>eeeCCcc'
 
             >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=2, timeout=1)
-            >>> s                               # byexample: -tag
+            >>> s                               # byexample: -tags
             'aaAAbb<...>ddd<...>eeeCCcc'
 
         Notice how a value of 3 changes the result because the 'bb' literal,
         after the capture has only a rcount of 2
 
             >>> s, c = _replace_captures([], expected_regexs, charnos, rcounts, expected, got, min_rcount=3, timeout=1)
-            >>> s                               # byexample: -tag
+            >>> s                               # byexample: -tags
             'aa<...>bb<...>ddd<...>eeeCCcc'
 
         Named groups are returned as well:
@@ -370,7 +370,7 @@ class _RegexExpected(Expected):
 
             >>> s, c = _replace_captures(['foo', 'b-r', 'baz', 'z-z'],
             ...                          expected_regexs, charnos, rcounts, expected, got, 1, 1)
-            >>> s                               # byexample: -tag
+            >>> s                               # byexample: -tags
             'aaAAbb<b-r>ddd<baz>eeeCCcc'
             >>> c
             {'foo': 'AA', 'z-z': 'CC'}
@@ -397,7 +397,7 @@ class _RegexExpected(Expected):
 
             >>> s, c = _replace_captures(['foo', 'bar'], expected_regexs,
             ...                          charnos, rcounts, expected, got, min_rcount=2, timeout=1)
-            >>> s                               # byexample: -tag
+            >>> s                               # byexample: -tags
             'aaAAbb\ncc\ndd<bar>ee'
             >>> c
             {'foo': 'AA'}
@@ -414,7 +414,7 @@ class _RegexExpected(Expected):
             >>> rcounts   = [0, 2, 0, 3, 3, 2, 1, 2, 0] # notice the +1
 
             >>> s, c = _replace_captures(['foo'], expected_regexs, charnos, rcounts, expected, got, min_rcount=2, timeout=1)
-            >>> s                               # byexample: -tag
+            >>> s                               # byexample: -tags
             'aaAAbb\ncc\nddAAee'
             >>> c
             {'foo': 'AA'}
@@ -430,7 +430,7 @@ class _RegexExpected(Expected):
         Setting a value of 0 virtually disable this increcmental match:
 
             >>> s, c = _replace_captures(['foo'], expected_regexs, charnos, rcounts, expected, got, min_rcount=2, timeout=0)
-            >>> s                               # byexample: -tag
+            >>> s                               # byexample: -tags
             'aa<foo>bb\ncc\ndd<foo>ee'
             >>> c
             {}

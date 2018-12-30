@@ -21,34 +21,9 @@ import re, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
-from byexample.finder import ExampleFinder, ZoneDelimiter
+from byexample.finder import ExampleFinder
 
 stability = 'experimental'
-
-class CppCommentDelimiter(ZoneDelimiter):
-    target = {'.cpp', '.c', '.h', '.hpp'}
-
-    @constant
-    def zone_regex(self):
-        return re.compile(r'''
-            # Begin with a /* marker
-            ^[ ]*
-             /\*
-
-             # then, grab everything
-             (?P<zone>.*?)
-
-             # and the close marker
-             \*/
-            ''', re.DOTALL | re.MULTILINE | re.VERBOSE)
-
-    @constant
-    def leading_asterisk(self):
-        return re.compile(r'^[ \*]+(?=[^ \*]|$)', re.MULTILINE)
-
-    def get_zone(self, match, where):
-        zone = ZoneDelimiter.get_zone(self, match, where)
-        return self.leading_asterisk().sub(' ', zone)
 
 class CppPromptFinder(ExampleFinder):
     target = 'cpp-prompt'
