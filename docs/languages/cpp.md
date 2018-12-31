@@ -22,7 +22,7 @@ All the variables are global and can be accessed by other examples
 ```
 
 The last expression without ending with a ``;`` is interpreted by
-``cling`` as the expression to not only eval but also to print its value.
+``cling`` as the expression to not only evaluate but also to print its value.
 
 ### stdlib
 
@@ -70,7 +70,7 @@ To print boolean expressions you need to surround them with parenthesis
 
 ### Terminal support
 
-To work with the current CPP interpreter, ``cling``, the ANSI
+To work with the current C/C++ interpreter, ``cling``, the ANSI
 [terminal emulator](/{{ site.uprefix }}/advanced/terminal-emulation) is
 enabled by default (``+term=ansi``) and cannot be disabled.
 
@@ -82,3 +82,15 @@ used from the command line)
 The amount of rows of the terminal has a minimum value of 128 and this limit
 is really important: if your outputs have more than 128 lines you will need
 to increase the geometry or the results may be undefined.
+
+### Echoed input lines
+
+If the C/C++ snippet has a very long line, greater than the terminal's width,
+the last part of the line that does not fit in the terminal will be *echoed*
+in the output of the example.
+
+This is an annoying artifact due how ``cling`` works.
+
+A simple workaround is to make the lines of the code in the snippet
+shorter or increase the
+[terminal width](/{{ site.uprefix }}/advanced/geometry).
