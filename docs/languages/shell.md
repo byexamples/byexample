@@ -154,9 +154,6 @@ Sometimes is useful to run a long-running process in foreground
 and after some period of inactivity or silence, stop it and get
 back the control of the shell.
 
-                > Currently ``byexample`` waits until a time out raises (``+timeout``) to
-                > stop the process.
-
 For example, imagine that we want to read the new entries of a log
 file as soon as they are saved in the log file.
 

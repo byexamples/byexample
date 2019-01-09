@@ -72,7 +72,7 @@ hello
 If you want to check all the expressions, you can force to print all the
 objects returned using the ``+ruby-expr-print=true``.
 
-On the other hand, you can disable it for never see an object's print
+On the other hand, you can disable it forever
 with ``+ruby-expr-print=false``.
 
 The default is ``+ruby-expr-print=auto``.

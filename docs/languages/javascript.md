@@ -58,10 +58,16 @@ An object definition without ``var`` will print itself:
 
 ### Trailing whitespace
 
-Some objects are printed with a trailing whitespace.
+Some objects are printed with a trailing whitespace but this should be
+inoffensive.
 
-This is not a problem unless you are using a ``as-is``
-[terminal emulation](/{{ site.uprefix }}/advanced/terminal-emulation).
+> **Note:** for ``7.x.x`` versions of ``byexample`` you need to use ``+norm-ws``
+> to [ignore the whitespace](/{{ site.uprefix }}/basic/normalize-whitespace)
+> explicitly.
+
+> **Changed** in ``byexample 8.0.0``: the trailing whitespace is not
+> a problem anymore unless you are using the ``as-is``
+> [terminal emulation](/{{ site.uprefix }}/advanced/terminal-emulation) mode.
 
 ### Too deep nested objects
 
