@@ -67,7 +67,7 @@ If you don't have ``pip`` or ``python`` installed, check the
 [download page](https://www.python.org/downloads/).
 
 That's it! Now, write a tutorial, a blog or a how-to and put some examples
-in between (like this ``README.md`` that you are reading);
+in between (like this web page that you are reading);
 All the snippets and examples will be collected, executed and checked.
 
 ```

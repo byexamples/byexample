@@ -13,10 +13,10 @@ from forking and reviewing the code to doing your first pull request.
 
 ## It is not just contribute code
 
-Supporting a new language or extending one already there is always welcome.
+Supporting a new language or extending an existing one it is always welcome.
 Check this [how to](docs/how_to_support_new_finders_and_languages.md).
 
-But it is not just contribute code.
+*But it is not just contribute code.*
 
 Is ``byexample`` producing a hard-to-debug diff or did you found a bug?
 [Creating an issue](https://github.com/byexamples/byexample/issues) in
@@ -27,6 +27,10 @@ Do you like to write? Write a blog or post in the social medias (I hope for the 
 Do you want to contribute but you are not sure where to start?
 Pick an issue from [here](https://github.com/byexamples/byexample/issues);
 the issues with the label ``good first issue`` is what you are looking for.
+
+### Do not worry to do mistakes
+
+Everyone was new some day. Do your best and ask for help if you need it.
 
 
 ## Modules: the preferred way
@@ -44,7 +48,7 @@ If you find that a feature would be cool and the current ``Concern``'s interface
 (a set of hooks) is not enough, open an issue and propose an extension
 for ``Concern``.
 
-In this way we your contributions can be merged and shipped in the next
+In this way your contributions can be merged and shipped in the next
 release without worrying to be incompatible with previous versions.
 
 But if you have the feeling that something cool is missing, don't be afraid
@@ -52,7 +56,7 @@ and talk about it.
 
 # Warming up
 
-Got to ``github`` and make a [fork](https://guides.github.com/activities/forking/).
+Go to ``github`` and make a [fork](https://guides.github.com/activities/forking/).
 
 Then, you clone it in your computer:
 
@@ -99,8 +103,8 @@ Use ``byexample`` of course!
 
 To run the examples of in a doc or source file, just point to it.
 
-For example, if you want are fixing a bug the Parser and you want to check
-that you are not introducing any issue, run its tests in this way:
+For example, if you fixed a bug in the Parser and you want to check
+that you are not introducing any new issue, run its tests in this way:
 
 ```shell
 $ byexample -l python byexample/parser.py     # byexample: +skip
