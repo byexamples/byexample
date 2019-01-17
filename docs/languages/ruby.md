@@ -36,6 +36,22 @@ and ``..`` as the secondary prompt.
 If you want, you can use the IRB's default one with
 the option ``-ruby-pretty-print``
 
+```ruby
+>> {3=>{5=>Array(0..20), 4=>"aaaaaaaa"}, 1 => 2}
+=> {1=>2,
+ 3=>
+  {4=>"aaaaaaaa",
+   5=>
+    [0,
+     1,
+     <...>
+     19,
+     20]}}
+```
+
+> **Changed** in ``byexample 8.0.0``: make sure that a ``Hash``
+> is printted in a deterministic way with its keys sorted.
+> Before ``byexample 8.0.0`` the order was undefined.
 
 ### The object returned
 

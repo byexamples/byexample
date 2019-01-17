@@ -180,9 +180,7 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
 
         # set the pretty print inspector
         if ruby_pretty_print:
-            self._exec_and_wait('IRB.CurrentContext.inspect_mode = :pp\n',
-                                    options,
-                                    timeout=dfl_timeout)
+            self._exec_and_wait(_pp_code, options, timeout=dfl_timeout)
 
         # disable the echo if we don't want it (false) or we may want it
         # but it will depend on the example (auto)
@@ -205,4 +203,21 @@ Now this should not happen anymore so the following code should print
 nothing.
 >> a = "hello"				
 
+'''
+
+_pp_code = '''
+require "pp"
+
+class PP
+  module PPMethods
+    alias_method :_original_pp_hash, :pp_hash
+
+    def pp_hash(obj)
+      obj = Hash[obj.sort]
+      _original_pp_hash(obj)
+    end
+  end
+end
+
+IRB.CurrentContext.inspect_mode = :pp
 '''
