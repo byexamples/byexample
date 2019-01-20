@@ -1,12 +1,3 @@
-language: python
-python:
-    - "2.7"
-    - "3.4"
-    - "3.5"
-    - "3.6"
-      # - "3.7" travis doesn't support this yet
-install: make deps
-script: make travis-test
 branches:
     only:
         - master
@@ -14,13 +5,13 @@ branches:
         - next-minor
         - next-patch
         - tmp
-addons:
-    apt_packages:
-        - pandoc
+
 env:
     global:
-        - languages=python,shell
-        - BYEXAMPLE_CACHE_DISABLED=0
+      - BYEXAMPLE_CACHE_DISABLED=0
+
+install: make deps
+script: make travis-test
 
 matrix:
     include:
@@ -32,3 +23,49 @@ matrix:
           script:
             - 'echo -e ''source "https://rubygems.org"\ngem "github-pages"'' > Gemfile'
             - "bundle install && cd docs && bundle exec jekyll build"
+        - language: python
+          python: "2.7"
+          env:
+            - languages=python,shell
+        - language: python
+          python: "3.4"
+          env:
+            - languages=python,shell
+        - language: python
+          python: "3.5"
+          env:
+            - languages=python,shell
+        - language: python
+          python: "3.6"
+          env:
+            - languages=python,shell
+        - language: ruby
+          rvm: "2.0"
+          install: sudo make deps
+          script: make travis-ruby-test
+        - language: ruby
+          rvm: "2.1"
+          install: sudo make deps
+          script: make travis-ruby-test
+        - language: ruby
+          rvm: "2.2"
+          install: sudo make deps
+          script: make travis-ruby-test
+        - language: ruby
+          rvm: "2.3"
+          install: sudo make deps
+          script: make travis-ruby-test
+        - language: ruby
+          rvm: "2.4"
+          install: sudo make deps
+          script: make travis-ruby-test
+        - language: ruby
+          rvm: "2.5"
+          install: sudo make deps
+          script: make travis-ruby-test
+        - language: ruby
+          rvm: "2.6"
+          install: sudo make deps
+          script: make travis-ruby-test
+
+# python: "3.7" travis doesn't support this yet
