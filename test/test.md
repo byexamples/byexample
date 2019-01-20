@@ -107,8 +107,8 @@ File docs/basic/setup-and-tear-down.md, 7/7 test ran in <...> seconds
 File docs/basic/skip-and-pass.md, 7/7 test ran in <...> seconds
 [PASS] Pass: 6 Fail: 0 Skip: 1
 ~
-File docs/basic/timeout.md, 6/6 test ran in <...> seconds
-[PASS] Pass: 5 Fail: 0 Skip: 1
+File docs/basic/timeout.md, 7/7 test ran in <...> seconds
+[PASS] Pass: 6 Fail: 0 Skip: 1
 ~
 File docs/contrib/how-to-define-new-zones-where-to-find-examples.md, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0
