@@ -3,7 +3,7 @@ from byexample.concern import Concern
 import re
 from functools import partial
 
-stability = 'experimental'
+stability = 'provisional'
 
 class PasteError(Exception):
     def __init__(self, example, missing):

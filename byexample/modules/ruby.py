@@ -59,7 +59,7 @@ from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
 
-stability = 'experimental'
+stability = 'provisional'
 
 class RubyPromptFinder(ExampleFinder):
     target = 'ruby-prompt'
