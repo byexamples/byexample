@@ -119,42 +119,54 @@ class FileExecutor(object):
                         finally:
                             self.concerns.finally_example(example, options)
 
-                        if crashed or timedout:   # pragma: no cover
+                        recovered = False
+                        if timedout and not options['x']['not_recover_timeout']:
+                            # try to recover the control of the runner
+                            recovered = example.runner.abort(example, options)
+
+                        if crashed or (timedout and not recovered):
                             failed = True
+                            self.concerns.aborted(example, False, options)
                             break # cancel, the runner is in an undefined state
 
-                        # cache this *after* calling finish_example/finally_example
-                        # those two may modify the got
-                        got = example.got
-
-                        print_execution(example, got, self.verbosity-3)
-
-                        # We can pass the test regardless of the output
-                        force_pass = options['pass']
-                        if force_pass or \
-                                example.expected.check_got_output(example, got, options, self.verbosity):
-                            self.concerns.success(example, got, self.differ)
-                        else:
-                            self.concerns.failure(example, got, self.differ)
+                        if timedout and recovered:
+                            # we did not get the output from the example,
+                            # so we basically "failed"
+                            timedout = False
                             failed = True
+                        else:
+                            # cache this *after* calling finish_example/finally_example
+                            # those two may modify the got
+                            got = example.got
 
-                            # start an interactive session if the example fails
-                            # and the user wanted this
-                            if options['interact']:
-                                self.concerns.start_interact(example, options)
-                                ex = None
-                                try:
-                                    example.runner.interact(example, options)
-                                except Exception as e:
-                                    ex = e
+                            print_execution(example, got, self.verbosity-3)
 
-                                self.concerns.finish_interact(ex)
+                            # We can pass the test regardless of the output
+                            force_pass = options['pass']
+                            if force_pass or \
+                                    example.expected.check_got_output(example, got, options, self.verbosity):
+                                self.concerns.success(example, got, self.differ)
+                            else:
+                                self.concerns.failure(example, got, self.differ)
+                                failed = True
 
-                            # enter in failing fast mode if the user wants and the
-                            # example failed
-                            if fail_fast:
-                                failing_fast = True
-                                options.up({'skip': True}) # dummy, but it allows a symmetric relationship between failing_fast and an extra up
+                                # start an interactive session if the example fails
+                                # and the user wanted this
+                                if options['interact']:
+                                    self.concerns.start_interact(example, options)
+                                    ex = None
+                                    try:
+                                        example.runner.interact(example, options)
+                                    except Exception as e:
+                                        ex = e
+
+                                    self.concerns.finish_interact(ex)
+
+                        # enter in failing fast mode if the user wants and the
+                        # example failed
+                        if fail_fast and failed:
+                            failing_fast = True
+                            options.up({'skip': True}) # dummy, but it allows a symmetric relationship between failing_fast and an extra up
                     finally:
                         if failing_fast:
                             options.down()
@@ -165,7 +177,7 @@ class FileExecutor(object):
                             del example.got
                         options.down()
             except KeyboardInterrupt:      # pragma: no cover
-                self.concerns.user_aborted(example)
+                self.concerns.aborted(example, False, True, options)
                 failed = user_aborted = True
                 break
 

@@ -319,6 +319,10 @@ def parse_args(args=None):
             default=16,
             type=int,
             help="minimum match length around a capture tag to perform a guess (default: %(default)s).")
+    g.add_argument(
+            "-x-not-recover-timeout",
+            action='store_true',
+            help="do not try to recover from a timeout; abort the execution immediately (beware, this could leave some resources without the proper clean up).")
     namespace = parser.parse_args(args)
 
     # Some extra checks
