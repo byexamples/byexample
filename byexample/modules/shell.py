@@ -165,3 +165,6 @@ export PS4="/byexample/sh/ps4> "
     def shutdown(self):
         self._shutdown_interpreter()
 
+    def abort(self, example, options):
+        return self._abort(example, options)
+

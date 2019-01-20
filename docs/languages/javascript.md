@@ -146,3 +146,10 @@ Anonymous functions can be *created as part of* a larger example.
 > a.map(function (i) { return i * 2; })
 [ 2, 4, 6 ]
 ```
+
+### Abort on a timeout
+
+If a Javascript example takes too long and
+[timeout](/{{ site.uprefix }}/basic/timeout), the whole execution
+timeout.
+

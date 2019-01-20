@@ -203,6 +203,9 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
     def shutdown(self):
         self._shutdown_interpreter()
 
+    def abort(self, example, options):
+        return self._abort(example, options)
+
 
 '''
 The following code is followed by several tabs (do not delete them).

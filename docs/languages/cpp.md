@@ -94,3 +94,10 @@ This is an annoying artifact due how ``cling`` works.
 A simple workaround is to make the lines of the code in the snippet
 shorter or increase the
 [terminal width](/{{ site.uprefix }}/advanced/geometry).
+
+### Abort on a timeout
+
+If a C/C++ example takes too long and
+[timeout](/{{ site.uprefix }}/basic/timeout), the whole execution
+timeout.
+

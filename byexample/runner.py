@@ -132,6 +132,16 @@ class ExampleRunner(object):
         '''
         raise NotImplementedError() # pragma: no cover
 
+    def abort(self, example, options):
+        '''
+        Abort the execution of the current example. This method will typically
+        be called after the example timeout.
+
+        Return True if the abort succeeded and the runner can be still used,
+        False otherwise.
+        '''
+        return False
+
 
 class PexepctMixin(object):
     def __init__(self, PS1_re, any_PS_re):
@@ -387,4 +397,19 @@ class PexepctMixin(object):
             if err.args[0] == errno.EINVAL:
                 raise IOError(err.args[0], '%s: %s.' % (err.args[1], errmsg))
             raise
+
+    def _abort(self, example, options):
+        self.interpreter.sendcontrol('c')
+
+        try:
+            # wait for the prompt, ignore any extra output
+            self._expect_prompt(
+                    options,
+                    timeout=options['x']['dfl_timeout'],
+                    prompt_re=self.PS1_re)
+            self._drop_output()
+            return True
+        except TimeoutException as ex:
+            self._drop_output()
+            return False
 

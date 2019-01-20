@@ -151,3 +151,6 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
                                if not line.startswith('[cling]$'))
 
         return '\n'.join(lines)
+
+    def abort(self, example, options):
+        return False    # not supported by cling
