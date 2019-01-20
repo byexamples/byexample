@@ -36,7 +36,7 @@ This could be because the example just ran too slow (try add more time
 with +timeout=<n>) or the example is "syntactically incorrect" and
 the interpreter hang (may be you forgot a parenthesis or something like that?).
 <...>
-[ABORT] Pass: 0 Fail: 0 Skip: 0
+[FAIL] Pass: 0 Fail: 1 Skip: 3
 ```
 
 ## Why an example could timeout?
@@ -59,13 +59,52 @@ Something like this incomplete ``Python`` print:
 > The use of ``+skip`` is for testing purposes only, otherwise
 > the example would timeout of course.
 
-## Abort
+## Recovery of a timeout
 
-A timeout is considered a critical issue and it will *abort* the execution.
+A timeout is considered a critical issue.
 
-This is because the interpreter may still hang so further executions
-will timeout too.
+When an example fails due a timeout, ``byexample`` has no control
+over the runner and it will try to *recover it back* typically
+sending an *interrupt* or ``ctrl-c`` to the runner.
+
+If ``byexample`` recovers the control, the execution resumes and
+continues as usual.
+
+But if not, the interpreter may hang for a long time or forever
+so further executions will timeout too.
+
+In this case the execution is *aborted*.
 
 No other example will be executed nor even if they have the ``-skip`` option
 which can be problematic for the
 [cleaning up](/{{ site.uprefix }}/basic/setup-and-tear-down) process.
+
+If the recovery is a problem, you can disable it with
+``-x-not-recover-timeout``.
+
+Compare the output of the following example with the previous one. Note
+how the rest of the examples are *not executed* at all and that
+the final status is ``ABORT``
+
+```
+$ byexample -l python --timeout 0.0001 --ff -x-not-recover-timeout test/ds/python-tutorial.v1.md
+<...>
+File "test/ds/python-tutorial.v1.md", line 5
+Failed example:
+    from __future__ import print_function
+=> Execution timedout at example 1 of 4.
+This could be because the example just ran too slow (try add more time
+with +timeout=<n>) or the example is "syntactically incorrect" and
+the interpreter hang (may be you forgot a parenthesis or something like that?).
+<...>
+=> Execution aborted at example 1 of 4.
+Some resources may had not been cleaned.
+<...>
+[ABORT] Pass: 0 Fail: 1 Skip: 0
+```
+
+> **New** in ``byexample 8.0.0``: before, a timeout had always
+> ended in an abort.
+
+> **Note:** the ability of recovering depends of each interpreter or runner.
+> See their documentation for more details.

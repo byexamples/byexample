@@ -76,12 +76,20 @@ Revert the dump rename
 $ mv test/ds/renamed.sql test/ds/stock.sql      # byexample: -skip +pass
 -->
 
-> *Note:* If the example fails due a timeout or if it crashes, the execution
+> **Note:** in some cases ``byexample`` may not be able to
+> recover the control of the runner after a *timeout*.
+>
+> In those cases or when the runner crash directly, the execution
 > will abort immediately *without* executing any example even if
 > they have ``-skip``. This is because these kind of failures may had left the
 > interpreter in a invalid state and the execution cannot be resumed.
 >
 > The best strategy would be create a [concern module](/{{ site.uprefix }}/contrib/how-to-hook-to-events-with-concerns)
 > and hook to the ``finish`` event and perform there all the clean up, if any.
+>
+> **Changed** in ``byexample 8.0.0``: before, a timeout had always
+> ended in an abort without doing any clean up. But in ``8.0.0`` this changed
+> and an abort is much more rare. See [timeout doc](/{{ site.uprefix }}/basic/timeout).
+
 
 

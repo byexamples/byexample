@@ -375,6 +375,9 @@ The ``initialize`` and ``shutdown`` methods are called before and after the
 execution of all the tests. It can be used to set up the real interpreter
 or to perform some off-line task (like compiling).
 
+If possible, try to implement the ``cancel`` method to cancel an ongoing
+example and support the recovery after a [timeout](/{{ site.uprefix }}/basic/timeout).
+
 You may want to change how to setup the interpreter or the compiler based on
 the examples that it will execute or in the options passed from the command
 line.
