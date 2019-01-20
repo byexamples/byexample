@@ -43,6 +43,8 @@ class SimpleReporter(Concern):
         else:
             self.write_lock = _DummyLock()
 
+        self.header_printed = False
+
     def _write(self, msg):
         ''' Call me once and just once per concern's method '''
         with self.write_lock:
@@ -113,6 +115,7 @@ class SimpleReporter(Concern):
         return colored("=>", color, self.use_colors)
 
     def timedout(self, example, exception):
+        self._update(1)
         msg = '\n'
         msg += self._error_header(example)
 
@@ -127,14 +130,20 @@ class SimpleReporter(Concern):
             msg += 'This is the last output obtained:\n%s\n' % str(exception.output)
 
         self._write(msg)
+        self.fail += 1
 
-    def user_aborted(self, example):
+    def aborted(self, example, by_the_user, options):
         msg = '\n'
         msg += self._error_header(example)
 
         msg += self._bullet('red') + ' '
-        msg += 'Execution aborted by the user at example %i of %i.\n' % (
+        msg += 'Execution aborted '
+        if by_the_user:
+            msg += 'by the user '
+        msg += 'at example %i of %i.\n' % (
                                     self.examplenro, self.num_examples)
+
+        msg += 'Some resources may had not been cleaned.\n'
         self._write(msg)
 
     def crashed(self, example, exception):
@@ -150,6 +159,7 @@ class SimpleReporter(Concern):
         self._write(msg)
 
     def start_parse(self, example, options):
+        self.header_printed = False
         self.current_parsing_example = example
         self.finish_parse_called = False
 
@@ -225,6 +235,10 @@ class SimpleReporter(Concern):
 
 
     def _error_header(self, example):
+        if self.header_printed:
+            return ''
+
+        self.header_printed = True
         filepath = example.filepath
         lineno = example.start_lineno
 

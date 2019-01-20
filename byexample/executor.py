@@ -177,7 +177,7 @@ class FileExecutor(object):
                             del example.got
                         options.down()
             except KeyboardInterrupt:      # pragma: no cover
-                self.concerns.aborted(example, False, True, options)
+                self.concerns.aborted(example, True, options)
                 failed = user_aborted = True
                 break
 

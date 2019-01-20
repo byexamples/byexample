@@ -29,13 +29,14 @@ class Concern(ExtendOptionParserMixin):
          - start_example
          - end_example
 
-         - user_aborted
          - failure
          - success
-         - crashed
          - timeout
 
+         - crashed
+
          - finally_example
+         - aborted
 
          - start_interact
          - finish_interact
@@ -150,7 +151,7 @@ class Concern(ExtendOptionParserMixin):
 
         You may expect that eventually one of the following methods will
         be called to mark the end of the execution of the example:
-         - user_aborted
+         - aborted
          - crashed
          - success
          - failure
@@ -204,10 +205,14 @@ class Concern(ExtendOptionParserMixin):
         '''
         pass    # pragma: no cover
 
-    def user_aborted(self, example):
+    def aborted(self, example, by_the_user, options):
         '''
         The given example was cancelled and the run execution
-        aborted by the user, probably with a ctrl-c (^C) or SIGINT.
+        aborted, probably with a ctrl-c (^C) or SIGINT.
+
+        If <by_the_user> is True, the abort was trigger by the user;
+        if it is False, it was done by Byexample, probably after a timeout
+        or a crash.
 
         Keep in mind that the abort could happen before the start or
         after finishing the execution (Concern.start and Concern.finish)
