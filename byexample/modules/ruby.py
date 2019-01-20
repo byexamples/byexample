@@ -173,10 +173,19 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
-        # run!
-        self._spawn_interpreter(cmd, options)
-
         dfl_timeout = options['x']['dfl_timeout']
+
+        # run!
+        self._spawn_interpreter(cmd, options, wait_first_prompt=False)
+
+        # In RVM contexts the IRB's prompt mode is changed even
+        # if we force the mode from the command line (whe we spawn IRB)
+        # Make sure that the first thing executed restores the default prompt.
+        self._exec_and_wait(
+                'IRB.CurrentContext.prompt_mode = :DEFAULT\n',
+                options,
+                timeout=dfl_timeout)
+        self._drop_output()
 
         # set the pretty print inspector
         if ruby_pretty_print:
