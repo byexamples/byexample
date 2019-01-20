@@ -152,5 +152,5 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
 
         return '\n'.join(lines)
 
-    def abort(self, example, options):
+    def cancel(self, example, options):
         return False    # not supported by cling

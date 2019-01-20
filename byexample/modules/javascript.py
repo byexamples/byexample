@@ -113,5 +113,5 @@ class JavascriptInterpreter(ExampleRunner, PexepctMixin):
     def shutdown(self):
         self._shutdown_interpreter()
 
-    def abort(self, example, options):
+    def cancel(self, example, options):
         return False    # not supported by nodejs

@@ -122,7 +122,7 @@ class FileExecutor(object):
                         recovered = False
                         if timedout and not options['x']['not_recover_timeout']:
                             # try to recover the control of the runner
-                            recovered = example.runner.abort(example, options)
+                            recovered = example.runner.cancel(example, options)
 
                         if crashed or (timedout and not recovered):
                             failed = True

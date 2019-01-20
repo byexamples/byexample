@@ -132,12 +132,12 @@ class ExampleRunner(object):
         '''
         raise NotImplementedError() # pragma: no cover
 
-    def abort(self, example, options):
+    def cancel(self, example, options):
         '''
         Abort the execution of the current example. This method will typically
         be called after the example timeout.
 
-        Return True if the abort succeeded and the runner can be still used,
+        Return True if the cancel succeeded and the runner can be still used,
         False otherwise.
         '''
         return False

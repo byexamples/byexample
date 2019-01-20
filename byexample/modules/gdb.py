@@ -128,6 +128,6 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
     def shutdown(self):
         self._shutdown_interpreter()
 
-    def abort(self, example, options):
+    def cancel(self, example, options):
         return self._abort(example, options)
 
