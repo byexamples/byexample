@@ -24,8 +24,8 @@ File byexample/finder.py, 45/45 test ran in <...> seconds
 File byexample/options.py, 64/64 test ran in <...> seconds
 [PASS] Pass: 64 Fail: 0 Skip: 0
 ~
-File byexample/parser.py, 16/16 test ran in <...> seconds
-[PASS] Pass: 16 Fail: 0 Skip: 0
+File byexample/parser.py, 26/26 test ran in <...> seconds
+[PASS] Pass: 26 Fail: 0 Skip: 0
 ~
 File byexample/parser_sm.py, 129/129 test ran in <...> seconds
 [PASS] Pass: 129 Fail: 0 Skip: 0
@@ -131,8 +131,8 @@ File docs/languages/gdb.md, 9/9 test ran in <...> seconds
 File docs/languages/javascript.md, 15/15 test ran in <...> seconds
 [PASS] Pass: 15 Fail: 0 Skip: 0
 ~
-File docs/languages/python.md, 41/41 test ran in <...> seconds
-[PASS] Pass: 40 Fail: 0 Skip: 1
+File docs/languages/python.md, 42/42 test ran in <...> seconds
+[PASS] Pass: 40 Fail: 0 Skip: 2
 ~
 File docs/languages/ruby.md, 10/10 test ran in <...> seconds
 [PASS] Pass: 10 Fail: 0 Skip: 0
