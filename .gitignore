@@ -7,3 +7,5 @@ README.rst
 w/*
 byexample.egg-info
 todo
+.fnames.tmp
+.flinks.tmp

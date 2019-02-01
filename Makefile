@@ -22,7 +22,7 @@ all:
 deps:
 	pip install -e .
 
-test: clean_test
+test: clean_test index-links-test
 	@$(python_bin) test/r.py --timeout 60 --pretty $(pretty) --ff -l shell test/test.md
 	@make -s clean_test
 
@@ -42,6 +42,9 @@ docs-test: clean_test
 examples-test: clean_test
 	@$(python_bin) test/r.py -j $(jobs) --pretty $(pretty) --ff -l $(languages) docs/examples/*
 	@make -s clean_test
+
+index-links-test: clean_test
+	@./test/idx.sh
 
 travis-test: clean_test lib-test modules-test docs-test examples-test
 	@# run the test separately so we can control which languages will
