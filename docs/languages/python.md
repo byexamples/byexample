@@ -310,6 +310,22 @@ The pretty print is disabled if you are in compatibility mode with doctest.
 If you find it useful but you cannot leave the compatibility mode, you can set
 the ``+py-pretty-print`` flag to enable it.
 
+## Known limitations
+
+Python 3 has a healthier handling of unicode and bytes than Python 2 and it
+always warranties a valid output given an encoding
+(``sys.stdout.encoding``), typically ``utf-8``.
+
+But in Python 2 there is a mix. If you try to print arbitrary bytes, Python 2
+will not complain even if the resulting output is not a valid ``utf-8`` output.
+
+``byexample`` and other third parties tools cannot distinguish the arbitrary
+bytes from the correct ones. In those cases, the example will fail.
+
+```python
+>>> print(b"\x00\x1ffoo\xff\xff")                       # byexample: +skip
+```
+
 ## Internals
 
 ### Custom prompt
