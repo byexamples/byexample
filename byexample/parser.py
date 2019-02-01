@@ -294,3 +294,40 @@ class ExampleParser(ExtendOptionParserMixin):
             self._opts_cache[tuple(optlist)] = val
             return val
 
+# Extra tests
+'''
+>>> expected = 'e: <...>\nu<...>'
+>>> regexs, _, _, _ = _as_regexs(expected, True, True)
+
+>>> regexs
+('\\A',
+ 'e\\:',
+ '\\s',
+ '(?:\\s*(?!\\s)(?:.+)(?<!\\s))?',
+ '\\s+(?!\\s)',
+ 'u',
+ '(?:.*)(?<!\\s)',
+ '\\s*\\Z')
+
+>>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+>>> m.match('e:  x\n  u  \n').groups()
+()
+
+>>> expected = 'e: <foo>\nu<bar>'
+>>> regexs, _, _, _ = _as_regexs(expected, True, True)
+
+>>> regexs
+('\\A',
+ 'e\\:',
+ '\\s',
+ '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?',
+ '\\s+(?!\\s)',
+ 'u',
+ '(?P<bar>.*?)(?<!\\s)',
+ '\\s*\\Z')
+
+>>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
+>>> m.match('e:  x\n  u  \n').groups()
+('x', '')
+
+'''
