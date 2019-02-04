@@ -313,7 +313,7 @@ class ExampleParser(ExtendOptionParserMixin):
 >>> m.match('ex  x\n  u  \n').groups()
 ()
 
->>> expected = 'e: <foo>\nu<bar>'
+>>> expected = 'ex <foo>\nu<bar>'
 >>> regexs, _, _, _ = _as_regexs(expected, True, True)
 
 >>> regexs
