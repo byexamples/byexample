@@ -28,15 +28,16 @@ matrix:
           env:
             - languages=python,shell
         - language: python
-          python: "3.4"
-          env:
-            - languages=python,shell
-        - language: python
           python: "3.5"
           env:
             - languages=python,shell
         - language: python
           python: "3.6"
+          env:
+            - languages=python,shell
+        - language: python
+          python: "3.7"
+          dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
           env:
             - languages=python,shell
         - language: ruby
