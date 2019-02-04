@@ -296,12 +296,12 @@ class ExampleParser(ExtendOptionParserMixin):
 
 # Extra tests
 '''
->>> expected = 'e: <...>\nu<...>'
+>>> expected = 'ex <...>\nu<...>'
 >>> regexs, _, _, _ = _as_regexs(expected, True, True)
 
 >>> regexs
 ('\\A',
- 'e\\:',
+ 'ex',
  '\\s',
  '(?:\\s*(?!\\s)(?:.+)(?<!\\s))?',
  '\\s+(?!\\s)',
@@ -310,7 +310,7 @@ class ExampleParser(ExtendOptionParserMixin):
  '\\s*\\Z')
 
 >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
->>> m.match('e:  x\n  u  \n').groups()
+>>> m.match('ex  x\n  u  \n').groups()
 ()
 
 >>> expected = 'e: <foo>\nu<bar>'
@@ -318,7 +318,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
 >>> regexs
 ('\\A',
- 'e\\:',
+ 'ex',
  '\\s',
  '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?',
  '\\s+(?!\\s)',
@@ -327,7 +327,7 @@ class ExampleParser(ExtendOptionParserMixin):
  '\\s*\\Z')
 
 >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
->>> m.match('e:  x\n  u  \n').groups()
+>>> m.match('ex  x\n  u  \n').groups()
 ('x', '')
 
 '''
