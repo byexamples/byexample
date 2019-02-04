@@ -284,6 +284,7 @@ class RegexCache(object):
         for k, i in groupindex.items():
             indexgroup[i] = k
 
+        indexgroup = tuple(indexgroup) # required in Python 3.7 to be a tuple
         return sre_compile._sre.compile(
             pattern, flags, code,
             ngroups-1,
