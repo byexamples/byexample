@@ -16,27 +16,27 @@ This timeout can be changed of course.
 
 ```python
 >>> import time
->>> time.sleep(2.5) # simulates a slow operation # byexample: +timeout=4
+>>> time.sleep(2.5)         # byexample: +timeout=4
 ```
 
 The timeout can be controlled per example with ``+timeout`` or it
 can be changed from the command line with ``--timeout`` to affect the
-all the examples.
+*all* the examples.
 
 See a timeout in action:
 
 ```
-$ byexample -l python --timeout 0.0001 --ff test/ds/python-tutorial.v1.md
+$ byexample -l python --timeout 1 --ff test/ds/too-slow.md      # byexample: +timeout=10
 <...>
-File "test/ds/python-tutorial.v1.md", line 5
+File "test/ds/too-slow.md", line 7
 Failed example:
-    from __future__ import print_function
-=> Execution timedout at example 1 of 4.
+    sleep(1.1)
+=> Execution timedout at example 3 of 5.
 This could be because the example just ran too slow (try add more time
 with +timeout=<n>) or the example is "syntactically incorrect" and
 the interpreter hang (may be you forgot a parenthesis or something like that?).
 <...>
-[FAIL] Pass: 0 Fail: 1 Skip: 3
+[FAIL] Pass: 2 Fail: 1 Skip: 2
 ```
 
 ## Why an example could timeout?
@@ -87,20 +87,20 @@ how the rest of the examples are *not executed* at all and that
 the final status is ``ABORT``
 
 ```
-$ byexample -l python --timeout 0.0001 --ff -x-not-recover-timeout test/ds/python-tutorial.v1.md
+$ byexample -l python --timeout 1 --ff -x-not-recover-timeout test/ds/too-slow.md      # byexample: +timeout=10
 <...>
-File "test/ds/python-tutorial.v1.md", line 5
+File "test/ds/too-slow.md", line 7
 Failed example:
-    from __future__ import print_function
-=> Execution timedout at example 1 of 4.
+    sleep(1.1)
+=> Execution timedout at example 3 of 5.
 This could be because the example just ran too slow (try add more time
 with +timeout=<n>) or the example is "syntactically incorrect" and
 the interpreter hang (may be you forgot a parenthesis or something like that?).
 <...>
-=> Execution aborted at example 1 of 4.
+=> Execution aborted at example 3 of 5.
 Some resources may had not been cleaned.
 <...>
-[ABORT] Pass: 0 Fail: 1 Skip: 0
+[ABORT] Pass: 2 Fail: 1 Skip: 0
 ```
 
 > **New** in ``byexample 8.0.0``: before, a timeout had always
