@@ -61,17 +61,9 @@ class CPPParser(ExampleParser):
     @constant
     def example_options_string_regex(self):
         # anything of the form:
-        #   /*  byexample:  +FOO -BAR +ZAZ=42  */
-        # or:
         #   //  byexample:  +FOO -BAR +ZAZ=42
-        return re.compile(r'''(?:                       # /* comment style */
-                                   /*  \s*  byexample: \s* ([^\n\'"]*)  */ \s*$
-                               ) |
-                              (?:                       # // comment style
-                                   //  \s*  byexample: \s* ([^\n\'"]*)  $
-                               )''',
-                                                    re.MULTILINE|re.VERBOSE)
-
+        return re.compile(r'//\s*byexample:\s*([^\n\'"]*)$',
+                                                    re.MULTILINE)
 
 class CPPInterpreter(ExampleRunner, PexepctMixin):
     language = 'cpp'
