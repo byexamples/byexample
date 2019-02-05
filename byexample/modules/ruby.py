@@ -6,8 +6,8 @@ Example:
   .. end;
 
   Single line expressions
-  >> hello
-  => "hello<...>world"
+  >> hello               # byexample: +norm-ws
+  => "hello   <...>   world"
 
   >> j = 2
   >> (0..3).each do |i|

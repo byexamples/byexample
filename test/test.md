@@ -44,11 +44,11 @@ $ jobs=1 pretty=none make modules-test         # byexample: +rm=~ +timeout=60 +d
 File byexample/modules/cpp.py, 6/6 test ran in <...> seconds
 [PASS] Pass: 6 Fail: 0 Skip: 0
 ~
-File byexample/modules/gdb.py, 2/2 test ran in <...> seconds
-[PASS] Pass: 2 Fail: 0 Skip: 0
+File byexample/modules/gdb.py, 3/3 test ran in <...> seconds
+[PASS] Pass: 3 Fail: 0 Skip: 0
 ~
-File byexample/modules/javascript.py, 4/4 test ran in <...> seconds
-[PASS] Pass: 4 Fail: 0 Skip: 0
+File byexample/modules/javascript.py, 5/5 test ran in <...> seconds
+[PASS] Pass: 5 Fail: 0 Skip: 0
 ~
 File byexample/modules/python.py, 5/5 test ran in <...> seconds
 [PASS] Pass: 5 Fail: 0 Skip: 0
@@ -128,8 +128,8 @@ File docs/languages/cpp.md, 8/8 test ran in <...> seconds
 File docs/languages/gdb.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 9 Fail: 0 Skip: 0
 ~
-File docs/languages/javascript.md, 15/15 test ran in <...> seconds
-[PASS] Pass: 15 Fail: 0 Skip: 0
+File docs/languages/javascript.md, 17/17 test ran in <...> seconds
+[PASS] Pass: 17 Fail: 0 Skip: 0
 ~
 File docs/languages/python.md, 42/42 test ran in <...> seconds
 [PASS] Pass: 40 Fail: 0 Skip: 2

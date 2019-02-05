@@ -1,27 +1,22 @@
-'''
-Javascript code (using nodejs).
+"""
+Example:
+  > function hello() {
+  .     console.log("hello bla world")
+  . }
 
-> 1 + 2;
-3
+  > hello()               // byexample: +norm-ws
+  hello   <...>   world
 
-The "out:" label marks the begin of the expected output to compare.
+  > var j = 2;
+  > for (var i = 0; i < 4; ++i) {
+  .    j += i;
+  . };
+  8
 
-The semicolons are optional (as long as they are syntactically correct):
+  > j + 3
+  11
 
-> 'hello' + ' ' + 'world'
-'hello world'
-
-Prompt based is allowed too using '>' as the first prompt
-and '.' as the second prompt:
-
-> function mul(a, b) {
-.   return a * b;
-. }
-
-> mul(4, 2)
-8
-
-'''
+"""
 
 from __future__ import unicode_literals
 import re

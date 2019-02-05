@@ -3,8 +3,8 @@ Example:
   ?: #include <iostream>
 
   ?: const char *hello = "hello bla world";
-  ?: std::cout << hello << std::endl;
-  hello<...>world
+  ?: std::cout << hello << std::endl;           // byexample: +norm-ws
+  hello   <...>   world
 
   ?: int i, j = 2;
   ?: for (i = 0; i < 4; ++i) {

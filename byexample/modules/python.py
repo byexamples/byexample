@@ -3,8 +3,8 @@ Example:
   >>> def hello():
   ...     print("hello bla world")
 
-  >>> hello()
-  hello<...>world
+  >>> hello()               # byexample: +norm-ws
+  hello   <...>   world
 
   >>> j = 2
   >>> for i in range(4):

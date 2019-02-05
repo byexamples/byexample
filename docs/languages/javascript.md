@@ -147,6 +147,18 @@ Anonymous functions can be *created as part of* a larger example.
 [ 2, 4, 6 ]
 ```
 
+### Unexpected outputs
+
+I didn't expect this:
+
+```javascript
+> var j = 2;
+> for (var i = 0; i < 4; ++i) {
+.    j += i;
+. };
+8
+```
+
 ### Abort on a timeout
 
 If a Javascript example takes too long and

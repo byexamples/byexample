@@ -4,8 +4,8 @@ Example:
   >     echo "hello bla world"
   > }
 
-  $ hello
-  hello<...>world
+  $ hello               # byexample: +norm-ws
+  hello   <...>   world
 
   $ for i in 0 1 2 3; do
   >    echo $i

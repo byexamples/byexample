@@ -4,6 +4,9 @@ Example:
   (gdb) print 1 + 2
   $1 = 3
 
+  (gdb) print "hello bla world"     # byexample: +norm-ws
+  $2 = "hello   <...>   world"
+
 """
 
 from __future__ import unicode_literals
