@@ -110,7 +110,7 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
         options.up()
-        options['geometry'] = (max(options['geometry'][0], 128), options['geometry'][1])
+        options['geometry'] = (max(options['geometry'][0], 128), max(options['geometry'][1], 128))
         self._spawn_interpreter(cmd, options)
         options.down()
 

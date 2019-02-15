@@ -83,6 +83,8 @@ The amount of rows of the terminal has a minimum value of 128 and this limit
 is really important: if your outputs have more than 128 lines you will need
 to increase the geometry or the results may be undefined.
 
+The same for the width of the terminal: minimum of 128 columns.
+
 ### Echoed input lines
 
 If the C/C++ snippet has a very long line, greater than the terminal's width,
