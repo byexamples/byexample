@@ -177,6 +177,11 @@ def human_exceptions(where_default, verbosity, quiet):
         To enhance the print, print the 'where' attribute of the
         exception (if it has one) or the 'where_default'.
 
+        If the captured exception is a SystemExit, do not print anything
+        even if verbosity is greather than zero.
+        This allows to use SystemExit as a abort mechanism without printing
+        anything to the console.
+
         The context manager will yield a dictionary with the
         key 'exc' set to the exception caught if any or it will
         remain empty if no exception is caught.
@@ -189,7 +194,9 @@ def human_exceptions(where_default, verbosity, quiet):
             print('Execution aborted by the user.')
 
         o['exc'] = e
-    except Exception as e:
+    except SystemExit as e:
+        o['exc'] = e
+    except BaseException as e:
         if quiet:
             pass
         else:
@@ -209,7 +216,7 @@ def human_exceptions(where_default, verbosity, quiet):
 def enhance_exceptions(where, owner, use_colors=False):
     try:
         yield
-    except Exception as e:
+    except BaseException as e:
         if not hasattr(e, 'where'):
             e.where = build_where_msg(where, owner, use_colors=use_colors)
         raise e

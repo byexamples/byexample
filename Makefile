@@ -23,7 +23,7 @@ deps:
 	pip install -e .
 
 test: clean_test index-links-test
-	@$(python_bin) test/r.py --timeout 60 --pretty $(pretty) --ff -l shell test/test.md
+	@$(python_bin) test/r.py --timeout 90 --pretty $(pretty) --ff -l shell test/test.md
 	@make -s clean_test
 
 lib-test: clean_test
@@ -69,8 +69,8 @@ coverage: clean_test
 	@echo
 	@echo "Run again, but with different flags to force the"
 	@echo "execution of different parts of byexample"
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -vvvvvvvvvvvv --ff --no-enhance-diff -l python,shell README.md > /dev/null
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py --pretty none -vvvvvvvvvvvv --ff -l python,shell README.md > /dev/null
+	@PYTHONIOENCODING=utf-8 BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py -vvvvvvvvvvvv --ff --no-enhance-diff -l python,shell README.md > /dev/null
+	@PYTHONIOENCODING=utf-8 BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py --pretty none -vvvvvvvvvvvv --ff -l python,shell README.md > /dev/null
 	@echo
 	@echo "Results:"
 	@coverage combine

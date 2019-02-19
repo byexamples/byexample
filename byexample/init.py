@@ -138,9 +138,22 @@ def get_allowed_languages(registry, selected):
                                not_found)
     return selected
 
-def get_encoding(encoding, verbosity):
-    log("Encoding: %s." % encoding, verbosity-2)
-    return encoding
+def verify_encodings(input_encoding, verbosity):
+    if sys.stdout.encoding is None:
+        try:
+            import locale
+            e = (locale.getdefaultlocale()[1] or 'UTF-8')
+        except:
+            e = 'UTF-8'
+
+        log(("The encoding of your terminal is unset.\n" +
+                "Try to set the environment variable PYTHONIOENCODING='%s' first\n" +
+                "or run 'byexample' like this:\n" +
+                "  PYTHONIOENCODING='%s' byexample ...\n") % (e, e), verbosity)
+        sys.exit(-1)
+
+    log("Encoding (input): %s." % input_encoding, verbosity-2)
+    log("Encoding (output): %s." % sys.stdout.encoding, verbosity-2)
 
 def geometry(x):
     lines, columns = [int(v.strip()) for v in str(x).split('x')]
@@ -307,14 +320,14 @@ def extend_options_with_language_specific(cfg, registry, allowed_languages):
             cfg['verbosity']-2)
 
 def init(args):
-    encoding = get_encoding(args.encoding, args.verbosity)
+    verify_encodings(args.encoding, args.verbosity)
 
     cfg = {
             'use_progress_bar': args.pretty == 'all',
             'use_colors': args.pretty == 'all',
             'quiet':      args.quiet,
             'verbosity':  args.verbosity,
-            'encoding':   encoding,
+            'encoding':   args.encoding,
             'output':     sys.stdout,
             'interact':   False,
             'opts_from_cmdline': args.options_str,

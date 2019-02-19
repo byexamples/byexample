@@ -77,6 +77,7 @@ if the characters are *wide characters*.
 By default, ``byexample`` will use the same encoding that ``Python`` uses
 for its standard output, typically ``utf-8``.
 
+
 You can change the encoding from the command line with ``--encoding``:
 
 ```shell
@@ -98,6 +99,33 @@ Got:
 例によっ!て
 <...>
 ```
+
+The ``--encoding`` option only affects how to decode the files read.
+
+The output that ``byexample`` prints it is still interpreted by
+the ``Python`` default encoding for the standard output.
+
+If you want to change this you can do it changing the environment
+variable ``PYTHONIOENCODING``.
+
+```shell
+$ PYTHONIOENCODING='utf-8' byexample -l shell test/ds/bad-unicode | cat
+<...>
+Expected:
+por ejemplo
+Got:
+por-éjemplo
+<...>
+```
+
+> If you are using ``Python 2.7`` and you are redirecting the output of
+> ``byexample`` to a file or pipe you will get an error saying that
+> the encoding of the standard output is unset.
+>
+> This is a known issue of ``Python 2.x`` series which ignores the encoding of
+> your terminal.
+>
+> The solution is to use ``PYTHONIOENCODING`` like before.
 
 ## Limitations
 

@@ -89,8 +89,8 @@ File docs/advanced/shebang.md, 5/5 test ran in <...> seconds
 File docs/advanced/terminal-emulation.md, 13/13 test ran in <...> seconds
 [PASS] Pass: 13 Fail: 0 Skip: 0
 ~
-File docs/advanced/unicode.md, 8/8 test ran in <...> seconds
-[PASS] Pass: 8 Fail: 0 Skip: 0
+File docs/advanced/unicode.md, 9/9 test ran in <...> seconds
+[PASS] Pass: 9 Fail: 0 Skip: 0
 ~
 File docs/basic/capture-and-paste.md, 6/6 test ran in <...> seconds
 [PASS] Pass: 6 Fail: 0 Skip: 0
