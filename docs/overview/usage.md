@@ -123,7 +123,7 @@ Execution Options:
 ~
 Diff Options:
   -d {none,unified,ndiff,context}, --diff {none,unified,ndiff,context}
-                        select diff algorithm.
+                        select diff algorithm (none by default).
   --no-enhance-diff     by default, improves are made so the diff are easier
                         to to understand: non-printable characters are
                         visible; captured string shown, and more; this flag

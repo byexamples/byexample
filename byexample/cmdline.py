@@ -202,7 +202,7 @@ def parse_args(args=None):
             "--diff",
             choices=['none', 'unified', 'ndiff', 'context'],
             default='none',
-            help='select diff algorithm.')
+            help='select diff algorithm (%(default)s by default).')
     g.add_argument(
             "--no-enhance-diff",
             action='store_false',
