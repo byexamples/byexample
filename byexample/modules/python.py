@@ -20,7 +20,7 @@ import re, pexpect, sys, time
 from byexample.common import log, constant
 from byexample.parser import ExampleParser, ExtendOptionParserMixin
 from byexample.finder import ExampleFinder
-from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
+from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
 
 stability = 'stable'
 
@@ -392,7 +392,7 @@ class PythonParser(ExampleParser):
             return '\n'.join(lines)
         return snippet
 
-class PythonInterpreter(ExampleRunner, PexepctMixin):
+class PythonInterpreter(ExampleRunner, PexpectMixin):
     language = 'python'
 
     def __init__(self, verbosity, encoding, **unused):
@@ -401,7 +401,7 @@ class PythonInterpreter(ExampleRunner, PexepctMixin):
         self._PS1 = r'/byexample/py/ps1> '
         self._PS2 = r'/byexample/py/ps2> '
 
-        PexepctMixin.__init__(self,
+        PexpectMixin.__init__(self,
                                 PS1_re = self._PS1,
                                 any_PS_re = r'/byexample/py/ps\d> ')
 
@@ -477,7 +477,7 @@ del _byexample_pprint
                      ]}
 
     def run(self, example, options):
-        return PexepctMixin._run(self, example, options)
+        return PexpectMixin._run(self, example, options)
 
     def _run_impl(self, example, options):
         return self._exec_and_wait(example.source, options)
@@ -486,10 +486,10 @@ del _byexample_pprint
         # update the pretty printer with the new columns value
         source = '__byexample_pretty_print.update_width(%i)' % cols
         self._exec_and_wait(source, options, timeout=options['x']['dfl_timeout'])
-        PexepctMixin._change_terminal_geometry(self, rows, cols, options)
+        PexpectMixin._change_terminal_geometry(self, rows, cols, options)
 
     def interact(self, example, options):
-        PexepctMixin.interact(self)
+        PexpectMixin.interact(self)
 
     def initialize(self, options):
         py_doctest = options['py_doctest']

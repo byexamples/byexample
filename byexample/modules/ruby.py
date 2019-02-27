@@ -57,7 +57,7 @@ import re, pexpect, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
-from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
+from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
 
 stability = 'provisional'
 
@@ -115,18 +115,18 @@ class RubyParser(ExampleParser):
                                  'if the example has a => (auto, the default)')
         return parser
 
-class RubyInterpreter(ExampleRunner, PexepctMixin):
+class RubyInterpreter(ExampleRunner, PexpectMixin):
     language = 'ruby'
 
     def __init__(self, verbosity, encoding, **unused):
-        PexepctMixin.__init__(self,
+        PexpectMixin.__init__(self,
                                 PS1_re = r'irb[^:]*:\d+:0(>|\*) ',
                                 any_PS_re = r'irb[^:]*:\d+:\d+(>|\*|") ')
 
         self.encoding = encoding
 
     def run(self, example, options):
-        return PexepctMixin._run(self, example, options)
+        return PexpectMixin._run(self, example, options)
 
     def _run_impl(self, example, options):
         # turn on/off the echo mode base on the setting from the
@@ -153,7 +153,7 @@ class RubyInterpreter(ExampleRunner, PexepctMixin):
         return self._EXPR_RESULT_RE.search(expected_str) != None
 
     def interact(self, example, options):
-        PexepctMixin.interact(self)
+        PexpectMixin.interact(self)
 
     def get_default_cmd(self, *args, **kargs):
         return  "%e %p %a", {

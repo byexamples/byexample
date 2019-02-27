@@ -14,7 +14,7 @@ import re, pexpect, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
-from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
+from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
 
 stability = 'experimental'
 
@@ -69,7 +69,7 @@ class GDBParser(ExampleParser):
         return snippet, expected
 
 
-class GDBInterpreter(ExampleRunner, PexepctMixin):
+class GDBInterpreter(ExampleRunner, PexpectMixin):
     language = 'gdb'
 
     def __init__(self, verbosity, encoding, **unused):
@@ -78,7 +78,7 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
         # --nh     do not read ~/.gdbinit
         # --nx     do not read any .gdbinit
         # --quiet  do not print version number on startup
-        PexepctMixin.__init__(self,
+        PexpectMixin.__init__(self,
                                 PS1_re = r'\(gdb\)[ ]',
                                 any_PS_re = r'\(gdb\)[ ]')
 
@@ -94,7 +94,7 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
                     }
 
     def run(self, example, options):
-        return PexepctMixin._run(self, example, options)
+        return PexpectMixin._run(self, example, options)
 
     def _run_impl(self, example, options):
         if not example.source:
@@ -108,7 +108,7 @@ class GDBInterpreter(ExampleRunner, PexepctMixin):
         return self._exec_and_wait(source, options)
 
     def interact(self, example, options):
-        PexepctMixin.interact(self)
+        PexpectMixin.interact(self)
 
     def initialize(self, options):
         shebang, tokens = self.get_default_cmd()

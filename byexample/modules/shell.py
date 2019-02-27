@@ -21,7 +21,7 @@ import re, pexpect, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
-from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
+from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
 from byexample.executor import TimeoutException
 
 stability = 'provisional'
@@ -74,13 +74,13 @@ class ShellParser(ExampleParser):
                 type=float,
                 help="stop the process if it timeout.")
 
-class ShellInterpreter(ExampleRunner, PexepctMixin):
+class ShellInterpreter(ExampleRunner, PexpectMixin):
     language = 'shell'
 
     def __init__(self, verbosity, encoding, **unused):
         self.encoding = encoding
 
-        PexepctMixin.__init__(self,
+        PexpectMixin.__init__(self,
                                 PS1_re = r"/byexample/sh/ps1> ",
                                 any_PS_re = r"/byexample/sh/ps\d+> ")
 
@@ -92,7 +92,7 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
                     }
 
     def run(self, example, options):
-        return PexepctMixin._run(self, example, options)
+        return PexpectMixin._run(self, example, options)
 
     def _run_impl(self, example, options):
         stop_on_timeout = options['stop_on_timeout'] is not False
@@ -126,7 +126,7 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
             while 1:
                 try:
                     begin = time.time()
-                    return PexepctMixin._expect_prompt(self, options, silence_timeout, prompt_re)
+                    return PexpectMixin._expect_prompt(self, options, silence_timeout, prompt_re)
                 except TimeoutException as ex:
                     timeout -= max(time.time() - begin, 0)
                     silence_timeout = min(silence_timeout, timeout)
@@ -142,10 +142,10 @@ class ShellInterpreter(ExampleRunner, PexepctMixin):
                     prev = len(ex.output)
 
         else:
-            return PexepctMixin._expect_prompt(self, options, timeout, prompt_re)
+            return PexpectMixin._expect_prompt(self, options, timeout, prompt_re)
 
     def interact(self, example, options):
-        PexepctMixin.interact(self)
+        PexpectMixin.interact(self)
 
     def initialize(self, options):
         shebang, tokens = self.get_default_cmd()

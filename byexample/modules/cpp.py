@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 import re, sys, time
 from byexample.common import constant
 from byexample.parser import ExampleParser
-from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
+from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
 from byexample.finder import ExampleFinder
 
 stability = 'experimental'
@@ -65,13 +65,13 @@ class CPPParser(ExampleParser):
         return re.compile(r'//\s*byexample:\s*([^\n\'"]*)$',
                                                     re.MULTILINE)
 
-class CPPInterpreter(ExampleRunner, PexepctMixin):
+class CPPInterpreter(ExampleRunner, PexpectMixin):
     language = 'cpp'
 
     def __init__(self, verbosity, encoding, **unused):
         self.encoding = encoding
 
-        PexepctMixin.__init__(self,
+        PexpectMixin.__init__(self,
                                 PS1_re =    r'\[cling\]\$',           # [cling]$
                                 any_PS_re = r'\[cling\][$!](?: \?)?') # [cling]!
                                                                       # [cling]$ ?
@@ -95,13 +95,13 @@ class CPPInterpreter(ExampleRunner, PexepctMixin):
         # so we force this (see _get_output())
         options['term'] = 'ansi'
 
-        return PexepctMixin._run(self, example, options)
+        return PexpectMixin._run(self, example, options)
 
     def _run_impl(self, example, options):
         return self._exec_and_wait(example.source, options)
 
     def interact(self, example, options):
-        PexepctMixin.interact(self)
+        PexpectMixin.interact(self)
 
     def initialize(self, options):
         shebang, tokens = self.get_default_cmd()

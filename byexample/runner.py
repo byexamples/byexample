@@ -143,7 +143,7 @@ class ExampleRunner(object):
         return False
 
 
-class PexepctMixin(object):
+class PexpectMixin(object):
     def __init__(self, PS1_re, any_PS_re):
         self.PS1_re = re.compile(PS1_re)
         self.any_PS_re = re.compile(any_PS_re)

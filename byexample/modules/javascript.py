@@ -23,7 +23,7 @@ import re
 from byexample.common import constant, abspath
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
-from byexample.runner import ExampleRunner, PexepctMixin, ShebangTemplate
+from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
 
 stability = 'experimental'
 
@@ -68,24 +68,24 @@ class JavascriptParser(ExampleParser):
     def extend_option_parser(self, parser):
         pass
 
-class JavascriptInterpreter(ExampleRunner, PexepctMixin):
+class JavascriptInterpreter(ExampleRunner, PexpectMixin):
     language = 'javascript'
 
     def __init__(self, verbosity, encoding, **unused):
-        PexepctMixin.__init__(self,
+        PexpectMixin.__init__(self,
                                 PS1_re = r'node > ',
                                 any_PS_re = r'(?:node > )|(?:\.\.\. )')
 
         self.encoding = encoding
 
     def run(self, example, options):
-        return PexepctMixin._run(self, example, options)
+        return PexpectMixin._run(self, example, options)
 
     def _run_impl(self, example, options):
         return self._exec_and_wait(example.source, options)
 
     def interact(self, example, options):
-        PexepctMixin.interact(self)
+        PexpectMixin.interact(self)
 
     def get_default_cmd(self, *args, **kargs):
         return  "%e %p %a", {
