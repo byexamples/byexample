@@ -88,14 +88,14 @@ If you have an example that is printing text with color, you probably see
 something like:
 
 ```shell
-$ echo "\033[31mmessage in red\033[0m"
+$ echo -e "\033[31mmessage in red\033[0m"
 <...>[31mmessage in red<...>[0m
 ```
 
 To get rid off of those weird symbols you can enable the terminal emulation:
 
 ```shell
-$ echo "\033[31mmessage in red\033[0m"      # byexample: +term=ansi
+$ echo -e "\033[31mmessage in red\033[0m"      # byexample: +term=ansi
 message in red
 ```
 

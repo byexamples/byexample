@@ -12,13 +12,13 @@ $ alias byexample=byexample\ --pretty\ none
 ``byexample`` has full support for unicode examples.
 
 ```shell
-$ echo "por ejemplo"
+$ echo 'por ejemplo'
 por ejemplo
 
-$ echo "по примеру"
+$ echo 'по примеру'
 по примеру
 
-$ echo "例によって"
+$ echo '例によって'
 例によって
 ```
 
@@ -31,13 +31,13 @@ Consider the following examples in ``test/ds/bad-unicode``:
 $ cat test/ds/bad-unicode            # byexample: +rm=~
 ~Those would fail:
 ~
-~$ echo "por-éjemplo"
+~$ echo 'por-éjemplo'
 ~por ejemplo
 ~
-~$ echo "по-примеру!"
+~$ echo 'по-примеру!'
 ~по примеру
 ~
-~$ echo "例によっ!て"
+~$ echo '例によっ!て'
 ~例によって
 
 ```

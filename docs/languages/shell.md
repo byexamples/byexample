@@ -1,6 +1,15 @@
-# Shell (sh, bash)
+<!--
+$ hash byexample                                    # byexample: +fail-fast
+$ alias byexample=byexample\ --pretty\ none
 
-``byexample`` can execute shell commands using by default ``sh``.
+--
+-->
+
+# Shell
+
+``byexample`` can execute shell commands using by default ``bash`` configured
+to be POSIX-conformant
+but other shells are supported like ``dash`` and ``ksh``.
 
 ## Find interactive examples
 
@@ -36,36 +45,41 @@ It is easy to do this using a redirection:
 
 ```shell
 $ sleep 2 >/dev/null 2>&1 &
-<...>
+[<job-id>] <pid>
 ```
 
 Notice how the ``&`` operator tells the shell to put the process in the
 background and the ``>/dev/null 2>&1`` discards both standard output and
 error streams.
 
-Then you can get the process id of the process running in background and
+> Depending of the underlying shell when you send a process to the background
+> the job control may print the job id and process id linked to that process.
+>
+> ``bash`` and ``ksh`` do this always but others like ``dash`` does not.
+
+You can get the process id of the process running in background and
 its job id to control it later.
 
 ```shell
-$ echo "$!"
+$ echo "$!"                         # byexample: +paste
 <pid>
 
-$ jobs -l                           # byexample: +paste
-[1] + <pid> Running<...>
+$ jobs -l                           # byexample: +paste +norm-ws
+[<job-id>]+ <pid> Running <...>
 ```
 
-Now there is a catch. Some shells like ``Bash`` output a message
-immediately after starting the process and at the end of it.
+When a process finishes (or dies), the shell will print
+a message.
 
-The former is easier to capture but the later may happen asynchronously
-unless you can control, and probably kill the background process, and wait
+It may happen *asynchronously*
+unless you control, and probably kill the background process, and *wait*
 for it to finish.
 
 Here is an example (the ``%%`` is replaced by the job id by the shell):
 
 ```shell
-$ kill %% ; wait                    # byexample: +timeout=4
-[1] + Terminated<...>
+$ kill %% ; wait                    # byexample: +timeout=4 +norm-ws +paste
+[<job-id>]+ Terminated <...>
 ```
 
 ### Subshells
@@ -100,13 +114,13 @@ running in background without loosing its process id or job id.
 ```shell
 $ set +m
 $ sleep 1 >/dev/null 2>&1 &
-<...>
+[<job-id>] <pid>
 
-$ echo "$!"
+$ echo "$!"                         # byexample: +paste
 <pid>
 
-$ jobs -l                           # byexample: +paste
-[1] + <pid> Running<...>
+$ jobs -l                           # byexample: +paste +norm-ws
+[<job-id>]+ <pid> Running <...>
 ```
 
 To prove this we can wait enough and see that no asynchronous message is print.
@@ -120,7 +134,7 @@ foreground
 You can re-enable it later
 
 ```shell
-$ set -m                            # byexample: +pass
+$ set -m                            # byexample: +pass -skip
 ```
 
 The downside of this solution is that disabling the monitoring also prevent us
@@ -193,8 +207,9 @@ less frequently you can increase the wait time:
 
 ```shell
 $ (sleep 0.4 ; echo "a slow line" >> w/msg.log) &
+[2] <pid>
 
-$ fg                            # byexample: +stop-on-silence=0.5
+$ fg %1                           # byexample: +stop-on-silence=0.5
 tail -f w/msg.log
 a slow line
 ```
@@ -226,57 +241,62 @@ to timeout and it will stop it later.
 > **Note:** ``+stop-on-timeout`` requires the job control and monitoring to be
 > enabled (``set -m``). This should be the default in your shell.
 
+## Using other shells
+
+``byexample`` supports ``bash``, ``dash`` and ``ksh`` and the shell
+by default is set to ``bash`` in POSIX-conformant mode.
+
+> *Changed* in ``byexample 8.1.0``: before the default shell was ``sh``.
+> However different Linux distros have different shells behind the name
+> of ``sh``: in Debian it is ``dash`` while in Red Hat it is ``bash``.
+> And this changed over the time: Ubuntu had ``bash`` but in Ubuntu 6.10
+> it changed the shell to ``dash``.
+>
+> To have a stable shell, since ``byexample 8.1.0`` it is explicitly set
+> to ``bash``.
+
+You can change the default shell from the command line with the
+``+shell`` option.
+
+```shell
+$ byexample -l shell -o '+shell=bash' test/ds/shell-example
+<...>
+[PASS] Pass: 14 Fail: 0 Skip: 0
+
+$ byexample -l shell -o '+shell=dash' test/ds/shell-example
+<...>
+[PASS] Pass: 14 Fail: 0 Skip: 0
+
+$ byexample -l shell -o '+shell=ksh' test/ds/shell-example
+<...>
+[PASS] Pass: 14 Fail: 0 Skip: 0
+```
+
+The option can only be set from the command line and it will affect
+all the shell examples (you cannot change the shell only for a single
+example)
+
+> *New* in ``byexample 8.1.0``.
+>
+> For backward compatibility with ``byexample 8.0.0`` and earlier versions,
+> you can use ``+shell=sh``; however, we encourage to you to set a
+> more specific shell.
+
+If another shell is needed, ``byexample`` allows
+you to use ``-x-shebang`` to control
+[how to spawn a runner](/{{ site.uprefix }}/advanced/shebang), in this case,
+a shell.
+
+For example to use ``bash`` without the constraint to be POSIX-conformant
+we could run:
+
+```shell
+$ byexample -l shell -x-shebang 'shell:%e bash --norc --noprofile' test/ds/shell-example
+<...>
+[PASS] Pass: 14 Fail: 0 Skip: 0
+```
+
 <!--
 $ kill %% ; fg ; wait    # byexample: +pass -skip
 -->
-
-## Internals
-
-### Using other shells (long story)
-
-**Warning:** this documentation is about *internal details* that may
-not be honored between releases.
-
-There is no problem in spawning another shell even if the shell is not
-``sh``
-
-The only caveat is that the spawned shell *must* use the same prompts
-that ``byexample`` uses internally.
-
-Exporting all the prompts to the other subshell should be enough.
-
-For example to use ``bash`` instead of ``sh``
-
-```shell
-$ export PS1
-$ export PS2
-$ export PS3
-$ export PS4
-
-$ echo $0
-sh
-
-$ /usr/bin/env bash --norc -i
-$ echo $0
-bash
-
-$ exit
-exit
-```
-
-The ``--norc`` flag is to make sure that ``bash`` will not load any ``.bashrc``
-configuration script. It is quite common that on those scripts the prompts
-are changed, overriding ours.
-
-If you are sure that it is ok, you can remove the flag.
-
-### Using other shells (short story)
-
-``byexample`` allows you to use ``--shebang`` to control
-[how to spawn a runner](/{{ site.uprefix }}/advanced/shebang), in this case, the shell.
-
-We support currently ``sh`` and ``bash``. It will probably work with others.
-
-Open an issue if not or even better, do a Pull Request for adding support to
-other shells!
 

@@ -1,0 +1,50 @@
+Background process
+------------------
+
+$ sleep 2 >/dev/null 2>&1 &
+<...>
+
+$ echo "$!"
+<pid>
+
+$ jobs -l                           # byexample: +paste +norm-ws
+[<job-id>]<flag> <pid> Running<...>
+
+$ kill %% ; wait                    # byexample: +timeout=4 +norm-ws +paste
+[<job-id>]<...> Terminated<...>
+
+
+Job control and monitoring
+--------------------------
+
+$ set +m
+$ sleep 1 >/dev/null 2>&1 &
+<...>
+
+$ echo "$!"
+<pid>
+
+$ jobs -l                           # byexample: +paste +norm-ws
+[<job-id>]<flag> <pid> Running<...>
+
+$ set -m                            # byexample: +pass -skip
+
+
+Stop on silence
+---------------
+
+$ echo "some log line" > w/msg.log
+$ tail -f w/msg.log             # byexample: +stop-on-silence
+some log line
+
+$ echo "another log line" >> w/msg.log
+
+$ fg                            # byexample: +stop-on-silence
+tail -f w/msg.log<...>
+another log line
+
+
+Clean up
+--------
+
+$ kill -9 $(jobs -p) && wait        # byexample: -skip +pass

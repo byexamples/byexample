@@ -73,6 +73,11 @@ class ShellParser(ExampleParser):
                 const=0.2,
                 type=float,
                 help="stop the process if it timeout.")
+        parser.add_argument(
+                "+shell",
+                choices=['bash', 'dash', 'ksh', 'sh'],
+                default='bash',
+                help="shell to use with default settings ('bash' by default). For full control use -x-shebang)")
 
 class ShellInterpreter(ExampleRunner, PexpectMixin):
     language = 'shell'
@@ -85,11 +90,30 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
                                 any_PS_re = r"/byexample/sh/ps\d+> ")
 
     def get_default_cmd(self, *args, **kargs):
+        shell = kargs.pop('shell', 'bash')
         return  "%e %p %a", {
+                'bash': {
+                    'e': '/usr/bin/env',
+                    'p': 'bash',
+                    'a': ['--norc', '--noprofile', '--posix'],
+                    },
+                'dash': {
+                    'e': '/usr/bin/env',
+                    'p': 'dash',
+                    'a': [],
+                    },
+                'ksh': {
+                    'e': '/usr/bin/env',
+                    'p': 'ksh',
+                    'a': ['+E'],
+                    },
+                'sh': {
                     'e': '/usr/bin/env',
                     'p': 'sh',
                     'a': [],
-                    }
+                    },
+                }[shell]
+
 
     def run(self, example, options):
         return PexpectMixin._run(self, example, options)
@@ -148,7 +172,7 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
         PexpectMixin.interact(self)
 
     def initialize(self, options):
-        shebang, tokens = self.get_default_cmd()
+        shebang, tokens = self.get_default_cmd(shell=options['shell'])
         shebang = options['shebangs'].get(self.language, shebang)
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
@@ -160,6 +184,7 @@ export PS2="/byexample/sh/ps2> "
 export PS3="/byexample/sh/ps3> "
 export PS4="/byexample/sh/ps4> "
 ''', options, timeout=options['x']['dfl_timeout'])
+
         self._drop_output() # discard banner and things like that
 
     def shutdown(self):
