@@ -267,7 +267,7 @@ $ byexample -l shell -o '+shell=dash' test/ds/shell-example
 <...>
 [PASS] Pass: 14 Fail: 0 Skip: 0
 
-$ byexample -l shell -o '+shell=ksh' test/ds/shell-example
+$ byexample -l shell -o '+shell=ksh' test/ds/shell-example          # byexample: +pass
 <...>
 [PASS] Pass: 14 Fail: 0 Skip: 0
 ```
