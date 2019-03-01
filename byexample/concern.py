@@ -46,6 +46,12 @@ class Concern(ExtendOptionParserMixin):
     interface.
     '''
 
+    def __init__(self, **kargs):
+        '''
+        Called once when the concern is loaded.
+        '''
+        pass
+
     def __repr__(self):
         return '%s Concern' % tohuman(self.target)
 
