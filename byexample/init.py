@@ -8,7 +8,7 @@ from .executor import FileExecutor
 from .differ import Differ
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
-from .common import log
+from .common import log, enhance_exceptions
 
 def are_tty_colors_supported(output):
     def get_colors():
@@ -103,6 +103,15 @@ def load_modules(dirnames, cfg):
 
                 # remove already loaded
                 klasses_found = set(klasses_found) - set(container.values())
+
+            if klasses_found:
+                log("Classes found for '%s': %s" % (
+                    what,
+                    ', '.join(k.__name__ for k in klasses_found)),
+                    verbosity-2)
+            else:
+                log("No classes found for '%s'." % what,
+                        verbosity-2)
 
             objs = [klass(**cfg) for klass in klasses_found]
             if objs:
@@ -278,11 +287,13 @@ def show_options(cfg, registry, allowed_languages):
 
     for concern in concerns:
         _title("%s's specific options" % concern.target)
-        concern.get_extended_option_parser(parent_parser=None).print_help()
+        with enhance_exceptions('Extending the options', concern, cfg['use_colors']):
+            concern.get_extended_option_parser(parent_parser=None).print_help()
 
     for parser in parsers:
         _title("%s's specific options" % parser.language)
-        parser.get_extended_option_parser(parent_parser=None).print_help()
+        with enhance_exceptions('Extending the options', parser, cfg['use_colors']):
+            parser.get_extended_option_parser(parent_parser=None).print_help()
 
 def extend_option_parser_with_concerns(cfg, registry):
     concerns = [c for c in registry['concerns'].values()]
@@ -291,13 +302,14 @@ def extend_option_parser_with_concerns(cfg, registry):
     # starting from the byexample's one
     optparser = cfg['options']['optparser']
     for concern in concerns:
-        # update the options with the concerns's default ones and
-        # only with them; only after this merge concerns's parser with
-        # the previous parser
-        concern_optparser = concern.get_extended_option_parser(parent_parser=None)
-        cfg['options'].update(concern_optparser.defaults())
+        with enhance_exceptions('Extending the options', concern, cfg['use_colors']):
+            # update the options with the concerns's default ones and
+            # only with them; only after this merge concerns's parser with
+            # the previous parser
+            concern_optparser = concern.get_extended_option_parser(parent_parser=None)
+            cfg['options'].update(concern_optparser.defaults())
 
-        optparser = concern.get_extended_option_parser(optparser)
+            optparser = concern.get_extended_option_parser(optparser)
 
     cfg['options']['optparser'] = optparser
     return optparser
@@ -308,8 +320,9 @@ def extend_options_with_language_specific(cfg, registry, allowed_languages):
 
     # update the defaults for all the parsers
     for parser in parsers:
-        parser_optparser = parser.get_extended_option_parser(parent_parser=None)
-        cfg['options'].update(parser_optparser.defaults())
+        with enhance_exceptions('Extending the options', parser, cfg['use_colors']):
+            parser_optparser = parser.get_extended_option_parser(parent_parser=None)
+            cfg['options'].update(parser_optparser.defaults())
 
     # update again but with the options that *may* had set in the command line
     for parser in parsers:
