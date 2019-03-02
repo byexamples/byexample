@@ -77,6 +77,9 @@ File CONTRIBUTING.md, 5/5 test ran in <...> seconds
 File README.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 2
 ~
+File docs/advanced/conditional-execution.md, 8/8 test ran in <...> seconds
+[PASS] Pass: 7 Fail: 0 Skip: 1
+~
 File docs/advanced/geometry.md, 12/12 test ran in <...> seconds
 [PASS] Pass: 12 Fail: 0 Skip: 0
 ~
@@ -137,8 +140,8 @@ File docs/languages/python.md, 42/42 test ran in <...> seconds
 File docs/languages/ruby.md, 10/10 test ran in <...> seconds
 [PASS] Pass: 10 Fail: 0 Skip: 0
 ~
-File docs/languages/shell.md, 29/29 test ran in <...> seconds
-[PASS] Pass: 29 Fail: 0 Skip: 0
+File docs/languages/shell.md, 31/31 test ran in <...> seconds
+[PASS] Pass: 31 Fail: 0 Skip: 0
 ~
 File docs/overview/differences.md, 13/13 test ran in <...> seconds
 [PASS] Pass: 13 Fail: 0 Skip: 0
