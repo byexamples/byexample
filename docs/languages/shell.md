@@ -1,4 +1,11 @@
 <!--
+$ hash ksh 2>/dev/null && echo "installed"
+<ksh-installed>
+
+$ hash dash 2>/dev/null && echo "installed"
+<dash-installed>
+
+
 $ hash byexample                                    # byexample: +fail-fast
 $ alias byexample=byexample\ --pretty\ none
 
@@ -263,11 +270,11 @@ $ byexample -l shell -o '+shell=bash' test/ds/shell-example
 <...>
 [PASS] Pass: 14 Fail: 0 Skip: 0
 
-$ byexample -l shell -o '+shell=dash' test/ds/shell-example
+$ byexample -l shell -o '+shell=dash' test/ds/shell-example  # byexample: +if=dash-installed
 <...>
 [PASS] Pass: 14 Fail: 0 Skip: 0
 
-$ byexample -l shell -o '+shell=ksh' test/ds/shell-example          # byexample: +pass
+$ byexample -l shell -o '+shell=ksh' test/ds/shell-example   # byexample: +if=ksh-installed
 <...>
 [PASS] Pass: 14 Fail: 0 Skip: 0
 ```

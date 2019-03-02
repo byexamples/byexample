@@ -26,6 +26,7 @@ class Clipboard(Concern):
 
     def start(self, examples, runners, filepath, options):
         self.clipboard = {}
+        options['clipboard'] = self.clipboard
 
     @staticmethod
     def repl_from_clipboard(m, clipboard, missing):
