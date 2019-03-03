@@ -1,0 +1,2 @@
+Sep 30 15:44:01 system: Loaded modules
+Sep 30 15:44:01 system: Status {"network": {"eth0": True, "wifi0": False, "wifi1": False, "eth1": True, "eth2": False}, "disk": True, "io": True}
