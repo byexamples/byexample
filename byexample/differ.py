@@ -87,24 +87,49 @@ class Differ(object):
               four
 
             >>> expected = 'one\ntwo  \n\n\tthree'
-            >>> got      = 'one  \ntwo\n\n    three'
+            >>> got      = 'one  \ntwo\n\n    thr\x01ee'
 
             >>> flags['diff'] = 'none'
             >>> flags['enhance_diff'] = True
-            >>> print(output_difference(expected, got, flags, False))
+            >>> print(output_difference(expected, got, flags, False))   # byexample: +rm=~
             Some non-printable characters were replaced by printable ones.
-                 $: trailing spaces    ^n: a blank line       ^t: tab
+                 $: trailing spaces     ?: ctrl character     ^t: tab
             (You can disable this with '--no-enhance-diff')
             Expected:
             one
             two$$
-            ^n
+            ~
             ^tthree
             Got:
             one$$
             two
-            ^n
-                three
+            ~
+                thr?ee
+
+            >>> expected = 'one$$\ntwo\n\n    thr?ee\n^tfour^v'
+            >>> got      = 'one  \ntwo\n\n    thr\x01ee\n\tfour^v'
+
+            >>> flags['diff'] = 'none'
+            >>> flags['enhance_diff'] = True
+            >>> print(output_difference(expected, got, flags, False))   # byexample: +rm=~
+            Some non-printable characters were replaced by printable ones.
+                 $: trailing spaces     ?: ctrl character     ^t: tab
+            Warning, the characters '$', '?', '^t' were present *before* the replacement.
+            That means that if you see a '$' it could mean 'trailing spaces' or
+            it could mean a literal '$'.
+            (You can disable this with '--no-enhance-diff')
+            Expected:
+            one$$
+            two
+            ~
+                thr?ee
+            ^tfour^v
+            Got:
+            one$$
+            two
+            ~
+                thr?ee
+            ^tfour^v
         '''
 
         # delete any previous diff
@@ -137,12 +162,12 @@ class Differ(object):
         got      = self._remove_last_empty_lines(got)
 
         if flags['enhance_diff']:
-            namedcap, r1 = self._human_named_captures(replaced_captures)
+            namedcap, r1, p1 = self._human_named_captures(replaced_captures)
 
-            expected, r2 = self._human(expected)
-            got, r3 = self._human(got)
+            expected, r2, p2 = self._human(expected)
+            got, r3, p3 = self._human(got)
 
-            self._print_human_replacement_table(r1 | r2 | r3)
+            self._print_human_replacement_table(r1 | r2 | r3, p1 | p2 | p3)
 
         diff_type = flags['diff']
 
@@ -157,32 +182,51 @@ class Differ(object):
 
         return ''.join(self._diff)
 
-    def _print_human_replacement_table(self, wrepl):
+    def _print_human_replacement_table(self, wrepl, prepl):
         if not wrepl:
             return
 
         HUMAN_EXPL = {
-                '$' : ' $: trailing spaces',
-                '^n': '^n: a blank line   ',
-                '?' : ' ?: non-printable  ',
-                '^t': '^t: tab            ',
-                '^v': '^v: vertical tab   ',
-                '^r': '^r: carriage return',
-                '^f': '^f: form feed      ',
+                '$' : 'trailing spaces',
+                '?' : 'ctrl character ',
+                '^n': 'new line       ',
+                '^t': 'tab            ',
+                '^v': 'vertical tab   ',
+                '^r': 'carriage return',
+                '^f': 'form feed      ',
                 }
 
         assert wrepl.issubset(set(HUMAN_EXPL.keys()))
-        wrepl = list(sorted(wrepl))
+        assert prepl.issubset(set(HUMAN_EXPL.keys()))
 
+        # warn about replacements that did happen and they could be confused
+        # because they were in the original strings before the replace operation
+        prepl = wrepl & prepl
+
+        wrepl = list(sorted(wrepl))
         self._write("Some non-printable characters were replaced by printable ones.")
         for tmp in [wrepl[i:i+3] for i in range(0, len(wrepl), 3)]:
-            line = [HUMAN_EXPL[r] for r in tmp]
+            line = ['%02s: %s' % (r, HUMAN_EXPL[r]) for r in tmp]
             line = '    '.join(line)
             self._write("    %s" % line)
+
+        if prepl:
+            prepl = list(sorted(prepl))
+            one  = prepl[0]
+            what = HUMAN_EXPL[one]
+            self._write(("Warning, the characters %s were present *before* the replacement.\n" + \
+                         "That means that if you see a '%s' it could mean '%s' or\n" + \
+                         "it could mean a literal '%s'.") % (
+                             ', '.join("'%s'" % c for c in prepl),
+                             one,
+                             what,
+                             one))
+
         self._write("(You can disable this with '--no-enhance-diff')")
 
     def _human_named_captures(self, replaced_captures):
         wrepl = set()
+        prepl = set()
         out = []
 
         max_len = 36
@@ -192,11 +236,9 @@ class Differ(object):
 
             _mlen = max_len - len(k) + 2 # plus the : and the space
 
-            # remove any newline and replace them by a ^n
-            v = self.NLs.sub('^n', v)
-
-            v, w = self._human(v)
+            v, w, p = self._human(v, replace_newlines=True)
             wrepl.update(w)
+            prepl.update(p)
             if len(v) > _mlen:
                 _mlen -= 5 # minus the ' ... '
                 v = v[:int(_mlen/2)] + " ... " + v[-int(_mlen/2):]
@@ -207,7 +249,7 @@ class Differ(object):
         k_vs = list(replaced_captures.items())
         k_vs.sort()
         if not k_vs:
-            return '\n'.join(out), wrepl
+            return '\n'.join(out), wrepl, prepl
 
         out.append("Tags replaced by the captured output:")
 
@@ -221,7 +263,7 @@ class Differ(object):
             out.append("    %s%s%s" % (left, " " * space_between, right))
 
         out.append("(You can disable this with '--no-enhance-diff')")
-        return '\n'.join(out), wrepl
+        return '\n'.join(out), wrepl, prepl
 
 
 
@@ -234,39 +276,56 @@ class Differ(object):
     NLs = re.compile(r"\n+",   flags=re.MULTILINE)
     last_NLs = re.compile(r"\n+\Z", flags=re.MULTILINE)
 
-    def _human(self, s):
+    def _human(self, s, replace_newlines=False):
         ws      = '\t\x0b\x0c\r'
         tr_ws   = ['^t', '^v', '^f', '^r', '^s']
 
+        present_before_repl = set()
         wrepl = set()
         prev = s
 
         # replace whitespace chars by the literal ^X except spaces
         for c, tr_c in zip(ws, tr_ws):
+            before = tr_c in s
+            if before:
+                present_before_repl.add(tr_c)
+
             s = s.replace(c, tr_c)
             if s != prev:
                 wrepl.add(tr_c)
                 prev = s
 
         # replace trailing spaces by something like "$"
+        before = any(line.endswith('$') for line in s.split('\n'))
+        if before:
+            present_before_repl.add('$')
+
         s = self.WS.sub(lambda m: '$' * (m.end(0) - m.start(0)), s)
         if s != prev:
             wrepl.add('$')
             prev = s
 
+        if replace_newlines:
+            before = '\n' in s
+            if before:
+                present_before_repl.add('^n')
+
+            s = self.NLs.sub('^n', s)
+            if s != prev:
+                wrepl.add('^n')
+                prev = s
+
         # any weird thing replace it by a '?'
+        before = '?' in s
+        if before:
+            present_before_repl.add('?')
+
         s = s.translate(ctrl_tr)
         if s != prev:
             wrepl.add('?')
             prev = s
 
-        # replace empty line by '^n'
-        s = '\n'.join((l if l else '^n') for l in s.split('\n'))
-        if s != prev:
-            wrepl.add('^n')
-            prev = s
-
-        return s, wrepl
+        return s, wrepl, present_before_repl
 
     def _remove_last_empty_lines(self, s):
         return self.last_NLs.sub('', s)

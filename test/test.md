@@ -12,8 +12,8 @@ $ jobs=1 pretty=none make lib-test         # byexample: +rm=~ +timeout=60 +diff=
 File byexample/cache.py, 11/11 test ran in <...> seconds
 [PASS] Pass: 11 Fail: 0 Skip: 0
 ~
-File byexample/differ.py, 18/18 test ran in <...> seconds
-[PASS] Pass: 18 Fail: 0 Skip: 0
+File byexample/differ.py, 23/23 test ran in <...> seconds
+[PASS] Pass: 23 Fail: 0 Skip: 0
 ~
 File byexample/expected.py, 95/95 test ran in <...> seconds
 [PASS] Pass: 95 Fail: 0 Skip: 0
