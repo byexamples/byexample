@@ -25,17 +25,8 @@ to take it *literally*, you could disable the
 [capture tags](basic/capture-and-paste)
 
 ```python
->>> print("<0>, <1>, and <tag>")        # byexample: -tags
-<0>, <1>, and <tag>
-```
-
-If you do not want to disable the capture tags functionality but
-you just want to some of them to be taken literally, you need
-to introduce an unused character and remove it before the comparison
-
-```python
->>> print("<0>, <1>, and junk")        # byexample: +rm=~
-<~0>, <~1>, and <tag>
+>>> print("<a>, <b>, and <tag>")        # byexample: -tags
+<a>, <b>, and <tag>
 ```
 
 ### How to escape a prompt inside of another example?
@@ -56,11 +47,11 @@ To avoid this, prefix an unused character and remove it before the comparison:
 
 In the example above ``$`` would be confused with the prompt of ``shell``.
 
-Prefixing ``~`` avoids this and the +rm=~ removes it before the comparison.
+Prefixing with ``~`` avoids this and the ``+rm=~`` removes it before the comparison.
 
 ### Why my ``<foo_bar>`` tag is not recognized?
 
-Only alphabetic, numeric characters plus the minus are recognized.
+Only alphabetic and numeric characters plus the minus are recognized.
 An *underscore* is not.
 
 ```
@@ -68,7 +59,7 @@ bad:  <foo_bar>
 good: <foo-bar>
 ```
 
-Do't worry, I made this mistake a few times too.
+Do not worry, I made this mistake a few times too.
 
 ### Check for the last line of xxx fails, why?
 
@@ -82,7 +73,7 @@ last line
 
 That example will work only if the line ends in a new line.
 
-To ignore that you need to use ``<...>`` in the same line:
+If not it will fail. To avoid that put ``<...>`` in the same line:
 
 ```python
 >>> print("last line")

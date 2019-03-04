@@ -9,8 +9,8 @@ tLIT = ('wspaces', 'newlines', 'literals')
 >>> from byexample.parser_sm import SM, SM_NormWS, SM_NotNormWS
 >>> import re
 
->>> _tag_regex = re.compile(r"<(?P<name>(?:[^\W_]|-|\.)+)>")
->>> _tag_split_regex = re.compile(r"(<(?:[^\W_]|-|\.)+>)")
+>>> _tag_regex = re.compile(r"<(?P<name>[A-Za-z.][A-Za-z0-9:.-]*)>")
+>>> _tag_split_regex = re.compile(r"(<[A-Za-z.][A-Za-z0-9:.-]*>)")
 >>> _ellipsis_marker = '...'
 
 >>> sm = SM(_tag_regex, _tag_split_regex, _ellipsis_marker)

@@ -65,8 +65,8 @@ class ExampleParser(ExtendOptionParserMixin):
         Instead you should use minus '-'.
         '''
         return {
-                'split': re.compile(r"(<(?:[^\W_]|-|\.)+>)"),
-                'full': re.compile(r"<(?P<name>(?:[^\W_]|-|\.)+)>"),
+                'split': re.compile(r"(<[A-Za-z.][A-Za-z0-9:.-]*>)"),
+                'full': re.compile(r"<(?P<name>[A-Za-z.][A-Za-z0-9:.-]*)>"),
                 }
 
     def ellipsis_marker(self):

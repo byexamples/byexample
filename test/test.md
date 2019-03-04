@@ -146,6 +146,9 @@ File docs/languages/shell.md, 31/31 test ran in <...> seconds
 File docs/overview/differences.md, 13/13 test ran in <...> seconds
 [PASS] Pass: 13 Fail: 0 Skip: 0
 ~
+File docs/overview/faq.md, 5/5 test ran in <...> seconds
+[PASS] Pass: 5 Fail: 0 Skip: 0
+~
 File docs/overview/usage.md, 7/7 test ran in <...> seconds
 [PASS] Pass: 7 Fail: 0 Skip: 0
 ~
