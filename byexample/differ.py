@@ -92,11 +92,9 @@ class Differ(object):
             >>> flags['diff'] = 'none'
             >>> flags['enhance_diff'] = True
             >>> print(output_difference(expected, got, flags, False))
-            Nothing captured.
-            Notes:
-                $: trailing spaces
-                ^n: a blank line    ?: non-printable    ^t: tab
-                ^v: vertical tab   ^r: carriage return  ^f: form feed
+            Some non-printable characters were replaced by printable ones.
+                 $: trailing spaces    ^n: a blank line       ^t: tab
+            (You can disable this with '--no-enhance-diff')
             Expected:
             one
             two$$
@@ -139,9 +137,12 @@ class Differ(object):
         got      = self._remove_last_empty_lines(got)
 
         if flags['enhance_diff']:
-            self._print_named_captures(replaced_captures)
-            self._write("Notes:\n%s" % self.HUMAN_EXPL)
-            expected, got = self._human(expected), self._human(got)
+            namedcap, r1 = self._human_named_captures(replaced_captures)
+
+            expected, r2 = self._human(expected)
+            got, r3 = self._human(got)
+
+            self._print_human_replacement_table(r1 | r2 | r3)
 
         diff_type = flags['diff']
 
@@ -150,11 +151,39 @@ class Differ(object):
         else:
             self.just_print(expected, got, use_colors)
 
+        if flags['enhance_diff'] and namedcap:
+            self._write('')
+            self._write(namedcap)
+
         return ''.join(self._diff)
 
-    def _print_named_captures(self, replaced_captures):
-        if not replaced_captures:
-            pass
+    def _print_human_replacement_table(self, wrepl):
+        if not wrepl:
+            return
+
+        HUMAN_EXPL = {
+                '$' : ' $: trailing spaces',
+                '^n': '^n: a blank line   ',
+                '?' : ' ?: non-printable  ',
+                '^t': '^t: tab            ',
+                '^v': '^v: vertical tab   ',
+                '^r': '^r: carriage return',
+                '^f': '^f: form feed      ',
+                }
+
+        assert wrepl.issubset(set(HUMAN_EXPL.keys()))
+        wrepl = list(sorted(wrepl))
+
+        self._write("Some non-printable characters were replaced by printable ones.")
+        for tmp in [wrepl[i:i+3] for i in range(0, len(wrepl), 3)]:
+            line = [HUMAN_EXPL[r] for r in tmp]
+            line = '    '.join(line)
+            self._write("    %s" % line)
+        self._write("(You can disable this with '--no-enhance-diff')")
+
+    def _human_named_captures(self, replaced_captures):
+        wrepl = set()
+        out = []
 
         max_len = 36
         def _format(k, v):
@@ -166,7 +195,8 @@ class Differ(object):
             # remove any newline and replace them by a ^n
             v = self.NLs.sub('^n', v)
 
-            v = self._human(v)
+            v, w = self._human(v)
+            wrepl.update(w)
             if len(v) > _mlen:
                 _mlen -= 5 # minus the ' ... '
                 v = v[:int(_mlen/2)] + " ... " + v[-int(_mlen/2):]
@@ -177,10 +207,9 @@ class Differ(object):
         k_vs = list(replaced_captures.items())
         k_vs.sort()
         if not k_vs:
-            self._write("Nothing captured.")
-            return
+            return '\n'.join(out), wrepl
 
-        self._write("Captured:\n")
+        out.append("Tags replaced by the captured output:")
 
         if len(k_vs) % 2 != 0:
             k_vs.append((None, None)) # make the list even
@@ -189,7 +218,10 @@ class Differ(object):
             left, right = _format(*k_v1), _format(*k_v2)
 
             space_between = max(max_len - len(left), 1) if right else 0
-            self._write("    %s%s%s" % (left, " " * space_between, right))
+            out.append("    %s%s%s" % (left, " " * space_between, right))
+
+        out.append("(You can disable this with '--no-enhance-diff')")
+        return '\n'.join(out), wrepl
 
 
 
@@ -197,10 +229,6 @@ class Differ(object):
         self._diff.append(s)
         if end_with_newline and not s.endswith('\n'):
             self._diff.append('\n')
-
-    HUMAN_EXPL  = "    $: trailing spaces\n" + \
-                  "    ^n: a blank line    ?: non-printable    ^t: tab\n" + \
-                  "    ^v: vertical tab   ^r: carriage return  ^f: form feed"
 
     WS  = re.compile(r"[ ]+$", flags=re.MULTILINE)
     NLs = re.compile(r"\n+",   flags=re.MULTILINE)
@@ -210,19 +238,35 @@ class Differ(object):
         ws      = '\t\x0b\x0c\r'
         tr_ws   = ['^t', '^v', '^f', '^r', '^s']
 
+        wrepl = set()
+        prev = s
+
         # replace whitespace chars by the literal ^X except spaces
         for c, tr_c in zip(ws, tr_ws):
             s = s.replace(c, tr_c)
+            if s != prev:
+                wrepl.add(tr_c)
+                prev = s
 
         # replace trailing spaces by something like "$"
         s = self.WS.sub(lambda m: '$' * (m.end(0) - m.start(0)), s)
+        if s != prev:
+            wrepl.add('$')
+            prev = s
 
         # any weird thing replace it by a '?'
         s = s.translate(ctrl_tr)
+        if s != prev:
+            wrepl.add('?')
+            prev = s
 
         # replace empty line by '^n'
         s = '\n'.join((l if l else '^n') for l in s.split('\n'))
-        return s
+        if s != prev:
+            wrepl.add('^n')
+            prev = s
+
+        return s, wrepl
 
     def _remove_last_empty_lines(self, s):
         return self.last_NLs.sub('', s)

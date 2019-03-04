@@ -94,13 +94,14 @@ negate some sentence.
 
 ## Guessing the tags
 
-Now in the practice what your example may contain
+Your example may contain
 [tags](/{{ site.uprefix }}/basic/capture-and-paste) like ``<...>`` or ``<foo>``.
 
 Those are used to ignore long uninteresting strings or to capture specific
 ones.
 
-So let's change the example to be more realistic with some tags:
+So let's change the example adding some tags and see how the
+differences are shown:
 
 ```
 $ cat test/ds/about-lic-with-tags.doc              # byexample: +rm=~
@@ -117,9 +118,6 @@ If we run the example again:
 ```
 $ byexample -l shell test/ds/about-lic-with-tags.doc
 <...>
-Captured:
-    protect: your rights                responsibilities: responsi ... f others
-<...>
 Expected:
 To protect your rights, we need to prevent others from <prevent1>
 or <prevent2>.  Therefore, you have
@@ -131,6 +129,10 @@ these rights or asking you to surrender the rights.  Therefore, you don't have
 certain responsibilities if you distribute copies of the software, or if
 you modify it: responsibilities to respect the freedom of others.
 <...>
+Tags replaced by the captured output:
+    protect: your rights                responsibilities: responsi ... f others
+(You can disable this with '--no-enhance-diff')
+<...>
 ```
 
 The test keeps failing as expected: we didn't fix the typos in the ``lic.doc``.
@@ -141,8 +143,7 @@ Read carefully the ``Expected`` string, notice how the tags ``<prevent1>``
 and ``<prevent2>`` are there *exactly* as we defined in the test.
 
 Nothing interesting so far but the ``<protect>`` and ``<responsibilities>``
-where replaced by the correct text and they not shown as tags but just as
-texts.
+where replaced by the correct text.
 
 ``byexample`` *captured* the fragments ``"your rights"`` and
 ``"responsibilities to respect the freedom of others"``
@@ -152,9 +153,6 @@ These *guesses* makes the differences shorter and more easy to spot:
 
 ```
 $ byexample -l shell --diff ndiff test/ds/about-lic-with-tags.doc   # byexample: +rm=~
-<...>
-Captured:
-    protect: your rights                responsibilities: responsi ... f others
 <...>
 Differences:
 - To protect your rights, we need to prevent others from <prevent1>
@@ -167,6 +165,10 @@ Differences:
 + these rights or asking you to surrender the rights.  Therefore, you don't have
   certain responsibilities if you distribute copies of the software, or if
   you modify it: responsibilities to respect the freedom of others.
+<...>
+Tags replaced by the captured output:
+    protect: your rights                responsibilities: responsi ... f others
+(You can disable this with '--no-enhance-diff')
 <...>
 ```
 
@@ -194,6 +196,21 @@ Differences:
 <...>
 ```
 
+> *Advanced tweak:* why ``<protect>`` was replaced but not ``<prevent1>``?
+> This is because the tag ``<prevent1>`` was too near of a mismatch and
+> ``byexample`` had not enough confidence to *guess* what text should be
+> captured by the ``<prevent1>`` tag.
+>
+> If the resulting diff is still too hard to read, you can *tweak* the minimum
+> distance between a tag and the first mismatch with ``-x-min-rcount <n>``:
+> shorter values will make ``byexample`` to guess more aggressively
+> at the expense of some false positives.
+
+<!--
+$ byexample -xh | grep -q 'x-min-rcount <n>' ; echo $?
+0
+-->
+
 ## Diff algorithms
 
 In addition to the default diff algorithm (``none``) and
@@ -209,9 +226,6 @@ The ``unified`` diff algorithm:
 ```
 $ byexample -l shell --diff unified test/ds/about-lic-with-tags.doc
 <...>
-Captured:
-    protect: your rights                responsibilities: responsi ... f others
-<...>
 Differences:
 @@ -1,4 +1,4 @@
 -To protect your rights, we need to prevent others from <prevent1>
@@ -221,15 +235,16 @@ Differences:
  certain responsibilities if you distribute copies of the software, or if
  you modify it: responsibilities to respect the freedom of others.
 <...>
+Tags replaced by the captured output:
+    protect: your rights                responsibilities: responsi ... f others
+(You can disable this with '--no-enhance-diff')
+<...>
 ```
 
 And the ``context`` diff algorithm:
 
 ```
 $ byexample -l shell --diff context test/ds/about-lic-with-tags.doc
-<...>
-Captured:
-    protect: your rights                responsibilities: responsi ... f others
 <...>
 Differences:
 *** 1,4 ****
@@ -242,5 +257,9 @@ Differences:
 ! these rights or asking you to surrender the rights.  Therefore, you don't have
   certain responsibilities if you distribute copies of the software, or if
   you modify it: responsibilities to respect the freedom of others.
+<...>
+Tags replaced by the captured output:
+    protect: your rights                responsibilities: responsi ... f others
+(You can disable this with '--no-enhance-diff')
 <...>
 ```

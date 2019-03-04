@@ -46,7 +46,6 @@ $ byexample -l python test/ds/python-tutorial.v1.md
 <...>
 Failed example:
     2j * 2
-<...>
 Expected:
 4
 Got:

@@ -102,7 +102,6 @@ $ byexample -l python,shell test/ds/small-terminal.md
 File "test/ds/small-terminal.md", line 2
 Failed example:
     echo ${LINES}x${COLUMNS}
-<...>
 Expected:
 24x60
 Got:
@@ -111,7 +110,6 @@ Got:
 File "test/ds/small-terminal.md", line 6
 Failed example:
     ['aaaaa', 'aaaaa', 'aaaaa', 'aaaaa', 'aaaaa', 'aaaaa', 'aaaaa']
-<...>
 Expected:
 ['aaaaa',
  'aaaaa',
