@@ -95,8 +95,8 @@ File docs/advanced/terminal-emulation.md, 13/13 test ran in <...> seconds
 File docs/advanced/unicode.md, 9/9 test ran in <...> seconds
 [PASS] Pass: 9 Fail: 0 Skip: 0
 ~
-File docs/basic/capture-and-paste.md, 6/6 test ran in <...> seconds
-[PASS] Pass: 6 Fail: 0 Skip: 0
+File docs/basic/capture-and-paste.md, 8/8 test ran in <...> seconds
+[PASS] Pass: 8 Fail: 0 Skip: 0
 ~
 File docs/basic/normalize-whitespace.md, 3/3 test ran in <...> seconds
 [PASS] Pass: 3 Fail: 0 Skip: 0

@@ -53,6 +53,22 @@ you may want to know what [strategies](/{{ site.uprefix }}/advanced/greedy-lazy-
 Using unamed tags ``<...>`` or adding more context around the named tag fixes
 the problem most of the time.
 
+### Valid names
+
+Only alphanumeric characters plus the minus and the dot symbols
+are valid characters for a tag name and a name must starts with
+a letter or with a dot.
+
+This restricted set prevents unwanted false positives:
+
+```python
+>>> def fib():
+...     pass
+
+>>> fib
+<function fib at <address>>
+```
+
 ## Limitation
 
 If an example fails, its named tags are not captured.
