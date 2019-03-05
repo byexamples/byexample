@@ -345,3 +345,5 @@ class PexpectMixin(object):
             self._drop_output()
             return False
 
+# backward compatibility for 8.x.x. what a typo!!
+PexepctMixin = PexpectMixin
