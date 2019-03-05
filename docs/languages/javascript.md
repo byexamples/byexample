@@ -4,6 +4,9 @@
 
 You can get the interpreter from [here](https://nodejs.org/en/download/).
 
+> **Stability**: ``experimental`` - non backward compatibility changes are
+> possible or even removal between versions (even patch versions).
+
 ## Find interactive examples
 
 For ``Javascript``, ``byexample`` uses the ``>`` string as the primary prompt

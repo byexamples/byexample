@@ -10,6 +10,11 @@ $ hash gcc                                          # byexample: +fail-fast
 You need to have the debugger installed first on your system, check
 its [download page](https://www.gnu.org/software/gdb/download/).
 
+> **Stability**: ``experimental`` - non backward compatibility changes are
+> possible or even removal between versions (even patch versions).
+
+## Quick example
+
 To show you this, let's first create a program to debug:
 
 ```cpp

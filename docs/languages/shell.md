@@ -18,6 +18,10 @@ $ alias byexample=byexample\ --pretty\ none
 to be POSIX-conformant
 but other shells are supported like ``dash`` and ``ksh``.
 
+> **Stability**: ``provisional`` - low impact non backward compatibility
+> changes may occur between versions; but in general a change like that
+> will happen only between major versions.
+
 ## Find interactive examples
 
 For ``Shell``, we use the simple ``$`` marker as the primary prompt

@@ -5,6 +5,10 @@
 You need the default interpreter ``irb`` installed first.
 Check its [download page](https://www.ruby-lang.org/en/downloads/)
 
+> **Stability**: ``provisional`` - low impact non backward compatibility
+> changes may occur between versions; but in general a change like that
+> will happen only between major versions.
+
 ## Find interactive examples
 
 For ``Ruby``, ``byexample`` uses the ``>>`` string as the primary prompt

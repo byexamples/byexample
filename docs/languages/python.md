@@ -6,6 +6,9 @@ I'm assuming that you have ``Python`` installed in your system as ``byexample``
 needs it to run but just in case, this is the [download page](https://www.python.org/downloads/)
 for this interpreter.
 
+> **Stability**: ``stable`` - non backward compatibility changes, if happen,
+> they will between major versions.
+
 ## Find interactive examples
 
 For ``Python``, ``byexample`` uses the ``>>>`` string as the primary and ``...``

@@ -9,6 +9,9 @@ immune to bugs, quirks nor crashes.
 
 Don't forget to send your feedback to the ``cling`` community.
 
+> **Stability**: ``experimental`` - non backward compatibility changes are
+> possible or even removal between versions (even patch versions).
+
 ### Variable definition
 
 All the variables are global and can be accessed by other examples
