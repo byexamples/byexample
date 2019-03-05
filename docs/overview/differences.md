@@ -218,7 +218,7 @@ the ``ndiff`` algorithm, ``byexample`` implements two more.
 
 ```
 $ byexample -h                      # byexample: +norm-ws
-usage: <byexample> [-d {none,unified,ndiff,context}] <...>
+usage: <byexample> [-d {none,unified,ndiff,context,tool}] <...>
 ```
 
 The ``unified`` diff algorithm:
@@ -263,3 +263,28 @@ Tags replaced by the captured output:
 (You can disable this with '--no-enhance-diff')
 <...>
 ```
+
+### External diff program
+
+If ``--diff tool`` is selected, ``byexample`` will delegate the diff creation
+to an external program set with ``--difftool <cmd>``.
+
+Use this to call your favorite diff program like ``diff``, ``meld``,
+``git diff`` and ``vimdiff``.
+
+```shell
+$ byexample -l shell --diff tool --difftool 'diff %e %g' test/ds/about-lic-with-tags.doc
+<...>
+External diff tool
+1,2c1,2
+< To protect your rights, we need to prevent others from <prevent1>
+< or <prevent2>.  Therefore, you have
+---
+> To protect your rights, we need to prevent no-one from denying you
+> these rights or asking you to surrender the rights.  Therefore, you don't have
+Return code: 1
+<...>
+```
+
+The ``%e`` and ``%g`` tokens are replaced with the file names with
+the content of the expected and the got outputs.

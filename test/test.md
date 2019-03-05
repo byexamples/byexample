@@ -12,6 +12,9 @@ $ jobs=1 pretty=none make lib-test         # byexample: +rm=~ +timeout=60 +diff=
 File byexample/cache.py, 11/11 test ran in <...> seconds
 [PASS] Pass: 11 Fail: 0 Skip: 0
 ~
+File byexample/common.py, 11/11 test ran in <...> seconds
+[PASS] Pass: 11 Fail: 0 Skip: 0
+~
 File byexample/differ.py, 23/23 test ran in <...> seconds
 [PASS] Pass: 23 Fail: 0 Skip: 0
 ~
@@ -29,9 +32,6 @@ File byexample/parser.py, 26/26 test ran in <...> seconds
 ~
 File byexample/parser_sm.py, 129/129 test ran in <...> seconds
 [PASS] Pass: 129 Fail: 0 Skip: 0
-~
-File byexample/runner.py, 11/11 test ran in <...> seconds
-[PASS] Pass: 11 Fail: 0 Skip: 0
 <...>
 ```
 
@@ -69,7 +69,7 @@ If what you are looking for is what is capable of, you definetly need
 to see the README.md and the rest of the documentation in ``docs/``
 
 ```shell
-$ jobs=1 pretty=none make docs-test         # byexample: +rm=~ +timeout=60 +diff=ndiff
+$ jobs=1 pretty=none make docs-test         # byexample: +rm=~ +timeout=120 +diff=ndiff
 <...>
 File CONTRIBUTING.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 0 Fail: 0 Skip: 5
@@ -143,8 +143,8 @@ File docs/languages/ruby.md, 10/10 test ran in <...> seconds
 File docs/languages/shell.md, 31/31 test ran in <...> seconds
 [PASS] Pass: 31 Fail: 0 Skip: 0
 ~
-File docs/overview/differences.md, 14/14 test ran in <...> seconds
-[PASS] Pass: 14 Fail: 0 Skip: 0
+File docs/overview/differences.md, 15/15 test ran in <...> seconds
+[PASS] Pass: 15 Fail: 0 Skip: 0
 ~
 File docs/overview/faq.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 5 Fail: 0 Skip: 0

@@ -210,7 +210,7 @@ def get_default_options_parser(cmdline_args):
     options_parser.add_argument(
             "+diff",
             default=cmdline_args.diff,
-            choices=['none', 'unified', 'ndiff', 'context'],
+            choices=['none', 'unified', 'ndiff', 'context', 'tool'],
             help="select diff algorithm.")
     options_parser.add_argument(
             "+geometry",
@@ -232,6 +232,7 @@ def get_options(args, cfg):
     options = Options({
                         'interact': False,
                         'shebangs': args.shebangs,
+                        'difftool':   args.difftool,
                         })
     log("Options (cmdline): %s" % options, cfg['verbosity']-2)
 

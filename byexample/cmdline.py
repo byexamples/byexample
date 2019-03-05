@@ -200,9 +200,18 @@ def parse_args(args=None):
     g.add_argument(
             "-d",
             "--diff",
-            choices=['none', 'unified', 'ndiff', 'context'],
+            choices=['none', 'unified', 'ndiff', 'context', 'tool'],
             default='none',
             help='select diff algorithm (%(default)s by default).')
+    g.add_argument(
+            "--difftool",
+            metavar='<cmd>',
+            dest='difftool',
+            default=None,
+            help='command line to the external diff program; ' + \
+                 'the tokens %%e and %%g are replaced by ' + \
+                 'the file names with the expected and the got outputs ' + \
+                 'to compare. Enabled only if "--diff tool".')
     g.add_argument(
             "--no-enhance-diff",
             action='store_false',

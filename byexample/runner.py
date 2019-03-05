@@ -1,78 +1,10 @@
 from __future__ import unicode_literals
-import re, pexpect, time, termios, operator, string, shlex, os, itertools, contextlib
+import re, pexpect, time, termios, operator, os, itertools, contextlib
 from functools import reduce, partial
 from .executor import TimeoutException
-from .common import tohuman
+from .common import tohuman, ShebangTemplate
 
 from pyte import Stream, Screen
-
-try:
-    from shlex import quote as shlex_quote
-except ImportError:
-    from pipes import quote as shlex_quote
-
-class ShebangTemplate(string.Template):
-    delimiter = '%'
-
-    def quote_and_substitute(self, tokens):
-        '''
-        Quote each token to be suitable for shell expansion and then
-        perform a substitution in the template.
-
-        >>> from byexample.runner import ShebangTemplate
-        >>> tokens = {'a': ['-i', "-c", 'blue = "1"'],
-        ...           'e': '/usr/bin/env', 'p': 'python'}
-
-        The basic case is a simple template where each token
-        is quoted except the lists: each item is quoted but not the
-        whole list as a single unit.
-
-        >>> shebang = '%e %p %a'
-        >>> print(ShebangTemplate(shebang).quote_and_substitute(tokens))
-        /usr/bin/env python -i -c 'blue = "1"'
-
-        This works even if the token in the template are already quoted
-        >>> shebang = '/bin/sh -c \'%e %p %a >/dev/null\''
-        >>> print(ShebangTemplate(shebang).quote_and_substitute(tokens))
-        /bin/sh -c '/usr/bin/env python -i -c '"'"'blue = "1"'"'"' >/dev/null'
-
-        Here is another pair of examples:
-        >>> tokens = {'a': ['-i', "-c", 'blue = \'1\''],
-        ...           'e': '/usr/bin/env', 'p': 'py\'thon'}
-
-        >>> shebang = '%e %p %a'
-        >>> print(ShebangTemplate(shebang).quote_and_substitute(tokens))
-        /usr/bin/env 'py'"'"'thon' -i -c 'blue = '"'"'1'"'"''
-
-        >>> shebang = '/bin/sh -c \'%e %p %a >/dev/null\''
-        >>> print(ShebangTemplate(shebang).quote_and_substitute(tokens))
-        /bin/sh -c '/usr/bin/env '"'"'py'"'"'"'"'"'"'"'"'thon'"'"' -i -c '"'"'blue = '"'"'"'"'"'"'"'"'1'"'"'"'"'"'"'"'"''"'"' >/dev/null'
-        '''
-
-        self._tokens = {}
-        self._not_quote_them = []
-        for k, v in tokens.items():
-            if isinstance(v, (list, tuple)):
-                self._tokens[k] = ' '.join(shlex_quote(i) for i in v)
-            else:
-                self._tokens[k] = shlex_quote(v)
-
-        cmd = []
-        for x in shlex.split(self.template):
-            # *before* the expansion, will this require quote? (will yield
-            # more than a single item?)
-            should_quote = len(shlex.split(x)) > 1
-
-            # perform the expansion
-            x = ShebangTemplate(x).substitute(self._tokens)
-
-            # was needed to quote this *before* the expansion?
-            if should_quote:
-                x = shlex_quote(x)
-
-            cmd.append(x)
-
-        return ' '.join(cmd)
 
 class ExampleRunner(object):
     def __init__(self, verbosity, encoding, **unused):

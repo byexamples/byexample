@@ -1,11 +1,13 @@
 from __future__ import unicode_literals
-from .common import log, colored
-import string, re, difflib
+from .common import log, colored, ShebangTemplate
+import string, re, difflib, tempfile, os, subprocess
 
 try:
     ctrl_tr = unichr(0) # dummy, it would fail in Python 3.x
+    ENC = True
 except:
     unichr = chr    # for Python 3.x
+    ENC = False
 finally:
     # what unicodes are control code?
     #   import unicodedata
@@ -19,9 +21,10 @@ finally:
                     else unichr(i) for i in range(160)}
 
 class Differ(object):
-    def __init__(self, verbosity, **unused):
+    def __init__(self, verbosity, encoding, **unused):
         self._diff = []
         self.verbosity = verbosity
+        self.encoding = encoding
 
     def output_difference(self, example, got, flags, use_colors):
         r'''
@@ -31,7 +34,7 @@ class Differ(object):
         Depending of the flags the diff can be returned differently.
             >>> from __future__ import unicode_literals
             >>> from byexample.differ import Differ
-            >>> output_difference = Differ(verbosity=0).output_difference
+            >>> output_difference = Differ(verbosity=0, encoding='utf8').output_difference
 
             >>> expected = 'one\ntwo\nthree\nfour'
             >>> got      = 'zero\none\ntree\nfour'
@@ -171,8 +174,10 @@ class Differ(object):
 
         diff_type = flags['diff']
 
-        if diff_type != 'none':
+        if diff_type not in ('none', 'tool'):
             self.print_diff(expected, got, diff_type, use_colors)
+        elif diff_type == 'tool':
+            self.use_external_tool(expected, got, flags['difftool'], use_colors)
         else:
             self.just_print(expected, got, use_colors)
 
@@ -344,6 +349,53 @@ class Differ(object):
 
         else:
             self._write(colored("Got nothing", 'red', use_colors))
+
+    def use_external_tool(self, expected, got, cmdline, use_colors):
+        efilename = gfilename = None
+        try:
+            with tempfile.NamedTemporaryFile('wt', delete=False) as efile:
+                efilename = efile.name
+                if ENC:
+                    expected = expected.encode(self.encoding)
+                efile.write(expected)
+
+            with tempfile.NamedTemporaryFile('wt', delete=False) as gfile:
+                gfilename = gfile.name
+                if ENC:
+                    got = got.encode(self.encoding)
+                gfile.write(got)
+
+            tokens = {
+                    'e': efilename,
+                    'g': gfilename,
+                    }
+            cmdline = ShebangTemplate(cmdline).quote_and_substitute(tokens)
+            try:
+                out = subprocess.check_output(
+                        cmdline,
+                        shell=True,
+                        stderr=subprocess.STDOUT)
+                returncode = 0
+            except subprocess.CalledProcessError as err:
+                out = err.output
+                returncode = err.returncode
+
+            out = out.decode(self.encoding)
+
+            self._write(colored('External diff tool', 'yellow', use_colors))
+            self._write(out)
+
+            if returncode != 0:
+                self._write(colored('Return code: ', 'red', use_colors),
+                            end_with_newline=False)
+                self._write(str(returncode))
+
+        finally:
+            if efilename:
+                os.remove(efilename)
+            if gfilename:
+                os.remove(gfilename)
+
 
     def print_diff(self, expected, got, diff_type, use_colors):
         expected_lines = expected.split('\n')

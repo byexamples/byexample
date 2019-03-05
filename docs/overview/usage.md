@@ -89,12 +89,13 @@ The help included in ``byexample`` should give you a quick overview of its
 capabilities
 
 ```
-$ byexample -h                                # byexample: +norm-ws -tags +rm=~
+$ byexample -h                                # byexample: +norm-ws -tags +rm=~ +diff=ndiff
 usage: byexample -l <languages> [--ff] [--timeout <secs>] [-j <n>] [--dry]
                  [--skip <file> [<file> ...]]
-                 [-d {none,unified,ndiff,context}] [--no-enhance-diff]
-                 [-o <options>] [--show-options] [-m <dir>] [--encoding <enc>]
-                 [--pretty {none,all}] [-V] [-v | -q] [-h | -xh]
+                 [-d {none,unified,ndiff,context,tool}] [--difftool <cmd>]
+                 [--no-enhance-diff] [-o <options>] [--show-options]
+                 [-m <dir>] [--encoding <enc>] [--pretty {none,all}] [-V]
+                 [-v | -q] [-h | -xh]
 ~
 Write snippets of code in C++, Python, Ruby, and others as documentation and
 execute them as regression tests.
@@ -121,8 +122,12 @@ Execution Options:
                         skip these files
 ~
 Diff Options:
-  -d {none,unified,ndiff,context}, --diff {none,unified,ndiff,context}
+  -d {none,unified,ndiff,context,tool}, --diff {none,unified,ndiff,context,tool}
                         select diff algorithm (none by default).
+  --difftool <cmd>      command line to the external diff program; the tokens
+                        %e and %g are replaced by the file names with the
+                        expected and the got outputs to compare. Enabled only
+                        if "--diff tool".
   --no-enhance-diff     by default, improves are made so the diff are easier
                         to to understand: non-printable characters are
                         visible; captured string shown, and more; this flag
