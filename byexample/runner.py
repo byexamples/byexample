@@ -12,7 +12,7 @@ class ExampleRunner(object):
         self.encoding = encoding
 
     def __repr__(self):
-        return '%s Runner' % tohuman(self.language)
+        return '%s Runner' % tohuman(self.language if self.language else self)
 
     def run(self, example, options):
         '''

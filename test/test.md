@@ -12,8 +12,8 @@ $ jobs=1 pretty=none make lib-test         # byexample: +rm=~ +timeout=60 +diff=
 File byexample/cache.py, 11/11 test ran in <...> seconds
 [PASS] Pass: 11 Fail: 0 Skip: 0
 ~
-File byexample/common.py, 11/11 test ran in <...> seconds
-[PASS] Pass: 11 Fail: 0 Skip: 0
+File byexample/common.py, 16/16 test ran in <...> seconds
+[PASS] Pass: 16 Fail: 0 Skip: 0
 ~
 File byexample/differ.py, 23/23 test ran in <...> seconds
 [PASS] Pass: 23 Fail: 0 Skip: 0
@@ -74,11 +74,11 @@ $ jobs=1 pretty=none make docs-test         # byexample: +rm=~ +timeout=120 +dif
 File CONTRIBUTING.md, 5/5 test ran in <...> seconds
 [PASS] Pass: 0 Fail: 0 Skip: 5
 ~
-File README.md, 9/9 test ran in <...> seconds
-[PASS] Pass: 7 Fail: 0 Skip: 2
+File README.md, 5/5 test ran in <...> seconds
+[PASS] Pass: 3 Fail: 0 Skip: 2
 ~
 File docs/advanced/conditional-execution.md, 8/8 test ran in <...> seconds
-[PASS] Pass: 7 Fail: 0 Skip: 1
+[PASS] Pass: 6 Fail: 0 Skip: 2
 ~
 File docs/advanced/geometry.md, 12/12 test ran in <...> seconds
 [PASS] Pass: 12 Fail: 0 Skip: 0
@@ -141,7 +141,7 @@ File docs/languages/ruby.md, 10/10 test ran in <...> seconds
 [PASS] Pass: 10 Fail: 0 Skip: 0
 ~
 File docs/languages/shell.md, 31/31 test ran in <...> seconds
-[PASS] Pass: 31 Fail: 0 Skip: 0
+[PASS] Pass: 30 Fail: 0 Skip: 1
 ~
 File docs/overview/differences.md, 15/15 test ran in <...> seconds
 [PASS] Pass: 15 Fail: 0 Skip: 0

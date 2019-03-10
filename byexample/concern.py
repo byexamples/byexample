@@ -53,7 +53,7 @@ class Concern(ExtendOptionParserMixin):
         pass
 
     def __repr__(self):
-        return '%s Concern' % tohuman(self.target)
+        return '%s Concern' % tohuman(self.target if self.target else self)
 
     def extend_option_parser(self, parser):
         '''

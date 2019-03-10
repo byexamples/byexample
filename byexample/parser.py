@@ -19,7 +19,7 @@ class ExampleParser(ExtendOptionParserMixin):
         self._opts_cache = {}
 
     def __repr__(self):
-        return '%s Parser' % tohuman(self.language)
+        return '%s Parser' % tohuman(self.language if self.language else self)
 
     def example_options_string_regex(self):
         '''

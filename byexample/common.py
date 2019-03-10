@@ -1,6 +1,10 @@
 from __future__ import unicode_literals
 import pprint, traceback, contextlib, os, re, string, shlex
 
+'''
+>>> from byexample.common import tohuman
+'''
+
 def indent(s, indent=4):
     ''' Indent the given text.
         See doctest._indent for the code that inspired this.
@@ -85,10 +89,27 @@ except ImportError:
         return example.source
 
 def tohuman(s):
+    ''' Simple but quite human representation of <s>.
+
+        >>> tohuman("hi")
+        'Hi'
+
+        >>> tohuman("HiJimmy-Whats_up?")
+        'Hijimmy Whats Up?'
+
+        >>> tohuman(["hello", "world"])
+        'Hello, World'
+
+        >>> tohuman(tohuman)
+        'Function*'
+    '''
     if isinstance(s, (list, tuple, set)):
         if isinstance(s, set):
             s = sorted(list(s))
         s = ', '.join(s)
+    elif not isinstance(s, str):
+        s = s.__class__.__name__
+        s += "*"
     s = s.replace("-", " ").replace("_", " ")
     s = ' '.join(w.capitalize() for w in s.split())
 

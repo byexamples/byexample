@@ -474,7 +474,7 @@ class ExampleFinder(object):
         raise NotImplementedError() # pragma: no cover
 
     def __repr__(self):
-        return '%s Finder' % tohuman(self.target)
+        return '%s Finder' % tohuman(self.target if self.target else self)
 
     def check_and_remove_indent(self, example_str, indent, where):
         r'''
@@ -625,4 +625,4 @@ class ZoneDelimiter(object):
         return match.group('zone')
 
     def __repr__(self):
-        return '%s Zone Delimiter' % tohuman(self.target)
+        return '%s Zone Delimiter' % tohuman(self.target if self.target else self)
