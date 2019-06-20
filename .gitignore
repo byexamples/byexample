@@ -9,3 +9,4 @@ byexample.egg-info
 todo
 .fnames.tmp
 .flinks.tmp
+test/ds/some.log
