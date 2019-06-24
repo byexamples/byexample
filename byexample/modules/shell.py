@@ -95,7 +95,7 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
                 'bash': {
                     'e': '/usr/bin/env',
                     'p': 'bash',
-                    'a': ['--norc', '--noprofile', '--posix'],
+                    'a': ['--norc', '--noprofile', '--posix', '--noediting'],
                     },
                 'dash': {
                     'e': '/usr/bin/env',
