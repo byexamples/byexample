@@ -121,7 +121,7 @@ Current version:
 $ byexample -V
 byexample 8.1.1 (Python <...>) - GNU GPLv3
 <...>
-Copyright (C) Di Paola Martin - https://github.com/byexamples/byexample
+Copyright (C) Di Paola Martin - https://byexamples.github.io
 <...>
 ```
 

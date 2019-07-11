@@ -160,6 +160,6 @@ Examples:
   byexample -l python,ruby --ff --timeout=8 file.md
   byexample -l python,ruby --show-options
 ~
-See https://github.com/byexamples/byexample for the full documentation
+See https://byexamples.github.io for the full documentation
 and more examples.
 ```

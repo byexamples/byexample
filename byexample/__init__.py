@@ -4,7 +4,7 @@ __version__ = "8.1.1"
 
 _author  = 'Di Paola Martin'
 _license = 'GNU GPLv3'
-_url = 'https://github.com/byexamples/byexample'
+_url = 'https://byexamples.github.io'
 
 _license_disclaimer = r'''Copyright (C) {author} - {url}
 
