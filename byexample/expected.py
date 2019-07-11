@@ -29,8 +29,9 @@ class _LinearExpected(Expected):
         >>> ex = build_example('f()', 'aa<foo>bb<bar-baz>cc', opts=opts)
         >>> exp = ex.expected
 
-        If <foo> is .* we can split the expected string into two: aa and bb; and
-        check each of them in order from left to right without overlapping:
+        If <foo> is .* we can split the expected string into three: aa, bb
+        and cc; and check each of them in order from left to right
+        without overlapping:
 
         >>> got = 'aaXYZbbcc'
         >>> exp.check_got_output(ex, got, opts, 0)

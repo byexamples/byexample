@@ -143,7 +143,9 @@ class SM(object):
             and 'sax' is repeated at the 6th character.
             ~
             May be you wanted to paste them and you forgot
-            '+paste' or may be you want to treat them as literals
+            '+paste' or their were not captured in a previous
+            example. Or perhaps you do not want capture/paste
+            anything: you want to treat the tags as literals
             and you forgot '-tags'.
 
             The regexs are non-greedy by default with one exception: if
@@ -164,7 +166,9 @@ class SM(object):
             msg = "The same capture tag cannot be used twice\n"+\
                   "and '%s' is repeated at the %ith character.\n\n"+\
                   "May be you wanted to paste them and you forgot\n"+\
-                  "'+paste' or may be you want to treat them as literals\n"+\
+                  "'+paste' or their were not captured in a previous\n"+\
+                  "example. Or perhaps you do not want capture/paste\n"+\
+                  "anything: you want to treat the tags as literals\n"+\
                   "and you forgot '-tags'."
 
             raise ValueError(msg % (name, charno))
