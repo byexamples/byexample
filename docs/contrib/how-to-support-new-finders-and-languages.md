@@ -66,10 +66,10 @@ To accomplish this we need to create a regular expression to find the
 ...     # begin with ~~~
 ...     ^[ ]*  ~~~  [ ]*\n
 ...
-...     # the, grab everything until the 'out:' string
-...     # this will be out snippet of code
+...     # grab everything until the 'out:' string
+...     # this will be our snippet of code
 ...     (?P<snippet>
-...         (?:^(?P<indent> [ ]*)[^ ] .*)   # first line: learn what is the
+...         (?:^(?P<indent> [ ]*)[^ ] .*)   # first line: learn what is
 ...                                         # the level of indentation
 ...
 ...         (?:\n                           # grab everything else...
@@ -81,7 +81,7 @@ To accomplish this we need to create a regular expression to find the
 ...     \n?
 ...
 ...     # now, if we find 'out:', grab the expected output
-...     # this part of the regex is optional because no all the examples
+...     # this part of the regex is optional because not all the examples
 ...     # output something to compare with.
 ...     (?: [ ]* out:[ ]*\n
 ...         (?P<expected> (?:
@@ -118,9 +118,9 @@ different languages.
 
 ### The Finder class
 
-Now we ensemble all the pieces together.
+Now we assemble all the pieces.
 We need to create a class, inherit from ``ExampleFinder``,
-define a ``target`` attribute and implement few methods:
+define a ``target`` attribute and implement a few methods:
 
 ```python
 >>> from byexample.finder import ExampleFinder
@@ -139,7 +139,7 @@ define a ``target`` attribute and implement few methods:
 ```
 
 The ``target`` attribute may need a little explanation. All the
-Finders must declare to which type of examples they are targeting.
+Finders must declare which type of examples they are targeting.
 
 If two Finders try to find the same target, one will override the other.
 
@@ -184,7 +184,7 @@ Take a look of the implementation of ``PythonFinder``
 
 The ``PythonFinder`` will find and match ``Python`` examples that starts with
 the prompt ``>>>``; later, it extends ``get_snippet_and_expected`` to remove
-the prompts from the snippet to return a valid ``Python`` code.
+the prompts from the snippet to return valid ``Python`` code.
 
 ## How to support new languages: the Parser and the Runner
 
@@ -199,7 +199,7 @@ extract the options that ``byexample`` uses to customize the example.
 The [options](/{{ site.uprefix }}/basic/options) can be of any form and be in any place.
 
 Typically we can write the options in the comments of the code which obviously
-will depend of the language.
+will depend on the language.
 
 If the comments in ``ArnoldC`` starts with a ``#``, we can say that every comment
 that starts with ``byexample`` is a comment that will contain options.
@@ -241,7 +241,7 @@ for more information.
 
 ### The Parser class
 
-Now we ensemble all the pieces together.
+Now we assemble all the pieces.
 
 We need to create a class, inherit from ``ExampleParser``,
 define a ``language`` attribute and implement the missing methods:
