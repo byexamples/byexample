@@ -66,10 +66,10 @@ To accomplish this we need to create a regular expression to find the
 ...     # begin with ~~~
 ...     ^[ ]*  ~~~  [ ]*\n
 ...
-...     # the, grab everything until the 'out:' string
-...     # this will be out snippet of code
+...     # grab everything until the 'out:' string
+...     # this will be our snippet of code
 ...     (?P<snippet>
-...         (?:^(?P<indent> [ ]*)[^ ] .*)   # first line: learn what is the
+...         (?:^(?P<indent> [ ]*)[^ ] .*)   # first line: learn what is
 ...                                         # the level of indentation
 ...
 ...         (?:\n                           # grab everything else...
@@ -81,7 +81,7 @@ To accomplish this we need to create a regular expression to find the
 ...     \n?
 ...
 ...     # now, if we find 'out:', grab the expected output
-...     # this part of the regex is optional because no all the examples
+...     # this part of the regex is optional because not all the examples
 ...     # output something to compare with.
 ...     (?: [ ]* out:[ ]*\n
 ...         (?P<expected> (?:
