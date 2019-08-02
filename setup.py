@@ -104,6 +104,7 @@ setup(
     keywords='doctest documentation test testing',
 
     packages=['byexample', 'byexample.modules'],
+    data_files=[("", ["LICENSE"])],
 
     entry_points={
         'console_scripts': [
