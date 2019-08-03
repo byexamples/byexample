@@ -9,6 +9,7 @@ branches:
 env:
     global:
       - BYEXAMPLE_CACHE_DISABLED=0
+      - 'PYTHONWARNINGS=ignore:::byexample.cache'
 
 install: make deps
 script: make travis-test

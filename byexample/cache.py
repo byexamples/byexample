@@ -5,8 +5,8 @@ import appdirs
 import os
 import sys
 import contextlib
-import fcntl
 import errno
+import warnings
 
 try:
     import cPickle as pickle
@@ -18,17 +18,65 @@ try:
 except NameError:
     unicode = str       # aka, we are in Python 3.x
 
+try:
+    # See https://docs.python.org/3.6/library/msvcrt.html
+    import msvcrt
+    def _at_begin(file):
+        fpos = file.tell()
+        try:
+            file.seek(0,0)
+            yield f
+        finally:
+            file.seek(fpos, 0)
+
+    def _acquire_flock_os(file, read_lock):
+        # Note: this has the side effect of chainging the file position
+        # and restoring it back during the lock-operation
+
+        # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/locking?view=vs-2019
+        # seems that msvcrt has no support for read or shared locks
+        mode = msvcrt.LK_LOCK
+        while True:
+            try:
+                with _at_begin(file):
+                    msvcrt.locking(file.fileno(), mode, 1)
+                break
+            except OSError as err:
+                if err.errno in (errno.EACCES, errno.EDEADLOCK):
+                    continue
+                raise
+
+    def _release_flock_os(file):
+        # Note: this has the side effect of chainging the file position
+        # and restoring it back during the lock-operation
+        with _at_begin(file):
+            msvcrt.locking(file.fileno(), msvcrt.LK_UNLCK, 1)
+except ImportError:
+    pass
+
+try:
+    # See https://docs.python.org/3/library/fcntl.html#fcntl.flock
+    import fcntl
+    def _acquire_flock_os(file, read_lock):
+        fcntl.lockf(file.fileno(), fcntl.LOCK_SH if read_lock else fcntl.LOCK_EX)
+
+    def _release_flock_os(file):
+        fcntl.lockf(file.fileno(), fcntl.LOCK_UN)
+except ImportError:
+    pass
+
 @contextlib.contextmanager
-def flock(file, shared=False):
-    fcntl.lockf(file.fileno(), fcntl.LOCK_SH if shared else fcntl.LOCK_EX)
+def flock(file, read_lock=False):
+    _acquire_flock_os(file, read_lock)
     try:
         yield
     finally:
-        fcntl.lockf(file.fileno(), fcntl.LOCK_UN)
+        _release_flock_os(file)
+
 
 def create_file_new_or_fail(name):
     if unicode == str:
-        # For Python 3.x with can open a file using 'x' flag.
+        # For Python 3.x we can open a file using 'x' flag.
         # 'x' means create a new file or fail
         # honestly, I'm not sure if 'x' is race-condition free
         # this is a best effort implementation
@@ -45,12 +93,31 @@ def create_file_new_or_fail(name):
         raise OSError(errno.EEXIST, "FileExistsError")
 
 
+'''
+>>> from byexample.cache import RegexCache
+>>> import warnings
+>>> warnings.filterwarnings('ignore', module='byexample.cache')
+'''
+
 class RegexCache(object):
     def __init__(self, filename, disabled=False, cache_verbose=False):
         self.disabled = disabled
         self.verbose = cache_verbose
         if self.disabled:
             return
+
+        warnings.warn("Cache is enabled. This is an *experimental* feature",
+                RuntimeWarning)
+
+        try:
+            _acquire_flock_os
+            _release_flock_os
+        except NameError:
+            # if we cannot prevent race condition due a lack of file locks,
+            # disable the cache
+            warnings.warn("Cache will be disabled because the current OS/file system does not support file locks",
+                    RuntimeWarning)
+            self.disabled = True
 
         if filename:
             self.filename = self._cache_filepath(filename)
@@ -109,7 +176,6 @@ class RegexCache(object):
             The path will be formed based on the user's cache directory,
             platform and python version.
 
-            >>> from byexample.cache import RegexCache
             >>> RegexCache._cache_filepath('foo')
             '<user-cache-dir>/byexample/re-<platform>-<python-version>/foo'
 
@@ -144,7 +210,7 @@ class RegexCache(object):
             If the load/read fails, return a empty cache too.
             '''
         try:
-            with open(self.filename, 'rb') as f, flock(f, shared=True):
+            with open(self.filename, 'rb') as f, flock(f, read_lock=True):
                 return self._read_cache_or_empty(f)
         except IOError as e:
             if e.errno == errno.ENOENT:    # aka Python 3.3's FileNotFoundError
