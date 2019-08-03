@@ -6,6 +6,7 @@ import os
 import sys
 import contextlib
 import errno
+import warnings
 
 try:
     import cPickle as pickle
@@ -92,12 +93,31 @@ def create_file_new_or_fail(name):
         raise OSError(errno.EEXIST, "FileExistsError")
 
 
+'''
+>>> from byexample.cache import RegexCache
+>>> import warnings
+>>> warnings.filterwarnings('ignore', module='byexample.cache')
+'''
+
 class RegexCache(object):
     def __init__(self, filename, disabled=False, cache_verbose=False):
         self.disabled = disabled
         self.verbose = cache_verbose
         if self.disabled:
             return
+
+        warnings.warn("Cache is enabled. This is an *experimental* feature",
+                RuntimeWarning)
+
+        try:
+            _acquire_flock_os
+            _release_flock_os
+        except NameError:
+            # if we cannot prevent race condition due a lack of file locks,
+            # disable the cache
+            warnings.warn("Cache will be disabled because the current OS/file system does not support file locks",
+                    RuntimeWarning)
+            self.disabled = True
 
         if filename:
             self.filename = self._cache_filepath(filename)
@@ -156,7 +176,6 @@ class RegexCache(object):
             The path will be formed based on the user's cache directory,
             platform and python version.
 
-            >>> from byexample.cache import RegexCache
             >>> RegexCache._cache_filepath('foo')
             '<user-cache-dir>/byexample/re-<platform>-<python-version>/foo'
 
