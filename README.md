@@ -119,7 +119,7 @@ Current version:
 
 ```shell
 $ byexample -V
-byexample 8.1.2 (Python <...>) - GNU GPLv3
+byexample 8.1.3 (Python <...>) - GNU GPLv3
 <...>
 Copyright (C) Di Paola Martin - https://byexamples.github.io
 <...>
