@@ -217,21 +217,23 @@ class SimpleReporter(Concern):
         self.fail += 1
 
     def event(self, what, **data):
-        if what == 'log':
-            level = data['level']
-            if level == 'error':
-                hdr = colored("Err:", 'red', self.use_colors)
-            elif level == 'chat':
-                if self.verbosity < 2:
-                    return
-                hdr = colored("Chat:", 'cyan', self.use_colors)
-            elif level == 'warn':
-                hdr = colored("Warn:", 'yellow', self.use_colors)
-            else:
-                return
+        if what != 'log':
+            return
 
-            msg = "%s %s\n" % (hdr, data['msg'])
-            self._write(msg)
+        level = data['level']
+        if level == 'error':
+            hdr = colored("Err:", 'red', self.use_colors)
+        elif level == 'chat':
+            if self.verbosity < 2:
+                return
+            hdr = colored("Chat:", 'cyan', self.use_colors)
+        elif level == 'warn':
+            hdr = colored("Warn:", 'yellow', self.use_colors)
+        else:
+            return
+
+        msg = "%s %s\n" % (hdr, data['msg'])
+        self._write(msg)
 
 
     def _error_header(self, example):
