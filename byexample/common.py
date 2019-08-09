@@ -44,6 +44,8 @@ def log(msg, lvl, concerns=None):
 
 def colored(s, color, use_colors):
     if use_colors:
+        if color == 'none':
+            return s
         c = {'green': 32, 'red': 31, 'yellow': 33, 'cyan': 36}[color]
         return "\033[%sm%s\033[0m" % (c, s)
     else:
