@@ -1,8 +1,8 @@
 from logging import (Formatter, Logger,
                      DEBUG, INFO, WARNING, ERROR, CRITICAL,
                      getLogger)
-import sys
-import byexample.common
+import sys, logging
+from byexample.common import colored
 
 CHAT = INFO-1
 class XFormatter(Formatter):
@@ -42,7 +42,7 @@ class XFormatter(Formatter):
                     }[lvlno]
 
         tag = "%s" % marker
-        tag = byexample.common.colored(tag, color, use_colors=True)
+        tag = colored(tag, color, use_colors=logging.use_colors_in_logs)
 
         return "%s %s" % (tag, s)
 
@@ -73,7 +73,13 @@ class XLogger(Logger):
         return tmp
 
 def init_log_system():
-    import logging
+    # Convenient global variable to control
+    # if we should put some color or not in
+    # the logs.
+    # Its use is intended for the logging
+    # system only
+    logging.use_colors_in_logs = False
+
     logging.setLoggerClass(XLogger)
 
     logging.CHAT = CHAT
@@ -90,6 +96,7 @@ def init_log_system():
 
     #rlog.setLevel(DEBUG)
 
+    logging.use_colors_in_logs = True
     if True:
         rlog.critical("hey!!\nasasas")
         rlog.error("hey!!\nasasas")
