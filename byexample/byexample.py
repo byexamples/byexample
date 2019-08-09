@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from .cache import RegexCache
 from .jobs import Jobs, Status, allow_sigint
+from .log import init_log_system
 import os, sys
 
 def execute_examples(filename, sigint_handler):
@@ -21,7 +22,9 @@ def execute_examples(filename, sigint_handler):
     return True, True, user_aborted, error
 
 def main(args=None):
-    global cache, harvester, executor, options, human_args, dry
+    global cache, harvester, executor, options, dry
+
+    init_log_system()
 
     cache_disabled = os.getenv('BYEXAMPLE_CACHE_DISABLED', "1") != "0"
     cache_verbose  = os.getenv('BYEXAMPLE_CACHE_VERBOSE', "0") != "0"
