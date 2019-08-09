@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import pprint, traceback, contextlib, os, re, string, shlex
+import pprint, traceback, contextlib, os, re, string, shlex, logging
 
 '''
 >>> from byexample.common import tohuman
@@ -191,19 +191,23 @@ def constant(argumentless_method):
 
 
 @contextlib.contextmanager
-def human_exceptions(where_default, verbosity, quiet):
+def human_exceptions(where_default):
     ''' Print to stdout the message of the exception (if any)
-        suppressing its traceback.
-         - if verbosity is greather than zero, print the traceback.
-         - if quiet is True, do not print anything.
+        in a human-understandable way.
 
-        To enhance the print, print the 'where' attribute of the
-        exception (if it has one) or the 'where_default'.
+        To enhance the message, print the <where> attribute of the
+        exception (if it has one) or the <where_default>.
 
-        If the captured exception is a SystemExit, do not print anything
-        even if verbosity is greather than zero.
+        If the captured exception is a SystemExit, do not print anything.
+
         This allows to use SystemExit as a abort mechanism without printing
         anything to the console.
+
+        If the captured exception is a KeyboardInterrupt, assume that
+        the user want to 'abort' the execution, so it will print
+        just a message saying that.
+
+        No exception will be propagated out of this context manager.
 
         The context manager will yield a dictionary with the
         key 'exc' set to the exception caught if any or it will
@@ -213,26 +217,15 @@ def human_exceptions(where_default, verbosity, quiet):
     try:
         yield o
     except KeyboardInterrupt as e:
-        if not quiet:
-            print('Execution aborted by the user.')
+        rlog = logging.getLogger(name='root')
+        rlog.info('Execution aborted by the user.')
 
         o['exc'] = e
     except SystemExit as e:
         o['exc'] = e
     except BaseException as e:
-        if quiet:
-            pass
-        else:
-            where = getattr(e, 'where', where_default)
-            msg = str(e)
-            if verbosity >= 1:
-                msg = traceback.format_exc()
-            else:
-                msg += "\n\nRerun with -v to get a full stack trace."
-
-            cls = str(e.__class__.__name__)
-            print("{where}\n{cls}: {msg}".format(where=where, msg=msg, cls=cls))
-
+        rlog = logging.getLogger(name='root')
+        rlog.human_exception(e, where_default, advice=None)
         o['exc'] = e
 
 @contextlib.contextmanager

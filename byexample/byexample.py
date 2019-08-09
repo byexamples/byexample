@@ -5,10 +5,10 @@ from .log import init_log_system
 import os, sys
 
 def execute_examples(filename, sigint_handler):
-    global cache, harvester, executor, options, human_args, dry
+    global cache, harvester, executor, options, dry
     from .common import human_exceptions
 
-    with human_exceptions("File '%s':" % filename, *human_args) as exc, \
+    with human_exceptions("File '%s':" % filename) as exc, \
             cache.synced(label=filename), \
             allow_sigint(sigint_handler):
         examples = harvester.get_examples_from_file(filename)
@@ -38,8 +38,7 @@ def main(args=None):
         args = parse_args(args)
 
         dry = args.dry
-        human_args = [args.verbosity, args.quiet]
-        with human_exceptions('During the initialization phase:', *human_args) as exc:
+        with human_exceptions('During the initialization phase:') as exc:
             testfiles, harvester, executor, options = init(args)
 
         if exc:
