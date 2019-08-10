@@ -8,7 +8,7 @@ def execute_examples(filename, sigint_handler):
     global cache, harvester, executor, options, dry
     from .common import human_exceptions
 
-    with human_exceptions("File '%s':" % filename) as exc, \
+    with human_exceptions("processing the file '%s'" % filename) as exc, \
             cache.synced(label=filename), \
             allow_sigint(sigint_handler):
         examples = harvester.get_examples_from_file(filename)
@@ -38,7 +38,7 @@ def main(args=None):
         args = parse_args(args)
 
         dry = args.dry
-        with human_exceptions('During the initialization phase:') as exc:
+        with human_exceptions('initializing byexample') as exc:
             testfiles, harvester, executor, options = init(args)
 
         if exc:

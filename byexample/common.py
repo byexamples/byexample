@@ -218,14 +218,14 @@ def human_exceptions(where_default):
         yield o
     except KeyboardInterrupt as e:
         rlog = logging.getLogger(name='root')
-        rlog.info('Execution aborted by the user.')
+        rlog.user_aborted()
 
         o['exc'] = e
     except SystemExit as e:
         o['exc'] = e
     except BaseException as e:
         rlog = logging.getLogger(name='root')
-        rlog.human_exception(e, where_default, advice=None)
+        rlog.exception(msg=None, where=where_default)
         o['exc'] = e
 
 @contextlib.contextmanager
