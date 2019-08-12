@@ -111,7 +111,29 @@ class XLogger(Logger):
         else:
             return Logger.exception(self, msg, *args, exc_info=exc_info, **kwargs)
 
+_logger_stack = []
+def clog():
+    return _logger_stack[-1]
+
+def log_context(logger_name):
+    global _logger_stack
+
+    assert _logger_stack
+    current = getLogger(name=logger_name)
+
+    def decorator(func):
+        def wrapped(*args, **kargs):
+            try:
+                _logger_stack.append(current)
+                yield func(*args, **kargs)
+            finally:
+                _logger_stack.pop()
+        return wrapped
+    return decorator
+
 def init_log_system():
+    global _logger_stack
+
     # Convenient global variable to control
     # if we should put some color or not in
     # the logs.
@@ -124,16 +146,23 @@ def init_log_system():
     logging.CHAT = CHAT
     logging.addLevelName(CHAT, 'CHAT')
 
-    rlog = getLogger(name='root') # root
+    rlog = getLogger(name='byexample') # root
 
     ch = logging.StreamHandler(stream=sys.stdout)
     fmtter = XFormatter('%(message)s')
 
     ch.setFormatter(fmtter)
+
     rlog.addHandler(ch)
+
     rlog.setLevel(INFO)
 
-    #rlog.setLevel(DEBUG)
+    # Set up the global logger.
+    # Activate and deactivate sub loggers using log_context
+    # decorator on the top level functions
+    _logger_stack.append(rlog)
+
+    rlog.setLevel(DEBUG)
 
     logging.use_colors_in_logs = True
     if True:
