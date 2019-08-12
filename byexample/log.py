@@ -125,11 +125,15 @@ def log_context(logger_name):
         def wrapped(*args, **kargs):
             try:
                 _logger_stack.append(current)
-                yield func(*args, **kargs)
+                return func(*args, **kargs)
             finally:
                 _logger_stack.pop()
         return wrapped
     return decorator
+
+class XStreamHandler(logging.StreamHandler):
+    def __init__(self, *args, **kargs):
+        logging.StreamHandler.__init__(self, *args, **kargs)
 
 def init_log_system():
     global _logger_stack
@@ -148,9 +152,9 @@ def init_log_system():
 
     rlog = getLogger(name='byexample') # root
 
-    ch = logging.StreamHandler(stream=sys.stdout)
-    fmtter = XFormatter('%(message)s')
+    ch = XStreamHandler(stream=sys.stdout)
 
+    fmtter = XFormatter('%(message)s')
     ch.setFormatter(fmtter)
 
     rlog.addHandler(ch)
