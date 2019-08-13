@@ -8,8 +8,8 @@ from .executor import FileExecutor
 from .differ import Differ
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
-from .common import log, enhance_exceptions
-from .log import clog, log_context
+from .common import enhance_exceptions
+from .log import clog, log_context, CHAT
 
 def are_tty_colors_supported(output):
     def get_colors():
@@ -63,6 +63,7 @@ def is_a(target_class, key_attr, warn_missing_key_attr):
 
     return _is_X
 
+@log_context('byexample.load')
 def load_modules(dirnames, cfg):
     verbosity = cfg['verbosity']
     registry = {'runners': {},
@@ -228,6 +229,7 @@ def get_default_options_parser(cmdline_args):
     return options_parser
 
 
+@log_context('byexample.options')
 def get_options(args, cfg):
     # the options object should have a set of default values based
     # on the flags and values from the command line.
@@ -236,14 +238,14 @@ def get_options(args, cfg):
                         'shebangs': args.shebangs,
                         'difftool':   args.difftool,
                         })
-    log("Options (cmdline): %s" % options, cfg['verbosity']-2)
+    clog().chat("Options (cmdline): %s", options)
 
     # create a parser for the rest of the options.
     optparser = get_default_options_parser(args)
     options['optparser'] = optparser
     options.update(optparser.defaults())
 
-    log("Options (cmdline + byexample's defaults): %s" % options, cfg['verbosity']-2)
+    clog().chat("Options (cmdline + byexample's defaults): %s", options)
     # we parse the argument 'options' to allow the user to change
     # some options.
     #
@@ -266,7 +268,7 @@ def get_options(args, cfg):
     # completed later
     cfg['options']= options
 
-    log("Options (cmdline + byexample's defaults + --options): %s" % options, cfg['verbosity']-2)
+    clog().chat("Options (cmdline + byexample's defaults + --options): %s", options)
 
     options['x'] = {}
     for k, v in vars(args).items():
@@ -317,6 +319,7 @@ def extend_option_parser_with_concerns(cfg, registry):
     cfg['options']['optparser'] = optparser
     return optparser
 
+@log_context('byexample.options')
 def extend_options_with_language_specific(cfg, registry, allowed_languages):
     parsers = [p for p in registry['parsers'].values()
                if p.language in allowed_languages]
@@ -332,8 +335,7 @@ def extend_options_with_language_specific(cfg, registry, allowed_languages):
         opts = parser.extract_cmdline_options(cfg['opts_from_cmdline'])
         cfg['options'].update(opts)
 
-    log("Options (cmdline + --options + language specific): %s" % cfg['options'],
-            cfg['verbosity']-2)
+    clog().chat("Options (cmdline + --options + language specific): %s", cfg['options'])
 
 @log_context('byexample.init')
 def init(args):
@@ -371,9 +373,8 @@ def init(args):
 
     if not testfiles:
         if not cfg['quiet']:
-            log("No files were found (you passed %i files and %i were skipped)" %
-                    (len(set(args.files)), len(set(args.files) - allowed_files)),
-                    cfg['verbosity'])
+            clog().error("No files were found (you passed %i files and %i were skipped)",
+                    (len(set(args.files)), len(set(args.files) - allowed_files)))
         sys.exit(1)
 
     # extend the option parser with all the parsers of the concerns.
@@ -388,8 +389,11 @@ def init(args):
     if cfg['quiet']:
         registry['concerns'].pop('progress', None)
 
-    log("Configuration:\n%s." % pprint.pformat(cfg), cfg['verbosity']-2)
-    log("Registry:\n%s." % pprint.pformat(registry), cfg['verbosity']-2)
+    if not clog().isEnabledFor(CHAT):
+        clog().info("Options:\n%s.", pprint.pformat(cfg['options']))
+
+    clog().chat("Configuration:\n%s.", pprint.pformat(cfg))
+    clog().chat("Registry:\n%s.", pprint.pformat(registry))
 
     concerns = ConcernComposite(registry, **cfg)
 

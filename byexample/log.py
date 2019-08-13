@@ -169,7 +169,7 @@ def init_log_system():
 
     rlog.addHandler(ch)
 
-    rlog.setLevel(INFO)
+    rlog.setLevel(NOTE)
 
     # Set up the global logger.
     # Activate and deactivate sub loggers using log_context
