@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
-from .common import log, print_example, print_execution, enhance_exceptions
+from .common import print_example, print_execution, enhance_exceptions
+from .log import clog, log_context
 
 class TimeoutException(Exception):
     def __init__(self, msg, output):
@@ -18,19 +19,19 @@ class FileExecutor(object):
     def initialize_runners(self, runners, options):
         tmp = []
         for runner in runners:
-            log("Initializing %s" % str(runner), 'chat', self.concerns)
+            clog().info("Initializing %s", str(runner))
             try:
                 runner.initialize(options)
                 tmp.append(runner)
             except:
                 self.shutdown_runners(tmp, stop_on_failure=False)
-                log("Initialization of %s failed." % str(runner), 'error', self.concerns)
+                clog().warn("Initialization of %s failed.", str(runner))
                 raise
 
     def shutdown_runners(self, runners, stop_on_failure=True):
         tmp = list(runners)
         for runner in runners:
-            log("Shutting down %s" % str(runner), 'chat', self.concerns)
+            clog().info("Shutting down %s", str(runner))
             try:
                 runner.shutdown()
                 del tmp[0]
@@ -39,7 +40,7 @@ class FileExecutor(object):
                 if stop_on_failure:
                     self.shutdown_runners(tmp, stop_on_failure=False)
 
-                log("Shutdown of %s failed." % str(runner), 'error', self.concerns)
+                clog().warn("Shutdown of %s failed.", str(runner))
 
                 if stop_on_failure:
                     raise
@@ -47,6 +48,7 @@ class FileExecutor(object):
     def __repr__(self):
         return 'File Executor'
 
+    @log_context('byexample.exec')
     def dry_execute(self, examples, filepath):
         for example in examples:
             with enhance_exceptions(example, example.parser, self.use_colors):
@@ -55,6 +57,7 @@ class FileExecutor(object):
 
         return False, False, False, False
 
+    @log_context('byexample.exec')
     def execute(self, examples, filepath):
         options = self.options
         runners = list(set(e.runner for e in examples))
