@@ -125,11 +125,11 @@ def clog():
 def log_context(logger_name):
     global _logger_stack
 
-    assert _logger_stack
-    current = getLogger(name=logger_name)
-
     def decorator(func):
         def wrapped(*args, **kargs):
+            assert _logger_stack
+            current = getLogger(name=logger_name)
+
             try:
                 _logger_stack.append(current)
                 return func(*args, **kargs)
