@@ -1,10 +1,11 @@
 from __future__ import unicode_literals
 import collections, re, os
-from .common import log, build_where_msg, tohuman, \
+from .common import build_where_msg, tohuman, \
                     enhance_exceptions, print_example, constant
 
 from .parser import ExampleParser
 from .options import Options
+from .log import clog, log_context, DEBUG, CHAT
 
 class Where(object):
     def __init__(self, start_lineno, end_lineno, filepath, zdelimiter):
@@ -193,11 +194,11 @@ class ExampleHarvest(object):
 
         return self.get_examples_from_string(string, filepath)
 
+    @log_context('byexample.find')
     def get_examples_from_string(self, string, filepath='<string>'):
         all_examples = []
         _, ext = os.path.splitext(filepath)
 
-        log("Finding examples...", self.verbosity-1)
         zdelimiter = self.zdelimiter_by_file_extension.get(
                 ext,
                 self.zdelimiter_by_file_extension['no-delimiter']
@@ -208,12 +209,12 @@ class ExampleHarvest(object):
                     filepath,
                     start_lineno=1)
 
-        log("File '%s': %i zones [%s]" % (filepath, len(zones),
-                                        str(zdelimiter)), self.verbosity-2)
+        clog().chat("File '%s': %i zones [%s]",
+                filepath, len(zones), str(zdelimiter))
 
-        if self.verbosity-3 >= 0:
+        if clog().isEnabledFor(DEBUG):
             for zone in zones:
-                log("Zone %s" % (zone.where), self.verbosity-3)
+                clog().debug("Zone %s", zone.where)
 
         for finder in self.available_finders:
             nexamples = 0
@@ -226,8 +227,8 @@ class ExampleHarvest(object):
                 all_examples.extend(examples)
                 nexamples += len(examples)
 
-            log("File '%s': %i examples [%s]" % (filepath, nexamples,
-                                            str(finder)), self.verbosity-2)
+            clog().chat("File '%s': %i examples [%s]",
+                    filepath, nexamples, str(finder))
 
         # sort the examples in the same order
         # that they were found in the file/string;
@@ -236,6 +237,9 @@ class ExampleHarvest(object):
 
         all_examples = self.check_example_overlap(all_examples, filepath)
 
+        tmp = set(e.runner.language for e in all_examples)
+        clog().info("Findings in file '%s': %i examples written in %i different languages in %i zones were found.",
+            filepath, len(all_examples), len(tmp), len(zones))
         return all_examples
 
     def check_example_overlap(self, examples, filepath):
@@ -346,16 +350,15 @@ class ExampleHarvest(object):
                              prev.finder)
                 raise ValueError(msg)
 
-        if self.verbosity-1 >= 0:
-            log("Examples after removing any overlapping", self.verbosity-1)
+        if clog().isEnabledFor(CHAT):
+            clog().debug("Examples after removing any overlapping")
             for finder in set(e.finder for e in examples):
-                log("File '%s': %i examples [%s]" % (
+                clog().chat("File '%s': %i examples [%s]",
                                     filepath,
                                     len([e for e in examples if e.finder==finder]),
-                                    str(finder)),
-                                    self.verbosity-1)
+                                    str(finder))
 
-        if self.verbosity-2 >= 0:
+        if clog().isEnabledFor(DEBUG):
             for e in examples:
                 print_example(e, self.use_colors, 0)
             print("")
@@ -365,7 +368,7 @@ class ExampleHarvest(object):
         self._log_debug(" => Dropped example: " + reason, where)
 
     def _log_debug(self, what, where):
-        log(build_where_msg(where, self, what), self.verbosity-3)
+        clog().debug(build_where_msg(where, self, what))
 
     def get_examples_using(self, finder, string, filepath, start_lineno):
         return self.from_string_get_items_using(

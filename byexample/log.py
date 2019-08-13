@@ -176,7 +176,7 @@ def init_log_system():
     # decorator on the top level functions
     _logger_stack.append(rlog)
 
-    rlog.setLevel(DEBUG)
+    rlog.setLevel(CHAT)
 
     logging.use_colors_in_logs = True
     if True:
