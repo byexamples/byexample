@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from multiprocessing import Queue, Process
 import signal, contextlib
+from .log import clog, CHAT
 
 class Status:
     ok = 0
@@ -23,9 +24,8 @@ def worker(func, sigint_handler, input, output):
     output.join_thread()
 
 class Jobs(object):
-    def __init__(self, njobs, verbosity):
+    def __init__(self, njobs):
         self.njobs = njobs
-        self.verbosity = verbosity
 
     def spawn_jobs(self, func, items):
         ''' Spawn <njobs> jobs to process <items> in parallel/concurrently.
@@ -56,9 +56,9 @@ class Jobs(object):
         for item in items[:njobs]:
             self.input.put(item)
 
-        if self.verbosity >= 1:
+        if clog().isEnabledFor(CHAT):
             for p in self.processes:
-                print("Worker %s (PID %i)." % (p.name, p.pid))
+                clog().chat("Worker %s (PID %i).", p.name, p.pid)
 
         return items[njobs:]
 

@@ -44,5 +44,5 @@ def main(args=None):
         if exc:
             sys.exit(Status.error)
 
-        jobs = Jobs(args.jobs, args.verbosity)
+        jobs = Jobs(args.jobs)
         return jobs.run(execute_examples, testfiles, options['fail_fast'])
