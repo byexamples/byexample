@@ -9,6 +9,7 @@ from .differ import Differ
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
 from .common import log, enhance_exceptions
+from .log import clog, log_context
 
 def are_tty_colors_supported(output):
     def get_colors():
@@ -54,8 +55,9 @@ def is_a(target_class, key_attr, warn_missing_key_attr):
         attr_ok = hasattr(obj, key_attr)
 
         if class_ok and not attr_ok:
-            log(" * Warning: class '%s' has not attribute '%s'." % \
-                    (obj.__name__, key_attr),  0)
+            clog().warn(
+                "Class '%s' has not attribute '%s'.",
+                obj.__name__, key_attr)
 
         return class_ok and attr_ok
 
@@ -72,20 +74,21 @@ def load_modules(dirnames, cfg):
     for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
         path = importer.path
 
-        log("From '%s' loading '%s'..." % (path, name), verbosity-2)
+        clog().debug("From '%s' loading '%s'...", path, name)
 
         try:
             module = importer.find_module(name).load_module(name)
         except Exception as e:
-            log("From '%s' loading '%s'...failed: %s" % (path, name, str(e)),
-                                                        verbosity)
+            clog().info(
+                "From '%s' loading '%s'...failed: %s",
+                path, name, str(e))
             continue
 
         stability = getattr(module, 'stability', 'undefined')
         if stability not in ('experimental', 'provisional', 'unstable', 'stable', 'deprecated'):
             stability = 'experimental/%s?' % str(stability)
 
-        log("From '%s' loaded '%s' (%s)" % (path, name, stability), verbosity-1)
+        clog().info("From '%s' loaded '%s' (%s)", path, name, stability)
         for klass, key, what in [(ExampleRunner, 'language', 'runners'),
                                  (ExampleParser, 'language', 'parsers'),
                                  (ExampleFinder, 'target', 'finders'),
@@ -105,13 +108,9 @@ def load_modules(dirnames, cfg):
                 klasses_found = set(klasses_found) - set(container.values())
 
             if klasses_found:
-                log("Classes found for '%s': %s" % (
+                clog().debug("Classes found for '%s': %s",
                     what,
-                    ', '.join(k.__name__ for k in klasses_found)),
-                    verbosity-2)
-            else:
-                log("No classes found for '%s'." % what,
-                        verbosity-2)
+                    ', '.join(k.__name__ for k in klasses_found))
 
             objs = [klass(**cfg) for klass in klasses_found]
             if objs:
@@ -126,7 +125,9 @@ def load_modules(dirnames, cfg):
                             container[k] = obj
                         loaded_objs.append(obj)
 
-                log("\n".join((" - %s" % repr(i)) for i in loaded_objs), verbosity-1)
+                clog().info("\n".join((" - %s" % repr(i)) for i in loaded_objs))
+            else:
+                clog().info("No classes found for '%s'.", what)
 
     return registry
 
@@ -155,14 +156,15 @@ def verify_encodings(input_encoding, verbosity):
         except:
             e = 'UTF-8'
 
-        log(("The encoding of your terminal is unset.\n" +
-                "Try to set the environment variable PYTHONIOENCODING='%s' first\n" +
-                "or run 'byexample' like this:\n" +
-                "  PYTHONIOENCODING='%s' byexample ...\n") % (e, e), verbosity)
+        clog().error(
+            "The encoding of your terminal is unset.\n" +
+            "Try to set the environment variable PYTHONIOENCODING='%s' first\n" +
+            "or run 'byexample' like this:\n" +
+            "  PYTHONIOENCODING='%s' byexample ...\n", e, e)
         sys.exit(-1)
 
-    log("Encoding (input): %s." % input_encoding, verbosity-2)
-    log("Encoding (output): %s." % sys.stdout.encoding, verbosity-2)
+    clog().chat("Encoding (input): %s.", input_encoding)
+    clog().chat("Encoding (output): %s.", sys.stdout.encoding)
 
 def geometry(x):
     lines, columns = [int(v.strip()) for v in str(x).split('x')]
@@ -333,6 +335,7 @@ def extend_options_with_language_specific(cfg, registry, allowed_languages):
     log("Options (cmdline + --options + language specific): %s" % cfg['options'],
             cfg['verbosity']-2)
 
+@log_context('byexample.init')
 def init(args):
     verify_encodings(args.encoding, args.verbosity)
 

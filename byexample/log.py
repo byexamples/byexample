@@ -4,6 +4,7 @@ from logging import (Formatter, Logger,
 import sys, logging
 from byexample.common import colored
 
+NOTE = INFO+1
 CHAT = INFO-1
 class XFormatter(Formatter):
     def format(self, record):
@@ -21,6 +22,7 @@ class XFormatter(Formatter):
                 DEBUG: 'none',
                 CHAT:  'cyan',
                 INFO:  'cyan',
+                NOTE:  'cyan',
                 WARNING:  'yellow',
                 ERROR:    'red',
                 CRITICAL: 'red',
@@ -31,6 +33,7 @@ class XFormatter(Formatter):
                     DEBUG: 'dgb',
                     CHAT:  'chat',
                     INFO:  'info',
+                    NOTE:  'note',
                     WARNING:  'warn',
                     ERROR:    'error',
                     CRITICAL: 'crit',
@@ -41,6 +44,7 @@ class XFormatter(Formatter):
                     DEBUG: '-',
                     CHAT:  '[i]',
                     INFO:  '[i]',
+                    NOTE:  '[i]',
                     WARNING:  '[w]',
                     ERROR:    '[!]',
                     CRITICAL: '[!]',
@@ -77,11 +81,14 @@ class XLogger(Logger):
     def chat(self, msg, *args, **kargs):
         return Logger.log(self, CHAT, msg, *args, **kargs)
 
+    def note(self, msg, *args, **kargs):
+        return Logger.log(self, NOTE, msg, *args, **kargs)
+
     def user_aborted(self):
         ''' Message (info) to notify that the execution was
             aborted (aka Ctrl-C)
             '''
-        return self.info('Execution aborted by the user.')
+        return self.note('Execution aborted by the user.')
 
     def exception(self, msg, *args, exc_info=True, **kwargs):
         ''' Log the current caught exception with a twist:
@@ -149,6 +156,9 @@ def init_log_system():
 
     logging.CHAT = CHAT
     logging.addLevelName(CHAT, 'CHAT')
+
+    logging.NOTE = NOTE
+    logging.addLevelName(NOTE, 'NOTE')
 
     rlog = getLogger(name='byexample') # root
 

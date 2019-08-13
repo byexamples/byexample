@@ -217,14 +217,14 @@ def human_exceptions(where_default):
     try:
         yield o
     except KeyboardInterrupt as e:
-        rlog = logging.getLogger(name='root')
+        rlog = logging.getLogger(name='byexample')
         rlog.user_aborted()
 
         o['exc'] = e
     except SystemExit as e:
         o['exc'] = e
     except BaseException as e:
-        rlog = logging.getLogger(name='root')
+        rlog = logging.getLogger(name='byexample')
         rlog.exception(msg=None, where=where_default)
         o['exc'] = e
 
