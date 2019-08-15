@@ -1,11 +1,12 @@
 from __future__ import unicode_literals
 import collections, re, os
 from .common import build_where_msg, tohuman, \
-                    enhance_exceptions, print_example, constant
+                    enhance_exceptions, constant, highlight_syntax
 
 from .parser import ExampleParser
 from .options import Options
-from .log import clog, log_context, DEBUG, CHAT
+from .log import clog, log_context, DEBUG, CHAT, getLogger
+import pprint
 
 class Where(object):
     def __init__(self, start_lineno, end_lineno, filepath, zdelimiter):
@@ -103,6 +104,62 @@ class Example(object):
                         f,
                         self.runner.language,
                         self.filepath, self.start_lineno, self.end_lineno)
+
+    def pretty_print(self):
+        log = clog()
+
+        # header
+        log.chat('%s (lines %s-%s:%s) [%s|%s]%s',
+                self.filepath,
+                self.start_lineno,
+                self.end_lineno,
+                self.runner.language,
+                self.finder,
+                self.runner,
+                "" if self.fully_parsed else " (not parsed yet)"
+                )
+
+        # source
+        use_colors = getLogger('byexample').use_colors
+        log.info(highlight_syntax(self, use_colors), extra={'no_marker':True})
+
+        if log.isEnabledFor(DEBUG):
+            tmp = [' len: expected line']
+            _l = 0
+            for e in self.expected_str.split('\n'):
+                tmp.append("% 4i: %s" % (_l, e))
+                _l += len(e) + 1
+
+            tmp = '\n'.join(tmp)
+            log.debug(tmp, extra={'no_marker':True})
+        else:
+            log.chat(self.expected_str, extra={'no_marker':True})
+
+        if not self.fully_parsed:
+            return
+
+        log.debug('Indentation: |%s| (%i bytes)',
+                self.indentation, len(self.indentation))
+
+        capture_tag_names = list(sorted(n for n in self.expected.tags_by_idx.values() if n != None))
+        log.chat('Capture tags: %s', pprint.pformat(capture_tag_names, width=50))
+
+        opts = pprint.pformat(self.options.as_dict(), width=50)
+        log.chat('Options: %s', opts)
+
+        if len(self.expected.regexs) != len(self.expected.charnos):
+            log.warn('Inconsistent regexs: %i regexs versus %i char-numbers',
+                    len(self.expected.regexs), len(self.expected.charnos))
+
+        tmp = []
+        tmp.append("Regexs:")
+        for p, r in zip(self.expected.charnos, self.expected.regexs):
+            tmp.append("% 4i: %s" % (p, repr(r)))
+
+        log.debug('\n'.join(tmp), extra={'no_marker':True})
+
+        #print("..[Run]" + "." * 63)
+        #print("  Runner: %s" % example.runner)
 
 def _build_fake_example(snippet, expected, language='python', start_lineno=0,
                             specific=False, fully_parsed=True, opts=None):
@@ -335,8 +392,8 @@ class ExampleHarvest(object):
                                     % (collision_type_1, collision_type_2,
                                         collision_type_3, prev.runner.language,
                                         example.runner.language), curr_where)
-                print_example(prev, self.use_colors, self.verbosity-3)
-                print_example(example, self.use_colors, self.verbosity-3)
+                prev.pretty_print()
+                example.pretty_print()
 
                 if collision_type_2:
                     del examples[i]
@@ -358,10 +415,9 @@ class ExampleHarvest(object):
                                     len([e for e in examples if e.finder==finder]),
                                     str(finder))
 
-        if clog().isEnabledFor(DEBUG):
+        if True or clog().isEnabledFor(DEBUG):
             for e in examples:
-                print_example(e, self.use_colors, 0)
-            print("")
+                e.pretty_print()
         return examples
 
     def _log_drop(self, reason, where):

@@ -117,65 +117,6 @@ def tohuman(s):
 
     return s
 
-def print_example(example, use_colors, x):
-    if x < 0:
-        return
-
-    print("::[Example]" + ":" * 59)
-    print("  Found in: %s (%s - %s) by: %s" % (example.filepath,
-                                               example.start_lineno,
-                                               example.end_lineno,
-                                               example.finder))
-    print("  Language: %s (%s)" % (example.runner.language,
-                            "parsed" if example.fully_parsed else "not parsed"))
-    print("..[Source]" + "." * 60)
-    print(highlight_syntax(example, use_colors))
-
-    print("..[Expected]" + "." * 58)
-    if (x-2) >= 0:
-        _l = 0
-        for e in example.expected_str.split('\n'):
-            print("% 4i: %s" % (_l, e))
-            _l += len(e) + 1
-    else:
-        print(example.expected_str)
-
-    if not example.fully_parsed:
-        return
-
-    if (x-1) >= 0:
-        print("  Indentation: |%s| (%i bytes)" % (example.indentation,
-                                                    len(example.indentation)))
-
-        capture_tag_names = list(sorted(n for n in example.expected.tags_by_idx.values() if n != None))
-        print("  Capture Tags: %s" % pprint.pformat(capture_tag_names, width=50))
-
-        opts_repr = pprint.pformat(example.options.as_dict(), width=50)
-        lines = opts_repr.split('\n')
-        if len(lines) > 1:
-            opts_repr = '\n    ' + ('\n    '.join(lines))
-        print("  Options: %s" % opts_repr)
-
-    if (x-2) >= 0:
-        print("..[Regexs]" + "." * 60)
-        if len(example.expected.regexs) != len(example.expected.charnos):
-            print("Error: inconsistent regexs")
-            print("  Regexs: %s" % example.expected.regexs)
-            print("  Positions: %s" % example.expected.charnos)
-
-        for p, r in zip(example.expected.charnos, example.expected.regexs):
-            print("% 4i: %s" % (p, repr(r)))
-
-    print("..[Run]" + "." * 63)
-    print("  Runner: %s" % example.runner)
-
-def print_execution(example, got, x):
-    if x < 0:
-        return
-
-    print("..[Got]" + "." * 63)
-    print(got)
-    print(("." * 70) + '\n')
 
 def constant(argumentless_method):
     placeholder = '_saved_constant_result_of_%s' % argumentless_method.__name__

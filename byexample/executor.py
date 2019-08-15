@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-from .common import print_example, print_execution, enhance_exceptions
+from .common import enhance_exceptions
 from .log import clog, log_context
 
 class TimeoutException(Exception):
@@ -107,7 +107,7 @@ class FileExecutor(object):
                             self.concerns.skip_example(example, options)
                             continue
 
-                        print_example(example, True, self.verbosity-3)
+                        example.pretty_print()
                         self.concerns.start_example(example, options)
                         try:
                             with enhance_exceptions(example, example.runner, self.use_colors):
@@ -142,7 +142,7 @@ class FileExecutor(object):
                             # those two may modify the got
                             got = example.got
 
-                            print_execution(example, got, self.verbosity-3)
+                            #print_execution(example, got, self.verbosity-3)
 
                             # We can pass the test regardless of the output
                             force_pass = options['pass']
