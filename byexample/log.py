@@ -164,7 +164,7 @@ class XStreamHandler(logging.StreamHandler):
     def __init__(self, *args, **kargs):
         logging.StreamHandler.__init__(self, *args, **kargs)
 
-def init_log_system():
+def init_log_system(level=NOTE):
     global _logger_stack
 
     logging.setLoggerClass(XLogger)
@@ -185,21 +185,9 @@ def init_log_system():
 
     rlog.addHandler(ch)
 
-    rlog.setLevel(NOTE)
+    rlog.setLevel(level)
 
     # Set up the global logger.
     # Activate and deactivate sub loggers using log_context
     # decorator on the top level functions
     _logger_stack.append(rlog)
-
-    rlog.setLevel(CHAT)
-    rlog.use_colors = True
-
-    if True:
-        rlog.critical("hey!!\nasasas")
-        rlog.error("hey!!\nasasas")
-        rlog.warning("hey!!\nasasas")
-        rlog.info("hey!!\nasasas")
-        rlog.chat("hey!!\nasasas")
-        rlog.debug('fooo\nasasas')
-

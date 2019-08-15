@@ -2,6 +2,11 @@ from __future__ import unicode_literals
 from .log import clog, log_context
 import string, re, time
 
+'''
+>>> from byexample.log import init_log_system
+>>> init_log_system()
+'''
+
 def regex_name_as_tag_name(name):
     return name.replace('_', '-')
 

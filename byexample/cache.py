@@ -96,6 +96,9 @@ def create_file_new_or_fail(name):
 
 
 '''
+>>> from byexample.log import init_log_system
+>>> init_log_system()
+
 >>> from byexample.cache import RegexCache
 >>> import warnings
 >>> warnings.filterwarnings('ignore', module='byexample.cache')

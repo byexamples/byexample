@@ -8,6 +8,11 @@ from .options import Options
 from .log import clog, log_context, DEBUG, CHAT, getLogger
 import pprint
 
+'''
+>>> from byexample.log import init_log_system
+>>> init_log_system()
+'''
+
 class Where(object):
     def __init__(self, start_lineno, end_lineno, filepath, zdelimiter):
         self.start_lineno = start_lineno
@@ -175,7 +180,7 @@ def _build_fake_example(snippet, expected, language='python', start_lineno=0,
 
     # fake the options parsed by the parser
     if opts == None:
-        opts = {'norm_ws': False, 'tags': True, 'rm': []}
+        opts = Options({'norm_ws': False, 'tags': True, 'rm': []})
     parser.extract_options = lambda x: opts
 
     # fake the start-end lines where the example "was found"
