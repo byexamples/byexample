@@ -164,7 +164,7 @@ class XStreamHandler(logging.StreamHandler):
     def __init__(self, *args, **kargs):
         logging.StreamHandler.__init__(self, *args, **kargs)
 
-def init_log_system(level=NOTE):
+def init_log_system(level=NOTE, use_colors=False):
     global _logger_stack
 
     logging.setLoggerClass(XLogger)
@@ -176,7 +176,6 @@ def init_log_system(level=NOTE):
     logging.addLevelName(NOTE, 'NOTE')
 
     rlog = getLogger(name='byexample') # root
-    rlog.use_colors = False
 
     ch = XStreamHandler(stream=sys.stdout)
 
@@ -185,9 +184,20 @@ def init_log_system(level=NOTE):
 
     rlog.addHandler(ch)
 
-    rlog.setLevel(level)
-
     # Set up the global logger.
     # Activate and deactivate sub loggers using log_context
     # decorator on the top level functions
     _logger_stack.append(rlog)
+
+    assert level is not None
+    assert use_colors is not None
+    configure_log_system(level, use_colors)
+
+def configure_log_system(level=None, use_colors=None):
+    rlog = getLogger(name='byexample') # root
+    if level is not None:
+        rlog.setLevel(level)
+
+    if use_colors is not None:
+        rlog.use_colors = use_colors
+

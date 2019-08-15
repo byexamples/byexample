@@ -9,7 +9,7 @@ from .differ import Differ
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
 from .common import enhance_exceptions
-from .log import clog, log_context, CHAT
+from .log import clog, log_context, configure_log_system, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL
 
 def are_tty_colors_supported(output):
     def get_colors():
@@ -339,6 +339,11 @@ def extend_options_with_language_specific(cfg, registry, allowed_languages):
 
 @log_context('byexample.init')
 def init(args):
+    level=[NOTE, INFO, CHAT, DEBUG][min(args.verbosity, 3)]
+    if args.quiet:
+        level=CRITICAL
+    configure_log_system(level=level)
+
     verify_encodings(args.encoding, args.verbosity)
 
     cfg = {
@@ -402,4 +407,5 @@ def init(args):
     harvester = ExampleHarvest(allowed_languages, registry, **cfg)
     executor  = FileExecutor(concerns, differ, **cfg)
 
+    configure_log_system(use_colors=cfg['use_colors'])
     return testfiles, harvester, executor, options
