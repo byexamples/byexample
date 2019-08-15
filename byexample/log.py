@@ -2,6 +2,7 @@ from logging import (Formatter, Logger,
                      DEBUG, INFO, WARNING, ERROR, CRITICAL,
                      getLogger)
 import sys, logging
+import contextlib
 from byexample.common import colored
 
 NOTE = INFO+1
@@ -159,6 +160,21 @@ def log_context(logger_name):
                 _logger_stack.pop()
         return wrapped
     return decorator
+
+@contextlib.contextmanager
+def log_with(logger_name, child=True):
+    global _logger_stack
+    assert _logger_stack
+    if child:
+        current = _logger_stack[-1].getChild(logger_name)
+    else:
+        current = getLogger(name=logger_name)
+
+    try:
+        _logger_stack.append(current)
+        yield current
+    finally:
+        _logger_stack.pop()
 
 class XStreamHandler(logging.StreamHandler):
     def __init__(self, *args, **kargs):
