@@ -12,6 +12,13 @@ class XFormatter(Formatter):
         self._cur_logger = getLogger(record.name)
         return Formatter.format(self, record)
 
+    def shorter_name(self, name):
+        t = 'byexample.'
+        if name.startswith(t):
+            return name[len(t):]
+        else:
+            return name
+
     def formatMessage(self, record):
         s = Formatter.formatMessage(self, record)
 
@@ -28,9 +35,11 @@ class XFormatter(Formatter):
                 CRITICAL: 'red',
                 }[lvlno]
 
-        if getLogger(name).isEnabledFor(DEBUG):
+        if lvlno == DEBUG or getattr(record, 'no_marker', False):
+            marker = ''
+        elif getLogger(name).isEnabledFor(DEBUG):
             marker = {
-                    DEBUG: 'dgb',
+                    DEBUG: '',
                     CHAT:  'chat',
                     INFO:  'info',
                     NOTE:  'note',
@@ -38,10 +47,21 @@ class XFormatter(Formatter):
                     ERROR:    'error',
                     CRITICAL: 'crit',
                     }[lvlno]
-            marker = "%s:%s" % (marker, name)
+            marker = "%s:%s" % (marker, self.shorter_name(name))
+        elif getLogger(name).isEnabledFor(CHAT):
+            marker = {
+                    DEBUG: '',
+                    CHAT:  '[i:%s]',
+                    INFO:  '[i:%s]',
+                    NOTE:  '[i:%s]',
+                    WARNING:  '[w:%s]',
+                    ERROR:    '[!:%s]',
+                    CRITICAL: '[!:%s]',
+                    }[lvlno]
+            marker = marker % self.shorter_name(name)
         else:
             marker = {
-                    DEBUG: '-',
+                    DEBUG: '',
                     CHAT:  '[i]',
                     INFO:  '[i]',
                     NOTE:  '[i]',
@@ -50,10 +70,12 @@ class XFormatter(Formatter):
                     CRITICAL: '[!]',
                     }[lvlno]
 
-        tag = "%s" % marker
-        tag = colored(tag, color, use_colors=logging.use_colors_in_logs)
-
-        return "%s %s" % (tag, s)
+        if marker:
+            use_colors = getLogger('byexample').use_colors
+            marker = colored(marker, color, use_colors=use_colors)
+            return "%s %s" % (marker, s)
+        else:
+            return s
 
     def formatException(self, ei):
         ''' Format the stack of the exception only
@@ -145,13 +167,6 @@ class XStreamHandler(logging.StreamHandler):
 def init_log_system():
     global _logger_stack
 
-    # Convenient global variable to control
-    # if we should put some color or not in
-    # the logs.
-    # Its use is intended for the logging
-    # system only
-    logging.use_colors_in_logs = False
-
     logging.setLoggerClass(XLogger)
 
     logging.CHAT = CHAT
@@ -161,6 +176,7 @@ def init_log_system():
     logging.addLevelName(NOTE, 'NOTE')
 
     rlog = getLogger(name='byexample') # root
+    rlog.use_colors = False
 
     ch = XStreamHandler(stream=sys.stdout)
 
@@ -177,8 +193,8 @@ def init_log_system():
     _logger_stack.append(rlog)
 
     rlog.setLevel(CHAT)
+    rlog.use_colors = True
 
-    logging.use_colors_in_logs = True
     if True:
         rlog.critical("hey!!\nasasas")
         rlog.error("hey!!\nasasas")
