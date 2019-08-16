@@ -5,7 +5,7 @@ from .common import build_where_msg, tohuman, \
 
 from .parser import ExampleParser
 from .options import Options
-from .log import clog, log_context, DEBUG, CHAT, getLogger
+from .log import clog, log_context, DEBUG, CHAT, getLogger, log_with
 import pprint
 
 '''
@@ -256,9 +256,8 @@ class ExampleHarvest(object):
 
         return self.get_examples_from_string(string, filepath)
 
-    @log_context('byexample.find')
-    def get_examples_from_string(self, string, filepath='<string>'):
-        all_examples = []
+    @log_context('byexample.zones')
+    def _get_zones(self, string, filepath='<string>'):
         _, ext = os.path.splitext(filepath)
 
         zdelimiter = self.zdelimiter_by_file_extension.get(
@@ -277,6 +276,13 @@ class ExampleHarvest(object):
         if clog().isEnabledFor(DEBUG):
             for zone in zones:
                 clog().debug("Zone %s", zone.where)
+
+        return zones
+
+    @log_context('byexample.find')
+    def get_examples_from_string(self, string, filepath='<string>'):
+        all_examples = []
+        zones = self._get_zones(string, filepath)
 
         for finder in self.available_finders:
             nexamples = 0
@@ -464,6 +470,7 @@ class ExampleHarvest(object):
                 self._log_drop('language %s not allowed' % language, where)
                 return
 
+        with enhance_exceptions(where, finder), log_with(language):
             # who can parse it?
             parser = self.parser_by_language.get(language)
             if not parser:
@@ -485,7 +492,7 @@ class ExampleHarvest(object):
             if expected == None:
                 expected = ""
 
-        with enhance_exceptions(where, parser):
+        with enhance_exceptions(where, parser), log_with(language):
             # perfect, we have everything to build an example
             example = Example(finder, runner, parser,
                                     snippet, expected, indent, where)
