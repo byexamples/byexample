@@ -220,20 +220,7 @@ class SimpleReporter(Concern):
         if what != 'log':
             return
 
-        level = data['level']
-        if level == 'error':
-            hdr = colored("Err:", 'red', self.use_colors)
-        elif level == 'chat':
-            if self.verbosity < 2:
-                return
-            hdr = colored("Chat:", 'cyan', self.use_colors)
-        elif level == 'warn':
-            hdr = colored("Warn:", 'yellow', self.use_colors)
-        else:
-            return
-
-        msg = "%s %s\n" % (hdr, data['msg'])
-        self._write(msg)
+        self._write(data['msg'])
 
 
     def _error_header(self, example):

@@ -407,5 +407,5 @@ def init(args):
     harvester = ExampleHarvest(allowed_languages, registry, **cfg)
     executor  = FileExecutor(concerns, differ, **cfg)
 
-    configure_log_system(use_colors=cfg['use_colors'])
+    configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
     return testfiles, harvester, executor, options

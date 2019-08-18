@@ -179,6 +179,26 @@ def log_with(logger_name, child=True):
 class XStreamHandler(logging.StreamHandler):
     def __init__(self, *args, **kargs):
         logging.StreamHandler.__init__(self, *args, **kargs)
+        self.concerns = None
+
+    def emit(self, record):
+        if self.concerns is None:
+            return logging.StreamHandler.emit(self, record)
+
+        try:
+            msg = self.format(record)
+            self.concerns.event('log', msg=msg)
+        except Exception:
+            self.handleError(record)
+
+    def createLock(self):
+        self.lock = None
+
+    def acquire(self):
+        return
+
+    def release(self):
+        return
 
 def init_log_system(level=NOTE, use_colors=False):
     global _logger_stack
@@ -199,6 +219,7 @@ def init_log_system(level=NOTE, use_colors=False):
     ch.setFormatter(fmtter)
 
     rlog.addHandler(ch)
+    rlog.xstream_handler = ch
 
     # Set up the global logger.
     # Activate and deactivate sub loggers using log_context
@@ -208,12 +229,16 @@ def init_log_system(level=NOTE, use_colors=False):
     assert level is not None
     assert use_colors is not None
     configure_log_system(level, use_colors)
+    rlog.xstream_handler.concerns = None
 
-def configure_log_system(level=None, use_colors=None):
+def configure_log_system(level=None, use_colors=None, concerns=None):
     rlog = getLogger(name='byexample') # root
     if level is not None:
         rlog.setLevel(level)
 
     if use_colors is not None:
         rlog.use_colors = use_colors
+
+    if concerns is not None:
+        rlog.xstream_handler.concerns = concerns
 
