@@ -33,15 +33,6 @@ def build_where_msg(where, owner, msg=None, use_colors=False):
 
     return ''.join(tmp)
 
-
-def log(msg, lvl, concerns=None):
-    if isinstance(lvl, int):
-        if lvl >= 0:
-            print(msg)
-
-    else:
-        concerns.event('log', msg=msg, level=lvl)
-
 def colored(s, color, use_colors):
     if use_colors:
         if color == 'none':
