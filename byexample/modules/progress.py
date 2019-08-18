@@ -45,10 +45,12 @@ class SimpleReporter(Concern):
 
         self.header_printed = False
 
-    def _write(self, msg):
+    def _write(self, msg, nl=False):
         ''' Call me once and just once per concern's method '''
         with self.write_lock:
             self.output.write(msg)
+            if nl:
+                self.output.write('\n')
             self.output.flush()
 
     def _update(self, x):
@@ -220,7 +222,7 @@ class SimpleReporter(Concern):
         if what != 'log':
             return
 
-        self._write(data['msg'])
+        self._write(data['msg'], nl=True)
 
 
     def _error_header(self, example):
@@ -276,13 +278,14 @@ class ProgressBarReporter(SimpleReporter):
             self.bar.fp.write('\r')  # place cursor back at the beginning of line
             self.bar.moveto(-pos)
 
-    def _write(self, msg):
+    def _write(self, msg, nl=False):
         with self.write_lock:
             if self.bar is None:
-                SimpleReporter._write(self, msg)
+                SimpleReporter._write(self, msg, nl)
             else:
                 self._clear_all_bars()
-                self.bar.write(msg, file=self.output, end="")
+                end = '\n' if nl else ''
+                self.bar.write(msg, file=self.output, end=end)
                 self.output.flush()
 
     def _update(self, x):
