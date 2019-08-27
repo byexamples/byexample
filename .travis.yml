@@ -23,9 +23,9 @@ matrix:
             - 2.1
           install: "echo ok"
           script:
+            - "make index-links-test"
             - 'echo -e ''source "https://rubygems.org"\ngem "github-pages"'' > Gemfile'
             - "bundle install && cd docs && bundle exec jekyll build"
-            - "make index-links-test"
         - language: python
           python: "2.7"
         - language: python
