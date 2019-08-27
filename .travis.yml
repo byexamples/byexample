@@ -5,6 +5,7 @@ branches:
         - next-minor
         - next-patch
         - tmp
+        - one-docker-to-rule-em-all
 
 env:
     global:
