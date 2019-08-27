@@ -12,7 +12,7 @@ env:
       - 'PYTHONWARNINGS=ignore:::byexample.cache'
 
 install: make deps
-script: make travis-test
+script: make test
 
 matrix:
     include:
@@ -24,23 +24,16 @@ matrix:
           script:
             - 'echo -e ''source "https://rubygems.org"\ngem "github-pages"'' > Gemfile'
             - "bundle install && cd docs && bundle exec jekyll build"
+            - "make index-links-test"
         - language: python
           python: "2.7"
-          env:
-            - languages=python,shell
         - language: python
           python: "3.5"
-          env:
-            - languages=python,shell
         - language: python
           python: "3.6"
-          env:
-            - languages=python,shell
         - language: python
           python: "3.7"
           dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
-          env:
-            - languages=python,shell
         - language: ruby
           rvm: "2.0"
           install: sudo make deps
@@ -69,5 +62,3 @@ matrix:
           rvm: "2.6"
           install: sudo make deps
           script: make travis-ruby-test
-
-# python: "3.7" travis doesn't support this yet
