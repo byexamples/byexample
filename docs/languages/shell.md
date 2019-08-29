@@ -270,15 +270,15 @@ You can change the default shell from the command line with the
 ``+shell`` option.
 
 ```shell
-$ byexample -l shell -o '+shell=bash' test/ds/shell-example
+$ byexample -l shell -o '+shell=bash' test/ds/shell-example  # byexample: +timeout=8
 <...>
 [PASS] Pass: 14 Fail: 0 Skip: 0
 
-$ byexample -l shell -o '+shell=dash' test/ds/shell-example  # byexample: +if=dash-installed
+$ byexample -l shell -o '+shell=dash' test/ds/shell-example  # byexample: +if=dash-installed +timeout=8
 <...>
 [PASS] Pass: 14 Fail: 0 Skip: 0
 
-$ byexample -l shell -o '+shell=ksh' test/ds/shell-example   # byexample: +if=ksh-installed
+$ byexample -l shell -o '+shell=ksh' test/ds/shell-example   # byexample: +if=ksh-installed +timeout=8
 <...>
 [PASS] Pass: 14 Fail: 0 Skip: 0
 ```

@@ -1,7 +1,7 @@
 Background process
 ------------------
 
-$ sleep 2 >/dev/null 2>&1 &
+$ sleep 4 >/dev/null 2>&1 &
 <...>
 
 $ echo "$!"
@@ -10,7 +10,7 @@ $ echo "$!"
 $ jobs -l                           # byexample: +paste +norm-ws
 [<job-id>]<flag> <pid> Running<...>
 
-$ kill %% ; wait                    # byexample: +timeout=4 +norm-ws +paste
+$ kill %% ; wait                    # byexample: +timeout=5 +norm-ws +paste
 [<job-id>]<...> Terminated<...>
 
 
