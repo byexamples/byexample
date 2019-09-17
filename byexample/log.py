@@ -3,7 +3,7 @@ from logging import (Formatter, Logger,
                      getLogger)
 import sys, logging
 import contextlib
-from byexample.common import colored
+from byexample.common import colored, highlight_syntax, indent
 
 NOTE = INFO+1
 CHAT = INFO-1
@@ -25,6 +25,7 @@ class XFormatter(Formatter):
 
         name = record.name
         lvlno = record.levelno
+        logger = getLogger(name)
 
         color = {
                 DEBUG: 'none',
@@ -38,7 +39,7 @@ class XFormatter(Formatter):
 
         if lvlno == DEBUG or getattr(record, 'no_marker', False):
             marker = ''
-        elif getLogger(name).isEnabledFor(DEBUG):
+        elif logger.isEnabledFor(DEBUG):
             marker = {
                     DEBUG: '',
                     CHAT:  'chat',
@@ -49,7 +50,7 @@ class XFormatter(Formatter):
                     CRITICAL: 'crit',
                     }[lvlno]
             marker = "%s:%s" % (marker, self.shorter_name(name))
-        elif getLogger(name).isEnabledFor(CHAT):
+        elif logger.isEnabledFor(CHAT):
             marker = {
                     DEBUG: '',
                     CHAT:  '[i:%s]',
@@ -71,16 +72,23 @@ class XFormatter(Formatter):
                     CRITICAL: '[!]',
                     }[lvlno]
 
-        if marker:
-            use_colors = getLogger('byexample').use_colors
+        use_colors = getLogger('byexample').use_colors
+        if marker and not getattr(record, 'disable_prefix', False):
             marker = colored(marker, color, use_colors=use_colors)
-            return "%s %s" % (marker, s)
-        else:
-            return s
+            s = "%s %s" % (marker, s)
+
+        ex = getattr(record, 'example', None)
+        if ex is not None:
+            if logger.isEnabledFor(DEBUG):
+                ex.pretty_print()
+            else:
+                s += '\n' + indent(highlight_syntax(ex, use_colors))
+
+        return s
 
     def formatException(self, ei):
         ''' Format the stack of the exception only
-            if the log level is CHAT or below (eg DEBUG).
+            if the log level is INFO or below (eg DEBUG).
 
             Otherwise, format only the message of the exception
             hidding the stack and the exception class.
@@ -89,7 +97,7 @@ class XFormatter(Formatter):
             to see the traceback he/she can see it enabling a
             more verbose log level.
             '''
-        if self._cur_logger.isEnabledFor(CHAT):
+        if self._cur_logger.isEnabledFor(INFO):
             return Formatter.formatException(self, ei)
         else:
             return '%s\n\n%s' % (str(ei[1]),
