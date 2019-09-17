@@ -7,6 +7,7 @@ from byexample.common import colored, highlight_syntax, indent
 
 NOTE = INFO+1
 CHAT = INFO-1
+TRACE = DEBUG-1
 class XFormatter(Formatter):
     def format(self, record):
         self._cur_record = record
@@ -109,11 +110,43 @@ class XLogger(Logger):
     def __init__(self, name, *args, **kargs):
         Logger.__init__(self, name, *args, **kargs)
 
+    def trace(self, msg, *args, **kargs):
+        return self.log(TRACE, msg, *args, **kargs)
+
+    def debug(self, msg, *args, **kargs):
+        return self.log(DEBUG, msg, *args, **kargs)
+
+    def info(self, msg, *args, **kargs):
+        return self.log(INFO, msg, *args, **kargs)
+
     def chat(self, msg, *args, **kargs):
-        return Logger.log(self, CHAT, msg, *args, **kargs)
+        return self.log(CHAT, msg, *args, **kargs)
 
     def note(self, msg, *args, **kargs):
-        return Logger.log(self, NOTE, msg, *args, **kargs)
+        return self.log(NOTE, msg, *args, **kargs)
+
+    def warning(self, msg, *args, **kargs):
+        return self.log(WARNING, msg, *args, **kargs)
+
+    def error(self, msg, *args, **kargs):
+        return self.log(ERROR, msg, *args, **kargs)
+
+    def critical(self, msg, *args, **kargs):
+        return self.log(CRITICAL, msg, *args, **kargs)
+
+    # valid, non-deprecated alias
+    warn = warning
+    err = error
+    crit = critical
+
+    def log(self, level, msg, *args, **kargs):
+        extra = kargs.pop('extra', {})
+        if 'example' in kargs:
+            extra['example'] = kargs.pop('example')
+        if 'disable_prefix' in kargs:
+            extra['disable_prefix'] = kargs.pop('disable_prefix')
+
+        return Logger.log(self, level, msg, *args, extra=extra, **kargs)
 
     def user_aborted(self):
         ''' Message (info) to notify that the execution was
@@ -219,6 +252,9 @@ def init_log_system(level=NOTE, use_colors=False):
     logging.NOTE = NOTE
     logging.addLevelName(NOTE, 'NOTE')
 
+    logging.TRACE = TRACE
+    logging.addLevelName(TRACE, 'TRACE')
+
     rlog = getLogger(name='byexample') # root
 
     ch = XStreamHandler(stream=sys.stdout)
@@ -236,13 +272,13 @@ def init_log_system(level=NOTE, use_colors=False):
 
     assert level is not None
     assert use_colors is not None
-    configure_log_system(level, use_colors)
+    configure_log_system(default_level=level, use_colors=use_colors)
     rlog.xstream_handler.concerns = None
 
-def configure_log_system(level=None, use_colors=None, concerns=None):
+def configure_log_system(default_level=None, use_colors=None, concerns=None):
     rlog = getLogger(name='byexample') # root
-    if level is not None:
-        rlog.setLevel(level)
+    if default_level is not None:
+        rlog.setLevel(default_level)
 
     if use_colors is not None:
         rlog.use_colors = use_colors
@@ -250,3 +286,14 @@ def configure_log_system(level=None, use_colors=None, concerns=None):
     if concerns is not None:
         rlog.xstream_handler.concerns = concerns
 
+def setLogLevels(levels):
+    prev_lvls = {}
+    for name, lvl in levels.items():
+        if not name.startswith('byexample.') and name != 'byexample':
+            name = 'byexample.' + name
+
+        l = getLogger(name)
+        prev_lvls[name] = l.level
+        l.setLevel(lvl)
+
+    return prev_lvls
