@@ -109,10 +109,11 @@ class FileExecutor(object):
                         fail_fast = options['fail_fast']
 
                         if options['skip']:
+                            clog().chat('Skip', example=example)
                             self.concerns.skip_example(example, options)
                             continue
 
-                        example.pretty_print()
+                        clog().chat('=>', example=example, disable_prefix=True)
                         self.concerns.start_example(example, options)
                         try:
                             with enhance_exceptions(example, example.runner, self.use_colors):
@@ -130,7 +131,12 @@ class FileExecutor(object):
                         recovered = False
                         if timedout and not options['x']['not_recover_timeout']:
                             # try to recover the control of the runner
+                            clog().warn('Example timed out. Trying to recovering the control (%s)...', example.runner.language)
                             recovered = example.runner.cancel(example, options)
+                            clog().warn('Recovering control of %s %s',
+                                    example.runner.language,
+                                    'succeded, continuing the execution.' if recovered else \
+                                            'failed.')
 
                         if crashed or (timedout and not recovered):
                             failed = True
@@ -146,8 +152,7 @@ class FileExecutor(object):
                             # cache this *after* calling finish_example/finally_example
                             # those two may modify the got
                             got = example.got
-
-                            #print_execution(example, got, self.verbosity-3)
+                            clog().debug(got)
 
                             # We can pass the test regardless of the output
                             force_pass = options['pass']
