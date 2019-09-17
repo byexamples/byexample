@@ -89,7 +89,7 @@ def load_modules(dirnames, cfg):
         if stability not in ('experimental', 'provisional', 'unstable', 'stable', 'deprecated'):
             stability = 'experimental/%s?' % str(stability)
 
-        clog().info("From '%s' loaded '%s' (%s)", path, name, stability)
+        clog().chat("From '%s' loaded '%s' (%s)", path, name, stability)
         for klass, key, what in [(ExampleRunner, 'language', 'runners'),
                                  (ExampleParser, 'language', 'parsers'),
                                  (ExampleFinder, 'target', 'finders'),
@@ -126,9 +126,9 @@ def load_modules(dirnames, cfg):
                             container[k] = obj
                         loaded_objs.append(obj)
 
-                clog().info("\n".join((" - %s" % repr(i)) for i in loaded_objs))
+                clog().chat("\n".join((" - %s" % repr(i)) for i in loaded_objs))
             else:
-                clog().info("No classes found for '%s'.", what)
+                clog().chat("No classes found for '%s'.", what)
 
     return registry
 
@@ -395,7 +395,7 @@ def init(args):
         registry['concerns'].pop('progress', None)
 
     if not clog().isEnabledFor(CHAT):
-        clog().info("Options:\n%s.", pprint.pformat(cfg['options']))
+        clog().chat("Options:\n%s.", pprint.pformat(cfg['options']))
 
     clog().chat("Configuration:\n%s.", pprint.pformat(cfg))
     clog().chat("Registry:\n%s.", pprint.pformat(registry))

@@ -126,7 +126,7 @@ class Example(object):
 
         # source
         use_colors = getLogger('byexample').use_colors
-        log.info(highlight_syntax(self, use_colors), extra={'no_marker':True})
+        log.chat(highlight_syntax(self, use_colors), extra={'no_marker':True})
 
         if log.isEnabledFor(DEBUG):
             tmp = [' len: expected line']
@@ -162,9 +162,6 @@ class Example(object):
             tmp.append("% 4i: %s" % (p, repr(r)))
 
         log.debug('\n'.join(tmp), extra={'no_marker':True})
-
-        #print("..[Run]" + "." * 63)
-        #print("  Runner: %s" % example.runner)
 
 def _build_fake_example(snippet, expected, language='python', start_lineno=0,
                             specific=False, fully_parsed=True, opts=None):
@@ -306,7 +303,7 @@ class ExampleHarvest(object):
         all_examples = self.check_example_overlap(all_examples, filepath)
 
         tmp = set(e.runner.language for e in all_examples)
-        clog().info("Findings in file '%s': %i examples written in %i different languages in %i zones were found.",
+        clog().chat("Findings in file '%s': %i examples written in %i different languages in %i zones were found.",
             filepath, len(all_examples), len(tmp), len(zones))
         return all_examples
 
