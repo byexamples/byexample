@@ -9,7 +9,7 @@ from .differ import Differ
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
 from .common import enhance_exceptions
-from .log import clog, log_context, configure_log_system, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL
+from .log import clog, log_context, configure_log_system, setLogLevels, TRACE, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL
 
 def are_tty_colors_supported(output):
     def get_colors():
@@ -337,15 +337,27 @@ def extend_options_with_language_specific(cfg, registry, allowed_languages):
 
     clog().chat("Options (cmdline + --options + language specific): %s", cfg['options'])
 
+def verbosity_to_log_levels(verbosity, quiet):
+    if quiet:
+        return {'byexample':CRITICAL}
+
+    tmp = [
+        {'byexample':NOTE},
+        {'byexample':NOTE, 'byexample.exec':INFO},  # -v
+        {'byexample':NOTE, 'byexample.exec':CHAT},  # -vv
+        {'byexample':INFO, 'byexample.exec':CHAT},  # -vvv
+        {'byexample':CHAT},                         # -vvvv
+        {'byexample':DEBUG},                        # -vvvvv
+        {'byexample':TRACE},                        # -vvvvvv
+        ]
+
+    return tmp[min(verbosity, len(tmp)-1)]
+
 @log_context('byexample.init')
 def init(args):
-    level=[NOTE, INFO, CHAT, DEBUG][min(args.verbosity, 3)]
-    if args.quiet:
-        level=CRITICAL
-    configure_log_system(level=level)
+    setLogLevels(verbosity_to_log_levels(args.verbosity, args.quiet))
 
     verify_encodings(args.encoding, args.verbosity)
-
     cfg = {
             'use_progress_bar': args.pretty == 'all',
             'use_colors': args.pretty == 'all',
