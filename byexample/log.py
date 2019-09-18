@@ -3,7 +3,7 @@ from logging import (Formatter, Logger,
                      getLogger)
 import sys, logging
 import contextlib
-from byexample.common import colored, highlight_syntax, indent
+from .common import colored, highlight_syntax, indent
 
 NOTE = INFO+1
 CHAT = INFO-1
@@ -154,7 +154,7 @@ class XLogger(Logger):
             '''
         return self.note('Execution aborted by the user.')
 
-    def exception(self, msg, *args, exc_info=True, **kwargs):
+    def exception(self, msg, *args, **kwargs):
         ''' Log the current caught exception with a twist:
             if <msg> is None, create a default 'human readable'
             message, augmented by kwargs['where'] and exception.where
@@ -162,6 +162,7 @@ class XLogger(Logger):
 
             If <msg> is not None, run as usual (logging.Logger.exception)
             '''
+        exc_info = kwargs.pop('exc_info', True)
         where_default = kwargs.pop('where', None)
         if not msg:
             msg = 'Something went wrong'
