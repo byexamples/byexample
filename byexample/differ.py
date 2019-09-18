@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-from .common import log, colored, ShebangTemplate
+from .common import colored, ShebangTemplate
 import string, re, difflib, tempfile, os, subprocess
 
 try:

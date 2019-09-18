@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
-from .common import log, print_example, print_execution, enhance_exceptions
+from .common import enhance_exceptions
+from .log import clog, log_context, log_with
 
 class TimeoutException(Exception):
     def __init__(self, msg, output):
@@ -18,43 +19,48 @@ class FileExecutor(object):
     def initialize_runners(self, runners, options):
         tmp = []
         for runner in runners:
-            log("Initializing %s" % str(runner), 'chat', self.concerns)
-            try:
-                runner.initialize(options)
-                tmp.append(runner)
-            except:
-                self.shutdown_runners(tmp, stop_on_failure=False)
-                log("Initialization of %s failed." % str(runner), 'error', self.concerns)
-                raise
+            with log_with(runner.language) as log:
+                log.info("Initializing %s", str(runner))
+                try:
+                    runner.initialize(options)
+                    tmp.append(runner)
+                except:
+                    self.shutdown_runners(tmp, stop_on_failure=False)
+                    log.warn("Initialization of %s failed.", str(runner))
+                    raise
 
     def shutdown_runners(self, runners, stop_on_failure=True):
         tmp = list(runners)
         for runner in runners:
-            log("Shutting down %s" % str(runner), 'chat', self.concerns)
-            try:
-                runner.shutdown()
-                del tmp[0]
-            except:
-                del tmp[0]
-                if stop_on_failure:
-                    self.shutdown_runners(tmp, stop_on_failure=False)
+            with log_with(runner.language) as log:
+                log.info("Shutting down %s", str(runner))
+                try:
+                    runner.shutdown()
+                    del tmp[0]
+                except:
+                    del tmp[0]
+                    if stop_on_failure:
+                        self.shutdown_runners(tmp, stop_on_failure=False)
 
-                log("Shutdown of %s failed." % str(runner), 'error', self.concerns)
+                    log.warn("Shutdown of %s failed.", str(runner))
 
-                if stop_on_failure:
-                    raise
+                    if stop_on_failure:
+                        raise
 
     def __repr__(self):
         return 'File Executor'
 
+    @log_context('byexample.exec')
     def dry_execute(self, examples, filepath):
         for example in examples:
-            with enhance_exceptions(example, example.parser, self.use_colors):
+            with enhance_exceptions(example, example.parser, self.use_colors), \
+                log_with(runner.language):
                 # build but ignore any output; even do not use the concerns
                 example.parse_yourself(concerns=None)
 
         return False, False, False, False
 
+    @log_context('byexample.exec')
     def execute(self, examples, filepath):
         options = self.options
         runners = list(set(e.runner for e in examples))
@@ -79,13 +85,15 @@ class FileExecutor(object):
         broken = False
         for example in examples:
             try:
-                example = self._parse(example, options)
+                with log_with(example.runner.language):
+                    example = self._parse(example, options)
 
-                if example == None:
-                    broken = True
-                    break   # cancel if an example couldn't get parsed
+                    if example == None:
+                        broken = True
+                        break   # cancel if an example couldn't get parsed
 
-                with enhance_exceptions(example, self, self.use_colors):
+                with enhance_exceptions(example, self, self.use_colors), \
+                     log_with(example.runner.language):
                     # are we in failing fast mode? if we do, skip all the
                     # examples by default
                     if failing_fast:
@@ -101,10 +109,11 @@ class FileExecutor(object):
                         fail_fast = options['fail_fast']
 
                         if options['skip']:
+                            clog().chat('Skip', example=example)
                             self.concerns.skip_example(example, options)
                             continue
 
-                        print_example(example, True, self.verbosity-3)
+                        clog().chat('=>', example=example, disable_prefix=True)
                         self.concerns.start_example(example, options)
                         try:
                             with enhance_exceptions(example, example.runner, self.use_colors):
@@ -122,7 +131,12 @@ class FileExecutor(object):
                         recovered = False
                         if timedout and not options['x']['not_recover_timeout']:
                             # try to recover the control of the runner
+                            clog().warn('Example timed out. Trying to recovering the control (%s)...', example.runner.language)
                             recovered = example.runner.cancel(example, options)
+                            clog().warn('Recovering control of %s %s',
+                                    example.runner.language,
+                                    'succeded, continuing the execution.' if recovered else \
+                                            'failed.')
 
                         if crashed or (timedout and not recovered):
                             failed = True
@@ -138,8 +152,7 @@ class FileExecutor(object):
                             # cache this *after* calling finish_example/finally_example
                             # those two may modify the got
                             got = example.got
-
-                            print_execution(example, got, self.verbosity-3)
+                            clog().debug(got)
 
                             # We can pass the test regardless of the output
                             force_pass = options['pass']

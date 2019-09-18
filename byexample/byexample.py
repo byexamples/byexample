@@ -1,13 +1,14 @@
 from __future__ import unicode_literals
 from .cache import RegexCache
 from .jobs import Jobs, Status, allow_sigint
+from .log import init_log_system
 import os, sys
 
 def execute_examples(filename, sigint_handler):
-    global cache, harvester, executor, options, human_args, dry
+    global cache, harvester, executor, options, dry
     from .common import human_exceptions
 
-    with human_exceptions("File '%s':" % filename, *human_args) as exc, \
+    with human_exceptions("processing the file '%s'" % filename) as exc, \
             cache.synced(label=filename), \
             allow_sigint(sigint_handler):
         examples = harvester.get_examples_from_file(filename)
@@ -21,7 +22,9 @@ def execute_examples(filename, sigint_handler):
     return True, True, user_aborted, error
 
 def main(args=None):
-    global cache, harvester, executor, options, human_args, dry
+    global cache, harvester, executor, options, dry
+
+    init_log_system()
 
     cache_disabled = os.getenv('BYEXAMPLE_CACHE_DISABLED', "1") != "0"
     cache_verbose  = os.getenv('BYEXAMPLE_CACHE_VERBOSE', "0") != "0"
@@ -35,12 +38,11 @@ def main(args=None):
         args = parse_args(args)
 
         dry = args.dry
-        human_args = [args.verbosity, args.quiet]
-        with human_exceptions('During the initialization phase:', *human_args) as exc:
+        with human_exceptions('initializing byexample') as exc:
             testfiles, harvester, executor, options = init(args)
 
         if exc:
             sys.exit(Status.error)
 
-        jobs = Jobs(args.jobs, args.verbosity)
+        jobs = Jobs(args.jobs)
         return jobs.run(execute_examples, testfiles, options['fail_fast'])

@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 import re, shlex, argparse
-from .common import log, tohuman, constant
+from .common import tohuman, constant
 from .options import OptionParser, UnrecognizedOption, ExtendOptionParserMixin
 from .expected import _LinearExpected, _RegexExpected
 from .parser_sm import SM_NormWS, SM_NotNormWS

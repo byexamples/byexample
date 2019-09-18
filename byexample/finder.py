@@ -1,10 +1,17 @@
 from __future__ import unicode_literals
 import collections, re, os
-from .common import log, build_where_msg, tohuman, \
-                    enhance_exceptions, print_example, constant
+from .common import build_where_msg, tohuman, \
+                    enhance_exceptions, constant, highlight_syntax
 
 from .parser import ExampleParser
 from .options import Options
+from .log import clog, log_context, DEBUG, CHAT, getLogger, log_with
+import pprint
+
+'''
+>>> from byexample.log import init_log_system
+>>> init_log_system()
+'''
 
 class Where(object):
     def __init__(self, start_lineno, end_lineno, filepath, zdelimiter):
@@ -103,6 +110,59 @@ class Example(object):
                         self.runner.language,
                         self.filepath, self.start_lineno, self.end_lineno)
 
+    def pretty_print(self):
+        log = clog()
+
+        # header
+        log.chat('%s (lines %s-%s:%s) [%s|%s]%s',
+                self.filepath,
+                self.start_lineno,
+                self.end_lineno,
+                self.runner.language,
+                self.finder,
+                self.runner,
+                "" if self.fully_parsed else " (not parsed yet)"
+                )
+
+        # source
+        use_colors = getLogger('byexample').use_colors
+        log.chat(highlight_syntax(self, use_colors), extra={'no_marker':True})
+
+        if log.isEnabledFor(DEBUG):
+            tmp = [' len: expected line']
+            _l = 0
+            for e in self.expected_str.split('\n'):
+                tmp.append("% 4i: %s" % (_l, e))
+                _l += len(e) + 1
+
+            tmp = '\n'.join(tmp)
+            log.debug(tmp, extra={'no_marker':True})
+        else:
+            log.chat(self.expected_str, extra={'no_marker':True})
+
+        if not self.fully_parsed:
+            return
+
+        log.debug('Indentation: |%s| (%i bytes)',
+                self.indentation, len(self.indentation))
+
+        capture_tag_names = list(sorted(n for n in self.expected.tags_by_idx.values() if n != None))
+        log.chat('Capture tags: %s', pprint.pformat(capture_tag_names, width=50))
+
+        opts = pprint.pformat(self.options.as_dict(), width=50)
+        log.chat('Options: %s', opts)
+
+        if len(self.expected.regexs) != len(self.expected.charnos):
+            log.warn('Inconsistent regexs: %i regexs versus %i char-numbers',
+                    len(self.expected.regexs), len(self.expected.charnos))
+
+        tmp = []
+        tmp.append("Regexs:")
+        for p, r in zip(self.expected.charnos, self.expected.regexs):
+            tmp.append("% 4i: %s" % (p, repr(r)))
+
+        log.debug('\n'.join(tmp), extra={'no_marker':True})
+
 def _build_fake_example(snippet, expected, language='python', start_lineno=0,
                             specific=False, fully_parsed=True, opts=None):
     class R: pass    # <- fake runner instance
@@ -117,7 +177,7 @@ def _build_fake_example(snippet, expected, language='python', start_lineno=0,
 
     # fake the options parsed by the parser
     if opts == None:
-        opts = {'norm_ws': False, 'tags': True, 'rm': []}
+        opts = Options({'norm_ws': False, 'tags': True, 'rm': []})
     parser.extract_options = lambda x: opts
 
     # fake the start-end lines where the example "was found"
@@ -193,11 +253,10 @@ class ExampleHarvest(object):
 
         return self.get_examples_from_string(string, filepath)
 
-    def get_examples_from_string(self, string, filepath='<string>'):
-        all_examples = []
+    @log_context('byexample.zones')
+    def _get_zones(self, string, filepath='<string>'):
         _, ext = os.path.splitext(filepath)
 
-        log("Finding examples...", self.verbosity-1)
         zdelimiter = self.zdelimiter_by_file_extension.get(
                 ext,
                 self.zdelimiter_by_file_extension['no-delimiter']
@@ -208,12 +267,19 @@ class ExampleHarvest(object):
                     filepath,
                     start_lineno=1)
 
-        log("File '%s': %i zones [%s]" % (filepath, len(zones),
-                                        str(zdelimiter)), self.verbosity-2)
+        clog().chat("File '%s': %i zones [%s]",
+                filepath, len(zones), str(zdelimiter))
 
-        if self.verbosity-3 >= 0:
+        if clog().isEnabledFor(DEBUG):
             for zone in zones:
-                log("Zone %s" % (zone.where), self.verbosity-3)
+                clog().debug("Zone %s", zone.where)
+
+        return zones
+
+    @log_context('byexample.find')
+    def get_examples_from_string(self, string, filepath='<string>'):
+        all_examples = []
+        zones = self._get_zones(string, filepath)
 
         for finder in self.available_finders:
             nexamples = 0
@@ -226,8 +292,8 @@ class ExampleHarvest(object):
                 all_examples.extend(examples)
                 nexamples += len(examples)
 
-            log("File '%s': %i examples [%s]" % (filepath, nexamples,
-                                            str(finder)), self.verbosity-2)
+            clog().chat("File '%s': %i examples [%s]",
+                    filepath, nexamples, str(finder))
 
         # sort the examples in the same order
         # that they were found in the file/string;
@@ -236,6 +302,9 @@ class ExampleHarvest(object):
 
         all_examples = self.check_example_overlap(all_examples, filepath)
 
+        tmp = set(e.runner.language for e in all_examples)
+        clog().chat("Findings in file '%s': %i examples written in %i different languages in %i zones were found.",
+            filepath, len(all_examples), len(tmp), len(zones))
         return all_examples
 
     def check_example_overlap(self, examples, filepath):
@@ -331,8 +400,8 @@ class ExampleHarvest(object):
                                     % (collision_type_1, collision_type_2,
                                         collision_type_3, prev.runner.language,
                                         example.runner.language), curr_where)
-                print_example(prev, self.use_colors, self.verbosity-3)
-                print_example(example, self.use_colors, self.verbosity-3)
+                prev.pretty_print()
+                example.pretty_print()
 
                 if collision_type_2:
                     del examples[i]
@@ -346,26 +415,24 @@ class ExampleHarvest(object):
                              prev.finder)
                 raise ValueError(msg)
 
-        if self.verbosity-1 >= 0:
-            log("Examples after removing any overlapping", self.verbosity-1)
+        if clog().isEnabledFor(CHAT):
+            clog().debug("Examples after removing any overlapping")
             for finder in set(e.finder for e in examples):
-                log("File '%s': %i examples [%s]" % (
+                clog().chat("File '%s': %i examples [%s]",
                                     filepath,
                                     len([e for e in examples if e.finder==finder]),
-                                    str(finder)),
-                                    self.verbosity-1)
+                                    str(finder))
 
-        if self.verbosity-2 >= 0:
+        if True or clog().isEnabledFor(DEBUG):
             for e in examples:
-                print_example(e, self.use_colors, 0)
-            print("")
+                e.pretty_print()
         return examples
 
     def _log_drop(self, reason, where):
         self._log_debug(" => Dropped example: " + reason, where)
 
     def _log_debug(self, what, where):
-        log(build_where_msg(where, self, what), self.verbosity-3)
+        clog().debug(build_where_msg(where, self, what))
 
     def get_examples_using(self, finder, string, filepath, start_lineno):
         return self.from_string_get_items_using(
@@ -400,6 +467,7 @@ class ExampleHarvest(object):
                 self._log_drop('language %s not allowed' % language, where)
                 return
 
+        with enhance_exceptions(where, finder), log_with(language):
             # who can parse it?
             parser = self.parser_by_language.get(language)
             if not parser:
@@ -421,7 +489,7 @@ class ExampleHarvest(object):
             if expected == None:
                 expected = ""
 
-        with enhance_exceptions(where, parser):
+        with enhance_exceptions(where, parser), log_with(language):
             # perfect, we have everything to build an example
             example = Example(finder, runner, parser,
                                     snippet, expected, indent, where)

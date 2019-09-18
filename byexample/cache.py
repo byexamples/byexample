@@ -8,6 +8,8 @@ import contextlib
 import errno
 import warnings
 
+from .log import clog, log_context
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -94,6 +96,9 @@ def create_file_new_or_fail(name):
 
 
 '''
+>>> from byexample.log import init_log_system
+>>> init_log_system()
+
 >>> from byexample.cache import RegexCache
 >>> import warnings
 >>> warnings.filterwarnings('ignore', module='byexample.cache')
@@ -127,7 +132,7 @@ class RegexCache(object):
             self._cache = self._new_cache()
 
         self.clear_stats()
-        self._log("Cache '%s': %i entries" % (self.filename, self._nkeys))
+        clog().chat("Cache '%s': %i entries", self.filename, self._nkeys)
 
     @contextlib.contextmanager
     def synced(self, label=""):
@@ -166,6 +171,7 @@ class RegexCache(object):
         finally:
             self._unpatch()
 
+    @log_context('byexample.cache')
     def clear_stats(self):
         self._nkeys, self._hits = len(self._cache), 0
 
@@ -199,10 +205,6 @@ class RegexCache(object):
         filename = os.path.basename(filename)
         return os.path.join(dir, filename)
 
-    def _log(self, msg):
-        if self.verbose:
-            print(msg)
-
     def _load_cache_from_disk(self):
         ''' Load the cache from disk, create an empty one if the
             cache doesn't exist.
@@ -232,7 +234,7 @@ class RegexCache(object):
             return pickle.loads(file.read())
         except:
             # possible corrupt cache, ignore it
-            self._log("Warning. Cache file '%s' corrupted." % self.filename)
+            clog().warn("Cache file '%s' corrupted.", self.filename)
             return self._new_cache()
 
     def _new_cache(self):
@@ -242,7 +244,8 @@ class RegexCache(object):
         ''' Create an empty cache in disk if doesn't exist yet. '''
         cache = self._new_cache()
         try:
-            self._log("Cache file '%s' does not exist. Creating a new one..." % self.filename)
+            clog().info("Cache file '%s' does not exist. Creating a new one...",
+                    self.filename)
             with create_file_new_or_fail(self.filename) as f, flock(f):
                 # the open didn't fail, so it *must* be new:
                 # save an empty cache
@@ -256,14 +259,15 @@ class RegexCache(object):
         return cache
 
 
+    @log_context('byexample.cache')
     def _sync(self, label=""):
         misses = len(self._cache) - self._nkeys
         nohits = self._nkeys - self._hits
 
-        self._log("[%s] Cache stats: %i entries %i hits %i misses %i nohits." \
-                    % (label, len(self._cache), self._hits, misses, nohits))
+        clog().chat("[%s] Cache stats: %i entries %i hits %i misses %i nohits.",
+                     label, len(self._cache), self._hits, misses, nohits)
         if misses and self.filename != None:
-            self._log("[%s] Cache require sync." % label)
+            clog().chat("[%s] Cache require sync.", label)
             with open(self.filename, 'rb+') as f, flock(f):
                 # get a fresh disk version in case that other
                 # byexample instance had touched the cache but
@@ -357,6 +361,7 @@ class RegexCache(object):
             groupindex, indexgroup
         )
 
+    @log_context('byexample.cache')
     def _patch(self):
 
         # PATCH! TODO is a better way?!?
@@ -365,6 +370,7 @@ class RegexCache(object):
 
         return self
 
+    @log_context('byexample.cache')
     def _unpatch(self, *args, **kargs):
         sre_compile.compile = self._original__sre_compile__compile
 

@@ -1,6 +1,11 @@
 from __future__ import unicode_literals
-from .common import log
+from .log import clog, log_context
 import string, re, time
+
+'''
+>>> from byexample.log import init_log_system
+>>> init_log_system()
+'''
 
 def regex_name_as_tag_name(name):
     return name.replace('_', '-')
@@ -293,6 +298,7 @@ class _RegexExpected(Expected):
         else:
             return self._get_all_capture_as_possible(example, got, options)
 
+    @log_context('byexample.match')
     def _get_captures_by_incremental_match(self, captures, expected_regexs,
             charnos, rcounts, expected, got, min_rcount, timeout):
         r'''
@@ -449,8 +455,7 @@ class _RegexExpected(Expected):
         timeout_left = timeout / 2.0
         timeout_right = timeout - timeout_left
 
-        log("Partial Matching:\nGot string to target:\n%s\n" % repr(got),
-                self.verbosity-4)
+        clog().debug("Partial Matching:\nGot string to target:\n%s\n", repr(got))
         # from left to right, find the left most regex that match
         # a prefix of got by doing an incremental compile/matching
         accum = 0
@@ -462,24 +467,23 @@ class _RegexExpected(Expected):
                 continue
 
             if timeout_left <= 0:
-                log("Partial Matching on the Left Timed Out", self.verbosity-4)
+                clog().debug("Partial Matching on the Left Timed Out")
                 break
 
             accum += rcounts[i]
 
-            log("|-->  | best at index % 3i (accum rcount % 3i/%i):\nTrying partial left regex: %s" % (
-                i, accum, min_rcount,
-                repr(''.join(regs[:i+1]))),
-                self.verbosity-4)
+            clog().debug(
+                    "|-->  | best at index % 3i (accum rcount % 3i/%i):\nTrying partial left regex: %s",
+                    i, accum, min_rcount,
+                    repr(''.join(regs[:i+1])))
 
 
             begin = time.time()
             m = _compile(regs[:i+1]).match(got)
             timeout_left -= (time.time() - begin)
             if m:
-                log("Match\n% 4i: %s\n" % (
-                    charnos[i], m.group(0)),
-                    self.verbosity-4)
+                clog().debug("Match\n% 4i: %s\n",
+                    charnos[i], m.group(0))
 
                 if accum >= min_rcount:
                     best_left_index = i
@@ -518,23 +522,23 @@ class _RegexExpected(Expected):
                     continue
 
                 if timeout_right <= 0:
-                    log("Partial Matching on the Right Timed Out", self.verbosity-4)
+                    clog().debug("Partial Matching on the Right Timed Out")
                     break
 
                 accum += rcounts[i]
 
-                log("|  <--| best at index % 3i (accum rcount % 3i/%i):\nTrying partial regex: %s" % (
-                    i, accum, min_rcount,
-                    repr(''.join(left_side + [buffer_re] + regs[i:]))),
-                    self.verbosity-4)
+                clog().debug(
+                        "|  <--| best at index % 3i (accum rcount % 3i/%i):\nTrying partial regex: %s",
+                        i, accum, min_rcount,
+                        repr(''.join(left_side + [buffer_re] + regs[i:])))
 
                 begin = time.time()
                 m = _compile(left_side + [buffer_re] + regs[i:]).match(got)
                 timeout_right -= (time.time() - begin)
                 if m:
-                    log("Matched; Buffer between left and right:\n%s\n" % (
-                        m.group(buffer_tag_name)),
-                        self.verbosity-4)
+                    clog().debug(
+                            "Matched; Buffer between left and right:\n%s\n",
+                            m.group(buffer_tag_name))
 
                     if accum >= min_rcount:
                         best_right_index = i
@@ -573,8 +577,9 @@ class _RegexExpected(Expected):
 
         replaced_captures = {regex_name_as_tag_name(n): v
                                     for n, v in replaced_captures.items()}
-        log("Incremental Match:\n##Elapsed: %0.2f secs\n##Left: %s\n\n##Middle: %s\n\n##Right: %s\n\n##Captured: %s\n\n##Buffer: %s" % (
-                elapsed, got_left, middle_part, got_right, repr(replaced_captures), buffer_captured), self.verbosity-4)
+        clog().debug(
+                "Incremental Match:\n##Elapsed: %0.2f secs\n##Left: %s\n\n##Middle: %s\n\n##Right: %s\n\n##Captured: %s\n\n##Buffer: %s",
+                elapsed, got_left, middle_part, got_right, repr(replaced_captures), buffer_captured)
 
         return got_left + middle_part + got_right, replaced_captures
 

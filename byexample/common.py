@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import pprint, traceback, contextlib, os, re, string, shlex
+import pprint, traceback, contextlib, os, re, string, shlex, logging
 
 '''
 >>> from byexample.common import tohuman
@@ -33,17 +33,10 @@ def build_where_msg(where, owner, msg=None, use_colors=False):
 
     return ''.join(tmp)
 
-
-def log(msg, lvl, concerns=None):
-    if isinstance(lvl, int):
-        if lvl >= 0:
-            print(msg)
-
-    else:
-        concerns.event('log', msg=msg, level=lvl)
-
 def colored(s, color, use_colors):
     if use_colors:
+        if color == 'none':
+            return s
         c = {'green': 32, 'red': 31, 'yellow': 33, 'cyan': 36}[color]
         return "\033[%sm%s\033[0m" % (c, s)
     else:
@@ -57,9 +50,9 @@ try:
     import pygments.formatters.terminal256
 
     def highlight_syntax(example, use_colors):
-        source = getattr(example, 'source', example.snippet)
+        snippet = example.snippet
         if not use_colors:
-            return source
+            return snippet
 
         try:
             # we want to use colors, let's try to find a valid lexer
@@ -75,18 +68,18 @@ try:
             # should we allow the user to change this?
             formatter = pygments.formatters.terminal.TerminalFormatter()
 
-            return pygments.highlight(source, lexer, formatter)
+            return pygments.highlight(snippet, lexer, formatter)
         except:
             pass
 
         # if something fails, just keep going: the highlight syntax is
         # nice to have but not a must to have.
-        return source
+        return snippet
 
 except ImportError:
     # do not use any highlight syntax
     def highlight_syntax(example, use_colors):
-        return example.source
+        return example.snippet
 
 def tohuman(s):
     ''' Simple but quite human representation of <s>.
@@ -115,65 +108,6 @@ def tohuman(s):
 
     return s
 
-def print_example(example, use_colors, x):
-    if x < 0:
-        return
-
-    print("::[Example]" + ":" * 59)
-    print("  Found in: %s (%s - %s) by: %s" % (example.filepath,
-                                               example.start_lineno,
-                                               example.end_lineno,
-                                               example.finder))
-    print("  Language: %s (%s)" % (example.runner.language,
-                            "parsed" if example.fully_parsed else "not parsed"))
-    print("..[Source]" + "." * 60)
-    print(highlight_syntax(example, use_colors))
-
-    print("..[Expected]" + "." * 58)
-    if (x-2) >= 0:
-        _l = 0
-        for e in example.expected_str.split('\n'):
-            print("% 4i: %s" % (_l, e))
-            _l += len(e) + 1
-    else:
-        print(example.expected_str)
-
-    if not example.fully_parsed:
-        return
-
-    if (x-1) >= 0:
-        print("  Indentation: |%s| (%i bytes)" % (example.indentation,
-                                                    len(example.indentation)))
-
-        capture_tag_names = list(sorted(n for n in example.expected.tags_by_idx.values() if n != None))
-        print("  Capture Tags: %s" % pprint.pformat(capture_tag_names, width=50))
-
-        opts_repr = pprint.pformat(example.options.as_dict(), width=50)
-        lines = opts_repr.split('\n')
-        if len(lines) > 1:
-            opts_repr = '\n    ' + ('\n    '.join(lines))
-        print("  Options: %s" % opts_repr)
-
-    if (x-2) >= 0:
-        print("..[Regexs]" + "." * 60)
-        if len(example.expected.regexs) != len(example.expected.charnos):
-            print("Error: inconsistent regexs")
-            print("  Regexs: %s" % example.expected.regexs)
-            print("  Positions: %s" % example.expected.charnos)
-
-        for p, r in zip(example.expected.charnos, example.expected.regexs):
-            print("% 4i: %s" % (p, repr(r)))
-
-    print("..[Run]" + "." * 63)
-    print("  Runner: %s" % example.runner)
-
-def print_execution(example, got, x):
-    if x < 0:
-        return
-
-    print("..[Got]" + "." * 63)
-    print(got)
-    print(("." * 70) + '\n')
 
 def constant(argumentless_method):
     placeholder = '_saved_constant_result_of_%s' % argumentless_method.__name__
@@ -189,19 +123,23 @@ def constant(argumentless_method):
 
 
 @contextlib.contextmanager
-def human_exceptions(where_default, verbosity, quiet):
+def human_exceptions(where_default):
     ''' Print to stdout the message of the exception (if any)
-        suppressing its traceback.
-         - if verbosity is greather than zero, print the traceback.
-         - if quiet is True, do not print anything.
+        in a human-understandable way.
 
-        To enhance the print, print the 'where' attribute of the
-        exception (if it has one) or the 'where_default'.
+        To enhance the message, print the <where> attribute of the
+        exception (if it has one) or the <where_default>.
 
-        If the captured exception is a SystemExit, do not print anything
-        even if verbosity is greather than zero.
+        If the captured exception is a SystemExit, do not print anything.
+
         This allows to use SystemExit as a abort mechanism without printing
         anything to the console.
+
+        If the captured exception is a KeyboardInterrupt, assume that
+        the user want to 'abort' the execution, so it will print
+        just a message saying that.
+
+        No exception will be propagated out of this context manager.
 
         The context manager will yield a dictionary with the
         key 'exc' set to the exception caught if any or it will
@@ -211,26 +149,15 @@ def human_exceptions(where_default, verbosity, quiet):
     try:
         yield o
     except KeyboardInterrupt as e:
-        if not quiet:
-            print('Execution aborted by the user.')
+        rlog = logging.getLogger(name='byexample')
+        rlog.user_aborted()
 
         o['exc'] = e
     except SystemExit as e:
         o['exc'] = e
     except BaseException as e:
-        if quiet:
-            pass
-        else:
-            where = getattr(e, 'where', where_default)
-            msg = str(e)
-            if verbosity >= 1:
-                msg = traceback.format_exc()
-            else:
-                msg += "\n\nRerun with -v to get a full stack trace."
-
-            cls = str(e.__class__.__name__)
-            print("{where}\n{cls}: {msg}".format(where=where, msg=msg, cls=cls))
-
+        rlog = logging.getLogger(name='byexample')
+        rlog.exception(msg=None, where=where_default)
         o['exc'] = e
 
 @contextlib.contextmanager

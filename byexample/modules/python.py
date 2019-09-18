@@ -17,7 +17,8 @@ Example:
 
 from __future__ import unicode_literals
 import re, pexpect, sys, time
-from byexample.common import log, constant
+from byexample.common import constant
+from byexample.log import clog
 from byexample.parser import ExampleParser, ExtendOptionParserMixin
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
@@ -243,8 +244,7 @@ class PythonParser(ExampleParser):
             # the following are not supported: ignore them and print a note
             # somewhere
             if options['DONT_ACCEPT_TRUE_FOR_1']:
-                log("[Note] DONT_ACCEPT_TRUE_FOR_1 flag is not supported.",
-                        self.verbosity-2)
+                clog().warn("DONT_ACCEPT_TRUE_FOR_1 flag is not supported.")
 
         # in compatibility mode, do not interpret <...> by default [force this]
         if self.options['py_doctest'] and 'tags' not in mapped:
@@ -328,8 +328,7 @@ class PythonParser(ExampleParser):
                 # contains strings like <label> that may confuse byexample and
                 # or the user
                 if self.capture_tag_regex()['full'].search(expected_str):
-                    log("[Warn] The expected strings has <label> strings that will not be considered literal but as capture tags.",
-                            self.verbosity)
+                    clog().warn("The expected strings has '<label>' strings that will not be considered literal but as capture tags.")
 
             if options['ELLIPSIS']:
                 ellipsis_tag = '<%s>' % self.ellipsis_marker()

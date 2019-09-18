@@ -45,10 +45,12 @@ class SimpleReporter(Concern):
 
         self.header_printed = False
 
-    def _write(self, msg):
+    def _write(self, msg, nl=False):
         ''' Call me once and just once per concern's method '''
         with self.write_lock:
             self.output.write(msg)
+            if nl:
+                self.output.write('\n')
             self.output.flush()
 
     def _update(self, x):
@@ -217,21 +219,10 @@ class SimpleReporter(Concern):
         self.fail += 1
 
     def event(self, what, **data):
-        if what == 'log':
-            level = data['level']
-            if level == 'error':
-                hdr = colored("Err:", 'red', self.use_colors)
-            elif level == 'chat':
-                if self.verbosity < 2:
-                    return
-                hdr = colored("Chat:", 'cyan', self.use_colors)
-            elif level == 'warn':
-                hdr = colored("Warn:", 'yellow', self.use_colors)
-            else:
-                return
+        if what != 'log':
+            return
 
-            msg = "%s %s\n" % (hdr, data['msg'])
-            self._write(msg)
+        self._write(data['msg'], nl=True)
 
 
     def _error_header(self, example):
@@ -248,6 +239,8 @@ class SimpleReporter(Concern):
         msg += "Failed example:\n"
 
         msg += indent(highlight_syntax(example, self.use_colors))
+        if not msg.endswith('\n'):
+            msg += '\n'
 
         return msg
 
@@ -287,13 +280,14 @@ class ProgressBarReporter(SimpleReporter):
             self.bar.fp.write('\r')  # place cursor back at the beginning of line
             self.bar.moveto(-pos)
 
-    def _write(self, msg):
+    def _write(self, msg, nl=False):
         with self.write_lock:
             if self.bar is None:
-                SimpleReporter._write(self, msg)
+                SimpleReporter._write(self, msg, nl)
             else:
                 self._clear_all_bars()
-                self.bar.write(msg, file=self.output, end="")
+                end = '\n' if nl else ''
+                self.bar.write(msg, file=self.output, end=end)
                 self.output.flush()
 
     def _update(self, x):

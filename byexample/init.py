@@ -8,7 +8,8 @@ from .executor import FileExecutor
 from .differ import Differ
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
-from .common import log, enhance_exceptions
+from .common import enhance_exceptions
+from .log import clog, log_context, configure_log_system, setLogLevels, TRACE, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL
 
 def are_tty_colors_supported(output):
     def get_colors():
@@ -54,13 +55,15 @@ def is_a(target_class, key_attr, warn_missing_key_attr):
         attr_ok = hasattr(obj, key_attr)
 
         if class_ok and not attr_ok:
-            log(" * Warning: class '%s' has not attribute '%s'." % \
-                    (obj.__name__, key_attr),  0)
+            clog().warn(
+                "Class '%s' has not attribute '%s'.",
+                obj.__name__, key_attr)
 
         return class_ok and attr_ok
 
     return _is_X
 
+@log_context('byexample.load')
 def load_modules(dirnames, cfg):
     verbosity = cfg['verbosity']
     registry = {'runners': {},
@@ -72,20 +75,21 @@ def load_modules(dirnames, cfg):
     for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
         path = importer.path
 
-        log("From '%s' loading '%s'..." % (path, name), verbosity-2)
+        clog().debug("From '%s' loading '%s'...", path, name)
 
         try:
             module = importer.find_module(name).load_module(name)
         except Exception as e:
-            log("From '%s' loading '%s'...failed: %s" % (path, name, str(e)),
-                                                        verbosity)
+            clog().info(
+                "From '%s' loading '%s'...failed: %s",
+                path, name, str(e))
             continue
 
         stability = getattr(module, 'stability', 'undefined')
         if stability not in ('experimental', 'provisional', 'unstable', 'stable', 'deprecated'):
             stability = 'experimental/%s?' % str(stability)
 
-        log("From '%s' loaded '%s' (%s)" % (path, name, stability), verbosity-1)
+        clog().chat("From '%s' loaded '%s' (%s)", path, name, stability)
         for klass, key, what in [(ExampleRunner, 'language', 'runners'),
                                  (ExampleParser, 'language', 'parsers'),
                                  (ExampleFinder, 'target', 'finders'),
@@ -105,13 +109,9 @@ def load_modules(dirnames, cfg):
                 klasses_found = set(klasses_found) - set(container.values())
 
             if klasses_found:
-                log("Classes found for '%s': %s" % (
+                clog().debug("Classes found for '%s': %s",
                     what,
-                    ', '.join(k.__name__ for k in klasses_found)),
-                    verbosity-2)
-            else:
-                log("No classes found for '%s'." % what,
-                        verbosity-2)
+                    ', '.join(k.__name__ for k in klasses_found))
 
             objs = [klass(**cfg) for klass in klasses_found]
             if objs:
@@ -126,7 +126,9 @@ def load_modules(dirnames, cfg):
                             container[k] = obj
                         loaded_objs.append(obj)
 
-                log("\n".join((" - %s" % repr(i)) for i in loaded_objs), verbosity-1)
+                clog().chat("\n".join((" - %s" % repr(i)) for i in loaded_objs))
+            else:
+                clog().chat("No classes found for '%s'.", what)
 
     return registry
 
@@ -155,14 +157,15 @@ def verify_encodings(input_encoding, verbosity):
         except:
             e = 'UTF-8'
 
-        log(("The encoding of your terminal is unset.\n" +
-                "Try to set the environment variable PYTHONIOENCODING='%s' first\n" +
-                "or run 'byexample' like this:\n" +
-                "  PYTHONIOENCODING='%s' byexample ...\n") % (e, e), verbosity)
+        clog().error(
+            "The encoding of your terminal is unset.\n" +
+            "Try to set the environment variable PYTHONIOENCODING='%s' first\n" +
+            "or run 'byexample' like this:\n" +
+            "  PYTHONIOENCODING='%s' byexample ...\n", e, e)
         sys.exit(-1)
 
-    log("Encoding (input): %s." % input_encoding, verbosity-2)
-    log("Encoding (output): %s." % sys.stdout.encoding, verbosity-2)
+    clog().chat("Encoding (input): %s.", input_encoding)
+    clog().chat("Encoding (output): %s.", sys.stdout.encoding)
 
 def geometry(x):
     lines, columns = [int(v.strip()) for v in str(x).split('x')]
@@ -226,6 +229,7 @@ def get_default_options_parser(cmdline_args):
     return options_parser
 
 
+@log_context('byexample.options')
 def get_options(args, cfg):
     # the options object should have a set of default values based
     # on the flags and values from the command line.
@@ -234,14 +238,14 @@ def get_options(args, cfg):
                         'shebangs': args.shebangs,
                         'difftool':   args.difftool,
                         })
-    log("Options (cmdline): %s" % options, cfg['verbosity']-2)
+    clog().chat("Options (cmdline): %s", options)
 
     # create a parser for the rest of the options.
     optparser = get_default_options_parser(args)
     options['optparser'] = optparser
     options.update(optparser.defaults())
 
-    log("Options (cmdline + byexample's defaults): %s" % options, cfg['verbosity']-2)
+    clog().chat("Options (cmdline + byexample's defaults): %s", options)
     # we parse the argument 'options' to allow the user to change
     # some options.
     #
@@ -264,7 +268,7 @@ def get_options(args, cfg):
     # completed later
     cfg['options']= options
 
-    log("Options (cmdline + byexample's defaults + --options): %s" % options, cfg['verbosity']-2)
+    clog().chat("Options (cmdline + byexample's defaults + --options): %s", options)
 
     options['x'] = {}
     for k, v in vars(args).items():
@@ -315,6 +319,7 @@ def extend_option_parser_with_concerns(cfg, registry):
     cfg['options']['optparser'] = optparser
     return optparser
 
+@log_context('byexample.options')
 def extend_options_with_language_specific(cfg, registry, allowed_languages):
     parsers = [p for p in registry['parsers'].values()
                if p.language in allowed_languages]
@@ -330,12 +335,29 @@ def extend_options_with_language_specific(cfg, registry, allowed_languages):
         opts = parser.extract_cmdline_options(cfg['opts_from_cmdline'])
         cfg['options'].update(opts)
 
-    log("Options (cmdline + --options + language specific): %s" % cfg['options'],
-            cfg['verbosity']-2)
+    clog().chat("Options (cmdline + --options + language specific): %s", cfg['options'])
 
+def verbosity_to_log_levels(verbosity, quiet):
+    if quiet:
+        return {'byexample':CRITICAL}
+
+    tmp = [
+        {'byexample':NOTE},
+        {'byexample':NOTE, 'byexample.exec':INFO},  # -v
+        {'byexample':NOTE, 'byexample.exec':CHAT},  # -vv
+        {'byexample':INFO, 'byexample.exec':CHAT},  # -vvv
+        {'byexample':CHAT},                         # -vvvv
+        {'byexample':DEBUG},                        # -vvvvv
+        {'byexample':TRACE},                        # -vvvvvv
+        ]
+
+    return tmp[min(verbosity, len(tmp)-1)]
+
+@log_context('byexample.init')
 def init(args):
-    verify_encodings(args.encoding, args.verbosity)
+    setLogLevels(verbosity_to_log_levels(args.verbosity, args.quiet))
 
+    verify_encodings(args.encoding, args.verbosity)
     cfg = {
             'use_progress_bar': args.pretty == 'all',
             'use_colors': args.pretty == 'all',
@@ -368,9 +390,8 @@ def init(args):
 
     if not testfiles:
         if not cfg['quiet']:
-            log("No files were found (you passed %i files and %i were skipped)" %
-                    (len(set(args.files)), len(set(args.files) - allowed_files)),
-                    cfg['verbosity'])
+            clog().error("No files were found (you passed %i files and %i were skipped)",
+                    (len(set(args.files)), len(set(args.files) - allowed_files)))
         sys.exit(1)
 
     # extend the option parser with all the parsers of the concerns.
@@ -385,8 +406,11 @@ def init(args):
     if cfg['quiet']:
         registry['concerns'].pop('progress', None)
 
-    log("Configuration:\n%s." % pprint.pformat(cfg), cfg['verbosity']-2)
-    log("Registry:\n%s." % pprint.pformat(registry), cfg['verbosity']-2)
+    if not clog().isEnabledFor(CHAT):
+        clog().chat("Options:\n%s.", pprint.pformat(cfg['options']))
+
+    clog().chat("Configuration:\n%s.", pprint.pformat(cfg))
+    clog().chat("Registry:\n%s.", pprint.pformat(registry))
 
     concerns = ConcernComposite(registry, **cfg)
 
@@ -395,4 +419,5 @@ def init(args):
     harvester = ExampleHarvest(allowed_languages, registry, **cfg)
     executor  = FileExecutor(concerns, differ, **cfg)
 
+    configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
     return testfiles, harvester, executor, options
