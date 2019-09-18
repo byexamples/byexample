@@ -239,6 +239,8 @@ class SimpleReporter(Concern):
         msg += "Failed example:\n"
 
         msg += indent(highlight_syntax(example, self.use_colors))
+        if not msg.endswith('\n'):
+            msg += '\n'
 
         return msg
 
