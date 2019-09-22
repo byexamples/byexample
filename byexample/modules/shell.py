@@ -14,6 +14,13 @@ Example:
   1
   2
   3
+
+  $ echo "this
+  > is a multiline
+  > string"
+  this
+  is a multiline
+  string
 """
 
 from __future__ import unicode_literals

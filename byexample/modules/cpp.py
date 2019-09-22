@@ -1,4 +1,4 @@
-"""
+r"""
 Example:
   ?: #include <iostream>
 
@@ -14,6 +14,19 @@ Example:
   ?: j + 3
   (int) 11
 
+  ?: std::cout << "this\n" \
+  :: "is a multiline\n"    \
+  :: "string\n";
+  this
+  is a multiline
+  string
+
+  ?: /* this
+  :: is a multiline
+  :: comment */
+
+  ?: std::cout << "okay\n";
+  okay
 """
 
 from __future__ import unicode_literals

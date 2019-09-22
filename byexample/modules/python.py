@@ -13,6 +13,13 @@ Example:
   >>> j + 3
   11
 
+  >>> print('''this
+  ... is a multiline
+  ... string''')
+  this
+  is a multiline
+  string
+
 """
 
 from __future__ import unicode_literals
