@@ -73,12 +73,12 @@ Ruby:
 => 3
 
 C++:
-```cpp
-1 + 2      // byexample: +geometry 24x60
-
-out:
+?: 1 + 2      // byexample: +geometry 24x60
 (int) 3
-```
+
+PHP
+php> echo 1 + 2;      // byexample: +geometry 24x60
+3
 
 Javascript:
 > 1 + 2    // byexample: +geometry 24x60
