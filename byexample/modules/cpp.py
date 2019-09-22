@@ -122,27 +122,7 @@ class CPPInterpreter(ExampleRunner, PexpectMixin):
         self._shutdown_interpreter()
 
     def _get_output(self, options):
-        # cling doesn't disable the TTY's echo so everything we type in
-        # it will be reflected in the output.
-        # so this breaks badly self._get_output
-
-        # self.last_output is a list of strings found by pexpect
-        # after returning of each pexpect.expect
-        # in other words if we prefix each line with the prompt
-        # should get the original output from the process
-        lines = ('[cling]$ ' + line for line in self.last_output)
-        self._drop_output()
-
-        # now, feed those lines to our ANSI Terminal emulator
-        lines = self._emulate_ansi_terminal(lines, join=False)
-
-        # get each line in the Terminal's display and ignore each one that
-        # belong with our prompt: those are the "echo" lines that
-        # *we* sent to the cling and they are not part of *its* output.
-        lines = (line for line in lines
-                               if not line.startswith('[cling]$'))
-
-        return '\n'.join(lines)
+        return self._get_output_echo_filtered(options)
 
     def cancel(self, example, options):
         return False    # not supported by cling
