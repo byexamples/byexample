@@ -83,7 +83,8 @@ class PexpectMixin(object):
         self.last_output = []
 
     def _spawn_interpreter(self, cmd, options, wait_first_prompt=True,
-                                        first_prompt_timeout=None):
+                                        first_prompt_timeout=None,
+                                        initial_prompt=None):
         if first_prompt_timeout is None:
             first_prompt_timeout = options['x']['dfl_timeout']
 
@@ -104,8 +105,9 @@ class PexpectMixin(object):
         self._create_terminal(options)
 
         if wait_first_prompt:
+            prompt_re = self.PS1_re if initial_prompt is None else initial_prompt
             self._expect_prompt(options, timeout=first_prompt_timeout,
-                                prompt_re=self.PS1_re)
+                                prompt_re=prompt_re)
             self._drop_output() # discard banner and things like that
 
     def interact(self, send='\n', escape_character=chr(29),
