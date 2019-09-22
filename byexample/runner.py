@@ -83,7 +83,8 @@ class PexpectMixin(object):
         self.last_output = []
 
     def _spawn_interpreter(self, cmd, options, wait_first_prompt=True,
-                                        first_prompt_timeout=None):
+                                        first_prompt_timeout=None,
+                                        initial_prompt=None):
         if first_prompt_timeout is None:
             first_prompt_timeout = options['x']['dfl_timeout']
 
@@ -104,8 +105,9 @@ class PexpectMixin(object):
         self._create_terminal(options)
 
         if wait_first_prompt:
+            prompt_re = self.PS1_re if initial_prompt is None else initial_prompt
             self._expect_prompt(options, timeout=first_prompt_timeout,
-                                prompt_re=self.PS1_re)
+                                prompt_re=prompt_re)
             self._drop_output() # discard banner and things like that
 
     def interact(self, send='\n', escape_character=chr(29),
@@ -274,6 +276,31 @@ class PexpectMixin(object):
 
         self._drop_output()
         return out
+
+    def _get_output_echo_filtered(self, options):
+        # if the interpreter doesn't disable the TTY's echo,
+        # everything we type in it will be reflected in the output.
+        # so this breaks badly self._get_output
+        # experimental feature, use this instead of _get_output
+
+        # self.last_output is a list of strings found by pexpect
+        # after returning of each pexpect.expect
+        # in other words if we prefix each line with the prompt
+        # should get the original output from the process
+        cookie = '[byexamplecookie]$'
+        lines = (cookie + ' ' + line for line in self.last_output)
+        self._drop_output()
+
+        # now, feed those lines to our ANSI Terminal emulator
+        lines = self._emulate_ansi_terminal(lines, join=False)
+
+        # get each line in the Terminal's display and ignore each one that
+        # starts with our cookie: those are the "echo" lines that
+        # *we* sent to the interpreter and they are not part of *its* output.
+        lines = (line for line in lines
+                               if not line.startswith(cookie))
+
+        return '\n'.join(lines)
 
     def _set_cooked_mode(self, state): # pragma: no cover
         # code borrowed from ptyprocess/ptyprocess.py, _setecho, and

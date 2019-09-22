@@ -10,6 +10,17 @@ This is an example in Python
 And this is another example in Ruby
     >> 2 + 2
     => 4
+
+Of course, we support Python examples as well!
+>>> i = 0
+>>> i + 2
+2
+
+>>> def foo():
+...   print("hello!")
+
+>>> foo()
+hello!
 '''
 
 def awesome():

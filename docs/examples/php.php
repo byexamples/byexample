@@ -1,5 +1,5 @@
 /* Byexample will look for examples in any language
- * inside of the Javascript multi line comments.
+ * inside of the PHP multi line comments.
  *
  * This is an example in Python
  * >>> 1 + 2
@@ -9,24 +9,24 @@
  >> 2 + 2
  => 4
 
- Of course, we support Javascript examples as well!
- > var i = 0;
- > i + 2
+ Of course, we support PHP examples as well!
+ php> $i = 0;
+ php> print_r($i + 2);
  2
 
- > function foo() {
- .   console.log("hello!");
- . }
+ php> function foo() {
+ ...>   echo("hello!");
+ ...> }
 
- > foo();
+ php> foo();
  hello!
  */
 
-function awesome() {
+int awesome() {
     /*
      * Here is another example, Shell this time:
-     * $ echo "Javascript rocks!"
-     * Javascript rocks!
+     * $ echo "PHP rocks!"
+     * PHP rocks!
      * */
     return 1 \
         >> 2;           // this line will not be confused with a Ruby example

@@ -44,4 +44,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends install -y \
         vim         \
         less
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends install -y \
+# Interpreters for PHP and Elixir
+        php-cli     \
+        elixir
+
 CMD /bin/bash

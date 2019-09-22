@@ -1,4 +1,4 @@
-"""
+r"""
 Example:
   > function hello() {
   .     console.log("hello bla world")
@@ -15,6 +15,20 @@ Example:
 
   > j + 3
   11
+
+  > console.log("this\n\
+  . is a multiline\n\
+  . string");
+  this
+  is a multiline
+  string
+
+  > /* this
+  . is a multiline
+  . comment */
+
+  > 42
+  42
 
 """
 
