@@ -9,6 +9,17 @@
  >> 2 + 2
  => 4
 
+ Of course, we support Javascript examples as well!
+ > var i = 0;
+ > i + 2
+ 2
+
+ > function foo() {
+ .   console.log("hello!");
+ . }
+
+ > foo();
+ hello!
  */
 
 function awesome() {

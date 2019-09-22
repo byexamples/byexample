@@ -9,6 +9,17 @@
  >> 2 + 2
  => 4
 
+ Of course, we support PHP examples as well!
+ php> $i = 0;
+ php> print_r($i + 2);
+ 2
+
+ php> function foo() {
+ ...>   echo("hello!");
+ ...> }
+
+ php> foo();
+ hello!
  */
 
 int awesome() {

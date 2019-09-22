@@ -9,6 +9,18 @@
   #    >> 2 + 2
     #  => 4
 
+# Of course, we support Ruby examples as well!
+# >> i = 0;
+# >> i + 2
+# => 2
+#
+# >> def foo
+# ..   puts "hello!"
+# .. end
+#
+# >> foo
+# hello!
+
 def awesome
     #####
     # Here is another example, Shell this time:

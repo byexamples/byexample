@@ -9,6 +9,18 @@
  >> 2 + 2
  => 4
 
+ Of course, we support C/C++ examples as well!
+ ?: int i = 0;
+ ?: i + 2
+ (int) 2
+
+ ?: #include <iostream>
+ ?: void foo() {
+ ::   std::cout << "hello!\n";
+ :: }
+
+ ?: foo();
+ hello!
  */
 
 int awesome() {
