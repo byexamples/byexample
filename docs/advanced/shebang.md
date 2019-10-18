@@ -15,14 +15,14 @@ the examples.
 In general, the runner is an interactive interpreter like ``irb`` for ``Ruby``
 or ``python`` for ``Python``.
 
-Sometimes is convenient to change how the interpreter is executed for:
- - using another one (but compatible)
+Sometimes it is convenient to change how the interpreter is executed for:
+ - using another one (must be compatible)
  - adding or removing environment variables
  - redirecting the standard error
  - executing it remotely
 
 Consider the following example that prints interesting things to standard output
-and debug/uninterested things to standard error:
+and debug/uninteresting things to standard error:
 
 ```
 $ cat test/ds/blog-database                          # byexample: +rm=~
@@ -90,9 +90,9 @@ execute ``python 2>/dev/null`` and the ``2>/dev/null`` mean that the standard
 error should be discarded.
 
 If your shell-fu is a little rusty and the shebang is too magic, don't worry
-I had the same problem; *it's for very specific situations* and you should be
-away from this most of the time.
+I had the same problem; *it's for very specific situations* and you shouldn't
+need to worry about this most of the time.
 
-If you need more specific customization you may want to consider to
-[create your own runner](/{{ site.uprefix }}/contrib/how-to-support-new-finders-and-languages).
+If you need more specific customization you may want to consider
+[creating your own runner](/{{ site.uprefix }}/contrib/how-to-support-new-finders-and-languages).
 Go ahead, it is much easier than you think.
