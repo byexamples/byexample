@@ -23,7 +23,7 @@ $ echo '例によって'
 ```
 
 If an example fails, ``byexample`` will show you the differences.
-These also work if the output is unicode.
+This also works if the output is unicode.
 
 Consider the following examples in ``test/ds/bad-unicode``:
 
@@ -69,7 +69,7 @@ Differences:
 ```
 
 **Note:** the [``ndiff`` algorithm](/{{ site.uprefix }}/overview/differences)
-will not put the marker ``+`` in the correct position
+will not put the ``+`` marker in the correct position
 if the characters are *wide characters*.
 
 ## Encoding
@@ -102,10 +102,10 @@ Got:
 
 The ``--encoding`` option only affects how to decode the files read.
 
-The output that ``byexample`` prints it is still interpreted by
+The output that ``byexample`` prints is still interpreted using
 the ``Python`` default encoding for the standard output.
 
-If you want to change this you can do it changing the environment
+If you want to change this behaviour set the environment
 variable ``PYTHONIOENCODING``.
 
 ```shell
@@ -130,9 +130,8 @@ por-éjemplo
 ## Limitations
 
 If you are running ``byexample`` using ``Python 2.7`` *and* you
-enable the [ANSI terminal emulation](/{{ site.uprefix }}/advanced/terminal-emulation)
-with ``+term=ansi``, any non-ascii character will be removed.
+enable [ANSI terminal emulation](/{{ site.uprefix }}/advanced/terminal-emulation)
+with ``+term=ansi``, any non-ascii characters will be removed.
 
-This is a limitation of one of the ``byexample``'s dependencies and
-only apply under that specific scenario.
-
+This is a limitation of one of ``byexample``'s dependencies and
+only applies under that specific scenario.
