@@ -9,9 +9,9 @@ $ alias byexample=byexample\ --pretty\ none
 
 # Terminal Geometry
 
-When ``byexample`` runs a set of examples he spawns one o more runners
+When ``byexample`` runs a set of examples, it spawns one or more runners
 inside a [virtual terminal](/{{ site.uprefix }}/advanced/terminal-emulation)
-of 24 lines of height and 80 columns of width.
+that is 24 lines high and 80 columns wide.
 
 The dimension or geometry can affect how the runner will print in the
 terminal.
@@ -34,19 +34,19 @@ list of numbers:
 less than 80; the second example, longer than the first, will span multiple
 lines.
 
-``byexample`` allows to control the geometry of the *virtual terminal*:
+``byexample`` allows you to control the geometry of the *virtual terminal*:
 
 ```python
 >>> list(range(25))     # byexample: +geometry 24x127
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, <...>, 20, 21, 22, 23, 24]
 ```
 
-The syntax is pretty direct: ``<number of lines>x<number of columns>``
+The syntax is simply ``<number of lines>x<number of columns>``
 
 ## A warning note
 
 Changing the geometry of the *virtual terminal* is **totally dependent**
-of the runner/interpreted used.
+on the runner/interpreter used.
 
 By default ``byexample`` sends a ``SIGWINCH`` signal to the interpreter
 which may or may not have an effect.
@@ -91,7 +91,7 @@ Print list of commands.
 
 ## Changing geometry from the start
 
-You may decide to set the geometry from the begin. In this
+You may decide to set the geometry from the beginning. In this
 case it will affect all the interpreters.
 
 Consider the examples in ``small-terminal.md``
@@ -121,7 +121,7 @@ Got:
 <...>
 ```
 
-They fail of course because the examples are expecting to be executed
+They fail because the examples are expecting to be executed
 in a smaller terminal of size 24x60.
 
 Here we have them pass:
@@ -133,9 +133,8 @@ File test/ds/small-terminal.md, 2/2 test ran in <...> seconds
 [PASS] Pass: 2 Fail: 0 Skip: 0
 ```
 
-``byexample`` will pass to the runner the geometry in two special environment
+``byexample`` will pass the geometry to the runner in two special environment
 variables: ``LINES`` and ``COLUMNS``.
 
-This is only done at the begin, if you change the geometry later these
+This is only done at the beginning, if you change the geometry later these
 variables may not be updated.
-

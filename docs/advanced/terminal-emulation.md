@@ -13,14 +13,14 @@ $ alias byexample=byexample\ --pretty\ none
 runners.
 
 By default ``byexample`` uses a *dumb terminal* (``+term=dumb``) which
-it is fast and works well for most of the cases.
+is fast and works well in most cases.
 
-But you can change this to disable the emulation with ``+term=as-is`` or
-to enable a full ANSI terminal emulation with ``+term=ansi``.
+But you can change this to disable emulation with ``+term=as-is`` or
+to enable full ANSI terminal emulation with ``+term=ansi``.
 
 ## Dumb terminal
 
-In this mode, ``byexample`` emulate a very simple terminal processing
+In this mode, ``byexample`` emulates a very simple terminal, processing
 only the white spaces.
 
 It does not have the concept of a cursor, does not
@@ -28,8 +28,8 @@ interpret escape codes and does not break lines automatically.
 
 Even if a [geometry](/{{ site.uprefix }}/advanced/geometry) is defined
 with ``+geometry``, the *dumb terminal*
-does not force any boundaries: the example
-can print a string longer than the width of the terminal.
+does not force any boundaries: the following example
+will print a string longer than the width of the terminal.
 
 ```python
 >>> print("aaaabbbb" * 8)      # byexample: +geometry 24x32
@@ -38,12 +38,12 @@ aaaabbbbaaaabbbbaaaabbbbaaaabbbbaaaabbbbaaaabbbbaaaabbbbaaaabbbb
 
 ### White space processing
 
-The dumb terminal removes any trailing whitespace, converts to spaces the tabs
-and uniforms the new lines.
+The dumb terminal removes any trailing whitespace, converts tabs to spaces
+and standardizes the new lines.
 
-This fits for most of the examples reducing the need of adding tabs into the
-examples or requering the
-[normalization of the whitespaces](/{{ site.uprefix }}/basic/normalize-whitespace)
+This suits most examples, reducing the need to add tabs into the
+examples or requiring the
+[normalization of whitespace](/{{ site.uprefix }}/basic/normalize-whitespace)
 with ``+norm-ws``.
 
 ```python
@@ -53,16 +53,16 @@ baz     saz
 taz
 ```
 
-If you need to check those, you can use ``+term=as-is`` to disable
-the terminal emulation.
+If you need to check whitespace characters, you can use ``+term=as-is`` to
+disable terminal emulation.
 
 ## As-is terminal
 
 When ``+term=as-is`` is activated the output is passed *as is* without
-any modification except for *standardization* of the new lines.
+any modification except for *standardization* of new lines.
 
-It can be useful in some especial cases to check some of the white spaces
-removed by the dumb or the ANSI terminals.
+It can be useful in some special cases to check white spaces
+that are removed by the dumb or ANSI terminals.
 
 ```python
 >>> print("\tfoo\tbar\nbaz\tsaz    \rtaz")       # byexample: +term=as-is
@@ -76,15 +76,15 @@ taz
 Some programs may need a real terminal or at least an
 *emulated ANSI terminal*.
 
-``byexample`` can emulate one capable of interpret and emulate
+``byexample`` can emulate one capable of interpreting and emulating
 all the control sequences and escape codes using ``+term=ansi``.
 
-> **Note:** the terminal emulation has little support in ``Python 2.7``.
-> It should work but if you can use a modern ``Python`` version, better.
+> **Note:** terminal emulation is not fully supported in ``Python 2.7``.
+> It should work but using a modern ``Python`` version is recommended.
 
 ### Removing color
 
-If you have an example that is printing text with color, you probably see
+If you have an example that is printing text with color, you will probably see
 something like:
 
 ```shell
@@ -92,7 +92,7 @@ $ echo -e "\033[31mmessage in red\033[0m"
 <...>[31mmessage in red<...>[0m
 ```
 
-To get rid off of those weird symbols you can enable the terminal emulation:
+To get rid of those weird symbols you can enable terminal emulation:
 
 ```shell
 $ echo -e "\033[31mmessage in red\033[0m"      # byexample: +term=ansi
@@ -112,8 +112,7 @@ aaaabbbbaaaabbbbaaaabbbbaaaabbbb
 aaaabbbbaaaabbbbaaaabbbbaaaabbbb
 ```
 
-This is specially useful to work with ``ncurses`` or other
-technology-like programs.
+This is especially useful to work with ``ncurses`` or other advanced programs.
 
 ### ncurses support
 
@@ -146,7 +145,7 @@ $ less test/ds/python-tutorial.v2.md # byexample: +term=ansi +rm=~ +stop-on-time
 ~<...>(END)
 ```
 
-> Try the above example without ``+term=ansi`` and see what happen.
+> Try the above example without ``+term=ansi`` and see what happens.
 
 <!--
 $ kill %%     # byexample: -skip +pass
@@ -154,12 +153,11 @@ $ kill %%     # byexample: -skip +pass
 
 ### Pagination
 
-``byexample`` will not emulate pagination so when the output is larger than
-the height of the terminal, the lines on top will be discarded to leave
-room for the new at the bottom
+``byexample`` will not emulate pagination. When the output is larger than
+the height of the terminal, lines that scroll off the top are discarded.
 
-The following example prints more lines than the available in the terminal,
-showing only the last ones.
+The following example prints more lines than are available in the terminal so
+only the last lines are shown.
 
 ```python
 >>> for i in range(1,33):       # byexample: +term=ansi +geometry=5x80
@@ -175,8 +173,8 @@ increase the count of rows that the terminal has with ``+geometry``.
 
 <!--
 
-The following test make sure that the runners for C++ and PHP
-are working as their use a special mechanism for _get_output
+The following tests make sure that the runners for C++ and PHP
+are working as they use a special mechanism for _get_output
 even if the terminal is too small
 
 ?: #include <iostream>                 // byexample: +geometry=5x80
@@ -390,8 +388,6 @@ line 99
 
 ### Performance
 
-The emulation it is typically 3 times slower than the normal mode
+Emulation is typically 3 times slower than the normal mode
 (``+term=dumb``).
 Keep that in mind and try to not enable it by default.
-
-
