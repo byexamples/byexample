@@ -359,7 +359,26 @@ class PexpectMixin(object):
 
     def _abort(self, example, options):
         self.interpreter.sendcontrol('c')
+        return self._recover_prompt_sync(example, options)
 
+    def _recover_prompt_sync(self, example, options, cnt=5):
+        ''' Expect for at least one prompt, return False if we
+            didn't find one in a reasonable time (dfl_timeout).
+
+            If we found one, keep reading up to find less than
+            <cnt> additional prompts.
+
+            If we found <cnt>, we fail too and return False.
+
+            In other case, return sucess True.
+
+            The idea is that if we lost the synchronization with
+            the interpreter we may recover it reading at least
+            one prompt (the interpreter is still alive) and
+            less than <cnt> prompts (so we are at the 'end').
+
+            This algorithm is not bug-free, just a best-effort one.
+            '''
         try:
             # wait for the prompt, ignore any extra output
             self._expect_prompt(
@@ -367,10 +386,30 @@ class PexpectMixin(object):
                     timeout=options['x']['dfl_timeout'],
                     prompt_re=self.PS1_re)
             self._drop_output()
-            return True
+            good = True
         except TimeoutException as ex:
             self._drop_output()
-            return False
+            good = False
+
+        if good:
+            try:
+                cnt = 0
+                while cnt < 5:
+                    # "consume" spurious prompts until we know that we are
+                    # in 'sync' with the interpreter (no more prompts
+                    # are without be read)
+                    self._expect_prompt(
+                            options,
+                            timeout=options['x']['dfl_timeout'],
+                            prompt_re=self.PS1_re)
+                    self._drop_output()
+                    cnt += 1
+
+                good = False    # we cannot ensure that we are in sync
+            except TimeoutException as ex:
+                self._drop_output()
+
+        return good
 
 # backward compatibility for 8.x.x. what a typo!!
 PexepctMixin = PexpectMixin
