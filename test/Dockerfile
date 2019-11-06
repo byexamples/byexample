@@ -44,9 +44,14 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends install -y \
         vim         \
         less
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends install -y \
+
+RUN wget https://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb && dpkg -i erlang-solutions_2.0_all.deb \
+ && apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends install -y \
 # Interpreters for PHP and Elixir
-        php-cli     \
+# (Elixir require a modern repository and Erlang/OTP platform)
+        php-cli         \
+        esl-erlang      \
         elixir
 
 CMD /bin/bash
