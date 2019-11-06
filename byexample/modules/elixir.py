@@ -12,9 +12,7 @@ Example:
   => "hello <...> world"
 
   iex> j = 2
-  iex> if j < 4 do
-  ...>   j = 8
-  ...> end
+  iex> j = (if j < 4 do 8 end)
 
   iex> j + 3
   => 11
@@ -22,9 +20,14 @@ Example:
   Pretty print
   iex> %{:a => 1, 2 => :b, 3 => %{:c => 0, :d => %{:x => 0, :y => :e}}}
   =>
-  %{2 => :b,
-    3 => %{c: 0,
-      d: %{x: 0, y: :e}}, :a => 1}
+  %{
+    2 => :b,
+    3 => %{
+      c: 0,
+      d: %{x: 0, y: :e}
+    },
+    :a => 1
+  }
 
   Autodetect print expression:
   iex> "foo bar 1"
@@ -104,6 +107,7 @@ class ElixirParser(ExampleParser):
                                                     re.MULTILINE)
 
     def extend_option_parser(self, parser):
+        parser.add_flag("elixir-dont-display-hack", default=False, help="required for IEx < 1.9.")
         parser.add_argument("+elixir-expr-print", choices=['auto', 'true', 'false'],
                             default='auto',
                             help='print the expression\'s value (true); ' +\
@@ -174,8 +178,27 @@ class ElixirInterpreter(ExampleRunner, PexpectMixin):
         src = example.source
         assert src[-1] == '\n'
         src = src[:-1]
-        if not example._elixir_print_expected:
-            src = src + ' ; IEx.dont_display_result'
+
+        if self._elixir_dont_display_hack:
+            # The user wants to use the dont_display_result hack.
+            # This has some ugly side effects and it will not work if
+            # the example (src) has a comment because it will comment out
+            # our "; ..." appended hack.
+            # However, this is the only way to silent IEx for version
+            # that does not support the 'inspect_fun' config (IEx < 1.9)
+            if not example._elixir_print_expected:
+                src = src + ' ; IEx.dont_display_result'
+        else:
+            # Modern way to suppress or not the display of the result
+            # for IEx >= 1.9.
+            # We keep a state in _print_expre_activated so we know if we
+            # need to switch or not the display suppression.
+            if not example._elixir_print_expected and self._print_expre_activated:
+                self._exec_and_wait(r'IEx.configure(inspect: [inspect_fun: fn a,b -> "" end])', options)
+                self._print_expre_activated = False
+            elif example._elixir_print_expected and not self._print_expre_activated:
+                self._exec_and_wait(r'IEx.configure(inspect: [inspect_fun: fn a,b -> Inspect.inspect(a,b) end])', options)
+                self._print_expre_activated = True
 
         return self._exec_and_wait(src, options)
 
@@ -198,6 +221,9 @@ class ElixirInterpreter(ExampleRunner, PexpectMixin):
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
+        self._print_expre_activated = True  # IEx default
+        self._elixir_dont_display_hack = options['elixir_dont_display_hack']
+
         # run!
         options.up()
         options['geometry'] = (max(options['geometry'][0], 128), max(options['geometry'][1], 128))
@@ -212,8 +238,6 @@ class ElixirInterpreter(ExampleRunner, PexpectMixin):
         self._exec_and_wait(r'IEx.configure(inspect: [width: 32])', options)
 
         self._exec_and_wait(r'IEx.configure(colors: [enabled: false])', options)
-
-        # TODO change the auto-expr-print using inspect_fun from IEx > 1.9
 
     def _change_terminal_geometry(self, rows, cols, options):
         raise Exception("This should never happen")

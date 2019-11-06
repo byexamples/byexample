@@ -1,10 +1,14 @@
 # Elixir
 
 You need the default interpreter ``iex`` installed first.
-Check its [download page](https://www/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)
+Check its [download page](https://elixir-lang.org)
 
 > **Stability**: ``experimental`` - non backward compatibility changes are
 > possible or even removal between versions (even patch versions).
+
+> **Note**: ``byexample`` will work with older version of the interpreter,
+``IEx`` however it will do several *hacks*. The recommended version is
+1.9.0 or superior.
 
 ## Pretty print
 
@@ -14,11 +18,20 @@ value (32) so nested structures are break into multiline prints.
 
 ```elixir
 iex> %{:a => 1, 2 => :b, 3 => %{:c => 0, :d => %{:x => 0, :y => :e}}}
-=>
-%{2 => :b,
-  3 => %{c: 0,
-    d: %{x: 0, y: :e}}, :a => 1}
+=> %{
+  2 => :b,
+  3 => %{
+    c: 0,
+    d: %{x: 0, y: :e}
+  },
+  :a => 1
+}
 ```
+
+**Note:** ``byexample`` uses ``Inspect`` to pretty print and the output of
+this had changed in the past so there are not any warranties.
+The output shown correspond to ``IEx`` version 1.9.2.
+
 
 ### The object returned
 
@@ -35,7 +48,7 @@ In the following case, the result of each expression is not printed and
 therefor they are **not** checked:
 
 ```elixir
-iex> _ = 1 + 2
+iex> 1 + 2
 
 iex> IO.puts("hello")
 hello
@@ -45,7 +58,7 @@ Now, compare it with this. It is the same example but the objects returned
 are checked too.
 
 ```elixir
-iex> _ = 1 + 2
+iex> 1 + 2
 => 3
 
 iex> IO.puts("hello")
@@ -60,6 +73,30 @@ On the other hand, you can disable it forever
 with ``+elixir-expr-print=false``.
 
 The default is ``+elixir-expr-print=auto``.
+
+**Note:** ``byexample`` uses ``inspect_fun`` to customize this which it is
+available since ``IEx`` version 1.9. If you are stuck with an older version
+you can use the ``dont_display_result`` hack.
+
+### ``dont_display_result`` hack
+
+For older version of ``IEx``, the only way to suppress the display of
+a result is adding ``; IEx.dont_display_result`` at the end of each
+``Elixir`` line.
+
+``byexample`` can do this automatically if you enable this with
+``+elixir-dont-display-hack``.
+
+However this is a *hack* and it will not always will work.
+
+For example, if your example ends with a comment, you will be commenting
+out also the ``; IEx.dont_display_result``:
+
+```
+valid example here   # valid comment ; IEx.dont_display_result
+```
+
+Also, the ``;`` *may* create unexpected warnings.
 
 ### Terminal support
 
