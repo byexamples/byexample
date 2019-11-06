@@ -102,7 +102,7 @@ class XFormatter(Formatter):
             return Formatter.formatException(self, ei)
         else:
             return '%s\n\n%s' % (str(ei[1]),
-                                "Rerun with -v to get a full stack trace."
+                                "Rerun with -vvv to get a full stack trace."
                                 )
 
 

@@ -87,6 +87,10 @@ Javascript:
 GDB:
 (gdb) help help  # byexample: +geometry 24x60
 Print list of commands.
+
+Elixir:
+iex> 1 + 2  # byexample: +geometry 24x60
+=> 3
 -->
 
 ## Changing geometry from the start
