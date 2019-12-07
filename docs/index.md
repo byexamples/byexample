@@ -50,6 +50,16 @@ Currently ``byexample`` supports the following languages:
       <h3><a href="/{{ site.uprefix }}/languages/cpp">C/C++</a></h3>
     </div>
   </div>
+  <div class="row">
+    <div class="col-lg-6">
+      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/elixir_logo.png" alt="Elixir Logo" width="64" height="64" />
+      <h3><a href="/{{ site.uprefix }}/languages/elixir">Elixir</a></h3>
+    </div>
+    <div class="col-lg-6">
+      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/php_logo.png" alt="PHP Logo" width="64" height="64" />
+      <h3><a href="/{{ site.uprefix }}/languages/php">PHP</a></h3>
+    </div>
+  </div>
 </div>
 
 ## How do I get started?

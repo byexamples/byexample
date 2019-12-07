@@ -4,3 +4,5 @@ The Ruby logo is Copyright © 2006, Yukihiro Matsumoto. [3](https://www.ruby-lan
 The Bash logo. [4](https://github.com/odb/official-bash-logo)
 The GDB logo. [5](https://www.gnu.org/software/gdb/mascot/)
 The C++ logo created by Jeremy Kratz. [6](https://github.com/isocpp/logos)
+The Elixir logo. [7](https://elixir-lang.org/)
+The PHP logo designed by Vincent Pontier. [8](https://www.php.net/)
