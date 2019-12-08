@@ -135,3 +135,6 @@ with ``+term=ansi``, any non-ascii characters will be removed.
 
 This is a limitation of one of ``byexample``'s dependencies and
 only applies under that specific scenario.
+
+``Python 2.x`` reached to its *end of life* in January 2020. Consider
+upgrade it.

@@ -2,23 +2,16 @@ from __future__ import unicode_literals
 from .common import colored, ShebangTemplate
 import string, re, difflib, tempfile, os, subprocess
 
-try:
-    ctrl_tr = unichr(0) # dummy, it would fail in Python 3.x
-    ENC = True
-except:
-    unichr = chr    # for Python 3.x
-    ENC = False
-finally:
-    # what unicodes are control code?
-    #   import unicodedata
-    #   ctrl_codes = [i for i in range(sys.maxunicode+1)
-    #                   if unicodedata.category(unichr(i)) == 'Cc']
-    #
-    #   0 <= i <= 31 or 127 <= i <= 159
-    #
-    # whitespace control codes?: 9 <= i <= 13
-    ctrl_tr = {i:u'?' if (0 <= i <= 31 or 127 <= i <= 159) and not (9 <= i <= 13)
-                    else unichr(i) for i in range(160)}
+# what unicodes are control code?
+#   import unicodedata
+#   ctrl_codes = [i for i in range(sys.maxunicode+1)
+#                   if unicodedata.category(chr(i)) == 'Cc']
+#
+#   0 <= i <= 31 or 127 <= i <= 159
+#
+# whitespace control codes?: 9 <= i <= 13
+ctrl_tr = {i:u'?' if (0 <= i <= 31 or 127 <= i <= 159) and not (9 <= i <= 13)
+                  else chr(i) for i in range(160)}
 
 class Differ(object):
     def __init__(self, verbosity, encoding, **unused):
@@ -355,14 +348,10 @@ class Differ(object):
         try:
             with tempfile.NamedTemporaryFile('wt', delete=False) as efile:
                 efilename = efile.name
-                if ENC:
-                    expected = expected.encode(self.encoding)
                 efile.write(expected)
 
             with tempfile.NamedTemporaryFile('wt', delete=False) as gfile:
                 gfilename = gfile.name
-                if ENC:
-                    got = got.encode(self.encoding)
                 gfile.write(got)
 
             tokens = {

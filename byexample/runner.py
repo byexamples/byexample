@@ -212,13 +212,7 @@ class PexpectMixin(object):
 
         lines = self._screen.display
         self._screen.reset()
-        if str == bytes:
-            # Python 2.7 support only: it works on str/bytes only
-            # XXX this is a limitation, if the output has a single non-ascii
-            # character this will blow up without the 'ignore'
-            lines = (str(line.rstrip().encode('ascii', 'ignore')) for line in lines)
-        else:
-            lines = (line.rstrip() for line in lines)
+        lines = (line.rstrip() for line in lines)
 
         return '\n'.join(lines) if join else lines
 
@@ -411,5 +405,3 @@ class PexpectMixin(object):
 
         return good
 
-# backward compatibility for 8.x.x. what a typo!!
-PexepctMixin = PexpectMixin

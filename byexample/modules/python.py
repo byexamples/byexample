@@ -426,37 +426,10 @@ if %s:
     class __ByexamplePrettyPrint(_byexample_pprint.PrettyPrinter):
         def __init__(self, *args, **kargs):
             import sys, re
-            if sys.version_info[0] == 2:
-                import __builtin__
-                self.builtins_module = __builtin__
-                self.orig_repr = __builtin__.repr
-            else:
-                import builtins
-                self.builtins_module = builtins
-                self.orig_repr = builtins.repr
+            import builtins
 
-            ub_marker_re = re.compile(r"^[uUbB]([rR]?[" + "\\" + chr(39) + r"\"])", re.UNICODE)
-
-            def patched_repr(object, *args, **kargs):
-                orepr = self.orig_repr(object, *args, **kargs)
-
-                return ub_marker_re.sub(r"\1", orepr)
-
-            self.patched_repr = patched_repr
             self.super = _byexample_pprint.PrettyPrinter
             self.super.__init__(self, *args, **kargs)
-
-        def pprint(self, *args, **kargs):
-            # this pprint implementation does not support recursive calls
-            assert self.builtins_module.repr == self.orig_repr, "pprint recursive call detected"
-
-            # patch the builtin repr functions
-            self.builtins_module.repr = self.patched_repr
-            try:
-                return self.super.pprint(self, *args, **kargs)
-            finally:
-                # unpatch
-                self.builtins_module.repr = self.orig_repr
 
         def update_width(self, width):
             self._width = int(width)

@@ -3,6 +3,7 @@
 python_bin ?= python
 pretty ?= all
 languages ?= python,shell
+pip_bin ?= pip
 
 all:
 	@echo "Usage: make deps"
@@ -50,7 +51,7 @@ all:
 	@exit 1
 
 deps:
-	pip install -e .
+	$(pip_bin) install -e .
 
 private-all-test: clean_test
 	@$(python_bin) test/r.py --timeout 90 --pretty $(pretty) --ff -l shell test/test.md

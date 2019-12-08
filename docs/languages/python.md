@@ -22,6 +22,14 @@ as the secondary prompts.
 42
 ```
 
+## Python 2.x support
+
+``byexample 8.x.x`` and below has full support for running examples written
+in Python 2.x as well as in Python 3.x.
+
+However the January 1st of 2020 is the *end of life* of Python 2.7 and
+``byexample 9`` will drop support for it.
+
 ## Compatibility with ``doctest``
 
 In fact, ``byexample`` is inspired by the Python's ``doctest`` module.
@@ -254,7 +262,7 @@ versions. Keep that in mind.
 In the future, ``byexample`` may provide a different ``pprint`` stable
 implementation.
 
-### Bytes/Unicode marker
+### Bytes/Unicode marker (``byexample 8.1.3`` or below)
 
 ``Python 2.x`` uses ``u'`` and ``u"`` (and ``U'`` and ``U"``) to mark the begin of
 an unicode literal. Optionally one can use ``b'`` to mark the begin of a
@@ -267,11 +275,18 @@ This duality forces to have two different sets of expected results one for
 ``Python 2.x`` and other for ``Python 3.x`` or do not relay in the ``pprint``
 functionality for testing at all plus some dirty hacks.
 
-The python interpreter of ``byexample`` uses a custom ``pretty printer``
+In ``byexample 8.1.3`` or below, the Python interpreter of ``byexample``
+used a custom ``pretty printer``
 to remove all the markers ``u'`` and ``b'`` for simple and for nested objects
 retaining the original alignment.
 
-The following is a valid example for ``Python 2.x`` and ``3.x`` as well.
+This *changed* in ``byexample 9.0.0`` and the markers of the ``bytes``
+are left unchanged.
+
+> **Changed** in ``byexample 9.0.0``: the ``bytes`` will have their usual
+> ``b'`` marker.
+
+The following are valid examples for ``Python 3.x`` but not in ``2.x``
 
 ```python
 >>> u = u'foo'
@@ -281,7 +296,7 @@ The following is a valid example for ``Python 2.x`` and ``3.x`` as well.
 'foo'
 
 >>> b
-'bar'
+b'bar'
 
 >>> du = {u'aaaaaaaa': {u'bbbbbbbbbb': u'asasaaaaaaaaaaaaaasasa', u'c': u'asaaaaaaaaaaaaaaaaaaaaa'}}
 >>> db = {b'aaaaaaaa': {b'bbbbbbbbbb': b'asasaaaaaaaaaaaaaasasa', b'c': b'asaaaaaaaaaaaaaaaaaaaaa'}}
@@ -291,43 +306,19 @@ The following is a valid example for ``Python 2.x`` and ``3.x`` as well.
               'c': 'asaaaaaaaaaaaaaaaaaaaaa'}}
 
 >>> db
-{'aaaaaaaa': {'bbbbbbbbbb': 'asasaaaaaaaaaaaaaasasa',
-              'c': 'asaaaaaaaaaaaaaaaaaaaaa'}}
+{b'aaaaaaaa': {b'bbbbbbbbbb': b'asasaaaaaaaaaaaaaasasa',
+               b'c': b'asaaaaaaaaaaaaaaaaaaaaa'}}
 
 >>> b'b'
-'b'
+b'b'
 
 >>> u'u'
 'u'
 ```
 
-If it is really important to show the type of the string I would recommend to
-make an explicit check or using ``repr``
-
-```python
->>> isinstance(b, bytes)
-True
-```
-
 The pretty print is disabled if you are in compatibility mode with doctest.
 If you find it useful but you cannot leave the compatibility mode, you can set
 the ``+py-pretty-print`` flag to enable it.
-
-## Known limitations
-
-Python 3 has a healthier handling of unicode and bytes than Python 2 and it
-always warranties a valid output given an encoding
-(``sys.stdout.encoding``), typically ``utf-8``.
-
-But in Python 2 there is a mix. If you try to print arbitrary bytes, Python 2
-will not complain even if the resulting output is not a valid ``utf-8`` output.
-
-``byexample`` and other third parties tools cannot distinguish the arbitrary
-bytes from the correct ones. In those cases, the example will fail.
-
-```python
->>> print(b"\x00\x1ffoo\xff\xff")                       # byexample: +skip
-```
 
 ## Internals
 
@@ -436,3 +427,23 @@ you need to disable it, you can
 >>> len(blob.split('\n'))
 4
 ```
+
+## Known limitations (``byexample 8.1.3`` or below)
+
+Python 3 has a healthier handling of unicode and bytes than Python 2 and it
+always warranties a valid output given an encoding
+(``sys.stdout.encoding``), typically ``utf-8``.
+
+But in Python 2 there is a mix. If you try to print arbitrary bytes, Python 2
+will not complain even if the resulting output is not a valid ``utf-8`` output.
+
+``byexample`` and other third parties tools cannot distinguish the arbitrary
+bytes from the correct ones. In those cases, the example will fail.
+
+```python
+>>> print(b"\x00\x1ffoo\xff\xff")                       # byexample: +skip
+```
+
+> **Changed** in ``byexample 9.0.0``: Python 2.x is not longer supported
+> and the limitation was removed.
+

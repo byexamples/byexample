@@ -16,11 +16,6 @@ except ImportError:
     import pickle
 
 try:
-    unicode
-except NameError:
-    unicode = str       # aka, we are in Python 3.x
-
-try:
     # See https://docs.python.org/3.6/library/msvcrt.html
     import msvcrt
     def _at_begin(file):
@@ -77,22 +72,10 @@ def flock(file, read_lock=False):
 
 
 def create_file_new_or_fail(name):
-    if unicode == str:
-        # For Python 3.x we can open a file using 'x' flag.
-        # 'x' means create a new file or fail
-        # honestly, I'm not sure if 'x' is race-condition free
-        # this is a best effort implementation
-        return open(name, 'xb')
-    else:
-        # For Python 2.x we rollback to a no-atomic operation
-        # try to open for reading, if fails means that doesn't exist, good,
-        # create it then; if exists, fail
-        try:
-            open(name, 'rb').close()
-        except:
-            return open(name, 'wb')
-
-        raise OSError(errno.EEXIST, "FileExistsError")
+    # The 'x' means create a new file or fail
+    # Honestly, I'm not sure if 'x' is race-condition free
+    # this is a best effort implementation
+    return open(name, 'xb')
 
 
 '''
@@ -195,12 +178,7 @@ class RegexCache(object):
 
         version = "re-%s-%08i" % (sys.platform, sys.hexversion)
         dir = appdirs.user_cache_dir(appname='byexample', version=version)
-        try:
-            os.makedirs(dir)
-        except OSError as e:
-            # XXX: for Python 3.2 and greater, use exist_ok=True (see makedirs)
-            if e.errno != errno.EEXIST:
-                raise
+        os.makedirs(dir, exist_ok=True)
 
         filename = os.path.basename(filename)
         return os.path.join(dir, filename)
@@ -214,11 +192,8 @@ class RegexCache(object):
         try:
             with open(self.filename, 'rb') as f, flock(f, read_lock=True):
                 return self._read_cache_or_empty(f)
-        except IOError as e:
-            if e.errno == errno.ENOENT:    # aka Python 3.3's FileNotFoundError
-                return self._create_empty_cache_in_disk()
-            else:
-                raise
+        except FileNotFoundError as e:
+            return self._create_empty_cache_in_disk()
 
     def _read_cache_or_empty(self, file):
         ''' Read from the given file and load the cache.
@@ -250,11 +225,8 @@ class RegexCache(object):
                 # the open didn't fail, so it *must* be new:
                 # save an empty cache
                 pickle.dump(cache, f)
-        except OSError as e:
-            if e.errno == errno.EEXIST:     # aka Python 3.3's FileExistsError
-                pass
-            else:
-                raise
+        except FileExistsError as e:
+            pass
 
         return cache
 
@@ -319,7 +291,7 @@ class RegexCache(object):
             RegexCache.get uses internal, undocumented functions from re module.
 
         '''
-        if not isinstance(pattern, (str, bytes, unicode)):
+        if not isinstance(pattern, (str, bytes)):
             raise ValueError("Regex pattern must be a string or bytes but it is %s"
                                 % type(pattern))
 
@@ -334,7 +306,7 @@ class RegexCache(object):
         return self._bytecode_to_regex(pattern, bytecode)
 
     def _pattern_to_bytecode(self, pattern, flags=0):
-        if not isinstance(pattern, (str, bytes, unicode)):
+        if not isinstance(pattern, (str, bytes)):
             raise ValueError("Regex pattern must be a string or bytes but it is %s"
                                 % type(pattern))
 
