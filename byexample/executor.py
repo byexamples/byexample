@@ -113,7 +113,7 @@ class FileExecutor(object):
                             self.concerns.skip_example(example, options)
                             continue
 
-                        clog().chat('next:', example=example, disable_prefix=True)
+                        clog().chat('ex:', example=example, disable_prefix=True)
                         self.concerns.start_example(example, options)
                         try:
                             with enhance_exceptions(example, example.runner, self.use_colors):
