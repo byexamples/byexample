@@ -26,7 +26,7 @@ can be changed from the command line with ``--timeout`` to affect the
 See a timeout in action:
 
 ```
-$ byexample -l python --timeout 1 --ff test/ds/too-slow.md      # byexample: +timeout=10
+$ byexample -l python --timeout 1 --ff test/ds/too-slow.md      # byexample: +timeout=15
 <...>
 File "test/ds/too-slow.md", line 7
 Failed example:

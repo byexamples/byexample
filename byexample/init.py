@@ -355,7 +355,9 @@ def verbosity_to_log_levels(verbosity, quiet):
 
 @log_context('byexample.init')
 def init(args):
-    setLogLevels(verbosity_to_log_levels(args.verbosity, args.quiet))
+    lvl = verbosity_to_log_levels(args.verbosity, args.quiet)
+    lvl.update(args.log_masks)
+    setLogLevels(lvl)
 
     verify_encodings(args.encoding, args.verbosity)
     cfg = {

@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 import sys, argparse, os, multiprocessing
 from . import __version__, __doc__, _author, _license, _url, _license_disclaimer
 
+from .log_level import str_to_level
+
 class _CSV(argparse.Action):
     r'''Transform an argument of the form 'a,b' into a list
         of arguments [a, b]
@@ -332,6 +334,16 @@ def parse_args(args=None):
             "-x-not-recover-timeout",
             action='store_true',
             help="do not try to recover from a timeout; abort the execution immediately (beware, this could leave some resources without the proper clean up).")
+    g.add_argument(
+            "-x-log-mask",
+            action='append',
+            metavar='<dotted-prefix>:<log-level>',
+            dest='log_masks',
+            default=[],
+            type=_key_val_type,
+            help="set the <log-level> of a module named <dotted-prefix> " + \
+                 "(ex: byexample.exec.python:chat will put in 'chat' level "+ \
+                 "the logs comming from the python execution module.)")
     namespace = parser.parse_args(args)
 
     # Some extra checks
@@ -348,12 +360,25 @@ def parse_args(args=None):
     copy = set(k for k, v in namespace.shebangs)
     for k in (k for k, v in namespace.shebangs):
         if k not in copy:
-            parser.error("argument --shebang: '%s' is duplicated." % k)
+            parser.error("argument --x-shebang: '%s' is duplicated." % k)
         elif k not in namespace.languages:
-            parser.error("argument --shebang: runner '%s' is unknown." % k)
+            parser.error("argument --x-shebang: runner '%s' is unknown." % k)
         copy.remove(k)
 
     namespace.shebangs = dict(namespace.shebangs)
+
+    # the log masks must be uniq and the levels must be known
+    copy = set(k for k, v in namespace.log_masks)
+    for k, v in namespace.log_masks:
+        if k not in copy:
+            parser.error("argument --x-log-mask: '%s' is duplicated." % k)
+        copy.remove(k)
+
+    try:
+        namespace.log_masks = {k: str_to_level(v) for k, v in namespace.log_masks}
+    except KeyError as err:
+        k, = err.args
+        parser.error("argument --x-log-mask: '%s' is an unknown log level." % k)
 
     return namespace
 

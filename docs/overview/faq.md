@@ -1,3 +1,12 @@
+<!--
+Check that we have byexample installed first
+$ hash byexample                                    # byexample: +fail-fast
+
+$ alias byexample=byexample\ --pretty\ none
+
+--
+-->
+
 # Frequently Asked Questions
 
 ### How to check for empty lines in the middle of the expected output?
@@ -78,4 +87,31 @@ If not it will fail. To avoid that put ``<...>`` in the same line:
 ```python
 >>> print("last line")
 last line<...>
+```
+
+### Verbose mode in only one language?
+
+The ``-v`` option puts ``byexample`` in verbose mode. More
+than one ``-v`` flag can be added increasing the verbosity.
+
+But what if you want to put in verbose mode only *one part*
+of ``byexample``?
+
+For this you need the ``-x-log-mask`` option.
+
+For example, to put in ``'chat'`` mode only the *execution*
+of Python examples you can do:
+
+```shell
+$ byexample -x-log-mask byexample.exec.python:chat -l python test/ds/db-stock-model
+[i:exec.python] Initializing Python Runner
+ex:
+    import sqlite3
+ex:
+    c = sqlite3.connect(':memory:')
+ex:
+    _ = c.executescript(open('test/ds/stock.sql').read())  # ---> # byexample: +fail-fast
+ex:
+<...>
+File test/ds/db-stock-model, 5/5 test ran in <...>
 ```

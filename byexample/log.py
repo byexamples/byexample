@@ -1,13 +1,10 @@
-from logging import (Formatter, Logger,
-                     DEBUG, INFO, WARNING, ERROR, CRITICAL,
-                     getLogger)
+from logging import Formatter, Logger, getLogger
 import sys, logging
 import contextlib
-from .common import colored, highlight_syntax, indent
 
-NOTE = INFO+1
-CHAT = INFO-1
-TRACE = DEBUG-1
+from .common import colored, highlight_syntax, indent
+from .log_level import TRACE, DEBUG, CHAT, INFO, NOTE, WARNING, ERROR, CRITICAL
+
 class XFormatter(Formatter):
     def format(self, record):
         self._cur_record = record
