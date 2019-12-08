@@ -405,5 +405,3 @@ class PexpectMixin(object):
 
         return good
 
-# backward compatibility for 8.x.x. what a typo!!
-PexepctMixin = PexpectMixin
