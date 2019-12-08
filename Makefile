@@ -150,7 +150,7 @@ coverage: clean_test
 
 dist:
 	rm -Rf dist/ build/ *.egg-info
-	$(python_bin) setup.py sdist bdist_wheel --universal
+	$(python_bin) setup.py sdist bdist_wheel
 	rm -Rf build/ *.egg-info
 
 upload: dist
