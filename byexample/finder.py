@@ -238,18 +238,10 @@ class ExampleHarvest(object):
         return 'Example Harvester'
 
     def get_examples_from_file(self, filepath):
-        try:
-            f = open(filepath, 'rtU', encoding=self.encoding)
-            already_encoded = True
-        except TypeError:
-            # Python 2.7
-            f = open(filepath, 'rbU')
-            already_encoded = False
+        f = open(filepath, 'rtU', encoding=self.encoding)
 
         with f as f:
             string = f.read()
-            if not already_encoded:
-                string = string.decode(self.encoding)
 
         return self.get_examples_from_string(string, filepath)
 
