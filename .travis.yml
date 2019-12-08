@@ -32,32 +32,52 @@ matrix:
           python: "3.6"
         - language: python
           python: "3.7"
-          dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
         - language: ruby
           rvm: "2.0"
-          install: sudo make deps
+          install:
+              - 'eval "$(pyenv init -)"'
+              - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
+              - "make deps"
           script: make travis-ruby-test
         - language: ruby
           rvm: "2.1"
-          install: sudo make deps
+          install:
+              - 'eval "$(pyenv init -)"'
+              - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
+              - "make deps"
           script: make travis-ruby-test
         - language: ruby
           rvm: "2.2"
-          install: sudo make deps
+          install:
+              - 'eval "$(pyenv init -)"'
+              - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
+              - "make deps"
           script: make travis-ruby-test
         - language: ruby
           rvm: "2.3"
-          install: sudo make deps
+          install:
+              - 'eval "$(pyenv init -)"'
+              - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
+              - "make deps"
           script: make travis-ruby-test
         - language: ruby
           rvm: "2.4"
-          install: sudo make deps
+          install:
+              - 'eval "$(pyenv init -)"'
+              - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
+              - "make deps"
           script: make travis-ruby-test
         - language: ruby
           rvm: "2.5"
-          install: sudo make deps
+          install:
+              - 'eval "$(pyenv init -)"'
+              - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
+              - "make deps"
           script: make travis-ruby-test
         - language: ruby
           rvm: "2.6"
-          install: sudo make deps
+          install:
+              - 'eval "$(pyenv init -)"'
+              - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
+              - "make deps"
           script: make travis-ruby-test
