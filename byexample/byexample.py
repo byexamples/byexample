@@ -1,8 +1,13 @@
 from __future__ import unicode_literals
+import os, sys
+
+if sys.version_info < (3, 0):
+    print("Are you using Python 2.x? Byexample no longer runs in that version. Please upgrade your Python environment.")
+    sys.exit(1)
+
 from .cache import RegexCache
 from .jobs import Jobs, Status, allow_sigint
 from .log import init_log_system
-import os, sys
 
 def execute_examples(filename, sigint_handler):
     global cache, harvester, executor, options, dry
