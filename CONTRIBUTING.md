@@ -62,7 +62,6 @@ Then, you clone it in your computer:
 
 ```shell
 $ git clone https://github.com/<your github username>/byexample.git     # byexample: +skip
-
 ```
 
 ## Regression tests
@@ -73,7 +72,6 @@ Now, run a small regression tests to make sure you have a good baseline.
 $ make lib-test     # byexample: +skip
 <...>
 [PASS] <...>
-
 ```
 
 You can run all the examples in the documentation (this will require ``Ruby``
@@ -83,19 +81,31 @@ installed for the examples written in ``Ruby``)
 $ make docs-test     # byexample: +skip
 <...>
 [PASS] <...>
-
 ```
 
-The full set of test can be executed with a single command but you may need to
-have installed ``gcc``, ``gdb`` and more. You may want to tweak the Makefile
-configuration to disable some languages)
+The full set of test that only require ``python`` and a ``shell``
+can be executed with a single command:
 
 ```shell
 $ make test     # byexample: +skip
 <...>
 [PASS] <...>
-
 ```
+
+To run the rest of the tests that will require ``ruby``, ``gdb``, ``gcc`` and
+others, we do:
+
+```shell
+$ make docker-test  # byexample: +skip
+<...>
+[PASS] <...>
+```
+
+As you may guessed, this will create a docker container with all the needed
+dependencies.
+
+The first time will take a lot of time because docker will be creating
+the container.
 
 ### Run a single test case
 
@@ -108,7 +118,14 @@ that you are not introducing any new issue, run its tests in this way:
 
 ```shell
 $ byexample -l python byexample/parser.py     # byexample: +skip
+```
 
+If the test that you want to run requires an interpreter that you
+don't have installed (like ``ruby`` or ``gdb``), you can
+start a docker container and run ``byexample`` there:
+
+```shell
+$ make docker-shell     # byexample: +skip
 ```
 
 # How to submit a contribution
