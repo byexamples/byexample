@@ -41,6 +41,11 @@ all:
 	@echo "Usage: make dist|upload"
 	@echo "Package byexample (dist) and upload it to pypi (upload)"
 	@echo
+	@echo "Usage: make format[-test]"
+	@echo "Format the source code following the PEP 8 style."
+	@echo "Use format-test to verify the complaince without touching"
+	@echo "the code"
+	@echo
 	@echo "Usage: make coverage"
 	@echo "Run several times variants of 'make test' with the coverage"
 	@echo "activated and show the results."
@@ -79,7 +84,7 @@ examples-test: clean_test
 index-links-test: clean_test
 	@./test/idx.sh
 
-test: lib-test modules-test docs-test examples-test index-links-test
+test: lib-test modules-test docs-test examples-test index-links-test format-test
 
 #
 ##
@@ -142,6 +147,17 @@ coverage: clean_test
 	@coverage report --include="byexample/*"
 	@make -s clean_test
 
+#
+##
+
+## Formatting
+#  ==========
+
+format:
+	yapf -vv -i --style=.style.yapf --recursive byexample/
+
+format-test:
+	yapf -vv --style=.style.yapf --diff --recursive byexample/
 #
 ##
 

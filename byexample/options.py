@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 import collections, argparse, shlex, pprint, sys
 
+
 class Options(collections.MutableMapping):
     r'''
     The execution of the examples can be modified by configuring different options.
@@ -138,10 +139,9 @@ class Options(collections.MutableMapping):
         >>> opt
         {'bar': 2, 'foo': 2}
     '''
-
     def __init__(self, *args, **kwargs):
         self.top = dict()
-        self.stack = [self.top] # [top, ...., bottom]
+        self.stack = [self.top]  # [top, ...., bottom]
 
         self.lower_levels_cached = {}
 
@@ -160,13 +160,14 @@ class Options(collections.MutableMapping):
             if self.default_values:
                 return self.stack[-1].get(key, self.default_values[-1])
             else:
-                return self.stack[-1][key] # found or KeyError
+                return self.stack[-1][key]  # found or KeyError
         else:
             if self.default_values:
-                return self.lower_levels_cached.get(key, self.default_values[-1])
+                return self.lower_levels_cached.get(
+                    key, self.default_values[-1]
+                )
             else:
-                return self.lower_levels_cached[key] # found or KeyError
-
+                return self.lower_levels_cached[key]  # found or KeyError
 
     def __setitem__(self, key, value):
         self.top[key] = value
@@ -265,7 +266,7 @@ class Options(collections.MutableMapping):
             >>> opt.copy()
             {'bar': 2, 'foo': 1}
         '''
-        clone = Options(self.stack[-1]) # bottom
+        clone = Options(self.stack[-1])  # bottom
 
         # clone pushing up
         for s in reversed(self.stack[:-1]):
@@ -277,6 +278,7 @@ class Options(collections.MutableMapping):
 
 class UnrecognizedOption(Exception):
     pass
+
 
 class OptionParser(argparse.ArgumentParser):
     def __init__(self, **kw):
@@ -311,7 +313,9 @@ class OptionParser(argparse.ArgumentParser):
 
         g = self.add_mutually_exclusive_group(required=group_required)
         action = g.add_argument("+" + name, action='store_true', **kw)
-        g.add_argument("-" + name, action='store_false', help=argparse.SUPPRESS)
+        g.add_argument(
+            "-" + name, action='store_false', help=argparse.SUPPRESS
+        )
 
         if has_default:
             self.__defaults[action.dest] = tmp
@@ -344,7 +348,10 @@ class OptionParser(argparse.ArgumentParser):
             source = []
 
         if not isinstance(source, list):
-            raise ValueError("The source for the OptionParser is neither a string nor a list but it is '%s'." % type(source))
+            raise ValueError(
+                "The source for the OptionParser is neither a string nor a list but it is '%s'."
+                % type(source)
+            )
 
         if strict:
             args = self.parse_args(source)
@@ -378,7 +385,9 @@ class ExtendOptionParserMixin(object):
         optparser_extended = OptionParser(parents=parents, **kw)
         self.extend_option_parser(optparser_extended)
         if not isinstance(optparser_extended, argparse.ArgumentParser):
-            raise ValueError("The option parser is not an instance of ArgumentParser!. This probably means that there is a bug in %s." % str(self))
+            raise ValueError(
+                "The option parser is not an instance of ArgumentParser!. This probably means that there is a bug in %s."
+                % str(self)
+            )
 
         return optparser_extended
-

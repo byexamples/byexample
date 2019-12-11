@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from .common import tohuman
 from .options import ExtendOptionParserMixin
 
+
 class Concern(ExtendOptionParserMixin):
     '''
     Cross-cutting Concern interface.
@@ -45,7 +46,6 @@ class Concern(ExtendOptionParserMixin):
     See each method's documentation to get an idea of the capabilities of this
     interface.
     '''
-
     def __init__(self, **kargs):
         '''
         Called once when the concern is loaded.
@@ -81,7 +81,7 @@ class Concern(ExtendOptionParserMixin):
         If you want to customize the example *after* the parsing stage
         use start_example.
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
     def start_parse(self, example, options):
         '''
@@ -133,14 +133,14 @@ class Concern(ExtendOptionParserMixin):
         You could perform some clean up task injecting some code
         in the runners.
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
     def skip_example(self, example, options):
         '''
         It is the turn for the example to be executed but it will not.
         No other concern's method will be called with this example.
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
     def start_example(self, example, options):
         '''
@@ -164,7 +164,7 @@ class Concern(ExtendOptionParserMixin):
 
         And may be, start_interact and finish_interact.
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
     def finish_example(self, example, options):
         '''
@@ -178,13 +178,13 @@ class Concern(ExtendOptionParserMixin):
         or more concern objects edit the same example, you may not always will
         get the same effect.
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
     def finally_example(self, example, options):
         '''
         Called when the given example finished its execution regardless of how.
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
     def start_interact(self, example, options):
         '''
@@ -194,14 +194,14 @@ class Concern(ExtendOptionParserMixin):
         You may use this opportunity to perform some maintenance tasks
         in the runner/interpreter to make the user life easier.
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
     def finish_interact(self, exception):
         '''
         Called after the interactive session. If something went wrong,
         the exception will be passed, None if everything went fine.
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
     def timedout(self, example, exception):
         '''
@@ -209,7 +209,7 @@ class Concern(ExtendOptionParserMixin):
         just ran too slow or because it was syntactically incorrect and
         hang the interpreter.
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
     def aborted(self, example, by_the_user, options):
         '''
@@ -223,7 +223,7 @@ class Concern(ExtendOptionParserMixin):
         Keep in mind that the abort could happen before the start or
         after finishing the execution (Concern.start and Concern.finish)
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
     def crashed(self, example, exception):
         '''
@@ -235,7 +235,7 @@ class Concern(ExtendOptionParserMixin):
         You could use this to try to debug why the runner crashed.
         Most probably is due a bug in the runner or in byexample (sorry).
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
     def success(self, example, got, differ):
         '''
@@ -244,30 +244,34 @@ class Concern(ExtendOptionParserMixin):
 
         Hurra!
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
     def failure(self, example, got, differ):
         '''
         Called when an example execution finish but its output wasn't
         expected.
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
     def event(self, what, **data):
         '''
         Called on arbitrary moments, for arbitrary reasons defined
         in <what> and optionally in <data>.
         '''
-        pass    # pragma: no cover
+        pass  # pragma: no cover
+
 
 class ConcernComposite(Concern):
     def __init__(self, registry, **unused):
         self.concerns = registry['concerns'].values()
 
+
 # Patch ConcernComposite overriding all its methods
 # For a given method X, ConcernComposite will call X on all of
 # its sub-concerns.
 import inspect
+
+
 def _patch(cls, method_name):
     def for_each_concern_do(self, *args, **kargs):
         for concern in self.concerns:
@@ -275,12 +279,13 @@ def _patch(cls, method_name):
 
     setattr(cls, method_name, for_each_concern_do)
 
+
 def _patchable(obj):
     # In Python 3, the class's methods are actually functions
     # so we need to check for both types
     return (inspect.isfunction(obj) or inspect.ismethod(obj)) \
             and not obj.__name__.startswith("_")
 
+
 for method_name, _ in inspect.getmembers(Concern, predicate=_patchable):
     _patch(ConcernComposite, method_name)
-

@@ -45,12 +45,14 @@ from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
 
 stability = 'experimental'
 
+
 class PHPPromptFinder(ExampleFinder):
     target = 'php-prompt'
 
     @constant
     def example_regex(self):
-        return re.compile(r'''
+        return re.compile(
+            r'''
             (?P<snippet>
                 (?:^(?P<indent> [ ]*) (?:php>)[ ]      .*)      # PS1 line
                 (?:\n           [ ]*  \.\.\.>[ ]       .*)*)    # PS2 lines
@@ -60,13 +62,16 @@ class PHPPromptFinder(ExampleFinder):
                           (?![ ]*(?:php>))    # Not a line starting with PS1
                           .+$\n?              # But any other line
                       )*)
-            ''', re.MULTILINE | re.VERBOSE)
+            ''', re.MULTILINE | re.VERBOSE
+        )
 
     def get_language_of(self, *args, **kargs):
         return 'php'
 
     def get_snippet_and_expected(self, match, where):
-        snippet, expected = ExampleFinder.get_snippet_and_expected(self, match, where)
+        snippet, expected = ExampleFinder.get_snippet_and_expected(
+            self, match, where
+        )
 
         snippet = self._remove_prompts(snippet)
         return snippet, expected
@@ -75,29 +80,31 @@ class PHPPromptFinder(ExampleFinder):
         lines = snippet.split("\n")
         return '\n'.join(line[5:] for line in lines)
 
+
 class PHPParser(ExampleParser):
     language = 'php'
 
     @constant
     def example_options_string_regex(self):
-        return re.compile(r'//\s*byexample:\s*([^\n\'"]*)$',
-                                                    re.MULTILINE)
+        return re.compile(r'//\s*byexample:\s*([^\n\'"]*)$', re.MULTILINE)
 
     def extend_option_parser(self, parser):
         pass
+
 
 class PHPInterpreter(ExampleRunner, PexpectMixin):
     language = 'php'
 
     def __init__(self, verbosity, encoding, **unused):
-        PexpectMixin.__init__(self,
-                                # the format is '/byexample/php/ blk chr >'
-                                # where blk indicates in which block we are
-                                # and chr indicates in which unterminated block
-                                # we are
-                                PS1_re = r'/byexample/php/\s+php\s+>\s+> ',
-                                any_PS_re = r'/byexample/php/\s+[^ ]+\s+[^ ]+\s+> '
-                                )
+        PexpectMixin.__init__(
+            self,
+            # the format is '/byexample/php/ blk chr >'
+            # where blk indicates in which block we are
+            # and chr indicates in which unterminated block
+            # we are
+            PS1_re=r'/byexample/php/\s+php\s+>\s+> ',
+            any_PS_re=r'/byexample/php/\s+[^ ]+\s+[^ ]+\s+> '
+        )
 
         self.encoding = encoding
 
@@ -120,11 +127,7 @@ class PHPInterpreter(ExampleRunner, PexpectMixin):
         PexpectMixin.interact(self)
 
     def get_default_cmd(self, *args, **kargs):
-        return  "%e %p %a", {
-                    'e': '/usr/bin/env',
-                    'p': 'php',
-                    'a': ['-a']
-                    }
+        return "%e %p %a", {'e': '/usr/bin/env', 'p': 'php', 'a': ['-a']}
 
     def _get_output(self, options):
         return self._get_output_echo_filtered(options)
@@ -137,11 +140,13 @@ class PHPInterpreter(ExampleRunner, PexpectMixin):
 
         # run!
         options.up()
-        options['geometry'] = (max(options['geometry'][0], 128), max(options['geometry'][1], 128))
+        options['geometry'] = (
+            max(options['geometry'][0], 128), max(options['geometry'][1], 128)
+        )
         self._spawn_interpreter(cmd, options, initial_prompt=r'php >')
         options.down()
 
-        self._drop_output() # discard banner and things like that
+        self._drop_output()  # discard banner and things like that
 
         # change the prompts
         # the \b indicates which block PHP is in (/* for comments, php
@@ -158,4 +163,4 @@ class PHPInterpreter(ExampleRunner, PexpectMixin):
         self._shutdown_interpreter()
 
     def cancel(self, example, options):
-        return False    # not supported by php
+        return False  # not supported by php

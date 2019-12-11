@@ -2,17 +2,21 @@ from __future__ import unicode_literals
 from .common import enhance_exceptions
 from .log import clog, log_context, log_with
 
+
 class TimeoutException(Exception):
     def __init__(self, msg, output):
-        Exception.__init__(self, msg);
+        Exception.__init__(self, msg)
         self.output = output
 
+
 class FileExecutor(object):
-    def __init__(self, concerns, differ, verbosity, use_colors, options, **unused):
-        self.concerns   = concerns
-        self.differ    = differ
+    def __init__(
+        self, concerns, differ, verbosity, use_colors, options, **unused
+    ):
+        self.concerns = concerns
+        self.differ = differ
         self.use_colors = use_colors
-        self.verbosity  = verbosity
+        self.verbosity = verbosity
 
         self.options = options
 
@@ -68,9 +72,12 @@ class FileExecutor(object):
         self.initialize_runners(runners, options)
         try:
             self.concerns.start(examples, runners, filepath, options)
-            failed, user_aborted, crashed, broken, timedout = self._exec(examples, filepath,
-                                                               options, runners)
-            self.concerns.finish(failed, user_aborted, crashed, broken, timedout)
+            failed, user_aborted, crashed, broken, timedout = self._exec(
+                examples, filepath, options, runners
+            )
+            self.concerns.finish(
+                failed, user_aborted, crashed, broken, timedout
+            )
         finally:
             self.shutdown_runners(runners)
 
@@ -90,7 +97,7 @@ class FileExecutor(object):
 
                     if example == None:
                         broken = True
-                        break   # cancel if an example couldn't get parsed
+                        break  # cancel if an example couldn't get parsed
 
                 with enhance_exceptions(example, self, self.use_colors), \
                      log_with(example.runner.language):
@@ -113,16 +120,22 @@ class FileExecutor(object):
                             self.concerns.skip_example(example, options)
                             continue
 
-                        clog().chat('ex:', example=example, disable_prefix=True)
+                        clog().chat(
+                            'ex:', example=example, disable_prefix=True
+                        )
                         self.concerns.start_example(example, options)
                         try:
-                            with enhance_exceptions(example, example.runner, self.use_colors):
-                                example.got = example.runner.run(example, options)
+                            with enhance_exceptions(
+                                example, example.runner, self.use_colors
+                            ):
+                                example.got = example.runner.run(
+                                    example, options
+                                )
                             self.concerns.finish_example(example, options)
                         except TimeoutException as e:  # pragma: no cover
                             self.concerns.timedout(example, e)
                             timedout = True
-                        except Exception as e:         # pragma: no cover
+                        except Exception as e:  # pragma: no cover
                             self.concerns.crashed(example, e)
                             crashed = True
                         finally:
@@ -131,7 +144,10 @@ class FileExecutor(object):
                         recovered = False
                         if timedout and not options['x']['not_recover_timeout']:
                             # try to recover the control of the runner
-                            clog().warn('Example timed out. Trying to recovering the control (%s)...', example.runner.language)
+                            clog().warn(
+                                'Example timed out. Trying to recovering the control (%s)...',
+                                example.runner.language
+                            )
                             recovered = example.runner.cancel(example, options)
                             clog().warn('Recovering control of %s %s',
                                     example.runner.language,
@@ -141,7 +157,7 @@ class FileExecutor(object):
                         if crashed or (timedout and not recovered):
                             failed = True
                             self.concerns.aborted(example, False, options)
-                            break # cancel, the runner is in an undefined state
+                            break  # cancel, the runner is in an undefined state
 
                         if timedout and recovered:
                             # we did not get the output from the example,
@@ -158,18 +174,26 @@ class FileExecutor(object):
                             force_pass = options['pass']
                             if force_pass or \
                                     example.expected.check_got_output(example, got, options, self.verbosity):
-                                self.concerns.success(example, got, self.differ)
+                                self.concerns.success(
+                                    example, got, self.differ
+                                )
                             else:
-                                self.concerns.failure(example, got, self.differ)
+                                self.concerns.failure(
+                                    example, got, self.differ
+                                )
                                 failed = True
 
                                 # start an interactive session if the example fails
                                 # and the user wanted this
                                 if options['interact']:
-                                    self.concerns.start_interact(example, options)
+                                    self.concerns.start_interact(
+                                        example, options
+                                    )
                                     ex = None
                                     try:
-                                        example.runner.interact(example, options)
+                                        example.runner.interact(
+                                            example, options
+                                        )
                                     except Exception as e:
                                         ex = e
 
@@ -179,7 +203,9 @@ class FileExecutor(object):
                         # example failed
                         if fail_fast and failed:
                             failing_fast = True
-                            options.up({'skip': True}) # dummy, but it allows a symmetric relationship between failing_fast and an extra up
+                            options.up(
+                                {'skip': True}
+                            )  # dummy, but it allows a symmetric relationship between failing_fast and an extra up
                     finally:
                         if failing_fast:
                             options.down()
@@ -189,7 +215,7 @@ class FileExecutor(object):
                         if hasattr(example, 'got'):
                             del example.got
                         options.down()
-            except KeyboardInterrupt:      # pragma: no cover
+            except KeyboardInterrupt:  # pragma: no cover
                 self.concerns.aborted(example, True, options)
                 failed = user_aborted = True
                 break

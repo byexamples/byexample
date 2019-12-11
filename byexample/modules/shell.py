@@ -33,12 +33,14 @@ from byexample.executor import TimeoutException
 
 stability = 'provisional'
 
+
 class ShellPromptFinder(ExampleFinder):
     target = 'shell-prompt'
 
     @constant
     def example_regex(self):
-        return re.compile(r'''
+        return re.compile(
+            r'''
             (?P<snippet>
                 (?:^(?P<indent> [ ]*) (?:\$)[ ]  .*)      # PS1 line
                 (?:\n           [ ]*  >             .*)*)    # PS2 lines
@@ -48,13 +50,16 @@ class ShellPromptFinder(ExampleFinder):
                           (?![ ]*(?:\$))      # Not a line starting with PS1
                           .+$\n?              # But any other line
                       )*)
-            ''', re.MULTILINE | re.VERBOSE)
+            ''', re.MULTILINE | re.VERBOSE
+        )
 
     def get_language_of(self, *args, **kargs):
         return 'shell'
 
     def get_snippet_and_expected(self, match, where):
-        snippet, expected = ExampleFinder.get_snippet_and_expected(self, match, where)
+        snippet, expected = ExampleFinder.get_snippet_and_expected(
+            self, match, where
+        )
 
         snippet = self._remove_prompts(snippet)
         return snippet, expected
@@ -63,28 +68,36 @@ class ShellPromptFinder(ExampleFinder):
         lines = snippet.split("\n")
         return '\n'.join(line[2:] for line in lines)
 
+
 class ShellParser(ExampleParser):
     language = 'shell'
 
     @constant
     def example_options_string_regex(self):
-        return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
-                                                    re.MULTILINE)
+        return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$', re.MULTILINE)
 
     def extend_option_parser(self, parser):
-        parser.add_flag("stop-on-timeout", default=False, help="stop the process if it timeout.")
+        parser.add_flag(
+            "stop-on-timeout",
+            default=False,
+            help="stop the process if it timeout."
+        )
         parser.add_argument(
-                "+stop-on-silence",
-                nargs='?',
-                default=False,
-                const=0.2,
-                type=float,
-                help="stop the process if it timeout.")
+            "+stop-on-silence",
+            nargs='?',
+            default=False,
+            const=0.2,
+            type=float,
+            help="stop the process if it timeout."
+        )
         parser.add_argument(
-                "+shell",
-                choices=['bash', 'dash', 'ksh', 'sh'],
-                default='bash',
-                help="shell to use with default settings ('bash' by default). For full control use -x-shebang)")
+            "+shell",
+            choices=['bash', 'dash', 'ksh', 'sh'],
+            default='bash',
+            help=
+            "shell to use with default settings ('bash' by default). For full control use -x-shebang)"
+        )
+
 
 class ShellInterpreter(ExampleRunner, PexpectMixin):
     language = 'shell'
@@ -92,35 +105,36 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
     def __init__(self, verbosity, encoding, **unused):
         self.encoding = encoding
 
-        PexpectMixin.__init__(self,
-                                PS1_re = r"/byexample/sh/ps1> ",
-                                any_PS_re = r"/byexample/sh/ps\d+> ")
+        PexpectMixin.__init__(
+            self,
+            PS1_re=r"/byexample/sh/ps1> ",
+            any_PS_re=r"/byexample/sh/ps\d+> "
+        )
 
     def get_default_cmd(self, *args, **kargs):
         shell = kargs.pop('shell', 'bash')
-        return  "%e %p %a", {
-                'bash': {
-                    'e': '/usr/bin/env',
-                    'p': 'bash',
-                    'a': ['--norc', '--noprofile', '--posix', '--noediting'],
-                    },
-                'dash': {
-                    'e': '/usr/bin/env',
-                    'p': 'dash',
-                    'a': [],
-                    },
-                'ksh': {
-                    'e': '/usr/bin/env',
-                    'p': 'ksh',
-                    'a': ['+E'],
-                    },
-                'sh': {
-                    'e': '/usr/bin/env',
-                    'p': 'sh',
-                    'a': [],
-                    },
-                }[shell]
-
+        return "%e %p %a", {
+            'bash': {
+                'e': '/usr/bin/env',
+                'p': 'bash',
+                'a': ['--norc', '--noprofile', '--posix', '--noediting'],
+            },
+            'dash': {
+                'e': '/usr/bin/env',
+                'p': 'dash',
+                'a': [],
+            },
+            'ksh': {
+                'e': '/usr/bin/env',
+                'p': 'ksh',
+                'a': ['+E'],
+            },
+            'sh': {
+                'e': '/usr/bin/env',
+                'p': 'sh',
+                'a': [],
+            },
+        }[shell]
 
     def run(self, example, options):
         return PexpectMixin._run(self, example, options)
@@ -142,9 +156,10 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
 
                 # wait for the prompt, ignore any extra output
                 self._expect_prompt(
-                        options,
-                        timeout=options['x']['dfl_timeout'],
-                        prompt_re=self.PS1_re)
+                    options,
+                    timeout=options['x']['dfl_timeout'],
+                    prompt_re=self.PS1_re
+                )
 
                 self._drop_output()
                 return out
@@ -157,7 +172,9 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
             while 1:
                 try:
                     begin = time.time()
-                    return PexpectMixin._expect_prompt(self, options, silence_timeout, prompt_re)
+                    return PexpectMixin._expect_prompt(
+                        self, options, silence_timeout, prompt_re
+                    )
                 except TimeoutException as ex:
                     timeout -= max(time.time() - begin, 0)
                     silence_timeout = min(silence_timeout, timeout)
@@ -173,7 +190,9 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
                     prev = len(ex.output)
 
         else:
-            return PexpectMixin._expect_prompt(self, options, timeout, prompt_re)
+            return PexpectMixin._expect_prompt(
+                self, options, timeout, prompt_re
+            )
 
     def interact(self, example, options):
         PexpectMixin.interact(self)
@@ -186,17 +205,19 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
         self._spawn_interpreter(cmd, options, wait_first_prompt=False)
 
         self._exec_and_wait(
-'''export PS1="/byexample/sh/ps1> "
+            '''export PS1="/byexample/sh/ps1> "
 export PS2="/byexample/sh/ps2> "
 export PS3="/byexample/sh/ps3> "
 export PS4="/byexample/sh/ps4> "
-''', options, timeout=options['x']['dfl_timeout'])
+''',
+            options,
+            timeout=options['x']['dfl_timeout']
+        )
 
-        self._drop_output() # discard banner and things like that
+        self._drop_output()  # discard banner and things like that
 
     def shutdown(self):
         self._shutdown_interpreter()
 
     def cancel(self, example, options):
         return self._abort(example, options)
-

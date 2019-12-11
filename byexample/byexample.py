@@ -2,12 +2,15 @@ from __future__ import unicode_literals
 import os, sys
 
 if sys.version_info < (3, 0):
-    print("Are you using Python 2.x? Byexample no longer runs in that version. Please upgrade your Python environment.")
+    print(
+        "Are you using Python 2.x? Byexample no longer runs in that version. Please upgrade your Python environment."
+    )
     sys.exit(1)
 
 from .cache import RegexCache
 from .jobs import Jobs, Status, allow_sigint
 from .log import init_log_system
+
 
 def execute_examples(filename, sigint_handler):
     global cache, harvester, executor, options, dry
@@ -26,13 +29,14 @@ def execute_examples(filename, sigint_handler):
     error = not user_aborted
     return True, True, user_aborted, error
 
+
 def main(args=None):
     global cache, harvester, executor, options, dry
 
     init_log_system()
 
     cache_disabled = os.getenv('BYEXAMPLE_CACHE_DISABLED', "1") != "0"
-    cache_verbose  = os.getenv('BYEXAMPLE_CACHE_VERBOSE', "0") != "0"
+    cache_verbose = os.getenv('BYEXAMPLE_CACHE_VERBOSE', "0") != "0"
     cache = RegexCache('0', cache_disabled, cache_verbose)
 
     with cache.activated(auto_sync=True, label="0"):

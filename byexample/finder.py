@@ -7,11 +7,11 @@ from .parser import ExampleParser
 from .options import Options
 from .log import clog, log_context, DEBUG, CHAT, getLogger, log_with
 import pprint
-
 '''
 >>> from byexample.log import init_log_system
 >>> init_log_system()
 '''
+
 
 class Where(object):
     def __init__(self, start_lineno, end_lineno, filepath, zdelimiter):
@@ -21,7 +21,9 @@ class Where(object):
         self.zdelimiter = zdelimiter
 
     def as_tuple(self):
-        return (self.start_lineno, self.end_lineno, self.filepath, self.zdelimiter)
+        return (
+            self.start_lineno, self.end_lineno, self.filepath, self.zdelimiter
+        )
 
     def __iter__(self):
         return iter(self.as_tuple())
@@ -29,11 +31,13 @@ class Where(object):
     def __repr__(self):
         return repr(self.as_tuple())
 
+
 class Zone(object):
     def __init__(self, zdelimiter, zone_str, where):
         self.zdelimiter = zdelimiter
         self.str = zone_str
         self.where = where
+
 
 class Example(object):
     '''
@@ -84,7 +88,9 @@ class Example(object):
     {'norm_ws': False, 'rm': [], 'tags': True}
 
     '''
-    def __init__(self, finder, runner, parser, snippet, expected_str, indent, where):
+    def __init__(
+        self, finder, runner, parser, snippet, expected_str, indent, where
+    ):
         self.finder, self.runner, self.parser = finder, runner, parser
         self.snippet, self.expected_str, self.indentation = snippet, expected_str, indent
 
@@ -97,7 +103,9 @@ class Example(object):
             raise ValueError("You cannot parse/build an example twice: " + \
                              repr(self))
 
-        where = Where(self.start_lineno, self.end_lineno, self.filepath, self.zdelimiter)
+        where = Where(
+            self.start_lineno, self.end_lineno, self.filepath, self.zdelimiter
+        )
         self.parser.parse(self, concerns)
         self.fully_parsed = True
 
@@ -106,27 +114,23 @@ class Example(object):
     def __repr__(self):
         f = "" if self.fully_parsed else "(not parsed yet) "
         return "Example %s[%s] in file %s, lines %i-%i" % (
-                        f,
-                        self.runner.language,
-                        self.filepath, self.start_lineno, self.end_lineno)
+            f, self.runner.language, self.filepath, self.start_lineno,
+            self.end_lineno
+        )
 
     def pretty_print(self):
         log = clog()
 
         # header
-        log.chat('%s (lines %s-%s:%s) [%s|%s]%s',
-                self.filepath,
-                self.start_lineno,
-                self.end_lineno,
-                self.runner.language,
-                self.finder,
-                self.runner,
-                "" if self.fully_parsed else " (not parsed yet)"
-                )
+        log.chat(
+            '%s (lines %s-%s:%s) [%s|%s]%s', self.filepath, self.start_lineno,
+            self.end_lineno, self.runner.language, self.finder, self.runner,
+            "" if self.fully_parsed else " (not parsed yet)"
+        )
 
         # source
         use_colors = getLogger('byexample').use_colors
-        log.chat(highlight_syntax(self, use_colors), extra={'no_marker':True})
+        log.chat(highlight_syntax(self, use_colors), extra={'no_marker': True})
 
         if log.isEnabledFor(DEBUG):
             tmp = [' len: expected line']
@@ -136,40 +140,60 @@ class Example(object):
                 _l += len(e) + 1
 
             tmp = '\n'.join(tmp)
-            log.debug(tmp, extra={'no_marker':True})
+            log.debug(tmp, extra={'no_marker': True})
         else:
-            log.chat(self.expected_str, extra={'no_marker':True})
+            log.chat(self.expected_str, extra={'no_marker': True})
 
         if not self.fully_parsed:
             return
 
-        log.debug('Indentation: |%s| (%i bytes)',
-                self.indentation, len(self.indentation))
+        log.debug(
+            'Indentation: |%s| (%i bytes)', self.indentation,
+            len(self.indentation)
+        )
 
-        capture_tag_names = list(sorted(n for n in self.expected.tags_by_idx.values() if n != None))
-        log.chat('Capture tags: %s', pprint.pformat(capture_tag_names, width=50))
+        capture_tag_names = list(
+            sorted(n for n in self.expected.tags_by_idx.values() if n != None)
+        )
+        log.chat(
+            'Capture tags: %s', pprint.pformat(capture_tag_names, width=50)
+        )
 
         opts = pprint.pformat(self.options.as_dict(), width=50)
         log.chat('Options: %s', opts)
 
         if len(self.expected.regexs) != len(self.expected.charnos):
-            log.warn('Inconsistent regexs: %i regexs versus %i char-numbers',
-                    len(self.expected.regexs), len(self.expected.charnos))
+            log.warn(
+                'Inconsistent regexs: %i regexs versus %i char-numbers',
+                len(self.expected.regexs), len(self.expected.charnos)
+            )
 
         tmp = []
         tmp.append("Regexs:")
         for p, r in zip(self.expected.charnos, self.expected.regexs):
             tmp.append("% 4i: %s" % (p, repr(r)))
 
-        log.debug('\n'.join(tmp), extra={'no_marker':True})
+        log.debug('\n'.join(tmp), extra={'no_marker': True})
 
-def _build_fake_example(snippet, expected, language='python', start_lineno=0,
-                            specific=False, fully_parsed=True, opts=None):
-    class R: pass    # <- fake runner instance
-    R.language = language # <- language of the example
 
-    class F: pass    # <- fake finder instance
-    F.specific = specific # <- is finder specific?
+def _build_fake_example(
+    snippet,
+    expected,
+    language='python',
+    start_lineno=0,
+    specific=False,
+    fully_parsed=True,
+    opts=None
+):
+    class R:
+        pass  # <- fake runner instance
+
+    R.language = language  # <- language of the example
+
+    class F:
+        pass  # <- fake finder instance
+
+    F.specific = specific  # <- is finder specific?
 
     # fake a parser
     parser = ExampleParser(0, 'utf8', Options())
@@ -193,6 +217,7 @@ def _build_fake_example(snippet, expected, language='python', start_lineno=0,
         e = e.parse_yourself(concerns=None)
 
     return e
+
 
 class ExampleHarvest(object):
     '''
@@ -220,8 +245,10 @@ class ExampleHarvest(object):
                                       \       reporter
                                        \         .
     '''
-    def __init__(self, allowed_languages, registry, verbosity,
-                        options, use_colors, encoding, **unused):
+    def __init__(
+        self, allowed_languages, registry, verbosity, options, use_colors,
+        encoding, **unused
+    ):
         self.allowed_languages = allowed_languages
         self.verbosity = verbosity
         self.use_colors = use_colors
@@ -250,17 +277,15 @@ class ExampleHarvest(object):
         _, ext = os.path.splitext(filepath)
 
         zdelimiter = self.zdelimiter_by_file_extension.get(
-                ext,
-                self.zdelimiter_by_file_extension['no-delimiter']
-                )
+            ext, self.zdelimiter_by_file_extension['no-delimiter']
+        )
         zones = self.get_zones_using(
-                    zdelimiter,
-                    string,
-                    filepath,
-                    start_lineno=1)
+            zdelimiter, string, filepath, start_lineno=1
+        )
 
-        clog().chat("File '%s': %i zones [%s]",
-                filepath, len(zones), str(zdelimiter))
+        clog().chat(
+            "File '%s': %i zones [%s]", filepath, len(zones), str(zdelimiter)
+        )
 
         if clog().isEnabledFor(DEBUG):
             for zone in zones:
@@ -277,26 +302,31 @@ class ExampleHarvest(object):
             nexamples = 0
             for zone in zones:
                 examples = self.get_examples_using(
-                        finder,
-                        zone.str,
-                        zone.where.filepath,
-                        zone.where.start_lineno)
+                    finder, zone.str, zone.where.filepath,
+                    zone.where.start_lineno
+                )
                 all_examples.extend(examples)
                 nexamples += len(examples)
 
-            clog().chat("File '%s': %i examples [%s]",
-                    filepath, nexamples, str(finder))
+            clog().chat(
+                "File '%s': %i examples [%s]", filepath, nexamples,
+                str(finder)
+            )
 
         # sort the examples in the same order
         # that they were found in the file/string;
         # see check_example_overlap
-        all_examples.sort(key=lambda this: (this.start_lineno, -this.end_lineno))
+        all_examples.sort(
+            key=lambda this: (this.start_lineno, -this.end_lineno)
+        )
 
         all_examples = self.check_example_overlap(all_examples, filepath)
 
         tmp = set(e.runner.language for e in all_examples)
-        clog().chat("Findings in file '%s': %i examples written in %i different languages in %i zones were found.",
-            filepath, len(all_examples), len(tmp), len(zones))
+        clog().chat(
+            "Findings in file '%s': %i examples written in %i different languages in %i zones were found.",
+            filepath, len(all_examples), len(tmp), len(zones)
+        )
         return all_examples
 
     def check_example_overlap(self, examples, filepath):
@@ -367,7 +397,7 @@ class ExampleHarvest(object):
         while not collision_free:
             collision_free = True
             if not examples:
-                return examples # pragma: no cover
+                return examples  # pragma: no cover
 
             prev = examples[0]
             for i, example in enumerate(examples[1:], 1):
@@ -384,8 +414,14 @@ class ExampleHarvest(object):
                     continue
 
                 collision_free = not any_collision
-                curr_where = Where(example.start_lineno, example.end_lineno, filepath, example.zdelimiter)
-                prev_where = Where(prev.start_lineno, prev.end_lineno, filepath, prev.zdelimiter)
+                curr_where = Where(
+                    example.start_lineno, example.end_lineno, filepath,
+                    example.zdelimiter
+                )
+                prev_where = Where(
+                    prev.start_lineno, prev.end_lineno, filepath,
+                    prev.zdelimiter
+                )
 
                 self._log_debug(" * Collision Type (1/2/3): %s/%s/%s\n"        \
                                 " * Languages (prev/current): %s/%s\n"         \
@@ -402,18 +438,21 @@ class ExampleHarvest(object):
 
                 msg = "In %s, examples at lines %i-%i (found by %s) and " +\
                       "at lines %i-%i (found by %s) overlap each other."
-                msg = msg % (filepath, example.start_lineno, example.end_lineno,
-                             example.finder, prev.start_lineno, prev.end_lineno,
-                             prev.finder)
+                msg = msg % (
+                    filepath, example.start_lineno, example.end_lineno,
+                    example.finder, prev.start_lineno, prev.end_lineno,
+                    prev.finder
+                )
                 raise ValueError(msg)
 
         if clog().isEnabledFor(CHAT):
             clog().debug("Examples after removing any overlapping")
             for finder in set(e.finder for e in examples):
-                clog().chat("File '%s': %i examples [%s]",
-                                    filepath,
-                                    len([e for e in examples if e.finder==finder]),
-                                    str(finder))
+                clog().chat(
+                    "File '%s': %i examples [%s]", filepath,
+                    len([e for e in examples if e.finder == finder]),
+                    str(finder)
+                )
 
         if True or clog().isEnabledFor(DEBUG):
             for e in examples:
@@ -428,23 +467,14 @@ class ExampleHarvest(object):
 
     def get_examples_using(self, finder, string, filepath, start_lineno):
         return self.from_string_get_items_using(
-                finder,
-                string,
-                self.get_example,
-                'examples',
-                filepath,
-                start_lineno
-                )
+            finder, string, self.get_example, 'examples', filepath,
+            start_lineno
+        )
 
     def get_zones_using(self, zdelimiter, string, filepath, start_lineno):
         return self.from_string_get_items_using(
-                zdelimiter,
-                string,
-                self.get_zone,
-                'zones',
-                filepath,
-                start_lineno
-                )
+            zdelimiter, string, self.get_zone, 'zones', filepath, start_lineno
+        )
 
     def get_example(self, finder, match, where):
         with enhance_exceptions(where, finder):
@@ -463,14 +493,18 @@ class ExampleHarvest(object):
             # who can parse it?
             parser = self.parser_by_language.get(language)
             if not parser:
-                self._log_drop('no parser found for %s language' % language, where)
-                return # TODO should be an error?
+                self._log_drop(
+                    'no parser found for %s language' % language, where
+                )
+                return  # TODO should be an error?
 
             # who can execute it?
             runner = self.runner_by_language.get(language)
             if not runner:
-                self._log_drop('no runner found for %s language' % language, where)
-                return # TODO should be an error?
+                self._log_drop(
+                    'no runner found for %s language' % language, where
+                )
+                return  # TODO should be an error?
 
             # save the indentation here
             indent = match.group('indent')
@@ -483,8 +517,9 @@ class ExampleHarvest(object):
 
         with enhance_exceptions(where, parser), log_with(language):
             # perfect, we have everything to build an example
-            example = Example(finder, runner, parser,
-                                    snippet, expected, indent, where)
+            example = Example(
+                finder, runner, parser, snippet, expected, indent, where
+            )
             return example
 
     def get_zone(self, zdelimiter, match, where):
@@ -492,8 +527,16 @@ class ExampleHarvest(object):
             zone_str = zdelimiter.get_zone(match, where)
             return Zone(zdelimiter, zone_str, where)
 
-    def from_string_get_items_using(self, matcher, string, getter, what,
-            filepath='<string>', start_lineno=1, zdelimiter=None):
+    def from_string_get_items_using(
+        self,
+        matcher,
+        string,
+        getter,
+        what,
+        filepath='<string>',
+        start_lineno=1,
+        zdelimiter=None
+    ):
         charno = 0
         items = []
 
@@ -517,6 +560,7 @@ class ExampleHarvest(object):
                 items.append(item)
         return items
 
+
 class ExampleFinder(object):
     specific = True
 
@@ -525,13 +569,13 @@ class ExampleFinder(object):
         self.encoding = encoding
 
     def example_regex(self):
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def get_matches(self, string):
         return self.example_regex().finditer(string)
 
     def get_language_of(self, options, match, where):
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def __repr__(self):
         return '%s Finder' % tohuman(self.target if self.target else self)
@@ -676,7 +720,7 @@ class ZoneDelimiter(object):
         self.encoding = encoding
 
     def zone_regex(self):
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def get_matches(self, string):
         return self.zone_regex().finditer(string)
@@ -685,4 +729,6 @@ class ZoneDelimiter(object):
         return match.group('zone')
 
     def __repr__(self):
-        return '%s Zone Delimiter' % tohuman(self.target if self.target else self)
+        return '%s Zone Delimiter' % tohuman(
+            self.target if self.target else self
+        )

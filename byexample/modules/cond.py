@@ -5,6 +5,7 @@ from functools import partial
 
 stability = 'experimental'
 
+
 class UnknownConditionTag(Exception):
     def __init__(self, example, missing):
         msg = "You enabled the conditional execution of this example "     \
@@ -15,24 +16,27 @@ class UnknownConditionTag(Exception):
 
         Exception.__init__(self, msg)
 
+
 class Conditional(Concern):
     target = 'conditional'
 
     def extend_option_parser(self, parser):
         mutexg = parser.add_mutually_exclusive_group()
         mutexg.add_argument(
-                "+if",
-                "+on",
-                nargs=1,
-                default=False,
-                help="run the example only if the condition matches; skip the example otherwise."
-                )
+            "+if",
+            "+on",
+            nargs=1,
+            default=False,
+            help=
+            "run the example only if the condition matches; skip the example otherwise."
+        )
         mutexg.add_argument(
-                "+unless",
-                nargs=1,
-                default=True,
-                help="run the example unless the condition matches; skip the example otherwise."
-                )
+            "+unless",
+            nargs=1,
+            default=True,
+            help=
+            "run the example unless the condition matches; skip the example otherwise."
+        )
         return parser
 
     def finish_parse(self, example, options, exception):
@@ -57,10 +61,11 @@ class Conditional(Concern):
         if cond not in clipboard:
             raise UnknownConditionTag(example, cond)
 
-        skip = bool(clipboard[cond])        # TODO emptiness is enough?: what about strings like '0' and 'false'?
+        skip = bool(
+            clipboard[cond]
+        )  # TODO emptiness is enough?: what about strings like '0' and 'false'?
         if neg:
             skip = not skip
 
         if skip:
             example.options['skip'] = True
-
