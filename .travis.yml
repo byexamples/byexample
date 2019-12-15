@@ -12,7 +12,7 @@ env:
       - BYEXAMPLE_CACHE_DISABLED=0
       - 'PYTHONWARNINGS=ignore:::byexample.cache'
 
-install: make deps
+install: make deps-dev
 script: make test
 
 matrix:
@@ -26,6 +26,10 @@ matrix:
             - "make index-links-test"
             - 'echo -e ''source "https://rubygems.org"\ngem "github-pages"'' > Gemfile'
             - "bundle install && cd docs && bundle exec jekyll build"
+        - name: "Source code format"
+          language: python
+          python: "3.5"
+          script: make format-test
         - language: python
           python: "3.5"
         - language: python
@@ -37,47 +41,47 @@ matrix:
           install:
               - 'eval "$(pyenv init -)"'
               - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
-              - "make deps"
+              - "make deps-dev"
           script: make travis-ruby-test
         - language: ruby
           rvm: "2.1"
           install:
               - 'eval "$(pyenv init -)"'
               - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
-              - "make deps"
+              - "make deps-dev"
           script: make travis-ruby-test
         - language: ruby
           rvm: "2.2"
           install:
               - 'eval "$(pyenv init -)"'
               - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
-              - "make deps"
+              - "make deps-dev"
           script: make travis-ruby-test
         - language: ruby
           rvm: "2.3"
           install:
               - 'eval "$(pyenv init -)"'
               - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
-              - "make deps"
+              - "make deps-dev"
           script: make travis-ruby-test
         - language: ruby
           rvm: "2.4"
           install:
               - 'eval "$(pyenv init -)"'
               - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
-              - "make deps"
+              - "make deps-dev"
           script: make travis-ruby-test
         - language: ruby
           rvm: "2.5"
           install:
               - 'eval "$(pyenv init -)"'
               - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
-              - "make deps"
+              - "make deps-dev"
           script: make travis-ruby-test
         - language: ruby
           rvm: "2.6"
           install:
               - 'eval "$(pyenv init -)"'
               - 'pyenv global $(pyenv versions | grep ''^\s*3\.'' | head -1)'
-              - "make deps"
+              - "make deps-dev"
           script: make travis-ruby-test

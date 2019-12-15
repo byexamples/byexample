@@ -6,8 +6,9 @@ languages ?= python,shell
 pip_bin ?= pip
 
 all:
-	@echo "Usage: make deps"
-	@echo " - deps: install the dependencies for byexample"
+	@echo "Usage: make deps[-dev]"
+	@echo " - deps: install the dependencies for run byexample"
+	@echo " - deps-dev: install the dependencies for run and build byexample"
 	@echo
 	@echo "Usage: make test"
 	@echo "Run all the suite of tests using only Python and Shell."
@@ -58,6 +59,9 @@ all:
 deps:
 	$(pip_bin) install -e .
 
+deps-dev: deps
+	$(pip_bin) install -r requirements-dev.txt
+
 private-all-test: clean_test
 	@$(python_bin) test/r.py --timeout 90 --pretty $(pretty) --ff -l shell test/test.md
 	@make -s clean_test
@@ -84,7 +88,7 @@ examples-test: clean_test
 index-links-test: clean_test
 	@./test/idx.sh
 
-test: lib-test modules-test docs-test examples-test index-links-test format-test
+test: lib-test modules-test docs-test examples-test index-links-test
 
 #
 ##
