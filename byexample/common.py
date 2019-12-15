@@ -1,15 +1,16 @@
 from __future__ import unicode_literals
 import pprint, traceback, contextlib, os, re, string, shlex, logging
-
 '''
 >>> from byexample.common import tohuman
 '''
+
 
 def indent(s, indent=4):
     ''' Indent the given text.
         See doctest._indent for the code that inspired this.
         '''
-    return re.sub('(?m)^(?!$)', indent*' ', s)
+    return re.sub('(?m)^(?!$)', indent * ' ', s)
+
 
 def build_where_msg(where, owner, msg=None, use_colors=False):
     tmp = []
@@ -33,6 +34,7 @@ def build_where_msg(where, owner, msg=None, use_colors=False):
 
     return ''.join(tmp)
 
+
 def colored(s, color, use_colors):
     if use_colors:
         if color == 'none':
@@ -41,6 +43,7 @@ def colored(s, color, use_colors):
         return "\033[%sm%s\033[0m" % (c, s)
     else:
         return s
+
 
 try:
     import pygments
@@ -81,6 +84,7 @@ except ImportError:
     def highlight_syntax(example, use_colors):
         return example.snippet
 
+
 def tohuman(s):
     ''' Simple but quite human representation of <s>.
 
@@ -111,6 +115,7 @@ def tohuman(s):
 
 def constant(argumentless_method):
     placeholder = '_saved_constant_result_of_%s' % argumentless_method.__name__
+
     def wrapped(self):
         try:
             return getattr(self, placeholder)
@@ -160,6 +165,7 @@ def human_exceptions(where_default):
         rlog.exception(msg=None, where=where_default)
         o['exc'] = e
 
+
 @contextlib.contextmanager
 def enhance_exceptions(where, owner, use_colors=False):
     try:
@@ -168,6 +174,7 @@ def enhance_exceptions(where, owner, use_colors=False):
         if not hasattr(e, 'where'):
             e.where = build_where_msg(where, owner, use_colors=use_colors)
         raise e
+
 
 def abspath(*args):
     ''' Return the absolute path from the join of <args>.
@@ -178,10 +185,12 @@ def abspath(*args):
     path = os.path.join(base, *args[1:])
     return os.path.abspath(path)
 
+
 try:
     from shlex import quote as shlex_quote
 except ImportError:
     from pipes import quote as shlex_quote
+
 
 class ShebangTemplate(string.Template):
     delimiter = '%'
@@ -245,4 +254,3 @@ class ShebangTemplate(string.Template):
             cmd.append(x)
 
         return ' '.join(cmd)
-

@@ -5,6 +5,7 @@ from byexample.common import constant
 
 stability = 'provisional'
 
+
 class NoDelimiter(ZoneDelimiter):
     target = 'no-delimiter'
 
@@ -21,7 +22,8 @@ class CppCommentDelimiter(ZoneDelimiter):
 
     @constant
     def zone_regex(self):
-        return re.compile(r'''
+        return re.compile(
+            r'''
             # Begin with a /* marker
             ^[ ]*
              /\*
@@ -31,7 +33,8 @@ class CppCommentDelimiter(ZoneDelimiter):
 
              # and the close marker
              \*/
-            ''', re.DOTALL | re.MULTILINE | re.VERBOSE)
+            ''', re.DOTALL | re.MULTILINE | re.VERBOSE
+        )
 
     @constant
     def leading_asterisk(self):
@@ -44,12 +47,14 @@ class CppCommentDelimiter(ZoneDelimiter):
     def __repr__(self):
         return "/* ... */"
 
+
 class HashCommentDelimiter(ZoneDelimiter):
     target = {'.rb'}
 
     @constant
     def zone_regex(self):
-        return re.compile(r'''
+        return re.compile(
+            r'''
             # Begin with a # marker
             ^[ ]*
              \#
@@ -59,7 +64,8 @@ class HashCommentDelimiter(ZoneDelimiter):
              (?P<zone>  .*$\n?                  # first line
                         (?:[ ]* \# .*$\n?)*     # the rest of the lines
                     )
-            ''', re.MULTILINE | re.VERBOSE)
+            ''', re.MULTILINE | re.VERBOSE
+        )
 
     @constant
     def leading_sharp(self):
@@ -72,12 +78,14 @@ class HashCommentDelimiter(ZoneDelimiter):
     def __repr__(self):
         return "# ..."
 
+
 class DocStringDelimiter(ZoneDelimiter):
     target = {'.py'}
 
     @constant
     def zone_regex(self):
-        return re.compile(r'''
+        return re.compile(
+            r'''
             # Begin with a triple single or double quote
             ^[ ]*
              [bBuU]?[rR]?(?P<marker>(?:\'\'\') | (?:"""))
@@ -87,17 +95,20 @@ class DocStringDelimiter(ZoneDelimiter):
 
              # finally, the end marker
              [^\\](?P=marker) # then we must match the same kind of quotes
-            ''', re.DOTALL | re.MULTILINE | re.VERBOSE)
+            ''', re.DOTALL | re.MULTILINE | re.VERBOSE
+        )
 
     def __repr__(self):
         return "''' ... ''' or \"\"\" ... \"\"\""
+
 
 class MarkdownFencedCodeDelimiter(ZoneDelimiter):
     target = {'.md'}
 
     @constant
     def zone_regex(self):
-        return re.compile(r'''
+        return re.compile(
+            r'''
             # Begin with a markdown fenced-code marker or a html comment marker
             ^[ ]*
                 (?:
@@ -113,7 +124,8 @@ class MarkdownFencedCodeDelimiter(ZoneDelimiter):
                   ^[ ]*(?P=marker) # then we must match the same amount of backticks
                   |(?:-->)    # otherwise, we must match the close of the html comment
             )
-            ''', re.DOTALL | re.MULTILINE | re.VERBOSE)
+            ''', re.DOTALL | re.MULTILINE | re.VERBOSE
+        )
 
     def __repr__(self):
         return "``` ... ``` or <!-- ... -->"

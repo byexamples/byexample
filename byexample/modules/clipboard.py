@@ -5,6 +5,7 @@ from functools import partial
 
 stability = 'provisional'
 
+
 class PasteError(Exception):
     def __init__(self, example, missing):
         n = "tag is" if len(missing) == 1 else "tags are"
@@ -14,6 +15,7 @@ class PasteError(Exception):
 
         Exception.__init__(self, msg)
 
+
 class Clipboard(Concern):
     target = 'clipboard'
 
@@ -21,7 +23,11 @@ class Clipboard(Concern):
         pass
 
     def extend_option_parser(self, parser):
-        parser.add_flag("paste", default=False, help="enable the paste mode of captured texts.")
+        parser.add_flag(
+            "paste",
+            default=False,
+            help="enable the paste mode of captured texts."
+        )
         return parser
 
     def start(self, examples, runners, filepath, options):
@@ -35,16 +41,20 @@ class Clipboard(Concern):
             return clipboard[tag_name]
         except KeyError:
             missing.append(tag_name)
-            return m.group(0)   # replace it by itself.
+            return m.group(0)  # replace it by itself.
 
     PASTE_RE = re.compile(r"<(?P<name>(?:\w|-|\.)+)>")
+
     def before_build_regex(self, example, options):
         if not options['paste']:
             return
 
-        repl = partial(self.repl_from_clipboard, clipboard=self.clipboard,
-                                                 missing=[])
-        example.expected_str = re.sub(self.PASTE_RE, repl, example.expected_str)
+        repl = partial(
+            self.repl_from_clipboard, clipboard=self.clipboard, missing=[]
+        )
+        example.expected_str = re.sub(
+            self.PASTE_RE, repl, example.expected_str
+        )
 
         # do not check for missings: we assume that they are capture tags
 
@@ -60,13 +70,15 @@ class Clipboard(Concern):
             return
 
         missing = []
-        repl = partial(self.repl_from_clipboard, clipboard=self.clipboard,
-                                                 missing=missing)
+        repl = partial(
+            self.repl_from_clipboard,
+            clipboard=self.clipboard,
+            missing=missing
+        )
         example.source = re.sub(self.PASTE_RE, repl, example.source)
 
         if missing:
             raise PasteError(example, missing)
-
 
     def finally_example(self, example, options):
         got = getattr(example, 'got', None)
@@ -74,4 +86,3 @@ class Clipboard(Concern):
             return  # probably the example failed so we didn't get any output
         _, captured = example.expected.get_captures(example, got, options, 0)
         self.clipboard.update(captured)
-

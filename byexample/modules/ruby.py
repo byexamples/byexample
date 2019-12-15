@@ -61,12 +61,14 @@ from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
 
 stability = 'provisional'
 
+
 class RubyPromptFinder(ExampleFinder):
     target = 'ruby-prompt'
 
     @constant
     def example_regex(self):
-        return re.compile(r'''
+        return re.compile(
+            r'''
             # Snippet consists of one PS1 line >> and zero or more PS2 lines
             (?P<snippet>
                 (?:^(?P<indent> [ ]*) >>[ ]   .*)    # PS1 line
@@ -78,13 +80,16 @@ class RubyPromptFinder(ExampleFinder):
                              (?![ ]*   >>)        # Not a line starting with PS1
                              .+$\n?               # But any other line
                       )*)
-            ''', re.MULTILINE | re.VERBOSE)
+            ''', re.MULTILINE | re.VERBOSE
+        )
 
     def get_language_of(self, *args, **kargs):
         return 'ruby'
 
     def get_snippet_and_expected(self, match, where):
-        snippet, expected = ExampleFinder.get_snippet_and_expected(self, match, where)
+        snippet, expected = ExampleFinder.get_snippet_and_expected(
+            self, match, where
+        )
 
         snippet, expected = self._remove_prompts(snippet, expected)
         return snippet, expected
@@ -93,21 +98,25 @@ class RubyPromptFinder(ExampleFinder):
         lines = snippet.split("\n")
         n = lines[0].index(">> ")
 
-        snippet  = '\n'.join(line[n+3:] for line in lines)
+        snippet = '\n'.join(line[n + 3:] for line in lines)
         expected = '\n'.join(line[n:] for line in expected.split('\n'))
 
         return snippet, expected
+
 
 class RubyParser(ExampleParser):
     language = 'ruby'
 
     @constant
     def example_options_string_regex(self):
-        return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
-                                                    re.MULTILINE)
+        return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$', re.MULTILINE)
 
     def extend_option_parser(self, parser):
-        parser.add_flag("ruby-pretty-print", default=True, help="enable the pretty print enhancement.")
+        parser.add_flag(
+            "ruby-pretty-print",
+            default=True,
+            help="enable the pretty print enhancement."
+        )
         parser.add_argument("+ruby-expr-print", choices=['auto', 'true', 'false'],
                             default='auto',
                             help='print the expression\'s value (true); ' +\
@@ -115,13 +124,16 @@ class RubyParser(ExampleParser):
                                  'if the example has a => (auto, the default)')
         return parser
 
+
 class RubyInterpreter(ExampleRunner, PexpectMixin):
     language = 'ruby'
 
     def __init__(self, verbosity, encoding, **unused):
-        PexpectMixin.__init__(self,
-                                PS1_re = r'irb[^:]*:\d+:0(>|\*) ',
-                                any_PS_re = r'irb[^:]*:\d+:\d+(>|\*|") ')
+        PexpectMixin.__init__(
+            self,
+            PS1_re=r'irb[^:]*:\d+:0(>|\*) ',
+            any_PS_re=r'irb[^:]*:\d+:\d+(>|\*|") '
+        )
 
         self.encoding = encoding
 
@@ -156,11 +168,11 @@ class RubyInterpreter(ExampleRunner, PexpectMixin):
         PexpectMixin.interact(self)
 
     def get_default_cmd(self, *args, **kargs):
-        return  "%e %p %a", {
-                    'e': '/usr/bin/env',
-                    'p': 'irb',
-                    'a': ['--noreadline']
-                    }
+        return "%e %p %a", {
+            'e': '/usr/bin/env',
+            'p': 'irb',
+            'a': ['--noreadline']
+        }
 
     def initialize(self, options):
         ruby_pretty_print = options['ruby_pretty_print']
@@ -182,9 +194,10 @@ class RubyInterpreter(ExampleRunner, PexpectMixin):
         # if we force the mode from the command line (whe we spawn IRB)
         # Make sure that the first thing executed restores the default prompt.
         self._exec_and_wait(
-                'IRB.CurrentContext.prompt_mode = :DEFAULT\n',
-                options,
-                timeout=dfl_timeout)
+            'IRB.CurrentContext.prompt_mode = :DEFAULT\n',
+            options,
+            timeout=dfl_timeout
+        )
         self._drop_output()
 
         # set the pretty print inspector
@@ -194,11 +207,17 @@ class RubyInterpreter(ExampleRunner, PexpectMixin):
         # disable the echo if we don't want it (false) or we may want it
         # but it will depend on the example (auto)
         if self.expr_print_mode in ('auto', 'false'):
-            self._exec_and_wait('IRB.CurrentContext.echo = false\n',
-                                    options, timeout=dfl_timeout)
+            self._exec_and_wait(
+                'IRB.CurrentContext.echo = false\n',
+                options,
+                timeout=dfl_timeout
+            )
         else:
-            self._exec_and_wait('IRB.CurrentContext.echo = true\n',
-                                    options, timeout=dfl_timeout)
+            self._exec_and_wait(
+                'IRB.CurrentContext.echo = true\n',
+                options,
+                timeout=dfl_timeout
+            )
 
     def shutdown(self):
         self._shutdown_interpreter()

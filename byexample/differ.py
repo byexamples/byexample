@@ -10,8 +10,12 @@ import string, re, difflib, tempfile, os, subprocess
 #   0 <= i <= 31 or 127 <= i <= 159
 #
 # whitespace control codes?: 9 <= i <= 13
-ctrl_tr = {i:u'?' if (0 <= i <= 31 or 127 <= i <= 159) and not (9 <= i <= 13)
-                  else chr(i) for i in range(160)}
+ctrl_tr = {
+    i: u'?' if
+    (0 <= i <= 31 or 127 <= i <= 159) and not (9 <= i <= 13) else chr(i)
+    for i in range(160)
+}
+
 
 class Differ(object):
     def __init__(self, verbosity, encoding, **unused):
@@ -142,11 +146,11 @@ class Differ(object):
 
             if flags['enhance_diff']:
                 expected, replaced_captures = example.expected.get_captures(
-                                                   example, got,
-                                                   flags, self.verbosity)
+                    example, got, flags, self.verbosity
+                )
 
         else:
-            expected = example # aka literal string, mostly for internal testing
+            expected = example  # aka literal string, mostly for internal testing
 
         self._diff = []
 
@@ -155,7 +159,7 @@ class Differ(object):
         # it should be safe too because expected_regexs should have
         # a '\n*' regex at the end to match any possible empty line
         expected = self._remove_last_empty_lines(expected)
-        got      = self._remove_last_empty_lines(got)
+        got = self._remove_last_empty_lines(got)
 
         if flags['enhance_diff']:
             namedcap, r1, p1 = self._human_named_captures(replaced_captures)
@@ -170,7 +174,9 @@ class Differ(object):
         if diff_type not in ('none', 'tool'):
             self.print_diff(expected, got, diff_type, use_colors)
         elif diff_type == 'tool':
-            self.use_external_tool(expected, got, flags['difftool'], use_colors)
+            self.use_external_tool(
+                expected, got, flags['difftool'], use_colors
+            )
         else:
             self.just_print(expected, got, use_colors)
 
@@ -185,14 +191,14 @@ class Differ(object):
             return
 
         HUMAN_EXPL = {
-                '$' : 'trailing spaces',
-                '?' : 'ctrl character ',
-                '^n': 'new line       ',
-                '^t': 'tab            ',
-                '^v': 'vertical tab   ',
-                '^r': 'carriage return',
-                '^f': 'form feed      ',
-                }
+            '$': 'trailing spaces',
+            '?': 'ctrl character ',
+            '^n': 'new line       ',
+            '^t': 'tab            ',
+            '^v': 'vertical tab   ',
+            '^r': 'carriage return',
+            '^f': 'form feed      ',
+        }
 
         assert wrepl.issubset(set(HUMAN_EXPL.keys()))
         assert prepl.issubset(set(HUMAN_EXPL.keys()))
@@ -202,15 +208,17 @@ class Differ(object):
         prepl = wrepl & prepl
 
         wrepl = list(sorted(wrepl))
-        self._write("Some non-printable characters were replaced by printable ones.")
-        for tmp in [wrepl[i:i+3] for i in range(0, len(wrepl), 3)]:
+        self._write(
+            "Some non-printable characters were replaced by printable ones."
+        )
+        for tmp in [wrepl[i:i + 3] for i in range(0, len(wrepl), 3)]:
             line = ['%02s: %s' % (r, HUMAN_EXPL[r]) for r in tmp]
             line = '    '.join(line)
             self._write("    %s" % line)
 
         if prepl:
             prepl = list(sorted(prepl))
-            one  = prepl[0]
+            one = prepl[0]
             what = HUMAN_EXPL[one]
             self._write(("Warning, the characters %s were present *before* the replacement.\n" + \
                          "That means that if you see a '%s' it could mean '%s' or\n" + \
@@ -228,19 +236,19 @@ class Differ(object):
         out = []
 
         max_len = 36
+
         def _format(k, v):
             if k is None or v is None:
                 return ""
 
-            _mlen = max_len - len(k) + 2 # plus the : and the space
+            _mlen = max_len - len(k) + 2  # plus the : and the space
 
             v, w, p = self._human(v, replace_newlines=True)
             wrepl.update(w)
             prepl.update(p)
             if len(v) > _mlen:
-                _mlen -= 5 # minus the ' ... '
-                v = v[:int(_mlen/2)] + " ... " + v[-int(_mlen/2):]
-
+                _mlen -= 5  # minus the ' ... '
+                v = v[:int(_mlen / 2)] + " ... " + v[-int(_mlen / 2):]
 
             return "%s: %s" % (k, v)
 
@@ -252,7 +260,7 @@ class Differ(object):
         out.append("Tags replaced by the captured output:")
 
         if len(k_vs) % 2 != 0:
-            k_vs.append((None, None)) # make the list even
+            k_vs.append((None, None))  # make the list even
 
         for k_v1, k_v2 in zip(k_vs[::2], k_vs[1::2]):
             left, right = _format(*k_v1), _format(*k_v2)
@@ -263,20 +271,18 @@ class Differ(object):
         out.append("(You can disable this with '--no-enhance-diff')")
         return '\n'.join(out), wrepl, prepl
 
-
-
     def _write(self, s, end_with_newline=True):
         self._diff.append(s)
         if end_with_newline and not s.endswith('\n'):
             self._diff.append('\n')
 
-    WS  = re.compile(r"[ ]+$", flags=re.MULTILINE)
-    NLs = re.compile(r"\n+",   flags=re.MULTILINE)
+    WS = re.compile(r"[ ]+$", flags=re.MULTILINE)
+    NLs = re.compile(r"\n+", flags=re.MULTILINE)
     last_NLs = re.compile(r"\n+\Z", flags=re.MULTILINE)
 
     def _human(self, s, replace_newlines=False):
-        ws      = '\t\x0b\x0c\r'
-        tr_ws   = ['^t', '^v', '^f', '^r', '^s']
+        ws = '\t\x0b\x0c\r'
+        tr_ws = ['^t', '^v', '^f', '^r', '^s']
 
         present_before_repl = set()
         wrepl = set()
@@ -355,15 +361,14 @@ class Differ(object):
                 gfile.write(got)
 
             tokens = {
-                    'e': efilename,
-                    'g': gfilename,
-                    }
+                'e': efilename,
+                'g': gfilename,
+            }
             cmdline = ShebangTemplate(cmdline).quote_and_substitute(tokens)
             try:
                 out = subprocess.check_output(
-                        cmdline,
-                        shell=True,
-                        stderr=subprocess.STDOUT)
+                    cmdline, shell=True, stderr=subprocess.STDOUT
+                )
                 returncode = 0
             except subprocess.CalledProcessError as err:
                 out = err.output
@@ -375,8 +380,10 @@ class Differ(object):
             self._write(out)
 
             if returncode != 0:
-                self._write(colored('Return code: ', 'red', use_colors),
-                            end_with_newline=False)
+                self._write(
+                    colored('Return code: ', 'red', use_colors),
+                    end_with_newline=False
+                )
                 self._write(str(returncode))
 
         finally:
@@ -385,35 +392,41 @@ class Differ(object):
             if gfilename:
                 os.remove(gfilename)
 
-
     def print_diff(self, expected, got, diff_type, use_colors):
         expected_lines = expected.split('\n')
         got_lines = got.split('\n')
 
         if diff_type == 'unified':
-            diff_lines = difflib.unified_diff(expected_lines, got_lines,
-                                                n=2, lineterm="")
+            diff_lines = difflib.unified_diff(
+                expected_lines, got_lines, n=2, lineterm=""
+            )
             diff_lines = list(diff_lines)
-            diff_lines = diff_lines[2:] # drop diff's header
-            diff_lines = self.colored_diff_lines(diff_lines, use_colors,
-                                                         green='+', red='-',
-                                                         yellow=['@'])
+            diff_lines = diff_lines[2:]  # drop diff's header
+            diff_lines = self.colored_diff_lines(
+                diff_lines, use_colors, green='+', red='-', yellow=['@']
+            )
 
         elif diff_type == 'context':
-            diff_lines = difflib.context_diff(expected_lines, got_lines,
-                                                n=2, lineterm="")
+            diff_lines = difflib.context_diff(
+                expected_lines, got_lines, n=2, lineterm=""
+            )
             diff_lines = list(diff_lines)
-            diff_lines = diff_lines[3:] # drop diff's header
-            diff_lines = self.colored_diff_lines(diff_lines, use_colors,
-                                                         green='+ ', red='! ',
-                                                         yellow=['*', '-'])
+            diff_lines = diff_lines[3:]  # drop diff's header
+            diff_lines = self.colored_diff_lines(
+                diff_lines,
+                use_colors,
+                green='+ ',
+                red='! ',
+                yellow=['*', '-']
+            )
 
         elif diff_type == 'ndiff':
-            diff_lines = difflib.ndiff(expected_lines, got_lines,
-                                        charjunk=difflib.IS_CHARACTER_JUNK)
-            diff_lines = self.colored_diff_lines(diff_lines, use_colors,
-                                                         green='+ ', red='- ',
-                                                         yellow=[])
+            diff_lines = difflib.ndiff(
+                expected_lines, got_lines, charjunk=difflib.IS_CHARACTER_JUNK
+            )
+            diff_lines = self.colored_diff_lines(
+                diff_lines, use_colors, green='+ ', red='- ', yellow=[]
+            )
         else:
             raise ValueError("Unknow diff report type '%s'" % diff_type)
 
@@ -434,4 +447,3 @@ class Differ(object):
             return line
 
         return [colored_line(line) for line in lines]
-

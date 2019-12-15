@@ -6,6 +6,7 @@ from .common import tohuman, ShebangTemplate
 
 from pyte import Stream, Screen
 
+
 class ExampleRunner(object):
     def __init__(self, verbosity, encoding, **unused):
         self.verbosity = verbosity
@@ -41,28 +42,28 @@ class ExampleRunner(object):
         See the code of the default runners of ``byexample`` like
         PythonInterpreter and RubyInterpreter to get more information.
         '''
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def interact(self, example, options):
         '''
         Connect the current runner/interpreter session to the byexample's console
         allowing the user to manually interact with the interpreter.
         '''
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def initialize(self, options):
         '''
         Hook to initialize the runner. This method will be called
         before running any example.
         '''
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def shutdown(self):
         '''
         Hook to shutdown the runner. This method will be called
         after running all the examples.
         '''
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def cancel(self, example, options):
         '''
@@ -82,9 +83,14 @@ class PexpectMixin(object):
 
         self.last_output = []
 
-    def _spawn_interpreter(self, cmd, options, wait_first_prompt=True,
-                                        first_prompt_timeout=None,
-                                        initial_prompt=None):
+    def _spawn_interpreter(
+        self,
+        cmd,
+        options,
+        wait_first_prompt=True,
+        first_prompt_timeout=None,
+        initial_prompt=None
+    ):
         if first_prompt_timeout is None:
             first_prompt_timeout = options['x']['dfl_timeout']
 
@@ -94,11 +100,14 @@ class PexpectMixin(object):
         env = os.environ.copy()
         env.update({'LINES': str(rows), 'COLUMNS': str(cols)})
 
-        self._drop_output() # there shouldn't be any output yet but...
-        self.interpreter = pexpect.spawn(cmd, echo=False,
-                                                encoding=self.encoding,
-                                                dimensions=(rows, cols),
-                                                env=env)
+        self._drop_output()  # there shouldn't be any output yet but...
+        self.interpreter = pexpect.spawn(
+            cmd,
+            echo=False,
+            encoding=self.encoding,
+            dimensions=(rows, cols),
+            env=env
+        )
         self.interpreter.delaybeforesend = options['x']['delaybeforesend']
         self.interpreter.delayafterread = None
 
@@ -106,12 +115,18 @@ class PexpectMixin(object):
 
         if wait_first_prompt:
             prompt_re = self.PS1_re if initial_prompt is None else initial_prompt
-            self._expect_prompt(options, timeout=first_prompt_timeout,
-                                prompt_re=prompt_re)
-            self._drop_output() # discard banner and things like that
+            self._expect_prompt(
+                options, timeout=first_prompt_timeout, prompt_re=prompt_re
+            )
+            self._drop_output()  # discard banner and things like that
 
-    def interact(self, send='\n', escape_character=chr(29),
-                                    input_filter=None, output_filter=None): # pragma: no cover
+    def interact(
+        self,
+        send='\n',
+        escape_character=chr(29),
+        input_filter=None,
+        output_filter=None
+    ):  # pragma: no cover
         def ensure_cooked_mode(input_str):
             self._set_cooked_mode(True)
             if input_filter:
@@ -122,9 +137,11 @@ class PexpectMixin(object):
         try:
             if send:
                 self.interpreter.send(send)
-            self.interpreter.interact(escape_character=escape_character,
-                                      input_filter=ensure_cooked_mode,
-                                      output_filter=output_filter)
+            self.interpreter.interact(
+                escape_character=escape_character,
+                input_filter=ensure_cooked_mode,
+                output_filter=output_filter
+            )
         finally:
             termios.tcsetattr(self.interpreter.child_fd, termios.TCSANOW, attr)
 
@@ -133,7 +150,7 @@ class PexpectMixin(object):
             return self._run_impl(example, options)
 
     def _run_impl(self, example, options):
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def _drop_output(self):
         self.last_output = []
@@ -181,15 +198,16 @@ class PexpectMixin(object):
             what's to be done upon each window change.
             '''
         rows, cols = options['geometry']
-        need_change = (self._terminal_default_geometry != (rows, cols) or force)
+        need_change = (
+            self._terminal_default_geometry != (rows, cols) or force
+        )
         if need_change:
             self._change_terminal_geometry(rows, cols, options)
             try:
                 yield
             finally:
                 rows, cols = self._terminal_default_geometry
-                self._change_terminal_geometry(rows, cols,
-                                                options)
+                self._change_terminal_geometry(rows, cols, options)
         else:
             yield
 
@@ -222,7 +240,9 @@ class PexpectMixin(object):
 
         # remove trailing space from each line
         lines_group = (chunk.split('\n') for chunk in chunks)
-        chunks = ('\n'.join(l.rstrip() for l in lines) for lines in lines_group)
+        chunks = (
+            '\n'.join(l.rstrip() for l in lines) for lines in lines_group
+        )
 
         return ''.join(chunks)
 
@@ -257,7 +277,6 @@ class PexpectMixin(object):
             out = self._get_output(options)
             raise TimeoutException(msg, out)
 
-
     def _get_output(self, options):
         if options['term'] == 'dumb':
             out = self._emulate_dumb_terminal(self.last_output)
@@ -266,7 +285,9 @@ class PexpectMixin(object):
         elif options['term'] == 'as-is':
             out = self._emulate_as_is_terminal(self.last_output)
         else:
-            raise TypeError("Unknown terminal type '+term=%s'." % options['term'])
+            raise TypeError(
+                "Unknown terminal type '+term=%s'." % options['term']
+            )
 
         self._drop_output()
         return out
@@ -291,12 +312,11 @@ class PexpectMixin(object):
         # get each line in the Terminal's display and ignore each one that
         # starts with our cookie: those are the "echo" lines that
         # *we* sent to the interpreter and they are not part of *its* output.
-        lines = (line for line in lines
-                               if not line.startswith(cookie))
+        lines = (line for line in lines if not line.startswith(cookie))
 
         return '\n'.join(lines)
 
-    def _set_cooked_mode(self, state): # pragma: no cover
+    def _set_cooked_mode(self, state):  # pragma: no cover
         # code borrowed from ptyprocess/ptyprocess.py, _setecho, and
         # adapted adding more flags to it based in stty(1)
         errmsg = '_set_cooked_mode() may not be called on this platform'
@@ -311,38 +331,47 @@ class PexpectMixin(object):
             raise
 
         input_flags = (
-                       'BRKINT',
-                       'IGNPAR',
-                       'ISTRIP',
-                       'ICRNL',
-                       'IXON',
-                       )
+            'BRKINT',
+            'IGNPAR',
+            'ISTRIP',
+            'ICRNL',
+            'IXON',
+        )
 
-        output_flags = (
-                       'OPOST',
-                       )
+        output_flags = ('OPOST', )
 
         local_flags = (
-                      'ECHO',
-                      'ISIG',
-                      'ICANON',
-                      )
+            'ECHO',
+            'ISIG',
+            'ICANON',
+        )
 
         if state:
-            attr[0] |= reduce(operator.or_,
-                                [getattr(termios, flag_name) for flag_name in input_flags])
-            attr[1] |= reduce(operator.or_,
-                                [getattr(termios, flag_name) for flag_name in output_flags])
-            attr[3] |= reduce(operator.or_,
-                                [getattr(termios, flag_name) for flag_name in local_flags])
+            attr[0] |= reduce(
+                operator.or_,
+                [getattr(termios, flag_name) for flag_name in input_flags]
+            )
+            attr[1] |= reduce(
+                operator.or_,
+                [getattr(termios, flag_name) for flag_name in output_flags]
+            )
+            attr[3] |= reduce(
+                operator.or_,
+                [getattr(termios, flag_name) for flag_name in local_flags]
+            )
         else:
-            attr[0] &= reduce(operator.and_,
-                                [~getattr(termios, flag_name) for flag_name in input_flags])
-            attr[1] &= reduce(operator.and_,
-                                [~getattr(termios, flag_name) for flag_name in output_flags])
-            attr[3] &= reduce(operator.and_,
-                                [~getattr(termios, flag_name) for flag_name in local_flags])
-
+            attr[0] &= reduce(
+                operator.and_,
+                [~getattr(termios, flag_name) for flag_name in input_flags]
+            )
+            attr[1] &= reduce(
+                operator.and_,
+                [~getattr(termios, flag_name) for flag_name in output_flags]
+            )
+            attr[3] &= reduce(
+                operator.and_,
+                [~getattr(termios, flag_name) for flag_name in local_flags]
+            )
 
         try:
             termios.tcsetattr(fd, termios.TCSANOW, attr)
@@ -376,9 +405,10 @@ class PexpectMixin(object):
         try:
             # wait for the prompt, ignore any extra output
             self._expect_prompt(
-                    options,
-                    timeout=options['x']['dfl_timeout'],
-                    prompt_re=self.PS1_re)
+                options,
+                timeout=options['x']['dfl_timeout'],
+                prompt_re=self.PS1_re
+            )
             self._drop_output()
             good = True
         except TimeoutException as ex:
@@ -393,15 +423,15 @@ class PexpectMixin(object):
                     # in 'sync' with the interpreter (no more prompts
                     # are without be read)
                     self._expect_prompt(
-                            options,
-                            timeout=options['x']['dfl_timeout'],
-                            prompt_re=self.PS1_re)
+                        options,
+                        timeout=options['x']['dfl_timeout'],
+                        prompt_re=self.PS1_re
+                    )
                     self._drop_output()
                     cnt += 1
 
-                good = False    # we cannot ensure that we are in sync
+                good = False  # we cannot ensure that we are in sync
             except TimeoutException as ex:
                 self._drop_output()
 
         return good
-

@@ -41,12 +41,14 @@ from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
 
 stability = 'experimental'
 
+
 class JavascriptPromptFinder(ExampleFinder):
     target = 'javascript-prompt'
 
     @constant
     def example_regex(self):
-        return re.compile(r'''
+        return re.compile(
+            r'''
             (?P<snippet>
                 (?:^(?P<indent> [ ]*) (?:>)[ ]  .*)           # PS1 line
                 (?:\n           [ ]*  \.[ ]             .*)*)    # PS2 lines
@@ -56,13 +58,16 @@ class JavascriptPromptFinder(ExampleFinder):
                           (?![ ]*(?:>))      # Not a line starting with PS1
                           .+$\n?              # But any other line
                       )*)
-            ''', re.MULTILINE | re.VERBOSE)
+            ''', re.MULTILINE | re.VERBOSE
+        )
 
     def get_language_of(self, *args, **kargs):
         return 'javascript'
 
     def get_snippet_and_expected(self, match, where):
-        snippet, expected = ExampleFinder.get_snippet_and_expected(self, match, where)
+        snippet, expected = ExampleFinder.get_snippet_and_expected(
+            self, match, where
+        )
 
         snippet = self._remove_prompts(snippet)
         return snippet, expected
@@ -71,24 +76,25 @@ class JavascriptPromptFinder(ExampleFinder):
         lines = snippet.split("\n")
         return '\n'.join(line[2:] for line in lines)
 
+
 class JavascriptParser(ExampleParser):
     language = 'javascript'
 
     @constant
     def example_options_string_regex(self):
-        return re.compile(r'//\s*byexample:\s*([^\n\'"]*)$',
-                                                    re.MULTILINE)
+        return re.compile(r'//\s*byexample:\s*([^\n\'"]*)$', re.MULTILINE)
 
     def extend_option_parser(self, parser):
         pass
+
 
 class JavascriptInterpreter(ExampleRunner, PexpectMixin):
     language = 'javascript'
 
     def __init__(self, verbosity, encoding, **unused):
-        PexpectMixin.__init__(self,
-                                PS1_re = r'node > ',
-                                any_PS_re = r'(?:node > )|(?:\.\.\. )')
+        PexpectMixin.__init__(
+            self, PS1_re=r'node > ', any_PS_re=r'(?:node > )|(?:\.\.\. )'
+        )
 
         self.encoding = encoding
 
@@ -102,11 +108,11 @@ class JavascriptInterpreter(ExampleRunner, PexpectMixin):
         PexpectMixin.interact(self)
 
     def get_default_cmd(self, *args, **kargs):
-        return  "%e %p %a", {
-                    'e': '/usr/bin/env',
-                    'p': 'nodejs',
-                    'a': [abspath(__file__, 'byexample-repl.js')]
-                    }
+        return "%e %p %a", {
+            'e': '/usr/bin/env',
+            'p': 'nodejs',
+            'a': [abspath(__file__, 'byexample-repl.js')]
+        }
 
     def initialize(self, options):
         shebang, tokens = self.get_default_cmd()
@@ -117,10 +123,10 @@ class JavascriptInterpreter(ExampleRunner, PexpectMixin):
         # run!
         self._spawn_interpreter(cmd, options)
 
-        self._drop_output() # discard banner and things like that
+        self._drop_output()  # discard banner and things like that
 
     def shutdown(self):
         self._shutdown_interpreter()
 
     def cancel(self, example, options):
-        return False    # not supported by nodejs
+        return False  # not supported by nodejs

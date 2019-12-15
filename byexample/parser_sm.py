@@ -4,7 +4,6 @@ from .common import constant
 INIT, WS, LIT, TAG, END, TWOTAGS, EXHAUSTED, ERROR = range(8)
 tWS = ('wspaces', 'newlines')
 tLIT = ('wspaces', 'newlines', 'literals')
-
 '''
 >>> from byexample.parser_sm import SM, SM_NormWS, SM_NotNormWS
 >>> import re
@@ -22,8 +21,11 @@ tLIT = ('wspaces', 'newlines', 'literals')
 ...     return r.match(string)
 '''
 
+
 class SM(object):
-    def __init__(self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker):
+    def __init__(
+        self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker
+    ):
         self.capture_tag_regex = capture_tag_regex
         self.capture_tag_split_regex = capture_tag_split_regex
         self.ellipsis_marker = ellipsis_marker
@@ -187,12 +189,14 @@ class SM(object):
         else:
             assert False
 
-        greedy = r'?'   # not greedy
+        greedy = r'?'  # not greedy
         if not name and endline:
-            greedy = r''    # yes, greedy
+            greedy = r''  # yes, greedy
 
-        rx = rx.format(capture=r'?P<%s>' % name.replace('-', '_') if name else r'?:',
-                greedy=greedy)
+        rx = rx.format(
+            capture=r'?P<%s>' % name.replace('-', '_') if name else r'?:',
+            greedy=greedy
+        )
         rc = 0
         return self.emit(charno, rx, rc)
 
@@ -309,9 +313,14 @@ class SM(object):
         charnos, regexs, rcounts = zip(*self.results)
         return regexs, charnos, rcounts, self.tags_by_idx
 
+
 class SM_NormWS(SM):
-    def __init__(self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker):
-        SM.__init__(self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker)
+    def __init__(
+        self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker
+    ):
+        SM.__init__(
+            self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker
+        )
 
     @constant
     def trailing_whitespace_regex(self):
@@ -364,10 +373,11 @@ class SM_NormWS(SM):
             elif ttype == 'tag':
                 self.state = (WS, TAG)
             elif ttype == 'end':
-                charno, _ = self.pull()  # get the position of the wspaces/newlines
-                _, token = self.pull() # get the end token
+                charno, _ = self.pull(
+                )  # get the position of the wspaces/newlines
+                _, token = self.pull()  # get the end token
                 push(charno, token)
-                self.state = END # ignore the first wspaces/newlines token
+                self.state = END  # ignore the first wspaces/newlines token
             else:
                 assert False
         elif self.state == LIT:
@@ -389,7 +399,7 @@ class SM_NormWS(SM):
         elif self.state == TAG:
             assert stash_size == 2
             if ttype in tWS:
-                self.emit_tag(ctx='r', endline=(ttype=='newlines'))
+                self.emit_tag(ctx='r', endline=(ttype == 'newlines'))
                 self.state = WS
             elif ttype == 'literals':
                 self.emit_tag(ctx='0', endline=False)
@@ -403,7 +413,7 @@ class SM_NormWS(SM):
                 assert False
         elif self.state == END:
             assert stash_size == 2
-            assert ttype is None    # next token doesn't exist: tokenizer exhausted
+            assert ttype is None  # next token doesn't exist: tokenizer exhausted
             drop(last=True)
             self.emit_eof(ws='s')
             self.state = EXHAUSTED
@@ -411,14 +421,14 @@ class SM_NormWS(SM):
             assert stash_size == 3
             if ttype in tWS:
                 self.emit_ws(just_one=True)
-                self.emit_tag(ctx='b', endline=(ttype=='newlines'))
+                self.emit_tag(ctx='b', endline=(ttype == 'newlines'))
                 self.state = WS
             elif ttype == 'literals':
                 self.emit_ws()
                 self.emit_tag(ctx='l', endline=False)
                 self.state = LIT
             elif ttype == 'tag':
-                drop() # drop the WS, we will not use it
+                drop()  # drop the WS, we will not use it
                 self.state = TWOTAGS
             elif ttype == 'end':
                 self.emit_ws(just_one=True)
@@ -430,7 +440,7 @@ class SM_NormWS(SM):
             assert stash_size == 3
             self.state = ERROR
             drop(last=True)  # don't care what we read next
-            drop(last=True) # don't care the second tag
+            drop(last=True)  # don't care the second tag
             charno, _ = self.pull()
             msg = "Two consecutive capture tags were found at %ith character. " +\
                   "This is ambiguous."
@@ -621,9 +631,14 @@ class SM_NormWS(SM):
         '''
         return SM.parse(self, expected, tags_enabled)
 
+
 class SM_NotNormWS(SM):
-    def __init__(self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker):
-        SM.__init__(self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker)
+    def __init__(
+        self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker
+    ):
+        SM.__init__(
+            self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker
+        )
 
     @constant
     def trailing_newlines_regex(self):
@@ -669,7 +684,7 @@ class SM_NotNormWS(SM):
         elif self.state == TAG:
             assert stash_size == 2
             if ttype in tLIT:
-                self.emit_tag(ctx='0', endline=(ttype=='newlines'))
+                self.emit_tag(ctx='0', endline=(ttype == 'newlines'))
                 self.state = LIT
             elif ttype == 'tag':
                 self.state = TWOTAGS
@@ -680,7 +695,7 @@ class SM_NotNormWS(SM):
                 assert False
         elif self.state == END:
             assert stash_size == 2
-            assert ttype is None    # next token doesn't exist: tokenizer exhausted
+            assert ttype is None  # next token doesn't exist: tokenizer exhausted
             drop(last=True)
             self.emit_eof(ws='n')
             self.state = EXHAUSTED
@@ -688,7 +703,7 @@ class SM_NotNormWS(SM):
             assert stash_size == 3
             self.state = ERROR
             drop(last=True)  # don't care what we read next
-            drop(last=True) # don't care the second tag
+            drop(last=True)  # don't care the second tag
             charno, _ = self.pull()
             msg = "Two consecutive capture tags were found at %ith character. " +\
                   "This is ambiguous."

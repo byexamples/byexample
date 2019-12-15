@@ -6,8 +6,9 @@ languages ?= python,shell
 pip_bin ?= pip
 
 all:
-	@echo "Usage: make deps"
-	@echo " - deps: install the dependencies for byexample"
+	@echo "Usage: make deps[-dev]"
+	@echo " - deps: install the dependencies for run byexample"
+	@echo " - deps-dev: install the dependencies for run and build byexample"
 	@echo
 	@echo "Usage: make test"
 	@echo "Run all the suite of tests using only Python and Shell."
@@ -41,6 +42,11 @@ all:
 	@echo "Usage: make dist|upload"
 	@echo "Package byexample (dist) and upload it to pypi (upload)"
 	@echo
+	@echo "Usage: make format[-test]"
+	@echo "Format the source code following the PEP 8 style."
+	@echo "Use format-test to verify the complaince without touching"
+	@echo "the code"
+	@echo
 	@echo "Usage: make coverage"
 	@echo "Run several times variants of 'make test' with the coverage"
 	@echo "activated and show the results."
@@ -52,6 +58,9 @@ all:
 
 deps:
 	$(pip_bin) install -e .
+
+deps-dev: deps
+	$(pip_bin) install -r requirements-dev.txt
 
 private-all-test: clean_test
 	@$(python_bin) test/r.py --timeout 90 --pretty $(pretty) --ff -l shell test/test.md
@@ -142,6 +151,17 @@ coverage: clean_test
 	@coverage report --include="byexample/*"
 	@make -s clean_test
 
+#
+##
+
+## Formatting
+#  ==========
+
+format:
+	yapf -vv -i --style=.style.yapf --recursive byexample/
+
+format-test:
+	yapf -vv --style=.style.yapf --diff --recursive byexample/
 #
 ##
 

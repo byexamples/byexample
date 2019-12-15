@@ -1,14 +1,15 @@
 from __future__ import unicode_literals
 from .log import clog, log_context
 import string, re, time
-
 '''
 >>> from byexample.log import init_log_system
 >>> init_log_system()
 '''
 
+
 def regex_name_as_tag_name(name):
     return name.replace('_', '-')
+
 
 class Expected(object):
     def __init__(self, expected_str, regexs, charnos, rcounts, tags_by_idx):
@@ -17,6 +18,7 @@ class Expected(object):
         self.charnos = charnos
         self.rcounts = rcounts
         self.tags_by_idx = tags_by_idx
+
 
 class _LinearExpected(Expected):
     ''' Assume that all the example's tags are of the form .*
@@ -165,7 +167,6 @@ class _LinearExpected(Expected):
 
         self._check_got_output_called = False
 
-
     def check_got_output(self, example, got, options, verbosity):
         self.check_good = False
         self.verbosity = verbosity
@@ -175,7 +176,9 @@ class _LinearExpected(Expected):
         expected_str = example.expected.str
         charnos = example.expected.charnos
 
-        self.check_good = self._linear_matching(regexs, tags_by_idx, charnos, expected_str, got)
+        self.check_good = self._linear_matching(
+            regexs, tags_by_idx, charnos, expected_str, got
+        )
         self._check_got_output_called = True
         return self.check_good
 
@@ -191,15 +194,21 @@ class _LinearExpected(Expected):
         # it is more complex and less safer than _LinearExpected but
         # yield results of much better quality
         if self.check_good:
-            captured = self._regex_expected._get_all_capture_or_none(example, got, options)
+            captured = self._regex_expected._get_all_capture_or_none(
+                example, got, options
+            )
             assert captured != None
 
             return got, captured
 
         else:
-            return self._regex_expected._get_all_capture_as_possible(example, got, options)
+            return self._regex_expected._get_all_capture_as_possible(
+                example, got, options
+            )
 
-    def _linear_matching(self, regexs, tags_by_idx, charnos, expected_str, got):
+    def _linear_matching(
+        self, regexs, tags_by_idx, charnos, expected_str, got
+    ):
         ''' Assume that all (if any) example's capture tags are regex
             of the form '.*'.
             If that's true, then the example will pass if all the literal
@@ -240,6 +249,7 @@ class _LinearExpected(Expected):
 
         return True
 
+
 class _RegexExpected(Expected):
     def __init__(self, *args, **kargs):
         Expected.__init__(self, *args, **kargs)
@@ -247,28 +257,36 @@ class _RegexExpected(Expected):
         self._check_got_output_called = False
 
     def _get_all_capture_or_none(self, example, got, options):
-        r = re.compile(''.join(example.expected.regexs), re.MULTILINE | re.DOTALL)
+        r = re.compile(
+            ''.join(example.expected.regexs), re.MULTILINE | re.DOTALL
+        )
         m = r.match(got)
 
         if m:
             replaced_captures = m.groupdict('')
-            return {regex_name_as_tag_name(n): v
-                                    for n, v in replaced_captures.items()}
+            return {
+                regex_name_as_tag_name(n): v
+                for n, v in replaced_captures.items()
+            }
 
     def _get_all_capture_as_possible(self, example, got, options):
         expected = example.expected
         if not expected.tags_by_idx:
             return expected.str, {}
 
-        captures = list(sorted(n for n in expected.tags_by_idx.values() if n != None))
-        return self._get_captures_by_incremental_match(captures,
-                                      expected.regexs,
-                                      expected.charnos,
-                                      expected.rcounts,
-                                      expected.str,
-                                      got,
-                                      min_rcount = options['x']['min_rcount'],
-                                      timeout = options['x']['dfl_timeout'])
+        captures = list(
+            sorted(n for n in expected.tags_by_idx.values() if n != None)
+        )
+        return self._get_captures_by_incremental_match(
+            captures,
+            expected.regexs,
+            expected.charnos,
+            expected.rcounts,
+            expected.str,
+            got,
+            min_rcount=options['x']['min_rcount'],
+            timeout=options['x']['dfl_timeout']
+        )
 
     def check_got_output(self, example, got, options, verbosity):
         self.check_good = False
@@ -299,8 +317,10 @@ class _RegexExpected(Expected):
             return self._get_all_capture_as_possible(example, got, options)
 
     @log_context('byexample.match')
-    def _get_captures_by_incremental_match(self, captures, expected_regexs,
-            charnos, rcounts, expected, got, min_rcount, timeout):
+    def _get_captures_by_incremental_match(
+        self, captures, expected_regexs, charnos, rcounts, expected, got,
+        min_rcount, timeout
+    ):
         r'''
         Try to replace all the capture groups in the expected by
         the strings found in got.
@@ -444,18 +464,21 @@ class _RegexExpected(Expected):
         '''
 
         regs = expected_regexs
+
         def _compile(regexs):
             return re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
 
         assert len(regs) == len(charnos) == len(rcounts)
 
         best_left_index = 0
-        best_right_index = len(regs)-1
+        best_right_index = len(regs) - 1
 
         timeout_left = timeout / 2.0
         timeout_right = timeout - timeout_left
 
-        clog().debug("Partial Matching:\nGot string to target:\n%s\n", repr(got))
+        clog().debug(
+            "Partial Matching:\nGot string to target:\n%s\n", repr(got)
+        )
         # from left to right, find the left most regex that match
         # a prefix of got by doing an incremental compile/matching
         accum = 0
@@ -473,17 +496,15 @@ class _RegexExpected(Expected):
             accum += rcounts[i]
 
             clog().debug(
-                    "|-->  | best at index % 3i (accum rcount % 3i/%i):\nTrying partial left regex: %s",
-                    i, accum, min_rcount,
-                    repr(''.join(regs[:i+1])))
-
+                "|-->  | best at index % 3i (accum rcount % 3i/%i):\nTrying partial left regex: %s",
+                i, accum, min_rcount, repr(''.join(regs[:i + 1]))
+            )
 
             begin = time.time()
-            m = _compile(regs[:i+1]).match(got)
+            m = _compile(regs[:i + 1]).match(got)
             timeout_left -= (time.time() - begin)
             if m:
-                clog().debug("Match\n% 4i: %s\n",
-                    charnos[i], m.group(0))
+                clog().debug("Match\n% 4i: %s\n", charnos[i], m.group(0))
 
                 if accum >= min_rcount:
                     best_left_index = i
@@ -493,11 +514,11 @@ class _RegexExpected(Expected):
         # in deed will reduce the available timeout on the right
         timeout_right += timeout_left
 
-        left_side = regs[:best_left_index+1]
+        left_side = regs[:best_left_index + 1]
         r = _compile(left_side)
         got_left = r.match(got).group(0)
 
-        left_ends_at = charnos[best_left_index+1]
+        left_ends_at = charnos[best_left_index + 1]
 
         # a 'capture anything' regex between the left and the right side
         # to hold all the rest of the string
@@ -508,14 +529,17 @@ class _RegexExpected(Expected):
 
         buffer_tag_name = buffer_tag_name % i
         if buffer_tag_name in captures:
-            raise Exception("Invalid state. Weird.... After several tries, the buffer tag is still not uniq. Last try was '%s'" % buffer_tag_name)
+            raise Exception(
+                "Invalid state. Weird.... After several tries, the buffer tag is still not uniq. Last try was '%s'"
+                % buffer_tag_name
+            )
 
         buffer_re = '(?P<%s>.*?)' % buffer_tag_name
 
         # now go from the right to the left, add a regex each time
         # to see where the whole regex doesn't match
         accum = 0
-        for i in range(len(regs)-1, best_left_index, -1):
+        for i in range(len(regs) - 1, best_left_index, -1):
             try:
                 if not rcounts[i]:
                     accum = 0
@@ -528,17 +552,19 @@ class _RegexExpected(Expected):
                 accum += rcounts[i]
 
                 clog().debug(
-                        "|  <--| best at index % 3i (accum rcount % 3i/%i):\nTrying partial regex: %s",
-                        i, accum, min_rcount,
-                        repr(''.join(left_side + [buffer_re] + regs[i:])))
+                    "|  <--| best at index % 3i (accum rcount % 3i/%i):\nTrying partial regex: %s",
+                    i, accum, min_rcount,
+                    repr(''.join(left_side + [buffer_re] + regs[i:]))
+                )
 
                 begin = time.time()
                 m = _compile(left_side + [buffer_re] + regs[i:]).match(got)
                 timeout_right -= (time.time() - begin)
                 if m:
                     clog().debug(
-                            "Matched; Buffer between left and right:\n%s\n",
-                            m.group(buffer_tag_name))
+                        "Matched; Buffer between left and right:\n%s\n",
+                        m.group(buffer_tag_name)
+                    )
 
                     if accum >= min_rcount:
                         best_right_index = i
@@ -575,12 +601,14 @@ class _RegexExpected(Expected):
 
         elapsed = timeout - timeout_right
 
-        replaced_captures = {regex_name_as_tag_name(n): v
-                                    for n, v in replaced_captures.items()}
+        replaced_captures = {
+            regex_name_as_tag_name(n): v
+            for n, v in replaced_captures.items()
+        }
         clog().debug(
-                "Incremental Match:\n##Elapsed: %0.2f secs\n##Left: %s\n\n##Middle: %s\n\n##Right: %s\n\n##Captured: %s\n\n##Buffer: %s",
-                elapsed, got_left, middle_part, got_right, repr(replaced_captures), buffer_captured)
+            "Incremental Match:\n##Elapsed: %0.2f secs\n##Left: %s\n\n##Middle: %s\n\n##Right: %s\n\n##Captured: %s\n\n##Buffer: %s",
+            elapsed, got_left, middle_part, got_right, repr(replaced_captures),
+            buffer_captured
+        )
 
         return got_left + middle_part + got_right, replaced_captures
-
-

@@ -5,15 +5,17 @@ from .options import OptionParser, UnrecognizedOption, ExtendOptionParserMixin
 from .expected import _LinearExpected, _RegexExpected
 from .parser_sm import SM_NormWS, SM_NotNormWS
 
+
 def tag_name_as_regex_name(name):
     return name.replace('-', '_')
+
 
 class ExampleParser(ExtendOptionParserMixin):
     def __init__(self, verbosity, encoding, options, **unused):
         ExtendOptionParserMixin.__init__(self)
         self.verbosity = verbosity
-        self.encoding  = encoding
-        self.options   = options
+        self.encoding = encoding
+        self.options = options
 
         self._optparser_extended_cache = None
         self._opts_cache = {}
@@ -35,7 +37,7 @@ class ExampleParser(ExtendOptionParserMixin):
           # ~byexample~ bla bla
 
         '''
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def example_options_as_list(self, string):
         '''
@@ -65,9 +67,9 @@ class ExampleParser(ExtendOptionParserMixin):
         Instead you should use minus '-'.
         '''
         return {
-                'split': re.compile(r"(<[A-Za-z.][A-Za-z0-9:.-]*>)"),
-                'full': re.compile(r"<(?P<name>[A-Za-z.][A-Za-z0-9:.-]*)>"),
-                }
+            'split': re.compile(r"(<[A-Za-z.][A-Za-z0-9:.-]*>)"),
+            'full': re.compile(r"<(?P<name>[A-Za-z.][A-Za-z0-9:.-]*)>"),
+        }
 
     def ellipsis_marker(self):
         return '...'
@@ -84,12 +86,12 @@ class ExampleParser(ExtendOptionParserMixin):
         '''
 
         if not expected:
-            expected = ''   # make sure that it is an empty string
+            expected = ''  # make sure that it is an empty string
 
         if not snippet.endswith('\n'):
-            snippet += '\n' # make sure that we end the code with a newline
-                            # most of the runners use this to flush and
-                            # execute the code
+            snippet += '\n'  # make sure that we end the code with a newline
+            # most of the runners use this to flush and
+            # execute the code
 
         return snippet, expected
 
@@ -100,8 +102,8 @@ class ExampleParser(ExtendOptionParserMixin):
         options.up(local_options)
 
         example.source, example.expected_str = self.process_snippet_and_expected(
-                                                              example.snippet,
-                                                              example.expected_str)
+            example.snippet, example.expected_str
+        )
 
         # the options to customize this example
         example.options = local_options
@@ -113,39 +115,37 @@ class ExampleParser(ExtendOptionParserMixin):
             example.expected_str = example.expected_str.replace(x, '')
 
         expected_regexs, charnos, rcounts, tags_by_idx = self.expected_as_regexs(
-                                                example.expected_str,
-                                                options['tags'],
-                                                options['norm_ws'])
+            example.expected_str, options['tags'], options['norm_ws']
+        )
 
         ExpectedClass = _LinearExpected
 
         expected = ExpectedClass(
-                          # the output expected
-                          expected_str=example.expected_str,
+            # the output expected
+            expected_str=example.expected_str,
 
-                          # expected regex version
-                          regexs=list(expected_regexs),
+            # expected regex version
+            regexs=list(expected_regexs),
 
-                          # where each regex comes from
-                          charnos=list(charnos),
+            # where each regex comes from
+            charnos=list(charnos),
 
-                          # the 'real count' of literals
-                          rcounts=list(rcounts),
+            # the 'real count' of literals
+            rcounts=list(rcounts),
 
-                          # all the regexs that are not literal (tags) indexed
-                          # by their position in the regex list.
-                          # we don't save the regex (use 'regexs' for that),
-                          # instead save the name of the tag or None if it's
-                          # unnamed
-                          tags_by_idx=tags_by_idx,
-                          )
+            # all the regexs that are not literal (tags) indexed
+            # by their position in the regex list.
+            # we don't save the regex (use 'regexs' for that),
+            # instead save the name of the tag or None if it's
+            # unnamed
+            tags_by_idx=tags_by_idx,
+        )
 
         # the source code to execute and the expected
         example.expected = expected
 
         options.down()
         return example
-
 
     def expected_as_regexs(self, expected, tags_enabled, normalize_whitespace):
         '''
@@ -220,9 +220,13 @@ class ExampleParser(ExtendOptionParserMixin):
         capture_tag_split_regex = self.capture_tag_regex()['split']
         ellipsis_marker = self.ellipsis_marker()
         if normalize_whitespace:
-            sm = SM_NormWS(capture_tag_regex, capture_tag_split_regex, ellipsis_marker)
+            sm = SM_NormWS(
+                capture_tag_regex, capture_tag_split_regex, ellipsis_marker
+            )
         else:
-            sm = SM_NotNormWS(capture_tag_regex, capture_tag_split_regex, ellipsis_marker)
+            sm = SM_NotNormWS(
+                capture_tag_regex, capture_tag_split_regex, ellipsis_marker
+            )
 
         return sm.parse(expected, tags_enabled)
 
@@ -247,9 +251,14 @@ class ExampleParser(ExtendOptionParserMixin):
             optlist = self.example_options_as_list(optstring_match.group(1))
 
         if not isinstance(optlist, list):
-            raise ValueError("The option list returned by the parser is not a list!. This probably means that there is a bug in the parser %s." % str(self))
+            raise ValueError(
+                "The option list returned by the parser is not a list!. This probably means that there is a bug in the parser %s."
+                % str(self)
+            )
 
-        return self._extend_parser_and_parse_options_strictly_and_cache(optlist)
+        return self._extend_parser_and_parse_options_strictly_and_cache(
+            optlist
+        )
 
     def _extend_parser_and_parse_options_strictly(self, optlist):
         # we parse the example's options
@@ -261,7 +270,7 @@ class ExampleParser(ExtendOptionParserMixin):
         optparser = self.options['optparser']
         optparser_extended = self.get_extended_option_parser(optparser)
         try:
-          opts = optparser_extended.parse(optlist, strict=True)
+            opts = optparser_extended.parse(optlist, strict=True)
         except UnrecognizedOption as e:
             raise ValueError(str(e))
 
@@ -293,6 +302,7 @@ class ExampleParser(ExtendOptionParserMixin):
             val = self._extend_parser_and_parse_options_strictly(optlist)
             self._opts_cache[tuple(optlist)] = val
             return val
+
 
 # Extra tests
 '''

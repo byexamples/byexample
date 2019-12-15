@@ -18,10 +18,11 @@ except ImportError:
 try:
     # See https://docs.python.org/3.6/library/msvcrt.html
     import msvcrt
+
     def _at_begin(file):
         fpos = file.tell()
         try:
-            file.seek(0,0)
+            file.seek(0, 0)
             yield f
         finally:
             file.seek(fpos, 0)
@@ -54,13 +55,17 @@ except ImportError:
 try:
     # See https://docs.python.org/3/library/fcntl.html#fcntl.flock
     import fcntl
+
     def _acquire_flock_os(file, read_lock):
-        fcntl.lockf(file.fileno(), fcntl.LOCK_SH if read_lock else fcntl.LOCK_EX)
+        fcntl.lockf(
+            file.fileno(), fcntl.LOCK_SH if read_lock else fcntl.LOCK_EX
+        )
 
     def _release_flock_os(file):
         fcntl.lockf(file.fileno(), fcntl.LOCK_UN)
 except ImportError:
     pass
+
 
 @contextlib.contextmanager
 def flock(file, read_lock=False):
@@ -87,6 +92,7 @@ def create_file_new_or_fail(name):
 >>> warnings.filterwarnings('ignore', module='byexample.cache')
 '''
 
+
 class RegexCache(object):
     def __init__(self, filename, disabled=False, cache_verbose=False):
         self.disabled = disabled
@@ -94,8 +100,10 @@ class RegexCache(object):
         if self.disabled:
             return
 
-        warnings.warn("Cache is enabled. This is an *experimental* feature",
-                RuntimeWarning)
+        warnings.warn(
+            "Cache is enabled. This is an *experimental* feature",
+            RuntimeWarning
+        )
 
         try:
             _acquire_flock_os
@@ -103,8 +111,10 @@ class RegexCache(object):
         except NameError:
             # if we cannot prevent race condition due a lack of file locks,
             # disable the cache
-            warnings.warn("Cache will be disabled because the current OS/file system does not support file locks",
-                    RuntimeWarning)
+            warnings.warn(
+                "Cache will be disabled because the current OS/file system does not support file locks",
+                RuntimeWarning
+            )
             self.disabled = True
 
         if filename:
@@ -219,8 +229,10 @@ class RegexCache(object):
         ''' Create an empty cache in disk if doesn't exist yet. '''
         cache = self._new_cache()
         try:
-            clog().info("Cache file '%s' does not exist. Creating a new one...",
-                    self.filename)
+            clog().info(
+                "Cache file '%s' does not exist. Creating a new one...",
+                self.filename
+            )
             with create_file_new_or_fail(self.filename) as f, flock(f):
                 # the open didn't fail, so it *must* be new:
                 # save an empty cache
@@ -230,14 +242,15 @@ class RegexCache(object):
 
         return cache
 
-
     @log_context('byexample.cache')
     def _sync(self, label=""):
         misses = len(self._cache) - self._nkeys
         nohits = self._nkeys - self._hits
 
-        clog().chat("[%s] Cache stats: %i entries %i hits %i misses %i nohits.",
-                     label, len(self._cache), self._hits, misses, nohits)
+        clog().chat(
+            "[%s] Cache stats: %i entries %i hits %i misses %i nohits.", label,
+            len(self._cache), self._hits, misses, nohits
+        )
         if misses and self.filename != None:
             clog().chat("[%s] Cache require sync.", label)
             with open(self.filename, 'rb+') as f, flock(f):
@@ -253,7 +266,7 @@ class RegexCache(object):
 
                 # write to disk the new updated cache, truncate
                 # and shrink it if the new is smaller than the original.
-                f.seek(0,0)
+                f.seek(0, 0)
                 # XXX pickletools.optimize ??
                 pickle.dump(cache, f)
                 f.truncate()
@@ -292,8 +305,10 @@ class RegexCache(object):
 
         '''
         if not isinstance(pattern, (str, bytes)):
-            raise ValueError("Regex pattern must be a string or bytes but it is %s"
-                                % type(pattern))
+            raise ValueError(
+                "Regex pattern must be a string or bytes but it is %s" %
+                type(pattern)
+            )
 
         key = (pattern, flags)
         try:
@@ -307,8 +322,10 @@ class RegexCache(object):
 
     def _pattern_to_bytecode(self, pattern, flags=0):
         if not isinstance(pattern, (str, bytes)):
-            raise ValueError("Regex pattern must be a string or bytes but it is %s"
-                                % type(pattern))
+            raise ValueError(
+                "Regex pattern must be a string or bytes but it is %s" %
+                type(pattern)
+            )
 
         p = sre_parse.parse(pattern, flags)
         code = [i.real for i in sre_compile._code(p, flags)]
@@ -326,11 +343,9 @@ class RegexCache(object):
         for k, i in groupindex.items():
             indexgroup[i] = k
 
-        indexgroup = tuple(indexgroup) # required in Python 3.7 to be a tuple
+        indexgroup = tuple(indexgroup)  # required in Python 3.7 to be a tuple
         return sre_compile._sre.compile(
-            pattern, flags, code,
-            ngroups-1,
-            groupindex, indexgroup
+            pattern, flags, code, ngroups - 1, groupindex, indexgroup
         )
 
     @log_context('byexample.cache')
@@ -345,4 +360,3 @@ class RegexCache(object):
     @log_context('byexample.cache')
     def _unpatch(self, *args, **kargs):
         sre_compile.compile = self._original__sre_compile__compile
-

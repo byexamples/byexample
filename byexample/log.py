@@ -5,6 +5,7 @@ import contextlib
 from .common import colored, highlight_syntax, indent
 from .log_level import TRACE, DEBUG, CHAT, INFO, NOTE, WARNING, ERROR, CRITICAL
 
+
 class XFormatter(Formatter):
     def format(self, record):
         self._cur_record = record
@@ -26,49 +27,49 @@ class XFormatter(Formatter):
         logger = getLogger(name)
 
         color = {
-                DEBUG: 'none',
-                CHAT:  'cyan',
-                INFO:  'cyan',
-                NOTE:  'cyan',
-                WARNING:  'yellow',
-                ERROR:    'red',
-                CRITICAL: 'red',
-                }[lvlno]
+            DEBUG: 'none',
+            CHAT: 'cyan',
+            INFO: 'cyan',
+            NOTE: 'cyan',
+            WARNING: 'yellow',
+            ERROR: 'red',
+            CRITICAL: 'red',
+        }[lvlno]
 
         if lvlno == DEBUG or getattr(record, 'no_marker', False):
             marker = ''
         elif logger.isEnabledFor(DEBUG):
             marker = {
-                    DEBUG: '',
-                    CHAT:  'chat',
-                    INFO:  'info',
-                    NOTE:  'note',
-                    WARNING:  'warn',
-                    ERROR:    'error',
-                    CRITICAL: 'crit',
-                    }[lvlno]
+                DEBUG: '',
+                CHAT: 'chat',
+                INFO: 'info',
+                NOTE: 'note',
+                WARNING: 'warn',
+                ERROR: 'error',
+                CRITICAL: 'crit',
+            }[lvlno]
             marker = "%s:%s" % (marker, self.shorter_name(name))
         elif logger.isEnabledFor(CHAT):
             marker = {
-                    DEBUG: '',
-                    CHAT:  '[i:%s]',
-                    INFO:  '[i:%s]',
-                    NOTE:  '[i:%s]',
-                    WARNING:  '[w:%s]',
-                    ERROR:    '[!:%s]',
-                    CRITICAL: '[!:%s]',
-                    }[lvlno]
+                DEBUG: '',
+                CHAT: '[i:%s]',
+                INFO: '[i:%s]',
+                NOTE: '[i:%s]',
+                WARNING: '[w:%s]',
+                ERROR: '[!:%s]',
+                CRITICAL: '[!:%s]',
+            }[lvlno]
             marker = marker % self.shorter_name(name)
         else:
             marker = {
-                    DEBUG: '',
-                    CHAT:  '[i]',
-                    INFO:  '[i]',
-                    NOTE:  '[i]',
-                    WARNING:  '[w]',
-                    ERROR:    '[!]',
-                    CRITICAL: '[!]',
-                    }[lvlno]
+                DEBUG: '',
+                CHAT: '[i]',
+                INFO: '[i]',
+                NOTE: '[i]',
+                WARNING: '[w]',
+                ERROR: '[!]',
+                CRITICAL: '[!]',
+            }[lvlno]
 
         use_colors = getLogger('byexample').use_colors
         if marker and not getattr(record, 'disable_prefix', False):
@@ -98,9 +99,9 @@ class XFormatter(Formatter):
         if self._cur_logger.isEnabledFor(INFO):
             return Formatter.formatException(self, ei)
         else:
-            return '%s\n\n%s' % (str(ei[1]),
-                                "Rerun with -vvv to get a full stack trace."
-                                )
+            return '%s\n\n%s' % (
+                str(ei[1]), "Rerun with -vvv to get a full stack trace."
+            )
 
 
 class XLogger(Logger):
@@ -173,16 +174,21 @@ class XLogger(Logger):
                 msg += ', {where}'
 
             msg += ':'
-            msg = msg.format(where_default=where_default,
-                             where=where)
+            msg = msg.format(where_default=where_default, where=where)
 
             return self.error(msg, exc_info=True, **kwargs)
         else:
-            return Logger.exception(self, msg, *args, exc_info=exc_info, **kwargs)
+            return Logger.exception(
+                self, msg, *args, exc_info=exc_info, **kwargs
+            )
+
 
 _logger_stack = []
+
+
 def clog():
     return _logger_stack[-1]
+
 
 def log_context(logger_name):
     global _logger_stack
@@ -197,8 +203,11 @@ def log_context(logger_name):
                 return func(*args, **kargs)
             finally:
                 _logger_stack.pop()
+
         return wrapped
+
     return decorator
+
 
 @contextlib.contextmanager
 def log_with(logger_name, child=True):
@@ -214,6 +223,7 @@ def log_with(logger_name, child=True):
         yield current
     finally:
         _logger_stack.pop()
+
 
 class XStreamHandler(logging.StreamHandler):
     def __init__(self, *args, **kargs):
@@ -239,6 +249,7 @@ class XStreamHandler(logging.StreamHandler):
     def release(self):
         return
 
+
 def init_log_system(level=NOTE, use_colors=False):
     global _logger_stack
 
@@ -253,7 +264,7 @@ def init_log_system(level=NOTE, use_colors=False):
     logging.TRACE = TRACE
     logging.addLevelName(TRACE, 'TRACE')
 
-    rlog = getLogger(name='byexample') # root
+    rlog = getLogger(name='byexample')  # root
 
     ch = XStreamHandler(stream=sys.stdout)
 
@@ -273,8 +284,9 @@ def init_log_system(level=NOTE, use_colors=False):
     configure_log_system(default_level=level, use_colors=use_colors)
     rlog.xstream_handler.concerns = None
 
+
 def configure_log_system(default_level=None, use_colors=None, concerns=None):
-    rlog = getLogger(name='byexample') # root
+    rlog = getLogger(name='byexample')  # root
     if default_level is not None:
         rlog.setLevel(default_level)
 
@@ -283,6 +295,7 @@ def configure_log_system(default_level=None, use_colors=None, concerns=None):
 
     if concerns is not None:
         rlog.xstream_handler.concerns = concerns
+
 
 def setLogLevels(levels):
     prev_lvls = {}

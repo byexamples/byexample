@@ -11,9 +11,11 @@ except ImportError:
 
 stability = 'provisional'
 
+
 class _DummyLock(object):
     def __enter__(self):
         return
+
     def __exit__(self, *args):
         pass
 
@@ -23,13 +25,14 @@ class _DummyLock(object):
     def release(self, *args, **kargs):
         pass
 
+
 class SimpleReporter(Concern):
-    target = None # progress
+    target = None  # progress
 
     def __init__(self, verbosity, encoding, jobs, **unused):
         if 'use_progress_bar' in unused and unused['use_progress_bar'] \
                 and progress_bar_available:
-            self.target = None # disable ourselves
+            self.target = None  # disable ourselves
         else:
             self.target = 'progress'
 
@@ -72,17 +75,19 @@ class SimpleReporter(Concern):
 
         msg = '\n'
 
-        elapsed   = max(time.time() - self.begin, 0)
+        elapsed = max(time.time() - self.begin, 0)
         if elapsed < 300:
             elapsed_str = "%0.2f seconds" % elapsed
         elif elapsed < 3600:
-            elapsed_str = "%i minutes, %i seconds" % (elapsed / 60,
-                                                      elapsed % 60)
+            elapsed_str = "%i minutes, %i seconds" % (
+                elapsed / 60, elapsed % 60
+            )
         else:
             # if your examples run in terms of hours you may have
             # a real problem... I desire to you the best of the luck
-            elapsed_str = "%i hours, %i minutes" % ( elapsed / 3600,
-                                                    (elapsed % 3600) / 60)
+            elapsed_str = "%i hours, %i minutes" % (
+                elapsed / 3600, (elapsed % 3600) / 60
+            )
 
         ran_number = self.examplenro
         tot_number = self.num_examples
@@ -94,11 +99,9 @@ class SimpleReporter(Concern):
             status_str = colored("[PASS]", 'green', self.use_colors)
 
         msg += "File %s, %i/%i test ran in %s\n%s Pass: %i Fail: %i Skip: %i\n" % (
-                    self.filepath,
-                    ran_number, tot_number,
-                    elapsed_str,
-                    status_str,
-                    self.good, self.fail, self.skipped)
+            self.filepath, ran_number, tot_number, elapsed_str, status_str,
+            self.good, self.fail, self.skipped
+        )
         self._write(msg)
 
     def skip_example(self, example, options):
@@ -122,14 +125,16 @@ class SimpleReporter(Concern):
         msg += self._error_header(example)
 
         msg += '%s Execution timedout at example %i of %i.\n' % (
-                                    self._bullet('red'),
-                                    self.examplenro, self.num_examples)
+            self._bullet('red'), self.examplenro, self.num_examples
+        )
         msg += 'This could be because the example just ran too slow (try add more time\n' + \
                'with +timeout=<n>) or the example is "syntactically incorrect" and\n' + \
                'the interpreter hang (may be you forgot a parenthesis or something like that?).\n'
 
         if exception.output:
-            msg += 'This is the last output obtained:\n%s\n' % str(exception.output)
+            msg += 'This is the last output obtained:\n%s\n' % str(
+                exception.output
+            )
 
         self._write(msg)
         self.fail += 1
@@ -142,8 +147,7 @@ class SimpleReporter(Concern):
         msg += 'Execution aborted '
         if by_the_user:
             msg += 'by the user '
-        msg += 'at example %i of %i.\n' % (
-                                    self.examplenro, self.num_examples)
+        msg += 'at example %i of %i.\n' % (self.examplenro, self.num_examples)
 
         msg += 'Some resources may had not been cleaned.\n'
         self._write(msg)
@@ -156,8 +160,8 @@ class SimpleReporter(Concern):
         ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
         msg += self._bullet('red') + ' '
         msg += 'Execution of example %i of %i crashed.\n%s\n%s\n' % (
-                                    self.examplenro, self.num_examples,
-                                    tb, ex)
+            self.examplenro, self.num_examples, tb, ex
+        )
         self._write(msg)
 
     def start_parse(self, example, options):
@@ -183,8 +187,8 @@ class SimpleReporter(Concern):
 
         msg += self._bullet('red') + ' '
         msg += 'Parse of example %i of %i failed.\n%s\n' % (
-                                    self.examplenro, self.num_examples,
-                                    ex)
+            self.examplenro, self.num_examples, ex
+        )
         self._write(msg)
 
     def finish_interact(self, exception):
@@ -211,8 +215,9 @@ class SimpleReporter(Concern):
         msg = "\n"
 
         msg += self._error_header(example)
-        msg += differ.output_difference(example, got, self.current_merged_flags,
-                                         self.use_colors)
+        msg += differ.output_difference(
+            example, got, self.current_merged_flags, self.use_colors
+        )
         msg += '\n'
         self._write(msg)
 
@@ -223,7 +228,6 @@ class SimpleReporter(Concern):
             return
 
         self._write(data['msg'], nl=True)
-
 
     def _error_header(self, example):
         if self.header_printed:
@@ -250,14 +254,15 @@ class SimpleReporter(Concern):
         else:
             return sys.exc_info()[2]
 
+
 class ProgressBarReporter(SimpleReporter):
-    target = None # progress
+    target = None  # progress
 
     def __init__(self, verbosity, encoding, jobs, **unused):
         SimpleReporter.__init__(self, verbosity, encoding, jobs, **unused)
         if ('use_progress_bar' in unused and not unused['use_progress_bar']) \
                 or not progress_bar_available:
-            self.target = None # disable ourselves
+            self.target = None  # disable ourselves
         else:
             self.target = 'progress'
 
@@ -274,10 +279,14 @@ class ProgressBarReporter(SimpleReporter):
         if not hasattr(self.bar, 'fp'):
             return
 
-        for pos in range(1, self.jobs+1):
+        for pos in range(1, self.jobs + 1):
             self.bar.moveto(pos)
-            self.bar.fp.write('\r' + (' ' * self.bar.ncols)) # clear printing spaces
-            self.bar.fp.write('\r')  # place cursor back at the beginning of line
+            self.bar.fp.write(
+                '\r' + (' ' * self.bar.ncols)
+            )  # clear printing spaces
+            self.bar.fp.write(
+                '\r'
+            )  # place cursor back at the beginning of line
             self.bar.moveto(-pos)
 
     def _write(self, msg, nl=False):
@@ -304,16 +313,21 @@ class ProgressBarReporter(SimpleReporter):
         SimpleReporter.start(self, examples, runners, filepath, options)
 
         bar_format = '{desc} |{bar}| [{n_fmt}/{total_fmt}{postfix}]'
-        self.bar = tqdm(total=len(examples), file=self.output,
-                             desc=filepath, leave=False,
-                             bar_format=bar_format,
-                             position=position,
-                             disable=None # means disable if the output is not TTY
-                             )
+        self.bar = tqdm(
+            total=len(examples),
+            file=self.output,
+            desc=filepath,
+            leave=False,
+            bar_format=bar_format,
+            position=position,
+            disable=None  # means disable if the output is not TTY
+        )
         self.bar.set_lock(self.write_lock)
 
     def finish(self, failed, user_aborted, crashed, broken, timedout):
-        SimpleReporter.finish(self, failed, user_aborted, crashed, broken, timedout)
+        SimpleReporter.finish(
+            self, failed, user_aborted, crashed, broken, timedout
+        )
         self.bar.close()
         self.bar = None
 
@@ -324,4 +338,3 @@ class ProgressBarReporter(SimpleReporter):
     def skip_example(self, example, options):
         SimpleReporter.skip_example(self, example, options)
         self._update(1)
-

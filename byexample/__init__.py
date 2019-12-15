@@ -2,7 +2,7 @@
 
 __version__ = "9.0.0"
 
-_author  = 'Di Paola Martin'
+_author = 'Di Paola Martin'
 _license = 'GNU GPLv3'
 _url = 'https://byexamples.github.io'
 

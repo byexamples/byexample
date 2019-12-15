@@ -3,11 +3,13 @@ from multiprocessing import Queue, Process
 import signal, contextlib
 from .log import clog, CHAT
 
+
 class Status:
     ok = 0
     failed = 1
     aborted = 2
     error = 3
+
 
 def worker(func, sigint_handler, input, output):
     ''' Generic worker: call <func> for each item pulled from
@@ -22,6 +24,7 @@ def worker(func, sigint_handler, input, output):
         output.put(func(item, sigint_handler))
     output.close()
     output.join_thread()
+
 
 class Jobs(object):
     def __init__(self, njobs):
@@ -46,9 +49,13 @@ class Jobs(object):
         self.input = Queue()
         self.output = Queue()
 
-        self.processes = [Process(target=worker, name=str(n),
-                                             args=(func, self.sigint_handler, self.input, self.output))
-                                             for n in range(njobs)]
+        self.processes = [
+            Process(
+                target=worker,
+                name=str(n),
+                args=(func, self.sigint_handler, self.input, self.output)
+            ) for n in range(njobs)
+        ]
         for p in self.processes:
             p.start()
 
@@ -131,6 +138,7 @@ class Jobs(object):
             '''
         rest = self.spawn_jobs(func, items)
         return self.loop(len(items), rest, fail_fast)
+
 
 @contextlib.contextmanager
 def allow_sigint(handler):

@@ -58,12 +58,14 @@ from byexample.executor import TimeoutException
 
 stability = 'experimental'
 
+
 class ElixirPromptFinder(ExampleFinder):
     target = 'elixir-prompt'
 
     @constant
     def example_regex(self):
-        return re.compile(r'''
+        return re.compile(
+            r'''
             # Snippet consists of one PS1 line iex> and zero or more PS2 lines
             (?P<snippet>
                 (?:^(?P<indent> [ ]*) iex>[ ]       .*)    # PS1 line
@@ -75,13 +77,16 @@ class ElixirPromptFinder(ExampleFinder):
                              (?![ ]*   iex>)      # Not a line starting with PS1
                              .+$\n?               # But any other line
                       )*)
-            ''', re.MULTILINE | re.VERBOSE)
+            ''', re.MULTILINE | re.VERBOSE
+        )
 
     def get_language_of(self, *args, **kargs):
         return 'elixir'
 
     def get_snippet_and_expected(self, match, where):
-        snippet, expected = ExampleFinder.get_snippet_and_expected(self, match, where)
+        snippet, expected = ExampleFinder.get_snippet_and_expected(
+            self, match, where
+        )
 
         snippet, expected = self._remove_prompts(snippet, expected)
 
@@ -98,16 +103,20 @@ class ElixirPromptFinder(ExampleFinder):
         lines = snippet.split("\n")
         return '\n'.join(line[5:] for line in lines), expected
 
+
 class ElixirParser(ExampleParser):
     language = 'elixir'
 
     @constant
     def example_options_string_regex(self):
-        return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
-                                                    re.MULTILINE)
+        return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$', re.MULTILINE)
 
     def extend_option_parser(self, parser):
-        parser.add_flag("elixir-dont-display-hack", default=False, help="required for IEx < 1.9.")
+        parser.add_flag(
+            "elixir-dont-display-hack",
+            default=False,
+            help="required for IEx < 1.9."
+        )
         parser.add_argument("+elixir-expr-print", choices=['auto', 'true', 'false'],
                             default='auto',
                             help='print the expression\'s value (true); ' +\
@@ -138,7 +147,9 @@ class ElixirParser(ExampleParser):
         if self._elixir_print_expected:
             expected_str = self._EXPR_RESULT_RE.sub('', expected_str, count=1)
 
-        return ExampleParser.process_snippet_and_expected(self, snippet, expected_str)
+        return ExampleParser.process_snippet_and_expected(
+            self, snippet, expected_str
+        )
 
     def parse(self, example, concerns):
         example = ExampleParser.parse(self, example, concerns)
@@ -152,13 +163,16 @@ class ElixirParser(ExampleParser):
 
     _EXPR_RESULT_RE = re.compile(r'^=>([ ]*\n| |$)', re.MULTILINE | re.DOTALL)
 
+
 class ElixirInterpreter(ExampleRunner, PexpectMixin):
     language = 'elixir'
 
     def __init__(self, verbosity, encoding, **unused):
-        PexpectMixin.__init__(self,
-                                PS1_re = r'_byexample iex _byexample/iex> ',
-                                any_PS_re = r'_byexample (iex|\.\.\.) _byexample/iex> ')
+        PexpectMixin.__init__(
+            self,
+            PS1_re=r'_byexample iex _byexample/iex> ',
+            any_PS_re=r'_byexample (iex|\.\.\.) _byexample/iex> '
+        )
 
         self.encoding = encoding
 
@@ -194,10 +208,16 @@ class ElixirInterpreter(ExampleRunner, PexpectMixin):
             # We keep a state in _print_expre_activated so we know if we
             # need to switch or not the display suppression.
             if not example._elixir_print_expected and self._print_expre_activated:
-                self._exec_and_wait(r'IEx.configure(inspect: [inspect_fun: fn a,b -> "" end])', options)
+                self._exec_and_wait(
+                    r'IEx.configure(inspect: [inspect_fun: fn a,b -> "" end])',
+                    options
+                )
                 self._print_expre_activated = False
             elif example._elixir_print_expected and not self._print_expre_activated:
-                self._exec_and_wait(r'IEx.configure(inspect: [inspect_fun: fn a,b -> Inspect.inspect(a,b) end])', options)
+                self._exec_and_wait(
+                    r'IEx.configure(inspect: [inspect_fun: fn a,b -> Inspect.inspect(a,b) end])',
+                    options
+                )
                 self._print_expre_activated = True
 
         return self._exec_and_wait(src, options)
@@ -206,14 +226,14 @@ class ElixirInterpreter(ExampleRunner, PexpectMixin):
         PexpectMixin.interact(self)
 
     def get_default_cmd(self, *args, **kargs):
-        return  "%e %p %a", {
-                    'e': '/usr/bin/env',
-                    'p': 'iex',
-                    'a': [
-                            '--dot-iex',
-                            '""',       # do not load any conf file
-                        ]
-                    }
+        return "%e %p %a", {
+            'e': '/usr/bin/env',
+            'p': 'iex',
+            'a': [
+                '--dot-iex',
+                '""',  # do not load any conf file
+            ]
+        }
 
     def initialize(self, options):
         shebang, tokens = self.get_default_cmd()
@@ -226,18 +246,25 @@ class ElixirInterpreter(ExampleRunner, PexpectMixin):
 
         # run!
         options.up()
-        options['geometry'] = (max(options['geometry'][0], 128), max(options['geometry'][1], 128))
-        self._spawn_interpreter(cmd, options, initial_prompt=r'iex\(\d+\)> ' )
+        options['geometry'] = (
+            max(options['geometry'][0], 128), max(options['geometry'][1], 128)
+        )
+        self._spawn_interpreter(cmd, options, initial_prompt=r'iex\(\d+\)> ')
         options.down()
         self._drop_output()
 
-        self._exec_and_wait(r'IEx.configure(default_prompt: "_byexample %prefix _byexample/iex>")', options)
+        self._exec_and_wait(
+            r'IEx.configure(default_prompt: "_byexample %prefix _byexample/iex>")',
+            options
+        )
 
         # Set a smaller width to force the pretty print of IEx to put some
         # new lines
         self._exec_and_wait(r'IEx.configure(inspect: [width: 32])', options)
 
-        self._exec_and_wait(r'IEx.configure(colors: [enabled: false])', options)
+        self._exec_and_wait(
+            r'IEx.configure(colors: [enabled: false])', options
+        )
 
     def _change_terminal_geometry(self, rows, cols, options):
         raise Exception("This should never happen")

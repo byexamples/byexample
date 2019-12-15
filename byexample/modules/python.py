@@ -32,12 +32,14 @@ from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
 
 stability = 'stable'
 
+
 class PythonPromptFinder(ExampleFinder):
     target = 'python-prompt'
 
     @constant
     def example_regex(self):
-        return re.compile(r'''
+        return re.compile(
+            r'''
             # Snippet consists of a PS1 line >>>
             # followed by zero or more PS2 lines.
             (?P<snippet>
@@ -50,13 +52,16 @@ class PythonPromptFinder(ExampleFinder):
                           (?![ ]*>>>)      # Not a line starting with PS1
                          .+$\n?            # But any other line
                       )*)
-            ''', re.MULTILINE | re.VERBOSE)
+            ''', re.MULTILINE | re.VERBOSE
+        )
 
     def get_language_of(self, *args, **kargs):
         return 'python'
 
     def get_snippet_and_expected(self, match, where):
-        snippet, expected = ExampleFinder.get_snippet_and_expected(self, match, where)
+        snippet, expected = ExampleFinder.get_snippet_and_expected(
+            self, match, where
+        )
 
         snippet = self._remove_prompts(snippet)
         return snippet, expected
@@ -95,7 +100,6 @@ class PythonPromptFinder(ExampleFinder):
 #
 # I copied the license too for the records.
 
-
 # Module doctest.
 # Released to the public domain 16-Jan-2001, by Tim Peters (tim@python.org).
 # Major enhancements and refactoring by:
@@ -103,7 +107,6 @@ class PythonPromptFinder(ExampleFinder):
 #     Edward Loper
 
 # Provided as-is; use at your own risk; no warranty; no promises; enjoy!
-
 
 # A regular expression for handling `want` strings that contain
 # expected exceptions.  It divides `want` into three pieces:
@@ -114,7 +117,8 @@ class PythonPromptFinder(ExampleFinder):
 # `msg` may have multiple lines.  We assume/require that the
 # exception message is the first non-indented line starting with a word
 # character following the traceback header line.
-_EXCEPTION_RE = re.compile(r"""
+_EXCEPTION_RE = re.compile(
+    r"""
     # Grab the traceback header.  Different versions of Python have
     # said different things on the first traceback line.
     ^(?P<hdr> Traceback\ \(
@@ -125,7 +129,8 @@ _EXCEPTION_RE = re.compile(r"""
     \s* $                # toss trailing whitespace on the header.
     (?P<stack> .*?)      # don't blink: absorb stuff until...
     ^ (?P<msg> \w+ .*)   #     a line *starts* with alphanum.
-    """, re.VERBOSE | re.MULTILINE | re.DOTALL)
+    """, re.VERBOSE | re.MULTILINE | re.DOTALL
+)
 
 #
 #
@@ -134,6 +139,7 @@ _EXCEPTION_RE = re.compile(r"""
 ###############################################################################
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : #
 ###############################################################################
+
 
 def _example_options_string_regex_for(compatibility_mode):
     # anything of the form:
@@ -146,13 +152,14 @@ def _example_options_string_regex_for(compatibility_mode):
         #   #  byexample:  +FOO -BAR +ZAZ=42
         keyword = r'byexample'
 
-    return re.compile(r'#\s*%s:\s*([^\n\'"]*)$' % keyword,
-                                                re.MULTILINE)
+    return re.compile(r'#\s*%s:\s*([^\n\'"]*)$' % keyword, re.MULTILINE)
+
+
 class PythonParser(ExampleParser):
     language = 'python'
 
     # make this to cache the regexs
-    _blankline_tag_re = re.compile(r'^<BLANKLINE>$', re.MULTILINE|re.DOTALL)
+    _blankline_tag_re = re.compile(r'^<BLANKLINE>$', re.MULTILINE | re.DOTALL)
     _opts_re_for_noncomp = _example_options_string_regex_for(False)
     _opts_re_for_comp = _example_options_string_regex_for(True)
 
@@ -169,20 +176,66 @@ class PythonParser(ExampleParser):
         Add a few extra options and if self.compatibility_mode is True,
         add all the Python doctest's options.
         '''
-        parser.add_flag("py-doctest", default=False, help="enable the compatibility with doctest.")
-        parser.add_flag("py-pretty-print", default=True, help="enable the pretty print enhancement.")
-        parser.add_flag("py-remove-empty-lines", default=True, help="enable the deletion of empty lines (enabled by default).")
+        parser.add_flag(
+            "py-doctest",
+            default=False,
+            help="enable the compatibility with doctest."
+        )
+        parser.add_flag(
+            "py-pretty-print",
+            default=True,
+            help="enable the pretty print enhancement."
+        )
+        parser.add_flag(
+            "py-remove-empty-lines",
+            default=True,
+            help="enable the deletion of empty lines (enabled by default)."
+        )
 
         if getattr(self, 'compatibility_mode', True):
-            parser.add_flag("NORMALIZE_WHITESPACE", default=False, help="[doctest] alias for +norm-ws.")
-            parser.add_flag("SKIP", default=False, help="[doctest] alias for +skip.")
-            parser.add_flag("ELLIPSIS", default=False, help="[doctest] enables the ... wildcard.")
-            parser.add_flag("DONT_ACCEPT_BLANKLINE", default=False, help="[doctest] take <BLANKLINE> as literal.")
-            parser.add_flag("DONT_ACCEPT_TRUE_FOR_1", default=False, help="[doctest] ignored.")
-            parser.add_flag("IGNORE_EXCEPTION_DETAIL", default=False, help="[doctest] ignore the exception details.")
-            parser.add_flag("REPORT_UDIFF", default=False, help="[doctest] alias for +diff unified.")
-            parser.add_flag("REPORT_CDIFF", default=False, help="[doctest] alias for +diff context.")
-            parser.add_flag("REPORT_NDIFF", default=False, help="[doctest] alias for +diff ndiff.")
+            parser.add_flag(
+                "NORMALIZE_WHITESPACE",
+                default=False,
+                help="[doctest] alias for +norm-ws."
+            )
+            parser.add_flag(
+                "SKIP", default=False, help="[doctest] alias for +skip."
+            )
+            parser.add_flag(
+                "ELLIPSIS",
+                default=False,
+                help="[doctest] enables the ... wildcard."
+            )
+            parser.add_flag(
+                "DONT_ACCEPT_BLANKLINE",
+                default=False,
+                help="[doctest] take <BLANKLINE> as literal."
+            )
+            parser.add_flag(
+                "DONT_ACCEPT_TRUE_FOR_1",
+                default=False,
+                help="[doctest] ignored."
+            )
+            parser.add_flag(
+                "IGNORE_EXCEPTION_DETAIL",
+                default=False,
+                help="[doctest] ignore the exception details."
+            )
+            parser.add_flag(
+                "REPORT_UDIFF",
+                default=False,
+                help="[doctest] alias for +diff unified."
+            )
+            parser.add_flag(
+                "REPORT_CDIFF",
+                default=False,
+                help="[doctest] alias for +diff context."
+            )
+            parser.add_flag(
+                "REPORT_NDIFF",
+                default=False,
+                help="[doctest] alias for +diff ndiff."
+            )
 
         return parser
 
@@ -198,12 +251,16 @@ class PythonParser(ExampleParser):
         # fake the two compatibility mode (True and False)
         # and build an extended parser for each mode
         self.compatibility_mode = True
-        tmp[self.compatibility_mode] = ExtendOptionParserMixin.get_extended_option_parser(
-                                                self, parent_parser, **kw)
+        tmp[self.compatibility_mode
+            ] = ExtendOptionParserMixin.get_extended_option_parser(
+                self, parent_parser, **kw
+            )
 
         self.compatibility_mode = False
-        tmp[self.compatibility_mode] = ExtendOptionParserMixin.get_extended_option_parser(
-                                                self, parent_parser, **kw)
+        tmp[self.compatibility_mode
+            ] = ExtendOptionParserMixin.get_extended_option_parser(
+                self, parent_parser, **kw
+            )
 
         # restore the compatibility mode (even if it was unset)
         if original_compatibility_mode == None:
@@ -304,19 +361,21 @@ class PythonParser(ExampleParser):
         return options
 
     def extract_cmdline_options(self, opts_from_cmdline):
-        return self._double_parse(ExampleParser.extract_cmdline_options,
-                                    args=(self, opts_from_cmdline),
-                                    kwargs={})
-
+        return self._double_parse(
+            ExampleParser.extract_cmdline_options,
+            args=(self, opts_from_cmdline),
+            kwargs={}
+        )
 
     def extract_options(self, snippet):
-        return self._double_parse(ExampleParser.extract_options,
-                                    args=(self, snippet),
-                                    kwargs={})
+        return self._double_parse(
+            ExampleParser.extract_options, args=(self, snippet), kwargs={}
+        )
 
     def process_snippet_and_expected(self, snippet, expected):
-        snippet, expected = ExampleParser.process_snippet_and_expected(self,
-                                            snippet, expected)
+        snippet, expected = ExampleParser.process_snippet_and_expected(
+            self, snippet, expected
+        )
 
         expected = self._mutate_expected_based_on_doctest_flags(expected)
         snippet = self._remove_empty_line_if_enabled(snippet)
@@ -335,7 +394,9 @@ class PythonParser(ExampleParser):
                 # contains strings like <label> that may confuse byexample and
                 # or the user
                 if self.capture_tag_regex()['full'].search(expected_str):
-                    clog().warn("The expected strings has '<label>' strings that will not be considered literal but as capture tags.")
+                    clog().warn(
+                        "The expected strings has '<label>' strings that will not be considered literal but as capture tags."
+                    )
 
             if options['ELLIPSIS']:
                 ellipsis_tag = '<%s>' % self.ellipsis_marker()
@@ -389,7 +450,7 @@ class PythonParser(ExampleParser):
             filtered = []
             lines = snippet.split("\n")
             for i, line in enumerate(lines[:-1]):
-                if line or (not lines[i+1].startswith(" ") and lines[i+1]):
+                if line or (not lines[i + 1].startswith(" ") and lines[i + 1]):
                     filtered.append(line)
 
             filtered.append(lines[-1])
@@ -397,6 +458,7 @@ class PythonParser(ExampleParser):
 
             return '\n'.join(lines)
         return snippet
+
 
 class PythonInterpreter(ExampleRunner, PexpectMixin):
     language = 'python'
@@ -407,9 +469,9 @@ class PythonInterpreter(ExampleRunner, PexpectMixin):
         self._PS1 = r'/byexample/py/ps1> '
         self._PS2 = r'/byexample/py/ps2> '
 
-        PexpectMixin.__init__(self,
-                                PS1_re = self._PS1,
-                                any_PS_re = r'/byexample/py/ps\d> ')
+        PexpectMixin.__init__(
+            self, PS1_re=self._PS1, any_PS_re=r'/byexample/py/ps\d> '
+        )
 
     def get_default_cmd(self, pretty_print, columns, *args, **kargs):
         # Important: do not use a single quote ' in the following python code
@@ -447,13 +509,17 @@ del sys
 del _byexample_pprint
 ''' % (self._PS1, self._PS2, pretty_print, columns)
 
-        return  "%e %p %a", {
-                    'e': "/usr/bin/env",
-                    'p': "python",
-                    'a': [
-                            "-i", # mean interactive, run -c arg and continue running
-                            "-c", change_prompts,  # run this before anything else
-                     ]}
+        return "%e %p %a", {
+            'e':
+            "/usr/bin/env",
+            'p':
+            "python",
+            'a': [
+                "-i",  # mean interactive, run -c arg and continue running
+                "-c",
+                change_prompts,  # run this before anything else
+            ]
+        }
 
     def run(self, example, options):
         return PexpectMixin._run(self, example, options)
@@ -464,7 +530,9 @@ del _byexample_pprint
     def _change_terminal_geometry(self, rows, cols, options):
         # update the pretty printer with the new columns value
         source = '__byexample_pretty_print.update_width(%i)' % cols
-        self._exec_and_wait(source, options, timeout=options['x']['dfl_timeout'])
+        self._exec_and_wait(
+            source, options, timeout=options['x']['dfl_timeout']
+        )
         PexpectMixin._change_terminal_geometry(self, rows, cols, options)
 
     def interact(self, example, options):
@@ -476,7 +544,9 @@ del _byexample_pprint
         pretty_print = (py_doctest and py_pretty_print) \
                         or not py_doctest
 
-        shebang, tokens = self.get_default_cmd(pretty_print, options['geometry'][1])
+        shebang, tokens = self.get_default_cmd(
+            pretty_print, options['geometry'][1]
+        )
         shebang = options['shebangs'].get(self.language, shebang)
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
