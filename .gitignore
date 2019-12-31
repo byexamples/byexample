@@ -10,3 +10,4 @@ todo
 .fnames.tmp
 .flinks.tmp
 test/ds/some.log
+test/ds/django.conf
