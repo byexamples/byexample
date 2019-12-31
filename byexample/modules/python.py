@@ -473,53 +473,42 @@ class PythonInterpreter(ExampleRunner, PexpectMixin):
             self, PS1_re=self._PS1, any_PS_re=r'/byexample/py/ps\d> '
         )
 
-    def get_default_cmd(self, pretty_print, columns, *args, **kargs):
-        # Important: do not use a single quote ' in the following python code
-        # it will break it in real hard ways to debug.
-        change_prompts = r'''
-import sys
-import pprint as _byexample_pprint
-
-# change the prompts
-sys.ps1="%s"
-sys.ps2="%s"
-
-if %s:
-    class __ByexamplePrettyPrint(_byexample_pprint.PrettyPrinter):
-        def __init__(self, *args, **kargs):
-            import sys, re
-            import builtins
-
-            self.super = _byexample_pprint.PrettyPrinter
-            self.super.__init__(self, *args, **kargs)
-
-        def update_width(self, width):
-            self._width = int(width)
-
-    __byexample_pretty_print = __ByexamplePrettyPrint(indent=1, width=%i, depth=None)
-    del __ByexamplePrettyPrint
-
-    # change the displayhook to use pprint instead of repr
-    sys.displayhook = lambda s: (
-                    None if s is None
-                    else __byexample_pretty_print.pprint(s))
-
-# remove introduced symbols
-del sys
-del _byexample_pprint
-''' % (self._PS1, self._PS2, pretty_print, columns)
-
+    def get_default_cmd(self, *args, **kargs):
         return "%e %p %a", {
-            'e':
-            "/usr/bin/env",
-            'p':
-            "python",
+            'e': "/usr/bin/env",
+            'p': "python",
             'a': [
-                "-i",  # mean interactive, run -c arg and continue running
-                "-c",
-                change_prompts,  # run this before anything else
+                "-i",  # mean interactive, even if we run a script
             ]
         }
+
+    def conf_pretty_print(self, columns, options):
+        # Important: do not use a single quote ' in the following python code
+        # it will break it in real hard ways to debug.
+        # Also, code all this without any empty line: we are sending raw input
+        # to Python without processing it with PythonParser so we must be
+        # careful
+        change_prompts = r'''
+import sys as _byexample_sys
+import pprint as _byexample_pprint
+if True:
+    class __ByexamplePrettyPrint(_byexample_pprint.PrettyPrinter):
+        def __init__(self, *args, **kargs):
+            s = _byexample_pprint.PrettyPrinter
+            s.__init__(self, *args, **kargs)
+        def update_width(self, width):
+            self._width = int(width)
+    __byexample_pretty_print = __ByexamplePrettyPrint(indent=1, width=%i, depth=None)
+    del __ByexamplePrettyPrint
+    # change the displayhook to use pprint instead of repr
+    _byexample_sys.displayhook = lambda s: (
+                    None if s is None
+                    else __byexample_pretty_print.pprint(s))
+''' % (columns)
+
+        self._exec_and_wait(
+            change_prompts, options, timeout=options['x']['dfl_timeout']
+        )
 
     def run(self, example, options):
         return PexpectMixin._run(self, example, options)
@@ -544,15 +533,26 @@ del _byexample_pprint
         pretty_print = (py_doctest and py_pretty_print) \
                         or not py_doctest
 
-        shebang, tokens = self.get_default_cmd(
-            pretty_print, options['geometry'][1]
-        )
+        shebang, tokens = self.get_default_cmd()
         shebang = options['shebangs'].get(self.language, shebang)
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
         # run!
-        self._spawn_interpreter(cmd, options)
+        self._spawn_interpreter(cmd, options, initial_prompt=r'>>> ')
+
+        # change the prompts in the first line so by the moment that we
+        # wait for its completion we will be waiting for PS1 and PS2, the
+        # new prompts
+        self._exec_and_wait(
+            r'import sys; sys.ps1="%s" ; sys.ps2="%s"; del sys' %
+            (self._PS1, self._PS2),
+            options,
+            timeout=options['x']['dfl_timeout']
+        )
+
+        if pretty_print:
+            self.conf_pretty_print(options['geometry'][1], options)
 
     def shutdown(self):
         self._shutdown_interpreter()
