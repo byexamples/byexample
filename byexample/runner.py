@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 import re, pexpect, time, termios, operator, os, itertools, contextlib
 from functools import reduce, partial
 from .executor import TimeoutException
-from .common import tohuman, ShebangTemplate
+from .common import tohuman, ShebangTemplate, Countdown
 
 from pyte import Stream, Screen
 
@@ -165,13 +165,14 @@ class PexpectMixin(object):
         if timeout == None:
             timeout = options['timeout']
 
+        cdown = Countdown(timeout)
         lines = source.split('\n')
         for line in lines[:-1]:
             self.interpreter.sendline(line)
 
-            begin = time.time()
+            cdown.start()
             self._expect_prompt(options, timeout)
-            timeout -= max(time.time() - begin, 0)
+            timeout = cdown.stop().left()
 
         self.interpreter.sendline(lines[-1])
         self._expect_prompt(options, timeout, prompt_re=self.PS1_re)
