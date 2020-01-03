@@ -250,11 +250,16 @@ class PexpectMixin(object):
     def _emulate_as_is_terminal(self, chunks):
         return ''.join((self._universal_new_lines(chunk) for chunk in chunks))
 
-    def _expect_prompt(self, options, timeout, prompt_re=None):
+    def _expect_prompt(self, options, timeout, prompt_re=None, earlier_re=None):
         ''' Wait for a <prompt_re> (any self.any_PS_re if <prompt_re> is None)
             and raise a timeout if we cannot find one.
 
-            After the successful expect, collect the 'before' output into
+            If <earlier_re> is given, wait it along with the prompt: if it
+            is found before the prompt, _expect_prompt will return False,
+            otherwise will return True (or raise an exception if a timeout
+            happens)
+
+            During the waiting, collect the 'before' output into
             self.last_output
         '''
         if timeout == None:
@@ -266,8 +271,13 @@ class PexpectMixin(object):
         if not prompt_re:
             prompt_re = self.any_PS_re
 
-        expect = [prompt_re, pexpect.TIMEOUT]
-        PS_found, Timeout = range(len(expect))
+        expect = [prompt_re, pexpect.TIMEOUT, earlier_re]
+        PS_found, Timeout, Earlier = range(len(expect))
+
+        # remove it if it was actually None (adding it before and
+        # removing it now is weird but it makes the code easier and shorter)
+        if earlier_re is None:
+            del expect[-1]
 
         what = self.interpreter.expect(expect, timeout=timeout)
         self.last_output.append(self.interpreter.before)
@@ -277,6 +287,11 @@ class PexpectMixin(object):
             msg = msg % ''.join(self.last_output)[-1000:]
             out = self._get_output(options)
             raise TimeoutException(msg, out)
+
+        elif what == Earlier:
+            return False
+
+        return True
 
     def _get_output(self, options):
         if options['term'] == 'dumb':
