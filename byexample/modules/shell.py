@@ -25,7 +25,7 @@ Example:
 
 from __future__ import unicode_literals
 import re, pexpect, sys, time
-from byexample.common import constant
+from byexample.common import constant, Countdown
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
 from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
@@ -157,7 +157,7 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
                 # wait for the prompt, ignore any extra output
                 self._expect_prompt(
                     options,
-                    timeout=options['x']['dfl_timeout'],
+                    countdown=Countdown(options['x']['dfl_timeout']),
                     prompt_re=self.PS1_re
                 )
 
@@ -165,22 +165,24 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
                 return out
             raise
 
-    def _expect_prompt(self, options, timeout, prompt_re=None):
+    def _expect_prompt(self, options, countdown, prompt_re=None):
         if options['stop_on_silence'] is not False:
-            silence_timeout = options['stop_on_silence']
             prev = 0
             while 1:
+                tmp = min(options['stop_on_silence'], countdown.left())
+                silence_countdown = Countdown(tmp)
                 try:
-                    begin = time.time()
-                    return PexpectMixin._expect_prompt(
-                        self, options, silence_timeout, prompt_re
-                    )
+                    countdown.start()
+                    try:
+                        return PexpectMixin._expect_prompt(
+                            self, options, silence_countdown, prompt_re
+                        )
+                    finally:
+                        countdown.stop()
                 except TimeoutException as ex:
-                    timeout -= max(time.time() - begin, 0)
-                    silence_timeout = min(silence_timeout, timeout)
-
                     # a real timeout
-                    if timeout <= 0 or silence_timeout <= 0:
+                    if countdown.did_run_out(
+                    ) or silence_countdown.did_run_out():
                         raise
 
                     # inactivity or silence detected
@@ -191,7 +193,7 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
 
         else:
             return PexpectMixin._expect_prompt(
-                self, options, timeout, prompt_re
+                self, options, countdown, prompt_re
             )
 
     def interact(self, example, options):
