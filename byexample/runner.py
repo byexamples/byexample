@@ -116,7 +116,9 @@ class PexpectMixin(object):
         if wait_first_prompt:
             prompt_re = self.PS1_re if initial_prompt is None else initial_prompt
             self._expect_prompt(
-                options, timeout=first_prompt_timeout, prompt_re=prompt_re
+                options,
+                countdown=Countdown(first_prompt_timeout),
+                prompt_re=prompt_re
             )
             self._drop_output()  # discard banner and things like that
 
@@ -165,17 +167,14 @@ class PexpectMixin(object):
         if timeout == None:
             timeout = options['timeout']
 
-        cdown = Countdown(timeout)
+        countdown = Countdown(timeout)
         lines = source.split('\n')
         for line in lines[:-1]:
             self.interpreter.sendline(line)
-
-            cdown.start()
-            self._expect_prompt(options, timeout)
-            timeout = cdown.stop().left()
+            self._expect_prompt(options, countdown)
 
         self.interpreter.sendline(lines[-1])
-        self._expect_prompt(options, timeout, prompt_re=self.PS1_re)
+        self._expect_prompt(options, countdown, prompt_re=self.PS1_re)
 
         return self._get_output(options)
 
@@ -250,7 +249,7 @@ class PexpectMixin(object):
     def _emulate_as_is_terminal(self, chunks):
         return ''.join((self._universal_new_lines(chunk) for chunk in chunks))
 
-    def _expect_prompt(self, options, timeout, prompt_re=None, earlier_re=None):
+    def _expect_prompt(self, options, countdown, prompt_re=None, earlier_re=None):
         ''' Wait for a <prompt_re> (any self.any_PS_re if <prompt_re> is None)
             and raise a timeout if we cannot find one.
 
@@ -262,11 +261,17 @@ class PexpectMixin(object):
             During the waiting, collect the 'before' output into
             self.last_output
         '''
-        if timeout == None:
-            timeout = options['timeout']
+        if countdown == None:
+            countdown = Countdown(options['timeout'])
+
+        if not isinstance(countdown, Countdown):
+            raise TypeError(
+                "Invalid object for countdown: %s" % type(countdown)
+            )
 
         # timeout of 0 or negative means do not wait, just do a single read and return back
-        timeout = max(timeout, 0)
+        timeout = countdown.left()
+        assert timeout >= 0
 
         if not prompt_re:
             prompt_re = self.any_PS_re
@@ -279,7 +284,10 @@ class PexpectMixin(object):
         if earlier_re is None:
             del expect[-1]
 
+        countdown.start()
         what = self.interpreter.expect(expect, timeout=timeout)
+        countdown.stop()
+
         self.last_output.append(self.interpreter.before)
 
         if what == Timeout:
@@ -422,7 +430,7 @@ class PexpectMixin(object):
             # wait for the prompt, ignore any extra output
             self._expect_prompt(
                 options,
-                timeout=options['x']['dfl_timeout'],
+                countdown=Countdown(options['x']['dfl_timeout']),
                 prompt_re=self.PS1_re
             )
             self._drop_output()
@@ -440,7 +448,7 @@ class PexpectMixin(object):
                     # are without be read)
                     self._expect_prompt(
                         options,
-                        timeout=options['x']['dfl_timeout'],
+                        countdown=Countdown(options['x']['dfl_timeout']),
                         prompt_re=self.PS1_re
                     )
                     self._drop_output()
