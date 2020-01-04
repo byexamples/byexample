@@ -220,9 +220,11 @@ class PexpectMixin(object):
         self._screen.resize(rows, cols)
         self.interpreter.setwinsize(rows, cols)
 
+    UNIV_NL = re.compile('\r\n|\r')
+
     @staticmethod
     def _universal_new_lines(out):
-        return '\n'.join(out.splitlines())
+        return re.sub(PexpectMixin.UNIV_NL, '\n', out)
 
     def _emulate_ansi_terminal(self, chunks, join=True):
         for chunk in chunks:
