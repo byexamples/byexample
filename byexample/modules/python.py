@@ -393,7 +393,7 @@ class PythonParser(ExampleParser):
                 # we will enable the capture mode, check and warn if the example
                 # contains strings like <label> that may confuse byexample and
                 # or the user
-                if self.capture_tag_regex()['full'].search(expected_str):
+                if self.capture_tag_regexs().for_capture.search(expected_str):
                     clog().warn(
                         "The expected strings has '<label>' strings that will not be considered literal but as capture tags."
                     )

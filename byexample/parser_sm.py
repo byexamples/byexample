@@ -6,15 +6,18 @@ tWS = ('wspaces', 'newlines')
 tLIT = ('wspaces', 'newlines', 'literals')
 '''
 >>> from byexample.parser_sm import SM, SM_NormWS, SM_NotNormWS
+>>> from byexample.parser import ExampleParser
 >>> import re
+>>> from functools import partial
 
->>> _tag_regex = re.compile(r"<(?P<name>[A-Za-z.][A-Za-z0-9:.-]*)>")
->>> _tag_split_regex = re.compile(r"(<[A-Za-z.][A-Za-z0-9:.-]*>)")
->>> _ellipsis_marker = '...'
+>>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
 
->>> sm = SM(_tag_regex, _tag_split_regex, _ellipsis_marker)
->>> sm_norm_ws = SM_NormWS(_tag_regex, _tag_split_regex, _ellipsis_marker)
->>> sm_lit = SM_NotNormWS(_tag_regex, _tag_split_regex, _ellipsis_marker)
+>>> cap_regexs = parser.capture_tag_regexs()
+>>> ellipsis_marker = parser.ellipsis_marker()
+
+>>> sm = SM(cap_regexs, ellipsis_marker)
+>>> sm_norm_ws = SM_NormWS(cap_regexs, ellipsis_marker)
+>>> sm_lit = SM_NotNormWS(cap_regexs, ellipsis_marker)
 
 >>> def match(regexs, string):
 ...     r = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
@@ -23,11 +26,9 @@ tLIT = ('wspaces', 'newlines', 'literals')
 
 
 class SM(object):
-    def __init__(
-        self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker
-    ):
-        self.capture_tag_regex = capture_tag_regex
-        self.capture_tag_split_regex = capture_tag_split_regex
+    def __init__(self, capture_tag_regexs, ellipsis_marker):
+        self.capture_tag_regex = capture_tag_regexs.for_capture
+        self.capture_tag_split_regex = capture_tag_regexs.for_split
         self.ellipsis_marker = ellipsis_marker
 
         self.reset()
@@ -315,12 +316,8 @@ class SM(object):
 
 
 class SM_NormWS(SM):
-    def __init__(
-        self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker
-    ):
-        SM.__init__(
-            self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker
-        )
+    def __init__(self, capture_tag_regexs, ellipsis_marker):
+        SM.__init__(self, capture_tag_regexs, ellipsis_marker)
 
     @constant
     def trailing_whitespace_regex(self):
@@ -633,12 +630,8 @@ class SM_NormWS(SM):
 
 
 class SM_NotNormWS(SM):
-    def __init__(
-        self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker
-    ):
-        SM.__init__(
-            self, capture_tag_regex, capture_tag_split_regex, ellipsis_marker
-        )
+    def __init__(self, capture_tag_regexs, ellipsis_marker):
+        SM.__init__(self, capture_tag_regexs, ellipsis_marker)
 
     @constant
     def trailing_newlines_regex(self):

@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import re, shlex, argparse
+import re, shlex, argparse, bisect, collections
 from .common import tohuman, constant
 from .options import OptionParser, UnrecognizedOption, ExtendOptionParserMixin
 from .expected import _LinearExpected, _RegexExpected
@@ -8,6 +8,12 @@ from .parser_sm import SM_NormWS, SM_NotNormWS
 
 def tag_name_as_regex_name(name):
     return name.replace('-', '_')
+
+
+TagRegexs = collections.namedtuple('TagRegexs', ['for_split', 'for_capture'])
+InputRegexs = collections.namedtuple(
+    'InputRegexs', ['for_check', 'for_capture']
+)
 
 
 class ExampleParser(ExtendOptionParserMixin):
@@ -58,18 +64,51 @@ class ExampleParser(ExtendOptionParserMixin):
         return parser
 
     @constant
-    def capture_tag_regex(self):
+    def capture_tag_regexs(self):
         '''
-        Return a regular expression to match a 'capture tag'.
+        Return a set of regular expressions to match a 'capture tag'.
 
         Due implementation details the underscore character '_'
         *cannot* be used as a valid character in the name.
         Instead you should use minus '-'.
+
+        The returned regex can be used for splitting a string
+        or for capturing.
         '''
-        return {
-            'split': re.compile(r"(<[A-Za-z.][A-Za-z0-9:.-]*>)"),
-            'full': re.compile(r"<(?P<name>[A-Za-z.][A-Za-z0-9:.-]*)>"),
-        }
+        open, close = map(re.escape, '<>')
+
+        name_re = r'[A-Za-z.][A-Za-z0-9:.-]*'
+        return TagRegexs(
+            for_split=re.compile(r"(%s%s%s)" % (open, name_re, close)),
+            for_capture=re.compile(
+                r"%s(?P<name>%s)%s" % (open, name_re, close)
+            )
+        )
+
+    @constant
+    def input_regexs(self):
+        open, close = map(re.escape, '[]')
+        input_re = r'''
+            %s          # open marker
+            (?P<input>
+            [^%s\\]*    # neither a close marker or a slash
+            (?:\\.[^%s\\]*)*    # a "escaped" char followed by
+                                # 0 or more "neither a close marker or a slash"
+            )
+            %s          # a close marker
+            ''' % (open, close, close, close)
+
+        input_re_at_end = r'''
+            %s          # the input regex
+            (?P<trailing>
+                [ ]*$   # followed by some optional space and a end of line
+            )
+            ''' % (input_re)
+
+        return InputRegexs(
+            for_check=re.compile(input_re, re.VERBOSE | re.MULTILINE),
+            for_capture=re.compile(input_re_at_end, re.VERBOSE | re.MULTILINE)
+        )
 
     def ellipsis_marker(self):
         return '...'
@@ -216,16 +255,15 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> tags_by_idx
             {2: None, 4: 'foo-bar'}
         '''
-        capture_tag_regex = self.capture_tag_regex()['full']
-        capture_tag_split_regex = self.capture_tag_regex()['split']
-        ellipsis_marker = self.ellipsis_marker()
         if normalize_whitespace:
             sm = SM_NormWS(
-                capture_tag_regex, capture_tag_split_regex, ellipsis_marker
+                self.capture_tag_regexs(),
+                self.ellipsis_marker()
             )
         else:
             sm = SM_NotNormWS(
-                capture_tag_regex, capture_tag_split_regex, ellipsis_marker
+                self.capture_tag_regexs(),
+                self.ellipsis_marker()
             )
 
         return sm.parse(expected, tags_enabled)
