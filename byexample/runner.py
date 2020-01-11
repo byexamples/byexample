@@ -163,18 +163,25 @@ class PexpectMixin(object):
         time.sleep(0.001)
         self.interpreter.terminate(force=True)
 
-    def _exec_and_wait(self, source, options, timeout=None):
+    def _exec_and_wait(self, source, options, timeout=None, input_list=[]):
         if timeout == None:
             timeout = options['timeout']
+
+        # get a copy: _expect_prompt_or_type will modify this in-place
+        input_list = list(input_list)
 
         countdown = Countdown(timeout)
         lines = source.split('\n')
         for line in lines[:-1]:
             self.interpreter.sendline(line)
-            self._expect_prompt(options, countdown)
+            self._expect_prompt_or_type(
+                options, countdown, input_list=input_list
+            )
 
         self.interpreter.sendline(lines[-1])
-        self._expect_prompt(options, countdown, prompt_re=self.PS1_re)
+        self._expect_prompt_or_type(
+            options, countdown, prompt_re=self.PS1_re, input_list=input_list
+        )
 
         return self._get_output(options)
 
@@ -251,7 +258,44 @@ class PexpectMixin(object):
     def _emulate_as_is_terminal(self, chunks):
         return ''.join((self._universal_new_lines(chunk) for chunk in chunks))
 
-    def _expect_prompt(self, options, countdown, prompt_re=None, earlier_re=None):
+    def _expect_prompt_or_type(
+        self, options, countdown, prompt_re=None, input_list=[]
+    ):
+        assert isinstance(input_list, list)
+
+        i = 0
+        prompt_found = False
+        while i < len(input_list):
+            prefix, input = input_list[i]
+
+            prompt_found = self._expect_prompt(
+                options, countdown, prompt_re, earlier_re=prefix
+            )
+            if prompt_found:
+                break
+
+            # Add the prefix (output comming from the interpreter) and
+            # the [ <input> ] that we typed in. This is a sort of
+            # echo-emulation (TODO: some interpreters have echo activated,
+            # should this be necessary?)
+            # We pack all in a single chunk as it is expected that the chunks
+            # comes from the same line (TODO: what will happen if the prefix
+            # has newlines?)
+            chunk = "{}[{}]\n".format(self.interpreter.match.group(), input)
+            self.last_output[-1] += chunk
+
+            self.interpreter.sendline(input)
+            i += 1
+
+        # remove in-place the inputs that were typed
+        del input_list[:i]
+
+        if not prompt_found:
+            self._expect_prompt(options, countdown, prompt_re)
+
+    def _expect_prompt(
+        self, options, countdown, prompt_re=None, earlier_re=None
+    ):
         ''' Wait for a <prompt_re> (any self.any_PS_re if <prompt_re> is None)
             and raise a timeout if we cannot find one.
 
