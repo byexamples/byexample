@@ -270,7 +270,7 @@ the scenes so you do not to be worry about the details):
 
 ```python
 >>> from byexample.options import Options, OptionParser
->>> parser = ArnoldCParser(0, 'utf-8', Options(rm=[], norm_ws=False, tags=True, optparser=OptionParser(add_help=False)))
+>>> parser = ArnoldCParser(0, 'utf-8', Options(rm=[], norm_ws=False, tags=True, type=False, optparser=OptionParser(add_help=False)))
 
 >>> from byexample.finder import Example
 >>> runner = None # not yet

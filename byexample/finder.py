@@ -85,7 +85,7 @@ class Example(object):
     '42'
 
     >>> example.options
-    {'norm_ws': False, 'rm': [], 'tags': True}
+    {'norm_ws': False, 'rm': [], 'tags': True, 'type': False}
 
     '''
     def __init__(
@@ -201,7 +201,14 @@ def _build_fake_example(
 
     # fake the options parsed by the parser
     if opts == None:
-        opts = Options({'norm_ws': False, 'tags': True, 'rm': []})
+        opts = Options(
+            {
+                'norm_ws': False,
+                'tags': True,
+                'rm': [],
+                'type': False
+            }
+        )
     parser.extract_options = lambda x: opts
 
     # fake the start-end lines where the example "was found"

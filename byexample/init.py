@@ -248,6 +248,9 @@ def get_default_options_parser(cmdline_args):
         help=
         "select a terminal emulator to interpret the output (default to 'dumb')."
     )
+    options_parser.add_flag(
+        "type", default=False, help="enable the input tags [...]"
+    )
 
     return options_parser
 
