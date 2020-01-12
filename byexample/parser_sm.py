@@ -13,11 +13,15 @@ tLIT = ('wspaces', 'newlines', 'literals')
 >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
 
 >>> cap_regexs = parser.capture_tag_regexs()
+>>> inp_regexs = parser.input_regexs()
+
 >>> ellipsis_marker = parser.ellipsis_marker()
 
->>> sm = SM(cap_regexs, ellipsis_marker)
->>> sm_norm_ws = SM_NormWS(cap_regexs, ellipsis_marker)
->>> sm_lit = SM_NotNormWS(cap_regexs, ellipsis_marker)
+>>> input_prefix_len_range = (6, 12)
+
+>>> sm = SM(cap_regexs, inp_regexs, ellipsis_marker, input_prefix_len_range)
+>>> sm_norm_ws = SM_NormWS(cap_regexs, inp_regexs, ellipsis_marker, input_prefix_len_range)
+>>> sm_lit = SM_NotNormWS(cap_regexs, inp_regexs, ellipsis_marker, input_prefix_len_range)
 
 >>> def match(regexs, string):
 ...     r = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
@@ -26,10 +30,16 @@ tLIT = ('wspaces', 'newlines', 'literals')
 
 
 class SM(object):
-    def __init__(self, capture_tag_regexs, ellipsis_marker):
+    def __init__(self, capture_tag_regexs, input_regexs, ellipsis_marker, input_prefix_len_range):
         self.capture_tag_regex = capture_tag_regexs.for_capture
         self.capture_tag_split_regex = capture_tag_regexs.for_split
         self.ellipsis_marker = ellipsis_marker
+
+        self.input_capture_regex = input_regexs.for_capture
+        self.input_check_regex = input_regexs.for_check
+
+        self.input_prefix_min_len, self.input_prefix_max_len = input_prefix_len_range
+        assert self.input_prefix_min_len <= self.input_prefix_max_len
 
         self.reset()
 
@@ -217,53 +227,110 @@ class SM(object):
         rc = 0
         return self.emit(charno, rx, rc)
 
-    def expected_tokenizer(self, expected_str, tags_enabled):
+    def expected_tokenizer(self, expected_str, tags_enabled, input_enabled):
         ''' Iterate over the interesting tokens of the expected string:
-             - newlines     - wspaces     - literals    - tag
+             - newlines   - wspaces   - literals   - tag   - input   - warn
 
-            >>> _tokenizer = sm.expected_tokenizer
+            >>> _tokenizer = partial(sm.expected_tokenizer, tags_enabled=True, input_enabled=True)
 
-            >>> list(_tokenizer('', True))
+            >>> list(_tokenizer(''))
             [(0, 'end', None)]
 
             Return an iterable of tuples: (<charno>, <token type>, <token val>)
-            >>> list(_tokenizer(' ', True))
+            >>> list(_tokenizer(' '))
             [(0, 'wspaces', ' '), (1, 'end', None)]
 
             Multiple chars are considered a single 'literals' token
-            >>> list(_tokenizer('abc', True))
+            >>> list(_tokenizer('abc'))
             [(0, 'literals', 'abc'), (3, 'end', None)]
 
             Each tuple contains the <charno>: the position in the string
             where the token was found
-            >>> list(_tokenizer('abc def', True))       # byexample: +norm-ws
+            >>> list(_tokenizer('abc def'))       # byexample: +norm-ws
             [(0, 'literals', 'abc'), (3, 'wspaces', ' '),
              (4, 'literals', 'def'), (7, 'end', None)]
 
             Multiple spaces are considered a single 'wspaces' token.
-            >>> list(_tokenizer(' abc  def\t', True))          # byexample: +norm-ws
+            >>> list(_tokenizer(' abc  def\t'))          # byexample: +norm-ws
             [(0, 'wspaces', ' '),  (1, 'literals', 'abc'),
              (4, 'wspaces', '  '), (6, 'literals', 'def'), (9, 'wspaces', '\t'),
              (10, 'end', None)]
 
             Each tuple contains the string that constitutes the token.
-            >>> list(_tokenizer('<foo><bar> \n\n<...> <...>def <...>', True))  # byexample: +norm-ws -tags
+            >>> list(_tokenizer('<foo><bar> \n\n<...> <...>def <...>'))  # byexample: +norm-ws -tags
             [(0,  'tag', '<foo>'),      (5,  'tag', '<bar>'), (10, 'wspaces', ' '),
              (11, 'newlines', '\n\n'),  (13, 'tag', '<...>'),
              (18, 'wspaces', ' '),      (19, 'tag', '<...>'), (24, 'literals', 'def'),
              (27, 'wspaces', ' '),      (28, 'tag', '<...>'), (33, 'end', None)]
 
+            This also includes the inputs. They are similar in structure
+            to a tag however they only can appear at the end of the line
+            (trailing spaces are ok) and their values are the text input
+            without the markers (by default [ and ]):
+            >>> list(_tokenizer('user: [john doe]\npass: [123] \nrole:[admin] '))  # byexample: +norm-ws -tags
+            [(0, 'literals', 'user:'),      (5, 'wspaces', ' '),
+             (6, 'input', 'john doe'),      (16, 'newlines', '\n'),
+             (17, 'literals', 'pass:'),     (22, 'wspaces', ' '),
+             (23, 'input', '123'),          (28, 'wspaces', ' '),
+             (29, 'newlines', '\n'),
+             (30, 'literals', 'role:'),     (35, 'input', 'admin'),
+             (42, 'wspaces', ' '),          (43, 'end', None)]
+
             If <tags_enabled> is False, the tags are considered literals
-            >>> list(_tokenizer('<foo><bar> \n\n<...> <...>def <...>', False))  # byexample: +norm-ws -tags
+            >>> list(_tokenizer('<foo><bar> \n\n<...> <...>def <...>', tags_enabled=False))  # byexample: +norm-ws -tags
             [(0,  'literals', '<foo><bar>'), (10, 'wspaces', ' '),
              (11, 'newlines', '\n\n'),       (13, 'literals', '<...>'),
              (18, 'wspaces', ' '),           (19, 'literals', '<...>def'),
              (27, 'wspaces', ' '),           (28, 'literals', '<...>'), (33, 'end', None)]
+
+            If <input_enabled> is False, the input tags are considered literals
+            >>> list(_tokenizer('[foo][bar] \n\n[...] [...]def [...]', input_enabled=False))  # byexample: +norm-ws -tags
+            [(0,  'literals', '[foo][bar]'), (10, 'wspaces', ' '),
+             (11, 'newlines', '\n\n'),       (13, 'literals', '[...]'),
+             (18, 'wspaces', ' '),           (19, 'literals', '[...]def'),
+             (27, 'wspaces', ' '),           (28, 'literals', '[...]'), (33, 'end', None)]
+
+            The tokenizer can detect some weird conditions and
+            yield warnings as special tokens but proceeding with the parsing
+            as usual.
+
+            For example, more than one input is not allowed as well inputs
+            that are not at the end of the line. This may be ok or it
+            may an error of the user (she may not understand how the inputs
+            works thinking that it can be anywhere or it just typed something
+            after an input by accident).
+            Also, a tag inside an input makes no sense: you cannot capture
+            what you are typing. This may be a typo or a failure in the paste
+            mode.
+            >>> list(_tokenizer('user: [john doe]ups\npass: [123][a<d>min] '))  # byexample: +norm-ws -tags
+            [(6, 'warn', 'input-not-at-the-end'),
+             (0, 'literals', 'user:'),      (5, 'wspaces', ' '),
+             (6, 'literals', '[john'),      (11, 'wspaces', ' '),
+             (12, 'literals', 'doe]ups'),   (19, 'newlines', '\n'),
+             (26, 'warn', 'input-not-at-the-end'),
+             (20, 'literals', 'pass:'),     (25, 'wspaces', ' '),
+             (26, 'literals', '[123]'),     (32, 'warn', 'tag-inside-input'),
+             (31, 'input', 'a<d>min'),
+             (40, 'wspaces', ' '),          (41, 'end', None)]
+
+            This last example has several interesting things:
+                - the warnings are "out of order": their charno will not
+                  follow a monotonic increasing sequence.
+                - in the case of 'input-not-at-the-end', inputs are *not*
+                  removed from the token list and they are returned
+                  as literals (like `[john`)
+                - tags inside inputs like `[a<d>min]` are warnings too
+                  with an *approximate* charno; the input is *not* removed
+                  either.
         '''
 
         nl_splitter = self.one_or_more_nl_capture_regex()
         ws_splitter = self.one_or_more_ws_capture_regex()
         tag_splitter = self.capture_tag_split_regex
+        input_capture_regex = self.input_capture_regex
+        input_check_regex = self.input_check_regex
+
+        # TODO return lineno also to debug easily
 
         charno = 0
         for k, line_or_newlines in enumerate(nl_splitter.split(expected_str)):
@@ -274,6 +341,23 @@ class SM(object):
                 continue
 
             line = line_or_newlines
+
+            # is the last part of the line an input?
+            input_match = input_capture_regex.search(
+                line
+            ) if input_enabled else None
+            if input_match:
+                charno_after_input = charno + len(line)
+
+                # strip the input tag off
+                line = input_capture_regex.sub('', line)
+
+            # do we have any piece of the line that looks like an input?
+            if input_enabled:
+                m = input_check_regex.search(line)
+                if m:
+                    yield (charno + m.start(), 'warn', 'input-not-at-the-end')
+
             for j, word_or_spaces in enumerate(ws_splitter.split(line)):
                 if j % 2 == 1:
                     wspaces = word_or_spaces
@@ -296,13 +380,26 @@ class SM(object):
 
                     literals = lit_or_tag
                     if literals:
-                        yield (charno, 'literals', literals)
+                        yield (cho, 'literals', literals)
                         charno += len(literals)
+
+            if input_match:
+                input, trailing = input_match.groups()
+                m = tag_splitter.search(input)
+                if m:
+                    yield (charno + m.start(), 'warn', 'tag-inside-input')
+
+                yield (charno, 'input', input)
+                charno = charno_after_input
+
+                if trailing:
+                    yield (charno - len(trailing), 'wspaces', trailing)
+
         yield (charno, 'end', None)
 
-    def parse(self, expected, tags_enabled):
+    def parse(self, expected, tags_enabled, input_enabled):
         self.reset()
-        tokenizer = self.expected_tokenizer(expected, tags_enabled)
+        tokenizer = self.expected_tokenizer(expected, tags_enabled, input_enabled)
 
         while not self.ended():
             charno, ttype, token = next(tokenizer, (None, None, None))
@@ -316,8 +413,8 @@ class SM(object):
 
 
 class SM_NormWS(SM):
-    def __init__(self, capture_tag_regexs, ellipsis_marker):
-        SM.__init__(self, capture_tag_regexs, ellipsis_marker)
+    def __init__(self, capture_tag_regexs, input_regexs, ellipsis_marker, input_prefix_len_range):
+        SM.__init__(self, capture_tag_regexs, input_regexs, ellipsis_marker, input_prefix_len_range)
 
     @constant
     def trailing_whitespace_regex(self):
@@ -447,7 +544,7 @@ class SM_NormWS(SM):
         else:
             assert False
 
-    def parse(self, expected, tags_enabled):
+    def parse(self, expected, tags_enabled, input_enabled):
         '''
             >>> _as_regexs = sm_norm_ws.parse
 
@@ -459,7 +556,7 @@ class SM_NormWS(SM):
             <expected> yielding a '\s+' regex for them (one or more
             whitespaces of any kind).
 
-            >>> r, p, c, _ = _as_regexs('a  \n   b  \t\vc', True)
+            >>> r, p, c, _, _ = _as_regexs('a  \n   b  \t\vc', True, True)
 
             >>> r
             ('\\A', 'a', '\\s+(?!\\s)', 'b', '\\s+(?!\\s)', 'c', '\\s*\\Z')
@@ -488,10 +585,10 @@ class SM_NormWS(SM):
             will capture anything
 
             >>> expected = 'a<foo>b'
-            >>> regexs, p, _, _ = _as_regexs(expected, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True)
 
             >>> regexs
-            ('\\A', 'a', '(?P<foo>.*?)', 'b', '\\s*\\Z')
+            ('\\A', 'a'.*?)', 'b', '\\s*\\Z')
 
             >>> p
             (0, 0, 1, 6, 7)
@@ -504,7 +601,7 @@ class SM_NormWS(SM):
             its left or right
 
             >>> expected = 'a <foo>b'
-            >>> regexs, p, _, _ = _as_regexs(expected, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True)
 
             >>> regexs               # byexample: -tags
             ('\\A', 'a', '\\s+(?!\\s)', '(?P<foo>.*?)', 'b', '\\s*\\Z')
@@ -516,7 +613,7 @@ class SM_NormWS(SM):
             ('123\n\n ',)
 
             >>> expected = 'a<foo> b'
-            >>> regexs, p, _, _ = _as_regexs(expected, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True)
 
             >>> regexs               # byexample: -tags
             ('\\A', 'a', '(?P<foo>.*?)(?<!\\s)', '\\s+(?!\\s)', 'b', '\\s*\\Z')
@@ -531,7 +628,7 @@ class SM_NormWS(SM):
             on its left *and* its right.
 
             >>> expected = 'a\n<foo>\tb'
-            >>> regexs, p, _, _ = _as_regexs(expected, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True)
 
             >>> regexs           # byexample: +norm-ws -tags
             ('\\A', 'a', '\\s', '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s+(?!\\s)', 'b', '\\s*\\Z')
@@ -561,7 +658,7 @@ class SM_NormWS(SM):
             consideration.
 
             >>> expected = '<foo>  \n\n'
-            >>> regexs, p, _, _ = _as_regexs(expected, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True)
 
             >>> regexs               # byexample: -tags
             ('\\A', '(?P<foo>.*?)(?<!\\s)', '\\s*\\Z')
@@ -573,7 +670,7 @@ class SM_NormWS(SM):
             ('   123',)
 
             >>> expected = ' <foo>  \n\n'
-            >>> regexs, p, _, _ = _as_regexs(expected, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True)
 
             >>> regexs               # byexample: -tags
             ('\\A', '\\s', '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s*\\Z')
@@ -585,7 +682,7 @@ class SM_NormWS(SM):
             ('123',)
 
             >>> expected = ' <foo>'
-            >>> regexs, p, _, _ = _as_regexs(expected, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True)
 
             >>> regexs               # byexample: -tags
             ('\\A', '\\s', '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s*\\Z')
@@ -597,19 +694,17 @@ class SM_NormWS(SM):
             ('123',)
 
             >>> expected = '<foo>'
-            >>> regexs, p, _, _ = _as_regexs(expected, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True)
 
             >>> regexs               # byexample: -tags
             ('\\A', '(?P<foo>.*?)(?<!\\s)', '\\s*\\Z')
 
             >>> p
-            (0, 0, 5)
-
-            >>> match(regexs, '   123  \n\n\n\n').groups()
+            (0,>> match(regexs, '   123  \n\n\n\n').groups()
             ('   123',)
 
             >>> expected = ' '
-            >>> regexs, p, _, _ = _as_regexs(expected, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True)
 
             >>> regexs               # byexample: -tags
             ('\\A', '\\s*\\Z')
@@ -618,7 +713,7 @@ class SM_NormWS(SM):
             (0, 0)
 
             >>> expected = ''
-            >>> regexs, p, _, _ = _as_regexs(expected, True)
+            >>> regexs, p, _, _, _ = _as_regexs(expected, True, True)
 
             >>> regexs               # byexample: -tags
             ('\\A', '\\s*\\Z')
@@ -626,12 +721,12 @@ class SM_NormWS(SM):
             >>> p
             (0, 0)
         '''
-        return SM.parse(self, expected, tags_enabled)
+        return SM.parse(self, expected, tags_enabled, input_enabled)
 
 
 class SM_NotNormWS(SM):
-    def __init__(self, capture_tag_regexs, ellipsis_marker):
-        SM.__init__(self, capture_tag_regexs, ellipsis_marker)
+    def __init__(self, capture_tag_regexs, input_regexs, ellipsis_marker, input_prefix_len_range):
+        SM.__init__(self, capture_tag_regexs, input_regexs, ellipsis_marker, input_prefix_len_range)
 
     @constant
     def trailing_newlines_regex(self):
@@ -648,6 +743,7 @@ class SM_NotNormWS(SM):
     def feed(self, charno, ttype, token):
         push = self.push
         drop = self.drop
+
 
         push(charno, token)
         stash_size = len(self.stash)
@@ -706,16 +802,16 @@ class SM_NotNormWS(SM):
         else:
             assert False
 
-    def parse(self, expected, tags_enabled):
+    def parse(self, expected, tags_enabled, input_enabled):
         '''
             >>> _as_regexs = sm_lit.parse
 
-            Parse a given <expected> string and return a list
+  se a given <expected> string and return a list
             of regular expressions that joined matches the original
             string.
 
             >>> expected = 'a<foo>b<b-b>c<...>d'
-            >>> regexs, charnos, rcounts, tags_by_idx = _as_regexs(expected, True)
+            >>> regexs, charnos, rcounts, tags_by_idx, _ = _as_regexs(expected, True, True)
 
             >>> regexs              # byexample: -tags +norm-ws
             ('\\A', 'a', '(?P<foo>.*?)', 'b', '(?P<b_b>.*?)', 'c', '(?:.*?)', 'd', '\\n*\\Z')
@@ -762,7 +858,7 @@ class SM_NotNormWS(SM):
             (match the whole regex matching one regex at time)
 
             >>> expected = 'a\n<foo>bcd\nefg<bar>hi'
-            >>> regexs, _, rcounts, _ = _as_regexs(expected, True)
+            >>> regexs, _, rcounts, _, _ = _as_regexs(expected, True, True)
 
             >>> regexs          # byexample: +norm-ws -tags
             ('\\A',
@@ -783,14 +879,14 @@ class SM_NotNormWS(SM):
             we will raise an exception as this is ambiguous:
 
             >>> # but here? foo is 'x' and bar 'xyyy'?, '' and 'xxyyy', or ....
-            >>> _as_regexs('a<foo><bar>c', True)
+            >>> _as_regexs('a<foo><bar>c', True, True)
             Traceback (most recent call last):
             <...>
             ValueError: <...>
 
             If tags_enabled is False, all the <...> tags are taken literally.
 
-            >>> r, p, _, i = _as_regexs('a<foo>b<bar>c', False)
+            >>> r, p, _, i, _ = _as_regexs('a<foo>b<bar>c', False, True)
             >>> match(r, 'axxbyyyc') is None # don't matched as <foo> is not xx
             True
 
@@ -802,7 +898,7 @@ class SM_NotNormWS(SM):
 
             The tag names cannot be repeated:
 
-            >>> _as_regexs('a<foo>b<foo>c', True)
+            >>> _as_regexs('a<foo>b<foo>c', True, True)
             Traceback (most recent call last):
             <...>
             ValueError: <...>
@@ -810,16 +906,16 @@ class SM_NotNormWS(SM):
             Any trailing new line will be ignored
 
             >>> expected = '<foo>\n\n\n'
-            >>> regexs, _, _, _ = _as_regexs(expected, True)
+            >>> regexs, _, _, _, _ = _as_regexs(expected, True, True)
 
-            >>> regexs          # byexample: -tags
+            >>> regexsbyexample: -tags
             ('\\A', '(?:(?P<foo>.+?)(?<!\\n))?', '\\n*\\Z')
 
             >>> match(regexs, '   123  \n\n\n\n').groups()
             ('   123  ',)
 
             >>> expected = '<foo>'
-            >>> regexs, _, _, _ = _as_regexs(expected, True)
+            >>> regexs, _, _, _, _ = _as_regexs(expected, True, True)
 
             >>> regexs          # byexample: -tags
             ('\\A', '(?:(?P<foo>.+?)(?<!\\n))?', '\\n*\\Z')
@@ -828,7 +924,7 @@ class SM_NotNormWS(SM):
             ('123',)
 
             >>> expected = '\n<foo>'
-            >>> regexs, _, _, _ = _as_regexs(expected, True)
+            >>> regexs, _, _, _, _ = _as_regexs(expected, True, True)
 
             >>> regexs          # byexample: -tags
             ('\\A', '\\\n', '(?:(?P<foo>.+?)(?<!\\n))?', '\\n*\\Z')
@@ -840,4 +936,5 @@ class SM_NotNormWS(SM):
             (None,)
         '''
         expected = self.trailing_newlines_regex().sub('', expected)
-        return SM.parse(self, expected, tags_enabled)
+        return SM.parse(self, expected, tags_enabled, input_enabled)
+
