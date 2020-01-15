@@ -153,8 +153,9 @@ class ExampleParser(ExtendOptionParserMixin):
         for x in options['rm']:
             example.expected_str = example.expected_str.replace(x, '')
 
-        expected_regexs, charnos, rcounts, tags_by_idx = self.expected_as_regexs(
-            example.expected_str, options['tags'], options['norm_ws']
+        expected_regexs, charnos, rcounts, tags_by_idx, input_list = self.expected_as_regexs(
+            example.expected_str, options['tags'], options['type'],
+            options['norm_ws']
         )
 
         ExpectedClass = _LinearExpected
@@ -183,10 +184,15 @@ class ExampleParser(ExtendOptionParserMixin):
         # the source code to execute and the expected
         example.expected = expected
 
+        # the things that we need to type when we run the example
+        example.input_list = input_list
+
         options.down()
         return example
 
-    def expected_as_regexs(self, expected, tags_enabled, normalize_whitespace):
+    def expected_as_regexs(
+        self, expected, tags_enabled, input_enabled, normalize_whitespace
+    ):
         '''
         From the expected string create a list of regular expressions that
         joined with the flags re.MULTILINE | re.DOTALL, matches
@@ -200,15 +206,19 @@ class ExampleParser(ExtendOptionParserMixin):
             - a dict of non-literal 'regexs' names (capturing and non-capturing)
               also know as "tags" indexed by position.
               For non-capturing the name will be None.
+            - a list of (<prefix>, <input>) tuples that describe, in order, the
+              text to type (input) and the text to wait for before the
+              typing (prefix)
 
             >>> from byexample.parser import ExampleParser
+            >>> from functools import partial
             >>> import re
 
             >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
-            >>> _as_regexs = parser.expected_as_regexs
+            >>> _as_regexs = partial(parser.expected_as_regexs, tags_enabled=True, input_enabled=True, normalize_whitespace=False)
 
             >>> expected = 'a<foo>b<bar>c'
-            >>> regexs, charnos, rcounts, tags_by_idx = _as_regexs(expected, True, False)
+            >>> regexs, charnos, rcounts, tags_by_idx, input_list = _as_regexs(expected)
 
         We return the regexs
 
@@ -247,7 +257,7 @@ class ExampleParser(ExtendOptionParserMixin):
         we enable the normalization of the whitespace:
 
             >>> expected = 'a<...> <foo-bar>c'
-            >>> regexs, _, _, tags_by_idx = _as_regexs(expected, True, True)
+            >>> regexs, _, _, tags_by_idx, _ = _as_regexs(expected, normalize_whitespace=True)
 
             >>> regexs          # byexample: +norm-ws
             ('\\A', 'a', '(?:.*?)(?<!\\s)', '\\s+(?!\\s)', '(?P<foo_bar>.*?)', 'c', '\\s*\\Z')
@@ -255,18 +265,19 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> tags_by_idx
             {2: None, 4: 'foo-bar'}
         '''
+        input_prefix_len_range = (6, 12)
         if normalize_whitespace:
             sm = SM_NormWS(
-                self.capture_tag_regexs(),
-                self.ellipsis_marker()
+                self.capture_tag_regexs(), self.input_regexs(),
+                self.ellipsis_marker(), input_prefix_len_range
             )
         else:
             sm = SM_NotNormWS(
-                self.capture_tag_regexs(),
-                self.ellipsis_marker()
+                self.capture_tag_regexs(), self.input_regexs(),
+                self.ellipsis_marker(), input_prefix_len_range
             )
 
-        return sm.parse(expected, tags_enabled)
+        return sm.parse(expected, tags_enabled, input_enabled)
 
     def extract_cmdline_options(self, opts_from_cmdline):
         # now we can re-parse this argument 'options' from the command line
@@ -345,7 +356,7 @@ class ExampleParser(ExtendOptionParserMixin):
 # Extra tests
 '''
 >>> expected = 'ex <...>\nu<...>'
->>> regexs, _, _, _ = _as_regexs(expected, True, True)
+>>> regexs, _, _, _, _ = _as_regexs(expected, normalize_whitespace=True)
 
 >>> regexs
 ('\\A',
@@ -362,7 +373,7 @@ class ExampleParser(ExtendOptionParserMixin):
 ()
 
 >>> expected = 'ex <foo>\nu<bar>'
->>> regexs, _, _, _ = _as_regexs(expected, True, True)
+>>> regexs, _, _, _, _ = _as_regexs(expected, normalize_whitespace=True)
 
 >>> regexs
 ('\\A',
