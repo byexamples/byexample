@@ -159,6 +159,14 @@ class Example(object):
             'Capture tags: %s', pprint.pformat(capture_tag_names, width=50)
         )
 
+        inputs = []
+        for _, inp in self.input_list:
+            if len(inp) > 14:  # 12 max bytes plus 2 dots
+                inp = inp[:6] + '..' + inp[-6:]
+            inputs.append(inp)
+
+        log.chat('Inputs: %s', pprint.pformat(inputs, width=50))
+
         opts = pprint.pformat(self.options.as_dict(), width=50)
         log.chat('Options: %s', opts)
 
