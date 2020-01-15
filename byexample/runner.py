@@ -3,6 +3,7 @@ import re, pexpect, time, termios, operator, os, itertools, contextlib
 from functools import reduce, partial
 from .executor import TimeoutException
 from .common import tohuman, ShebangTemplate, Countdown
+from .example import Example
 
 from pyte import Stream, Screen
 
@@ -163,9 +164,13 @@ class PexpectMixin(object):
         time.sleep(0.001)
         self.interpreter.terminate(force=True)
 
-    def _exec_and_wait(self, source, options, timeout=None, input_list=[]):
-        if timeout == None:
-            timeout = options['timeout']
+    def _exec_and_wait(self, source, options, *, from_example=None, **kargs):
+        if from_example is None:
+            input_list = kargs.get('input_list', [])
+        else:
+            input_list = kargs.get('input_list', from_example.input_list)
+
+        timeout = kargs.get('timeout', options['timeout'])
 
         # get a copy: _expect_prompt_or_type will modify this in-place
         input_list = list(input_list)
