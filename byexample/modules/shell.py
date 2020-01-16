@@ -143,7 +143,9 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
         stop_on_timeout = options['stop_on_timeout'] is not False
         stop_on_silence = options['stop_on_silence'] is not False
         try:
-            return self._exec_and_wait(example.source, options)
+            return self._exec_and_wait(
+                example.source, options, from_example=example
+            )
         except TimeoutException as ex:
             if stop_on_timeout or stop_on_silence:
                 # get the current output

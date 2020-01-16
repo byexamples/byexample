@@ -155,7 +155,7 @@ class RubyInterpreter(ExampleRunner, PexpectMixin):
 
         # there is no need to revert the echo=True if it was changed
         # because the execution of the next example will set it correctly
-        return self._exec_and_wait(src, options)
+        return self._exec_and_wait(src, options, from_example=example)
 
     _EXPR_RESULT_RE = re.compile(r'^=>( |$)', re.MULTILINE | re.DOTALL)
 

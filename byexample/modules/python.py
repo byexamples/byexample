@@ -514,7 +514,9 @@ if True:
         return PexpectMixin._run(self, example, options)
 
     def _run_impl(self, example, options):
-        return self._exec_and_wait(example.source, options)
+        return self._exec_and_wait(
+            example.source, options, from_example=example
+        )
 
     def _change_terminal_geometry(self, rows, cols, options):
         # update the pretty printer with the new columns value

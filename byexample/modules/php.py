@@ -121,7 +121,9 @@ class PHPInterpreter(ExampleRunner, PexpectMixin):
         return PexpectMixin._run(self, example, options)
 
     def _run_impl(self, example, options):
-        return self._exec_and_wait(example.source, options)
+        return self._exec_and_wait(
+            example.source, options, from_example=example
+        )
 
     def interact(self, example, options):
         PexpectMixin.interact(self)
