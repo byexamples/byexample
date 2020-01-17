@@ -1,10 +1,15 @@
 import re
 from .common import constant
+from .log import clog, log_context, DEBUG
+import pprint
 
 INIT, WS, LIT, TAG, END, TWOTAGS, EXHAUSTED, ERROR = range(8)
 tWS = ('wspaces', 'newlines')
 tLIT = ('wspaces', 'newlines', 'literals')
 '''
+>>> from byexample.log import init_log_system
+>>> init_log_system()
+
 >>> from byexample.parser_sm import SM, SM_NormWS, SM_NotNormWS
 >>> from byexample.parser import ExampleParser
 >>> import re
@@ -53,13 +58,7 @@ class SM(object):
 
         self.tags_by_idx = {}
         self.names_seen = set()
-
-        self.last_literals_seen = []
-        self.input_list = []
-        self.in_sync = True
-        self.reset_prefix_at_charno = 0x7fffffffff
-
-        self.emit(0, r'\A', 0, False)
+        self.input_events = []
 
     @constant
     def one_or_more_ws_capture_regex(self):
@@ -87,39 +86,13 @@ class SM(object):
     def drop(self, last=False):
         self.stash.pop(-1 if last else 0)
 
-    def reset_prefix(self, sync_lost):
-        self.in_sync = sync_lost == False
-        self.last_literals_seen.clear()
+    def record_input_event(self, charno, ttype, *args):
+        self.input_events.append((charno, ttype, args))
 
-    def get_last_literals_seen(self):
-        if not self.last_literals_seen:
-            return (None, '', 0)
-
-        rc = 0
-        ix = 0
-        for charno, regex, rcount in reversed(self.last_literals_seen):
-            rc += rcount
-            ix += 1
-
-            if rc >= self.input_prefix_max_len:
-                break
-
-        charno = self.last_literals_seen[-ix][0]
-        rx = ''.join(regex for _, regex, _ in self.last_literals_seen[-ix:])
-
-        return charno, rx, rc
-
-    def emit(self, charno, regex, rcount, add_as_prefix):
-        if charno >= self.reset_prefix_at_charno:
-            self.reset_prefix(sync_lost=False)
-            self.reset_prefix_at_charno = 0x7fffffffff
-
-        # track of the last literals seen
-        if add_as_prefix:
-            self.last_literals_seen.append((charno, regex, rcount))
-
+    def emit(self, charno, regex, rcount):
         item = (charno, regex, rcount)
         self.results.append(item)
+        clog().debug("emit: %06i (rc %06i): %s" % (charno, rcount, regex))
         return item
 
     def emit_literals(self):
@@ -137,7 +110,8 @@ class SM(object):
         rx = re.escape(l)
         rc = len(l)
 
-        return self.emit(charno, rx, rc, True)
+        self.record_input_event(charno, 'prefix', rx, rc)
+        return self.emit(charno, rx, rc)
 
     def name_of_tag_or_None(self, tag):
         name = self.capture_tag_regex.match(tag).group('name')
@@ -253,8 +227,9 @@ class SM(object):
             greedy=greedy
         )
         rc = 0
-        self.reset_prefix(sync_lost=True)
-        return self.emit(charno, rx, rc, False)
+        self.record_input_event(charno, 'reset')
+        self.record_input_event(charno, 'sync_lost')
+        return self.emit(charno, rx, rc)
 
     def emit_eof(self, ws):
         '''
@@ -270,135 +245,7 @@ class SM(object):
         charno, _ = self.pull()
         rx = r'\{ws}*\Z'.format(ws=ws)
         rc = 0
-        return self.emit(charno, rx, rc, False)
-
-    def emit_input(self):
-        '''
-            An 'input' is a piece of text in the expected string that
-            it will be *typed in* by byexample into the current-in-execution
-            example.
-
-            When an input is emitted, it must not only emit the text
-            to be typed but also the text that should appear
-            *before* the typing.
-
-            This text, that we call 'prefix', is a hint that byexample
-            will use to know *when* a text must by typed.
-
-            As long as byexample *knows* when to type one or more
-            inputs, the need of the prefix is irrelevant.
-
-            In this case we say that we are *in sync*.
-
-            This is the initial state:
-
-            >>> sm.reset()
-            >>> sm.push(0, '42')
-            >>> sm.emit_input()     # "in sync": prefix empty is allowed
-            ('', '42')
-
-            >>> sm.push(0, 'num:')
-            >>> sm.emit_literals()  # byexample: +pass
-            >>> sm.push(0, '31')
-            >>> sm.emit_input()     # still "in sync": short prefix allowd too
-            ('num\\:', '31')
-
-            The internal state machine will lose the synchronization
-            after a capture tag because byexample will not know
-            for sure when to type after an arbitrary amount of text.
-
-            In these cases a minimum amount of prefix is required:
-
-            >>> sm.push(0, '<...>')
-            >>> sm.emit_tag('0', False)  # byexample: +pass
-
-            >>> sm.input_prefix_min_len
-            6
-
-            >>> sm.push(0, 'user')  # this is a 4-bytes prefix: too short!
-            >>> sm.emit_literals()  # byexample: +pass
-            >>> sm.push(4, 'john')
-            >>> sm.emit_input()
-            Traceback<...>
-            ValueError: There are too few characters before the input tag at character 4th to proceed
-
-            >>> sm.push(0, 'name:')
-            >>> sm.emit_literals()  # byexample: +pass
-            >>> sm.push(0, 'john')
-            >>> sm.emit_input()
-            ('username\\:', 'john')
-
-            Note how the consecutive literals are concatenated to form
-            a larger prefix.
-
-            Once that an input is emitted successfully, the internal
-            state machine is in sync again:
-
-            >>> sm.push(0, 'last:')
-            >>> sm.emit_literals()  # byexample: +pass
-            >>> sm.push(0, 'doe')
-            >>> sm.emit_input()     # prefix is too short but we are in sync already
-            ('last\\:', 'doe')
-
-            The capture tags *do* work as barriers: not only make us to
-            loose the synchronization but also prevent
-            the concatenation of further "in the past" literals:
-
-            >>> sm.push(0, 'your-')     # before the tag, this will not be used
-            >>> sm.emit_literals()                      # byexample: +pass
-            >>> sm.push(4, '<...>')
-            >>> sm.emit_tag('0', False)                 # byexample: +pass
-            >>> sm.push(9, 'email:')
-            >>> sm.emit_literals()                      # byexample: +pass
-            >>> sm.push(15, 'jdoe@example.com')
-            >>> sm.emit_input()
-            ('email\\:', 'jdoe@example.com')
-
-            Too long prefixes are not wanted either because larger prefixes
-            increases the probability of having a mismatch between them and
-            the real output (due a typo in the expected or a bug in the example)
-            and it will make byexample to fail.
-
-            Truncating too long prefixes reduces the probability:
-
-            >>> sm.input_prefix_max_len
-            12
-
-            >>> sm.push(1, 'What is ')
-            >>> sm.emit_literals()     # byexample: +pass
-            >>> sm.push(8, 'your real')
-            >>> sm.emit_literals()     # byexample: +pass
-            >>> sm.push(17, ' name?')
-            >>> sm.emit_literals()     # byexample: +pass
-            >>> sm.push(22, 'john doe')
-            >>> sm.emit_input()
-            ('your\\ real\\ name\\?', 'john doe')
-
-            All the inputs emitted are collected in the input_list that you
-            can query any time:
-
-            >>> sm.input_list                   # byexample: +norm-ws
-            [('', '42'),
-             ('num\\:', '31'),
-             ('username\\:', 'john'),
-             ('last\\:', 'doe'),
-             ('email\\:', 'jdoe@example.com'),
-             ('your\\ real\\ name\\?', 'john doe')]
-            '''
-
-        charno, input = self.pop()
-        _, prefix_regex, prefix_rcount = self.get_last_literals_seen()
-
-        if prefix_rcount < self.input_prefix_min_len and not self.in_sync:
-            raise ValueError(
-                "There are too few characters before the input tag at character %ith to proceed"
-                % charno
-            )
-
-        res = (prefix_regex, input)
-        self.input_list.append(res)
-        self.reset_prefix(sync_lost=False)
-        return res
+        return self.emit(charno, rx, rc)
 
     def expected_tokenizer(self, expected_str, tags_enabled, input_enabled):
         ''' Iterate over the interesting tokens of the expected string:
@@ -612,21 +459,169 @@ class SM(object):
             input_match = None
         yield (charno, 'end', None)
 
+    @log_context('byexample.parser')
     def parse(self, expected, tags_enabled, input_enabled):
         self.reset()
+        self.emit(0, r'\A', 0)
+
         tokenizer = self.expected_tokenizer(
             expected, tags_enabled, input_enabled
         )
 
+        if clog().isEnabledFor(DEBUG):
+            clog().chat(
+                "Parsing: tags enabled? %s; input enabled? %s", tags_enabled,
+                input_enabled
+            )
+
         while not self.ended():
             charno, ttype, token = next(tokenizer, (None, None, None))
-            self.feed(charno, ttype, token)
+            if charno is not None:
+                clog().debug("tokn: %06i [% 9s]: %s" % (charno, ttype, token))
+
+            if ttype == 'input':
+                self.record_input_event(charno, 'input', token)
+            elif ttype == 'input-end':
+                self.record_input_event(charno, 'reset')
+            else:
+                self.feed(charno, ttype, token)
 
             assert (ttype == None and self.ended()) or \
                     (ttype != None and not self.ended())
 
         charnos, regexs, rcounts = zip(*self.results)
-        return regexs, charnos, rcounts, self.tags_by_idx, self.input_list
+        input_list = self.build_input_list()
+        return regexs, charnos, rcounts, self.tags_by_idx, input_list
+
+    def build_input_list(self):
+        '''
+            Build a list of (<prefix>, <input>) tuples.
+
+            The <input> part is a piece of text in the expected string that
+            it will be *typed in* by byexample into the current-in-execution
+            example.
+
+            Because byexample needs to know *when* the text must be typed,
+            the <prefix> part is a regex that byexample should match
+            with the output from the example *before* the typing.
+
+            When the input is set at the begin of the example the "prefix"
+            can be arbitrary small:
+
+            >>> parse = partial(sm_lit.parse, tags_enabled=True, input_enabled=True)
+
+            >>> parse('[42]')[-1]
+            [('', '42')]
+
+            >>> parse('num: [42]')[-1]
+            [('num\\:\\ ', '42')]
+
+            Internally we say the the state machine is *in sync* with
+            the output.
+
+            The internal state machine will lose the synchronization
+            after a capture tag because byexample will not know
+            for sure when to type after an arbitrary amount of text.
+
+            In these cases a minimum amount of prefix is required:
+
+            >>> parse('your name: <...>[john]')[-1]
+            Traceback<...>
+            ValueError: There are too few characters (0) before the input tag at character 16th to proceed
+
+            >>> parse('your nam<...>e: [john]')[-1]
+            Traceback<...>
+            ValueError: There are too few characters (3) before the input tag at character 16th to proceed
+
+            >>> parse('your<...>name: [john]')[-1]
+            [('name\\:\\ ', 'john')]
+
+            >>> sm.input_prefix_min_len
+            6
+
+            Once that an input is emitted successfully, the internal
+            state machine is in sync again:
+
+            >>> parse('your<...>name: [john]\nn: [42]')[-1]
+            [('name\\:\\ ', 'john'), ('n\\:\\ ', '42')]
+
+            Note how the prefix of the second input does not include
+            anything before the first input.
+
+            Here is another example where there are several lines
+            in the prefix:
+
+            >>> parse('name: [john]\nnice to meet you\npass: [admin]')[-1]
+            [('name\\:\\ ', 'john'), ('meet\\ you\\\npass\\:\\ ', 'admin')]
+
+            Note how the prefix of the second input is not arbitrary large.
+
+            Too long prefixes are not wanted because larger prefixes
+            increases the probability of having a mismatch between them and
+            the real output (due a typo in the expected or a bug in the example)
+            and it will make byexample to fail.
+
+            Truncating too long prefixes reduces the probability:
+
+            >>> sm.input_prefix_max_len
+            12
+
+            '''
+        input_list = []
+        partial_prefixes = []
+        sync_lost = False
+
+        for charno, ttype, args in sorted(self.input_events):
+            if ttype == 'prefix':
+                regex, rcount = args
+                partial_prefixes.append((charno, regex, rcount))
+
+            elif ttype == 'reset':
+                assert len(args) == 0
+                partial_prefixes.clear()
+
+            elif ttype == 'sync_lost':
+                assert len(args) == 0
+                assert len(partial_prefixes) == 0
+                sync_lost = True
+
+            elif ttype == 'input':
+                text, = args
+                _, prefix_regex, prefix_rcount = self.build_prefix(
+                    partial_prefixes
+                )
+
+                if prefix_rcount < self.input_prefix_min_len and sync_lost:
+                    raise ValueError(
+                        "There are too few characters (%i) before the input tag at character %ith to proceed"
+                        % (prefix_rcount, charno)
+                    )
+
+                res = (prefix_regex, text)
+                input_list.append(res)
+                sync_lost = False
+            else:
+                assert False
+
+        return input_list
+
+    def build_prefix(self, partial_prefixes):
+        if not partial_prefixes:
+            return (None, '', 0)
+
+        rc = 0
+        ix = 0
+        for charno, regex, rcount in reversed(partial_prefixes):
+            rc += rcount
+            ix += 1
+
+            if rc >= self.input_prefix_max_len:
+                break
+
+        charno = partial_prefixes[-ix][0]
+        rx = ''.join(regex for _, regex, _ in partial_prefixes[-ix:])
+
+        return charno, rx, rc
 
 
 class SM_NormWS(SM):
@@ -651,7 +646,8 @@ class SM_NormWS(SM):
             rx = r'\s+(?!\s)'
         rc = 1
 
-        return self.emit(charno, rx, rc, True)
+        self.record_input_event(charno, 'prefix', rx, rc)
+        return self.emit(charno, rx, rc)
 
     def emit_tag(self, ctx, endline):
         assert ctx in ('l', 'r', 'b', '0')
@@ -665,10 +661,6 @@ class SM_NormWS(SM):
         push = self.push
         drop = self.drop
 
-        if ttype == 'input-end':
-            self.reset_prefix_at_charno = charno
-            return
-
         push(charno, token)
         stash_size = len(self.stash)
         if self.state == INIT:
@@ -681,8 +673,6 @@ class SM_NormWS(SM):
                 self.state = TAG
             elif ttype == 'end':
                 self.state = END
-            elif ttype == 'input':
-                self.emit_input()
             else:
                 assert False
 
@@ -702,8 +692,6 @@ class SM_NormWS(SM):
                 _, token = self.pull()  # get the end token
                 push(charno, token)
                 self.state = END  # ignore the first wspaces/newlines token
-            elif ttype == 'input':
-                self.emit_input()
             else:
                 assert False
 
@@ -721,8 +709,6 @@ class SM_NormWS(SM):
             elif ttype == 'end':
                 self.emit_literals()
                 self.state = END
-            elif ttype == 'input':
-                self.emit_input()
             else:
                 assert False
 
@@ -739,8 +725,6 @@ class SM_NormWS(SM):
             elif ttype == 'end':
                 self.emit_tag(ctx='r', endline=True)
                 self.state = END
-            elif ttype == 'input':
-                self.emit_input()
             else:
                 assert False
 
@@ -767,8 +751,6 @@ class SM_NormWS(SM):
                 self.emit_ws(just_one=True)
                 self.emit_tag(ctx='b', endline=True)
                 self.state = END
-            elif ttype == 'input':
-                self.emit_input()
             else:
                 assert False
 
@@ -986,14 +968,9 @@ class SM_NormWS(SM):
             (0, 9, 1, 6, 1, 5, 1, 7, 1, 8, 1, 1, 1, 4, 1, 1, 0)
 
             >>> input_list
-            [('username\\:', 'john'),
-             ('\\s+(?!\\s)pass\\:', 'admin'),
-             ('comment\\:', ' none ')]
-
-            There is a small difference with respect SM_NotNormWS.parse:
-            in our case (SM_NormWS.parse) the prefixes may begin with
-            a whitespace regex or not but in the case of SM_NotNormWS.parse,
-            the prefixes always begin with a newline regex (except the first).
+            [('username\\:\\s+(?!\\s)', 'john'),
+             ('pass\\:\\s+(?!\\s)', 'admin'),
+             ('comment\\:\\s+(?!\\s)', ' none ')]
         '''
         return SM.parse(self, expected, tags_enabled, input_enabled)
 
@@ -1024,10 +1001,6 @@ class SM_NotNormWS(SM):
         push = self.push
         drop = self.drop
 
-        if ttype == 'input-end':
-            self.reset_prefix_at_charno = charno
-            return
-
         push(charno, token)
         stash_size = len(self.stash)
         if self.state == INIT:
@@ -1038,8 +1011,6 @@ class SM_NotNormWS(SM):
                 self.state = TAG
             elif ttype == 'end':
                 self.state = END
-            elif ttype == 'input':
-                self.emit_input()
             else:
                 assert False
 
@@ -1054,8 +1025,6 @@ class SM_NotNormWS(SM):
             elif ttype == 'end':
                 self.emit_literals()
                 self.state = END
-            elif ttype == 'input':
-                self.emit_input()
             else:
                 assert False
 
@@ -1069,8 +1038,6 @@ class SM_NotNormWS(SM):
             elif ttype == 'end':
                 self.emit_tag(ctx='n', endline=True)
                 self.state = END
-            elif ttype == 'input':
-                self.emit_input()
             else:
                 assert False
 
@@ -1248,21 +1215,15 @@ class SM_NotNormWS(SM):
             (0, 9, 1, 6, 1, 5, 1, 7, 2, 1, 8, 1, 1, 1, 4, 1, 1, 0)
 
             >>> input_list
-            [('username\\:', 'john'),
-             ('\\\npass\\:', 'admin'),
-             ('\\\ncomment\\:', ' none ')]
+            [('username\\:\\ ', 'john'),
+             ('pass\\:\\ ', 'admin'),
+             ('comment\\:\\ ', ' none ')]
 
             Note how the prefixes never include the literals that came from
-            previous inputs (it is '\npass', not '[john]\npass:')
+            previous inputs (it is 'pass:', not '[john]\npass:')
             This is very important because byexample will use the prefix to
             'expect' in the *unread* output and the inputs are considered
             'already read' output so they will never match.
-
-            There is a small difference with respect SM_NotNormWS.parse:
-            in our case (SM_NotNormWS.parse) the prefixes begin always with
-            a newline regex (except the first) but in the case of
-            SM_NormWS.parse, the prefixes may begin with a whitespace
-            regex or not.
         '''
         expected = self.trailing_newlines_regex().sub('', expected)
         return SM.parse(self, expected, tags_enabled, input_enabled)
