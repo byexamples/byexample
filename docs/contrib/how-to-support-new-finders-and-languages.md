@@ -296,6 +296,9 @@ knows how to extract these options from a *raw* example because is a language
 specific task.
 
 ```python
+>>> from byexample.log import init_log_system
+>>> init_log_system()   # needed becuase parse_yourself requires the log system
+
 >>> example = example.parse_yourself()
 
 >>> print(example.source)

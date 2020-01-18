@@ -4,6 +4,10 @@ from .common import tohuman, constant
 from .options import OptionParser, UnrecognizedOption, ExtendOptionParserMixin
 from .expected import _LinearExpected, _RegexExpected
 from .parser_sm import SM_NormWS, SM_NotNormWS
+'''
+>>> from byexample.log import init_log_system
+>>> init_log_system()
+'''
 
 
 def tag_name_as_regex_name(name):
