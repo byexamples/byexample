@@ -273,6 +273,11 @@ class PexpectMixin(object):
         while i < len(input_list):
             prefix, input = input_list[i]
 
+            # prefix may contain "escaped" newlines (\n) while
+            # the runner may output any form of end line like
+            # \n, \r and \r\n. In order to match any of those
+            # we replace the litera "escaped" \n with a regex
+            prefix = prefix.replace('\\\n', r'(?:\r\n|\n|\r)')
             prompt_found = self._expect_prompt(
                 options, countdown, prompt_re, earlier_re=prefix
             )
@@ -283,9 +288,6 @@ class PexpectMixin(object):
             # the [ <input> ] that we typed in. This is a sort of
             # echo-emulation (TODO: some interpreters have echo activated,
             # should this be necessary?)
-            # We pack all in a single chunk as it is expected that the chunks
-            # comes from the same line (TODO: what will happen if the prefix
-            # has newlines?)
             chunk = "{}[{}]\n".format(self.interpreter.match.group(), input)
             self.last_output[-1] += chunk
 
