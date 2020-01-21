@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 import re, pexpect, time, termios, operator, os, itertools, contextlib
 from functools import reduce, partial
-from .executor import TimeoutException
+from .executor import TimeoutException, InputPrefixNotFound
 from .common import tohuman, ShebangTemplate, Countdown
 from .example import Example
 
@@ -271,16 +271,20 @@ class PexpectMixin(object):
         i = 0
         prompt_found = False
         while i < len(input_list):
-            prefix, input = input_list[i]
+            prefix, prefix_regex, input = input_list[i]
 
-            # prefix may contain "escaped" newlines (\n) while
+            # the regex may contain "escaped" newlines (\n) while
             # the runner may output any form of end line like
             # \n, \r and \r\n. In order to match any of those
             # we replace the litera "escaped" \n with a regex
-            prefix = prefix.replace('\\\n', r'(?:\r\n|\n|\r)')
-            prompt_found = self._expect_prompt(
-                options, countdown, prompt_re, earlier_re=prefix
-            )
+            prefix_regex = prefix_regex.replace('\\\n', r'(?:\r\n|\n|\r)')
+            try:
+                prompt_found = self._expect_prompt(
+                    options, countdown, prompt_re, earlier_re=prefix_regex
+                )
+            except TimeoutException as ex:
+                raise InputPrefixNotFound(prefix, input, ex)
+
             if prompt_found:
                 break
 

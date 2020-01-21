@@ -110,7 +110,7 @@ class SM(object):
         rx = re.escape(l)
         rc = len(l)
 
-        self.record_input_event(charno, 'prefix', rx, rc)
+        self.record_input_event(charno, 'prefix', l, rx, rc)
         return self.emit(charno, rx, rc)
 
     def name_of_tag_or_None(self, tag):
@@ -495,15 +495,17 @@ class SM(object):
 
     def build_input_list(self):
         '''
-            Build a list of (<prefix>, <input>) tuples.
+            Build a list of (<prefix>, <prefix regex>, <input>) tuples.
 
             The <input> part is a piece of text in the expected string that
             it will be *typed in* by byexample into the current-in-execution
             example.
 
             Because byexample needs to know *when* the text must be typed,
-            the <prefix> part is a regex that byexample should match
+            the <prefix regex> part is a regex that byexample should match
             with the output from the example *before* the typing.
+
+            <prefix> is the literal text from where the regex was built.
 
             When the input is set at the begin of the example the "prefix"
             can be arbitrary small:
@@ -511,10 +513,10 @@ class SM(object):
             >>> parse = partial(sm_lit.parse, tags_enabled=True, input_enabled=True)
 
             >>> parse('[42]')[-1]
-            [('', '42')]
+            [('', '', '42')]
 
             >>> parse('num: [42]')[-1]
-            [('num\\:\\ ', '42')]
+            [('num: ', 'num\\:\\ ', '42')]
 
             Internally we say the the state machine is *in sync* with
             the output.
@@ -534,7 +536,7 @@ class SM(object):
             ValueError: There are too few characters (3) before the input tag at character 16th to proceed
 
             >>> parse('your<...>name: [john]')[-1]
-            [('name\\:\\ ', 'john')]
+            [('name: ', 'name\\:\\ ', 'john')]
 
             >>> sm.input_prefix_min_len
             6
@@ -543,7 +545,7 @@ class SM(object):
             state machine is in sync again:
 
             >>> parse('your<...>name: [john]\nn: [42]')[-1]
-            [('name\\:\\ ', 'john'), ('n\\:\\ ', '42')]
+            [('name: ', 'name\\:\\ ', 'john'), ('n: ', 'n\\:\\ ', '42')]
 
             Note how the prefix of the second input does not include
             anything before the first input.
@@ -552,7 +554,8 @@ class SM(object):
             in the prefix:
 
             >>> parse('name: [john]\nnice to meet you\npass: [admin]')[-1]
-            [('name\\:\\ ', 'john'), ('meet\\ you\\\npass\\:\\ ', 'admin')]
+            [('name: ', 'name\\:\\ ', 'john'),
+             ('meet you\npass: ', 'meet\\ you\\\npass\\:\\ ', 'admin')]
 
             Note how the prefix of the second input is not arbitrary large.
 
@@ -573,8 +576,8 @@ class SM(object):
 
         for charno, ttype, args in sorted(self.input_events):
             if ttype == 'prefix':
-                regex, rcount = args
-                partial_prefixes.append((charno, regex, rcount))
+                literals, regex, rcount = args
+                partial_prefixes.append((charno, literals, regex, rcount))
 
             elif ttype == 'reset':
                 assert len(args) == 0
@@ -587,7 +590,7 @@ class SM(object):
 
             elif ttype == 'input':
                 text, = args
-                _, prefix_regex, prefix_rcount = self.build_prefix(
+                _, prefix, prefix_regex, prefix_rcount = self.build_prefix(
                     partial_prefixes
                 )
 
@@ -597,7 +600,7 @@ class SM(object):
                         % (prefix_rcount, charno)
                     )
 
-                res = (prefix_regex, text)
+                res = (prefix, prefix_regex, text)
                 input_list.append(res)
                 sync_lost = False
             else:
@@ -607,11 +610,11 @@ class SM(object):
 
     def build_prefix(self, partial_prefixes):
         if not partial_prefixes:
-            return (None, '', 0)
+            return (None, '', '', 0)
 
         rc = 0
         ix = 0
-        for charno, regex, rcount in reversed(partial_prefixes):
+        for _, _, _, rcount in reversed(partial_prefixes):
             rc += rcount
             ix += 1
 
@@ -619,9 +622,10 @@ class SM(object):
                 break
 
         charno = partial_prefixes[-ix][0]
-        rx = ''.join(regex for _, regex, _ in partial_prefixes[-ix:])
+        rx = ''.join(regex for _, _, regex, _ in partial_prefixes[-ix:])
+        literals = ''.join(lit for _, lit, _, _ in partial_prefixes[-ix:])
 
-        return charno, rx, rc
+        return charno, literals, rx, rc
 
 
 class SM_NormWS(SM):
@@ -646,7 +650,7 @@ class SM_NormWS(SM):
             rx = r'\s+(?!\s)'
         rc = 1
 
-        self.record_input_event(charno, 'prefix', rx, rc)
+        self.record_input_event(charno, 'prefix', ' ', rx, rc)
         return self.emit(charno, rx, rc)
 
     def emit_tag(self, ctx, endline):
@@ -968,9 +972,9 @@ class SM_NormWS(SM):
             (0, 9, 1, 6, 1, 5, 1, 7, 1, 8, 1, 1, 1, 4, 1, 1, 0)
 
             >>> input_list
-            [('username\\:\\s+(?!\\s)', 'john'),
-             ('pass\\:\\s+(?!\\s)', 'admin'),
-             ('comment\\:\\s+(?!\\s)', ' none ')]
+            [('username: ', 'username\\:\\s+(?!\\s)', 'john'),
+             ('pass: ', 'pass\\:\\s+(?!\\s)', 'admin'),
+             ('comment: ', 'comment\\:\\s+(?!\\s)', ' none ')]
         '''
         return SM.parse(self, expected, tags_enabled, input_enabled)
 
@@ -1215,9 +1219,9 @@ class SM_NotNormWS(SM):
             (0, 9, 1, 6, 1, 5, 1, 7, 2, 1, 8, 1, 1, 1, 4, 1, 1, 0)
 
             >>> input_list
-            [('username\\:\\ ', 'john'),
-             ('pass\\:\\ ', 'admin'),
-             ('comment\\:\\ ', ' none ')]
+            [('username: ', 'username\\:\\ ', 'john'),
+             ('pass: ', 'pass\\:\\ ', 'admin'),
+             ('comment: ', 'comment\\:\\ ', ' none ')]
 
             Note how the prefixes never include the literals that came from
             previous inputs (it is 'pass:', not '[john]\npass:')
