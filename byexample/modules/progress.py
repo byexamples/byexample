@@ -117,8 +117,8 @@ class SimpleReporter(Concern):
         msg += "Escape character is '^]'.\n"
         self._write(msg)
 
-    def _bullet(self, color):
-        return colored("=>", color, self.use_colors)
+    def _bullet(self, color, marker="=>"):
+        return colored(marker, color, self.use_colors)
 
     def timedout(self, example, exception):
         self._update(1)
@@ -128,6 +128,7 @@ class SimpleReporter(Concern):
         msg += '%s Execution timedout at example %i of %i.\n' % (
             self._bullet('red'), self.examplenro, self.num_examples
         )
+        msg += self._bullet('cyan', '-') + ' '
         msg += 'This could be because the example just ran too slow (try add more time\n' + \
                'with +timeout=<n>) or the example is "syntactically incorrect" and\n' + \
                'the interpreter hang (may be you forgot a parenthesis or something like that?).\n'
@@ -137,11 +138,13 @@ class SimpleReporter(Concern):
             if len(input) > 14:
                 input = input[:6] + '..' + input[-6:]
 
+            msg += self._bullet('cyan', '-') + ' '
             msg += ("This happen before typing '%s'.\n" % input) + \
                    "Perhaps the text before did not match what you expected?\n" + \
                    (exception.prefix) + '\n'
 
         if exception.output:
+            msg += self._bullet('cyan', '-') + ' '
             msg += 'This is the last output obtained:\n%s\n' % str(
                 exception.output
             )
@@ -159,6 +162,7 @@ class SimpleReporter(Concern):
             msg += 'by the user '
         msg += 'at example %i of %i.\n' % (self.examplenro, self.num_examples)
 
+        msg += self._bullet('cyan', '-') + ' '
         msg += 'Some resources may had not been cleaned.\n'
         self._write(msg)
 

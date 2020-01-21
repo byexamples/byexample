@@ -32,7 +32,7 @@ File "test/ds/too-slow.md", line 7
 Failed example:
     sleep(1.1)
 => Execution timedout at example 3 of 5.
-This could be because the example just ran too slow (try add more time
+- This could be because the example just ran too slow (try add more time
 with +timeout=<n>) or the example is "syntactically incorrect" and
 the interpreter hang (may be you forgot a parenthesis or something like that?).
 <...>
@@ -93,12 +93,12 @@ File "test/ds/too-slow.md", line 7
 Failed example:
     sleep(1.1)
 => Execution timedout at example 3 of 5.
-This could be because the example just ran too slow (try add more time
+- This could be because the example just ran too slow (try add more time
 with +timeout=<n>) or the example is "syntactically incorrect" and
 the interpreter hang (may be you forgot a parenthesis or something like that?).
 <...>
 => Execution aborted at example 3 of 5.
-Some resources may had not been cleaned.
+- Some resources may had not been cleaned.
 <...>
 [ABORT] Pass: 2 Fail: 1 Skip: 0
 ```
