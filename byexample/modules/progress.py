@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 import traceback, time, os, sys, multiprocessing
+from byexample.executor import InputPrefixNotFound
 from byexample.common import colored, highlight_syntax, indent
 from byexample.concern import Concern
 
@@ -130,6 +131,15 @@ class SimpleReporter(Concern):
         msg += 'This could be because the example just ran too slow (try add more time\n' + \
                'with +timeout=<n>) or the example is "syntactically incorrect" and\n' + \
                'the interpreter hang (may be you forgot a parenthesis or something like that?).\n'
+
+        if isinstance(exception, InputPrefixNotFound):
+            input = exception.input
+            if len(input) > 14:
+                input = input[:6] + '..' + input[-6:]
+
+            msg += ("This happen before typing '%s'.\n" % input) + \
+                   "Perhaps the text before did not match what you expected?\n" + \
+                   (exception.prefix) + '\n'
 
         if exception.output:
             msg += 'This is the last output obtained:\n%s\n' % str(
