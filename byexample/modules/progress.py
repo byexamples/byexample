@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 import traceback, time, os, sys, multiprocessing
 from byexample.executor import InputPrefixNotFound
-from byexample.common import colored, highlight_syntax, indent
+from byexample.common import colored, highlight_syntax, indent, short_string
 from byexample.concern import Concern
 
 try:
@@ -134,9 +134,7 @@ class SimpleReporter(Concern):
                'the interpreter hang (may be you forgot a parenthesis or something like that?).\n'
 
         if isinstance(exception, InputPrefixNotFound):
-            input = exception.input
-            if len(input) > 14:
-                input = input[:6] + '..' + input[-6:]
+            input = short_string(exception.input)
 
             msg += self._bullet('cyan', '-') + ' '
             msg += ("This happen before typing '%s'.\n" % input) + \

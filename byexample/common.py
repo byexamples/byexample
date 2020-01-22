@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 import pprint, traceback, contextlib, os, re, string, shlex, logging, time
 '''
->>> from byexample.common import tohuman
+>>> from byexample.common import tohuman, short_string
 >>> import time
 
 '''
@@ -12,6 +12,40 @@ def indent(s, indent=4):
         See doctest._indent for the code that inspired this.
         '''
     return re.sub('(?m)^(?!$)', indent * ' ', s)
+
+
+def short_string(s, max=14, sep='..'):
+    ''' Return a shorter version of the string if its too large.
+
+        Short string are returned as they are.
+        >>> short_string('hello')
+        'hello'
+
+        But longer are truncated returning only the first and the last
+        part of them using '..' as glue.
+        >>> short_string('hello world my friend')
+        'hello ..friend'
+
+        You can change the separator but larger ones consume
+        more of your data
+        >>> short_string('hello world my friend', sep='::::')
+        'hello::::riend'
+
+        Changing the maximum size is allowed too of course (rounded
+        to the lower even number)
+
+        >>> short_string('hello world my friend', max=9)
+        'hel..end'
+
+    '''
+    assert len(sep) >= 1 and max > 4
+
+    n = (max - len(sep)) // 2
+    assert n >= 2
+
+    if len(s) > max:
+        return s[:n] + sep + s[-n:]
+    return s
 
 
 def build_where_msg(where, owner, msg=None, use_colors=False):
