@@ -1,5 +1,5 @@
 import re
-from .common import constant
+from .common import constant, short_string
 from .log import clog, log_context, DEBUG
 import pprint
 
@@ -347,12 +347,12 @@ class SM(object):
             what you are typing. This may be a typo or a failure in the paste
             mode.
             >>> list(_tokenizer('user: [john doe]ups\npass: [123][a<d>min] '))  # byexample: +norm-ws -tags
-            [(6, 'warn', 'input-not-at-the-end'),
+            [(6, 'warn', ('input-not-at-the-end', '[john doe]')),
              (0, 'literals', 'user:'),  (5, 'wspaces', ' '),
              (6, 'literals', '[john'),  (11, 'wspaces', ' '), (12, 'literals', 'doe]ups'),
              (19, 'newlines', '\n'),
-             (31, 'warn', 'tag-inside-input'),
-             (26, 'warn', 'input-not-at-the-end'),
+             (31, 'warn', ('tag-inside-input', '<d>')),
+             (26, 'warn', ('input-not-at-the-end', '[123]')),
              (20, 'literals', 'pass:'), (25, 'wspaces', ' '), (26, 'literals', '[123]'),
              (31, 'input', 'a<d>min'),
              (31, 'literals', '[a'),    (33, 'tag', '<d>'),   (36, 'literals', 'min]'),
@@ -403,7 +403,10 @@ class SM(object):
 
                 m = tag_splitter.search(input_match.group(1))
                 if m:
-                    yield (charno_of_input, 'warn', 'tag-inside-input')
+                    yield (
+                        charno_of_input, 'warn',
+                        ('tag-inside-input', m.group(0))
+                    )
 
             # do we have any piece of the line that looks like an input?
             # using the 'check' regex we should match any [..], not only
@@ -412,7 +415,10 @@ class SM(object):
                 tmp = line[:input_match.start()] if input_match else line
                 m = input_check_regex.search(tmp)
                 if m:
-                    yield (charno + m.start(), 'warn', 'input-not-at-the-end')
+                    yield (
+                        charno + m.start(), 'warn',
+                        ('input-not-at-the-end', m.group(0))
+                    )
 
             for j, word_or_spaces in enumerate(ws_splitter.split(line)):
                 if j % 2 == 1:
@@ -483,6 +489,8 @@ class SM(object):
                 self.record_input_event(charno, 'input', token)
             elif ttype == 'input-end':
                 self.record_input_event(charno, 'reset')
+            elif ttype == 'warn':
+                self.warn(charno, ttype, token)
             else:
                 self.feed(charno, ttype, token)
 
@@ -492,6 +500,28 @@ class SM(object):
         charnos, regexs, rcounts = zip(*self.results)
         input_list = self.build_input_list()
         return regexs, charnos, rcounts, self.tags_by_idx, input_list
+
+    def warn(self, charno, ttype, token):
+        what, args = token
+        if what == 'tag-inside-input':
+            tagname = args
+            clog().warn(
+                "The tag %s was found inside of an input tag around the character %s.\n" + \
+                "Perhaps you tried to paste something\n" + \
+                "but you forgot '+paste' or the tag has a typo.\n" + \
+                "You could also disable this warning disabling the tags with '-tags'.",
+                short_string(tagname), charno)
+
+        elif what == 'input-not-at-the-end':
+            input = args
+            clog().warn(
+                "The input tag %s around the character %s is not at the end of a line.\n" + \
+                "The input will not be typed.\n" + \
+                "If you do not want to type anything, disable it with '-input'\n" + \
+                "otherwise the tag must be at the end of the line.",
+                short_string(input), charno)
+        else:
+            assert False
 
     def build_input_list(self):
         '''

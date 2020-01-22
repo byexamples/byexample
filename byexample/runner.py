@@ -2,8 +2,9 @@ from __future__ import unicode_literals
 import re, pexpect, time, termios, operator, os, itertools, contextlib
 from functools import reduce, partial
 from .executor import TimeoutException, InputPrefixNotFound
-from .common import tohuman, ShebangTemplate, Countdown
+from .common import tohuman, ShebangTemplate, Countdown, short_string
 from .example import Example
+from .log import clog
 
 from pyte import Stream, Screen
 
@@ -187,6 +188,17 @@ class PexpectMixin(object):
         self._expect_prompt_or_type(
             options, countdown, prompt_re=self.PS1_re, input_list=input_list
         )
+
+        if input_list:
+            s = short_string(input_list[0][-1])
+            if len(input_list) > 1:
+                msg = "Some inputs were not typed: [%s] and %i more."
+                args = (s, len(input_list) - 1)
+            else:
+                msg = "The last input was not typed: [%s]."
+                args = (s, )
+
+            clog().warn(msg, *args)
 
         return self._get_output(options)
 
