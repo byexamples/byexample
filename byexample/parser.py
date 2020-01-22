@@ -158,7 +158,7 @@ class ExampleParser(ExtendOptionParserMixin):
             example.expected_str = example.expected_str.replace(x, '')
 
         expected_regexs, charnos, rcounts, tags_by_idx, input_list = self.expected_as_regexs(
-            example.expected_str, options['tags'], options['type'],
+            example.expected_str, options['tags'], options['input'],
             options['norm_ws']
         )
 

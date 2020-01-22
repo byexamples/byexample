@@ -44,7 +44,7 @@ def _build_fake_example(
                 'norm_ws': False,
                 'tags': True,
                 'rm': [],
-                'type': False
+                'input': False
             }
         )
     parser.extract_options = lambda x: opts

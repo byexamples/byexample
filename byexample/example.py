@@ -81,7 +81,7 @@ class Example(object):
     '42'
 
     >>> example.options
-    {'norm_ws': False, 'rm': [], 'tags': True, 'type': False}
+    {'input': False, 'norm_ws': False, 'rm': [], 'tags': True}
 
     '''
     def __init__(
