@@ -165,7 +165,9 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
                 return out
             raise
 
-    def _expect_prompt(self, options, countdown, prompt_re=None):
+    def _expect_prompt(
+        self, options, countdown, prompt_re=None, earlier_re=None
+    ):
         if options['stop_on_silence'] is not False:
             prev = 0
             while 1:
@@ -175,7 +177,8 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
                     countdown.start()
                     try:
                         return PexpectMixin._expect_prompt(
-                            self, options, silence_countdown, prompt_re
+                            self, options, silence_countdown, prompt_re,
+                            earlier_re
                         )
                     finally:
                         countdown.stop()
@@ -193,7 +196,7 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
 
         else:
             return PexpectMixin._expect_prompt(
-                self, options, countdown, prompt_re
+                self, options, countdown, prompt_re, earlier_re
             )
 
     def interact(self, example, options):
