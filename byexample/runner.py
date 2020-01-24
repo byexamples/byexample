@@ -84,6 +84,7 @@ class PexpectMixin(object):
         self.any_PS_re = re.compile(any_PS_re)
 
         self.output_between_prompts = []
+        self.last_output_may_be_incomplete = False
 
     def _spawn_interpreter(
         self,
@@ -158,6 +159,7 @@ class PexpectMixin(object):
 
     def _drop_output(self):
         self.output_between_prompts = []
+        self.last_output_may_be_incomplete = False
 
     def _shutdown_interpreter(self):
         self.interpreter.sendeof()
@@ -306,6 +308,7 @@ class PexpectMixin(object):
             # should this be necessary?)
             chunk = "{}[{}]\n".format(self.interpreter.match.group(), input)
             self.output_between_prompts[-1] += chunk
+            assert self.last_output_may_be_incomplete
 
             self.interpreter.sendline(input)
             i += 1
@@ -357,7 +360,11 @@ class PexpectMixin(object):
         what = self.interpreter.expect(expect, timeout=timeout)
         countdown.stop()
 
-        self.output_between_prompts.append(self.interpreter.before)
+        output = self.interpreter.before
+        if self.last_output_may_be_incomplete:
+            self.output_between_prompts[-1] += output
+        else:
+            self.output_between_prompts.append(output)
 
         if what == Timeout:
             msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s"
@@ -366,8 +373,10 @@ class PexpectMixin(object):
             raise TimeoutException(msg, out)
 
         elif what == Earlier:
+            self.last_output_may_be_incomplete = True
             return False
 
+        self.last_output_may_be_incomplete = False
         return True
 
     def _get_output(self, options):
