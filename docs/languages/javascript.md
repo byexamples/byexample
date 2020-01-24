@@ -162,9 +162,21 @@ I didn't expect this:
 8
 ```
 
+Also, creating a *readline* interface (`readline` module, `createInterface`
+function) may enable the `echo` mode so all the code that `byexample` types
+will be reflected in the output.
+
+You can avoid this passing `false` to `terminal` option of `createInterface`
+(see the [reference](https://nodejs.org/api/readline.html)) but
+still there may be *spurious* outputs.
+
 ### Abort on a timeout
 
 If a Javascript example takes too long and
 [timeout](/{{ site.uprefix }}/basic/timeout), the whole execution
 timeout.
 
+### Input
+
+The [input](/{{ site.uprefix }}/basic/input)
+feature (`+input`) is not supported.
