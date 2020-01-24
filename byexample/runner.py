@@ -83,7 +83,7 @@ class PexpectMixin(object):
         self.PS1_re = re.compile(PS1_re)
         self.any_PS_re = re.compile(any_PS_re)
 
-        self.last_output = []
+        self.output_between_prompts = []
 
     def _spawn_interpreter(
         self,
@@ -157,7 +157,7 @@ class PexpectMixin(object):
         raise NotImplementedError()  # pragma: no cover
 
     def _drop_output(self):
-        self.last_output = []
+        self.output_between_prompts = []
 
     def _shutdown_interpreter(self):
         self.interpreter.sendeof()
@@ -305,7 +305,7 @@ class PexpectMixin(object):
             # echo-emulation (TODO: some interpreters have echo activated,
             # should this be necessary?)
             chunk = "{}[{}]\n".format(self.interpreter.match.group(), input)
-            self.last_output[-1] += chunk
+            self.output_between_prompts[-1] += chunk
 
             self.interpreter.sendline(input)
             i += 1
@@ -328,7 +328,7 @@ class PexpectMixin(object):
             happens)
 
             During the waiting, collect the 'before' output into
-            self.last_output
+            self.output_between_prompts
         '''
         if countdown == None:
             countdown = Countdown(options['timeout'])
@@ -357,11 +357,11 @@ class PexpectMixin(object):
         what = self.interpreter.expect(expect, timeout=timeout)
         countdown.stop()
 
-        self.last_output.append(self.interpreter.before)
+        self.output_between_prompts.append(self.interpreter.before)
 
         if what == Timeout:
             msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s"
-            msg = msg % ''.join(self.last_output)[-1000:]
+            msg = msg % ''.join(self.output_between_prompts)[-1000:]
             out = self._get_output(options)
             raise TimeoutException(msg, out)
 
@@ -372,11 +372,11 @@ class PexpectMixin(object):
 
     def _get_output(self, options):
         if options['term'] == 'dumb':
-            out = self._emulate_dumb_terminal(self.last_output)
+            out = self._emulate_dumb_terminal(self.output_between_prompts)
         elif options['term'] == 'ansi':
-            out = self._emulate_ansi_terminal(self.last_output)
+            out = self._emulate_ansi_terminal(self.output_between_prompts)
         elif options['term'] == 'as-is':
-            out = self._emulate_as_is_terminal(self.last_output)
+            out = self._emulate_as_is_terminal(self.output_between_prompts)
         else:
             raise TypeError(
                 "Unknown terminal type '+term=%s'." % options['term']
@@ -391,12 +391,12 @@ class PexpectMixin(object):
         # so this breaks badly self._get_output
         # experimental feature, use this instead of _get_output
 
-        # self.last_output is a list of strings found by pexpect
+        # self.output_between_prompts is a list of strings found by pexpect
         # after returning of each pexpect.expect
         # in other words if we prefix each line with the prompt
         # should get the original output from the process
         cookie = '[byexamplecookie]$'
-        lines = (cookie + ' ' + line for line in self.last_output)
+        lines = (cookie + ' ' + line for line in self.output_between_prompts)
         self._drop_output()
 
         # now, feed those lines to our ANSI Terminal emulator
