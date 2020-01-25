@@ -81,7 +81,11 @@ class Example(object):
     '42'
 
     >>> example.options
-    {'input': False, 'norm_ws': False, 'rm': [], 'tags': True}
+    {'input': False,
+     'input_prefix_range': (6, 12),
+     'norm_ws': False,
+     'rm': [],
+     'tags': True}
 
     '''
     def __init__(

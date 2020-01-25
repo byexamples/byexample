@@ -157,9 +157,10 @@ class ExampleParser(ExtendOptionParserMixin):
         for x in options['rm']:
             example.expected_str = example.expected_str.replace(x, '')
 
+        input_prefix_len_range = options['input_prefix_range']
         expected_regexs, charnos, rcounts, tags_by_idx, input_list = self.expected_as_regexs(
             example.expected_str, options['tags'], options['input'],
-            options['norm_ws']
+            options['norm_ws'], input_prefix_len_range
         )
 
         ExpectedClass = _LinearExpected
@@ -195,7 +196,8 @@ class ExampleParser(ExtendOptionParserMixin):
         return example
 
     def expected_as_regexs(
-        self, expected, tags_enabled, input_enabled, normalize_whitespace
+        self, expected, tags_enabled, input_enabled, normalize_whitespace,
+        input_prefix_len_range
     ):
         '''
         From the expected string create a list of regular expressions that
@@ -219,7 +221,7 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> import re
 
             >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
-            >>> _as_regexs = partial(parser.expected_as_regexs, tags_enabled=True, input_enabled=True, normalize_whitespace=False)
+            >>> _as_regexs = partial(parser.expected_as_regexs, tags_enabled=True, input_enabled=True, normalize_whitespace=False, input_prefix_len_range=(6,12))
 
             >>> expected = 'a<foo>b<bar>c'
             >>> regexs, charnos, rcounts, tags_by_idx, input_list = _as_regexs(expected)
@@ -269,7 +271,6 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> tags_by_idx
             {2: None, 4: 'foo-bar'}
         '''
-        input_prefix_len_range = (6, 12)
         if normalize_whitespace:
             sm = SM_NormWS(
                 self.capture_tag_regexs(), self.input_regexs(),
