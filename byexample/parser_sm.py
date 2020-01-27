@@ -545,8 +545,8 @@ class SM(object):
             >>> parse('[42]')[-1]
             [('', '', '42')]
 
-            >>> parse('num: [42]')[-1]
-            [('num: ', 'num\\:\\ ', '42')]
+            >>> parse('num [42]')[-1]
+            [('num ', 'num\\ ', '42')]
 
             Internally we say the the state machine is *in sync* with
             the output.
@@ -557,16 +557,16 @@ class SM(object):
 
             In these cases a minimum amount of prefix is required:
 
-            >>> parse('your name: <...>[john]')[-1]
+            >>> parse('your name <...>[john]')[-1]
             Traceback<...>
-            ValueError: There are too few characters (0) before the input tag at character 16th to proceed
+            ValueError: There are too few characters (0) before the input tag at character 15th to proceed
 
-            >>> parse('your nam<...>e: [john]')[-1]
+            >>> parse('your nam<...>e [john]')[-1]
             Traceback<...>
-            ValueError: There are too few characters (3) before the input tag at character 16th to proceed
+            ValueError: There are too few characters (2) before the input tag at character 15th to proceed
 
-            >>> parse('your<...>name: [john]')[-1]
-            [('name: ', 'name\\:\\ ', 'john')]
+            >>> parse('your<...> name [john]')[-1]
+            [(' name ', '\\ name\\ ', 'john')]
 
             >>> sm.input_prefix_min_len
             6
@@ -574,8 +574,8 @@ class SM(object):
             Once that an input is emitted successfully, the internal
             state machine is in sync again:
 
-            >>> parse('your<...>name: [john]\nn: [42]')[-1]
-            [('name: ', 'name\\:\\ ', 'john'), ('n: ', 'n\\:\\ ', '42')]
+            >>> parse('your<...> name [john]\nn [42]')[-1]
+            [(' name ', '\\ name\\ ', 'john'), ('n ', 'n\\ ', '42')]
 
             Note how the prefix of the second input does not include
             anything before the first input.
@@ -583,9 +583,9 @@ class SM(object):
             Here is another example where there are several lines
             in the prefix:
 
-            >>> parse('name: [john]\nnice to meet you\npass: [admin]')[-1]
-            [('name: ', 'name\\:\\ ', 'john'),
-             ('meet you\npass: ', 'meet\\ you\\\npass\\:\\ ', 'admin')]
+            >>> parse('name [john]\nnice to meet you\npass [admin]')[-1]
+            [('name ', 'name\\ ', 'john'),
+             ('meet you\npass ', 'meet\\ you\\\npass\\ ', 'admin')]
 
             Note how the prefix of the second input is not arbitrary large.
 
@@ -986,25 +986,25 @@ class SM_NormWS(SM):
             as literals to be matched. See more about this in the documentation
             of SM_NotNormWS.parse method.
 
-            >>> expected = 'username: [john]\npass: [admin]  \ncomment: [ none ]'
+            >>> expected = 'username [john]\npass [admin]  \ncomment [ none ]'
             >>> regexs, charnos, rcounts, _, input_list = _as_regexs(expected)
 
             >>> regexs              # byexample: +norm-ws
-            ('\\A', 'username\\:', '\\s+(?!\\s)', '\\[john\\]', '\\s+(?!\\s)',
-             'pass\\:', '\\s+(?!\\s)', '\\[admin\\]', '\\s+(?!\\s)',
-             'comment\\:', '\\s+(?!\\s)', '\\[', '\\s+(?!\\s)', 'none', '\\s+(?!\\s)', '\\]',
+            ('\\A', 'username', '\\s+(?!\\s)', '\\[john\\]', '\\s+(?!\\s)',
+             'pass', '\\s+(?!\\s)', '\\[admin\\]', '\\s+(?!\\s)',
+             'comment', '\\s+(?!\\s)', '\\[', '\\s+(?!\\s)', 'none', '\\s+(?!\\s)', '\\]',
              '\\s*\\Z')
 
             >>> charnos
-            (0, 0, 9, 10, 16, 17, 22, 23, 30, 33, 41, 42, 43, 44, 48, 49, 50)
+            (0, 0, 8, 9, 15, 16, 20, 21, 28, 31, 38, 39, 40, 41, 45, 46, 47)
 
             >>> rcounts
-            (0, 9, 1, 6, 1, 5, 1, 7, 1, 8, 1, 1, 1, 4, 1, 1, 0)
+            (0, 8, 1, 6, 1, 4, 1, 7, 1, 7, 1, 1, 1, 4, 1, 1, 0)
 
             >>> input_list
-            [('username: ', 'username\\:\\s+(?!\\s)', 'john'),
-             ('pass: ', 'pass\\:\\s+(?!\\s)', 'admin'),
-             ('comment: ', 'comment\\:\\s+(?!\\s)', ' none ')]
+            [('username ', 'username\\s+(?!\\s)', 'john'),
+             ('pass ', 'pass\\s+(?!\\s)', 'admin'),
+             ('comment ', 'comment\\s+(?!\\s)', ' none ')]
         '''
         return SM.parse(self, expected, tags_enabled, input_enabled)
 
@@ -1233,25 +1233,25 @@ class SM_NotNormWS(SM):
             as literals to be matched (we expect that the input is *echoed* back
             so we need to match it too).
 
-            >>> expected = 'username: [john]\npass: [admin]  \ncomment: [ none ]'
+            >>> expected = 'username [john]\npass [admin]  \ncomment [ none ]'
             >>> regexs, charnos, rcounts, _, input_list = _as_regexs(expected)
 
             >>> regexs              # byexample: +norm-ws
-            ('\\A', 'username\\:', '\\ ', '\\[john\\]', '\\\n',
-             'pass\\:', '\\ ', '\\[admin\\]', '\\ \\ ', '\\\n',
-             'comment\\:', '\\ ', '\\[', '\\ ', 'none', '\\ ', '\\]',
+            ('\\A', 'username', '\\ ', '\\[john\\]', '\\\n',
+             'pass', '\\ ', '\\[admin\\]', '\\ \\ ', '\\\n',
+             'comment', '\\ ', '\\[', '\\ ', 'none', '\\ ', '\\]',
              '\\n*\\Z')
 
             >>> charnos
-            (0, 0, 9, 10, 16, 17, 22, 23, 30, 32, 33, 41, 42, 43, 44, 48, 49, 50)
+            (0, 0, 8, 9, 15, 16, 20, 21, 28, 30, 31, 38, 39, 40, 41, 45, 46, 47)
 
             >>> rcounts
-            (0, 9, 1, 6, 1, 5, 1, 7, 2, 1, 8, 1, 1, 1, 4, 1, 1, 0)
+            (0, 8, 1, 6, 1, 4, 1, 7, 2, 1, 7, 1, 1, 1, 4, 1, 1, 0)
 
             >>> input_list
-            [('username: ', 'username\\:\\ ', 'john'),
-             ('pass: ', 'pass\\:\\ ', 'admin'),
-             ('comment: ', 'comment\\:\\ ', ' none ')]
+            [('username ', 'username\\ ', 'john'),
+             ('pass ', 'pass\\ ', 'admin'),
+             ('comment ', 'comment\\ ', ' none ')]
 
             Note how the prefixes never include the literals that came from
             previous inputs (it is 'pass:', not '[john]\npass:')
