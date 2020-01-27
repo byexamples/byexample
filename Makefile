@@ -121,7 +121,7 @@ docker-shell: docker-build
 # Run the tests where other languages than Python and Shell are used
 # inside the docker where all the interpreters are installed
 docker-test: docker-build
-	@sudo docker run -it --rm -v `pwd`:/srv -w /srv byexample-test bash -c 'pip3 install -e . && byexample @test/docker.env -- byexample/modules/*.py docs/languages/*.md docs/examples/* docs/advanced/{geometry,terminal-emulation}.md ; make -s clean_test'
+	@sudo docker run -it --rm -v `pwd`:/srv -w /srv byexample-test bash -c 'pip3 install -e . && byexample @test/docker.env -- byexample/modules/*.py docs/languages/*.md docs/examples/* docs/advanced/{geometry,terminal-emulation}.md ;  byexample @test/docker.no-python-shell.env -- docs/basic/input.md ; make -s clean_test'
 
 #
 ##

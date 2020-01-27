@@ -127,4 +127,8 @@ A simple workaround is to make the lines of the code in the snippet
 shorter or increase the
 [terminal width](/{{ site.uprefix }}/advanced/geometry).
 
+### Input
+
+The [input](/{{ site.uprefix }}/basic/input)
+feature (`+input`) is not supported.
 

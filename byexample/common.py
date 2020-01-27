@@ -1,7 +1,9 @@
 from __future__ import unicode_literals
-import pprint, traceback, contextlib, os, re, string, shlex, logging
+import pprint, traceback, contextlib, os, re, string, shlex, logging, time
 '''
->>> from byexample.common import tohuman
+>>> from byexample.common import tohuman, short_string
+>>> import time
+
 '''
 
 
@@ -10,6 +12,40 @@ def indent(s, indent=4):
         See doctest._indent for the code that inspired this.
         '''
     return re.sub('(?m)^(?!$)', indent * ' ', s)
+
+
+def short_string(s, max=14, sep='..'):
+    ''' Return a shorter version of the string if its too large.
+
+        Short string are returned as they are.
+        >>> short_string('hello')
+        'hello'
+
+        But longer are truncated returning only the first and the last
+        part of them using '..' as glue.
+        >>> short_string('hello world my friend')
+        'hello ..friend'
+
+        You can change the separator but larger ones consume
+        more of your data
+        >>> short_string('hello world my friend', sep='::::')
+        'hello::::riend'
+
+        Changing the maximum size is allowed too of course (rounded
+        to the lower even number)
+
+        >>> short_string('hello world my friend', max=9)
+        'hel..end'
+
+    '''
+    assert len(sep) >= 1 and max > 4
+
+    n = (max - len(sep)) // 2
+    assert n >= 2
+
+    if len(s) > max:
+        return s[:n] + sep + s[-n:]
+    return s
 
 
 def build_where_msg(where, owner, msg=None, use_colors=False):
@@ -254,3 +290,106 @@ class ShebangTemplate(string.Template):
             cmd.append(x)
 
         return ' '.join(cmd)
+
+
+class Countdown:
+    ''' Keep track of how much time left in seconds.
+
+        >>> from byexample.common import Countdown
+        >>> cdown = Countdown(left=0.5)
+        >>> cdown
+        Countdown(left=0.5, is_running=False)
+
+        To start counting down use `start` and `stop`:
+
+        >>> cdown.start()
+        >>> time.sleep(0.1)
+        >>> cdown.is_running()
+        True
+        >>> cdown.stop()
+        Countdown<...>
+
+        Then you can check how much time left and if it
+        did run out of time or not:
+
+        >>> 0.2 < cdown.left() < 0.4     # approx, avoid float issues
+        True
+        >>> cdown.did_run_out()
+        False
+
+        >>> cdown.is_running()
+        False
+
+        Starting when the counter is running is an error:
+
+        >>> cdown.start()
+        >>> cdown.start()
+        Traceback<...>
+        ValueError: The counter is already running
+
+        The same if we want to check how much time left:
+        >>> cdown.left()
+        Traceback<...>
+        ValueError: The counter is running
+
+        And of course we have the same problem if we want to
+        stop the counter when it is not running:
+
+        >>> cdown.stop()
+        Countdown<...>
+        >>> cdown.stop()
+        Traceback<...>
+        ValueError: The counter is not running
+
+        Consuming more time than the configured is possible:
+
+        >>> cdown.start()
+        >>> time.sleep(0.5)
+        >>> cdown.stop()
+        Countdown<...>
+
+        The counter will say that left zero, even if we consumed
+        more than the possible:
+
+        >>> cdown.left()
+        0
+        >>> cdown.did_run_out()
+        True
+
+        '''
+    def __init__(self, left):
+        self._left = left
+        self._start_mark = None
+
+    def __repr__(self):
+        return "Countdown(left={}, is_running={})".format(
+            self.left(), self.is_running()
+        )
+
+    def start(self):
+        if self.is_running():
+            raise ValueError("The counter is already running")
+        self._start_mark = self._now()
+
+    def stop(self):
+        if not self.is_running():
+            raise ValueError("The counter is not running")
+        elapsed = self._now() - self._start_mark
+        self._left = max(self._left - elapsed, 0)
+        self._start_mark = None
+
+        return self
+
+    def left(self):
+        if self.is_running():
+            raise ValueError("The counter is running")
+        return self._left
+
+    def did_run_out(self):
+        return self.left() == 0
+
+    def is_running(self):
+        return self._start_mark is not None
+
+    def _now(self):
+        return time.time()

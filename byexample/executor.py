@@ -9,6 +9,15 @@ class TimeoutException(Exception):
         self.output = output
 
 
+class InputPrefixNotFound(TimeoutException):
+    def __init__(self, prefix, input, timeout_exc):
+        msg = "The text before typing '%s' was not found. Expected '%s' but found '%s'"
+        msg = msg % (input, prefix, timeout_exc.output)
+        TimeoutException.__init__(self, msg, timeout_exc.output)
+
+        self.prefix, self.input = prefix, input
+
+
 class FileExecutor(object):
     def __init__(
         self, concerns, differ, verbosity, use_colors, options, **unused

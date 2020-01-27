@@ -117,3 +117,7 @@ If a PHP example takes too long and
 [timeout](/{{ site.uprefix }}/basic/timeout), the whole execution
 timeout.
 
+### Input
+
+The [input](/{{ site.uprefix }}/basic/input)
+feature (`+input`) is not supported.

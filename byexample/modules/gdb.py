@@ -113,7 +113,7 @@ class GDBInterpreter(ExampleRunner, PexpectMixin):
         if example.source.endswith('\n'):
             source = example.source[:-1]
 
-        return self._exec_and_wait(source, options)
+        return self._exec_and_wait(source, options, from_example=example)
 
     def interact(self, example, options):
         PexpectMixin.interact(self)

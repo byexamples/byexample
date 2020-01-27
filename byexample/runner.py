@@ -1,8 +1,10 @@
 from __future__ import unicode_literals
 import re, pexpect, time, termios, operator, os, itertools, contextlib
 from functools import reduce, partial
-from .executor import TimeoutException
-from .common import tohuman, ShebangTemplate
+from .executor import TimeoutException, InputPrefixNotFound
+from .common import tohuman, ShebangTemplate, Countdown, short_string
+from .example import Example
+from .log import clog
 
 from pyte import Stream, Screen
 
@@ -81,7 +83,8 @@ class PexpectMixin(object):
         self.PS1_re = re.compile(PS1_re)
         self.any_PS_re = re.compile(any_PS_re)
 
-        self.last_output = []
+        self.output_between_prompts = []
+        self.last_output_may_be_incomplete = False
 
     def _spawn_interpreter(
         self,
@@ -116,7 +119,9 @@ class PexpectMixin(object):
         if wait_first_prompt:
             prompt_re = self.PS1_re if initial_prompt is None else initial_prompt
             self._expect_prompt(
-                options, timeout=first_prompt_timeout, prompt_re=prompt_re
+                options,
+                countdown=Countdown(first_prompt_timeout),
+                prompt_re=prompt_re
             )
             self._drop_output()  # discard banner and things like that
 
@@ -153,7 +158,8 @@ class PexpectMixin(object):
         raise NotImplementedError()  # pragma: no cover
 
     def _drop_output(self):
-        self.last_output = []
+        self.output_between_prompts = []
+        self.last_output_may_be_incomplete = False
 
     def _shutdown_interpreter(self):
         self.interpreter.sendeof()
@@ -161,20 +167,40 @@ class PexpectMixin(object):
         time.sleep(0.001)
         self.interpreter.terminate(force=True)
 
-    def _exec_and_wait(self, source, options, timeout=None):
-        if timeout == None:
-            timeout = options['timeout']
+    def _exec_and_wait(self, source, options, *, from_example=None, **kargs):
+        if from_example is None:
+            input_list = kargs.get('input_list', [])
+        else:
+            input_list = kargs.get('input_list', from_example.input_list)
 
+        timeout = kargs.get('timeout', options['timeout'])
+
+        # get a copy: _expect_prompt_or_type will modify this in-place
+        input_list = list(input_list)
+
+        countdown = Countdown(timeout)
         lines = source.split('\n')
         for line in lines[:-1]:
             self.interpreter.sendline(line)
-
-            begin = time.time()
-            self._expect_prompt(options, timeout)
-            timeout -= max(time.time() - begin, 0)
+            self._expect_prompt_or_type(
+                options, countdown, input_list=input_list
+            )
 
         self.interpreter.sendline(lines[-1])
-        self._expect_prompt(options, timeout, prompt_re=self.PS1_re)
+        self._expect_prompt_or_type(
+            options, countdown, prompt_re=self.PS1_re, input_list=input_list
+        )
+
+        if input_list:
+            s = short_string(input_list[0][-1])
+            if len(input_list) > 1:
+                msg = "Some inputs were not typed: [%s] and %i more."
+                args = (s, len(input_list) - 1)
+            else:
+                msg = "The last input was not typed: [%s]."
+                args = (s, )
+
+            clog().warn(msg, *args)
 
         return self._get_output(options)
 
@@ -220,9 +246,11 @@ class PexpectMixin(object):
         self._screen.resize(rows, cols)
         self.interpreter.setwinsize(rows, cols)
 
+    UNIV_NL = re.compile('\r\n|\r')
+
     @staticmethod
     def _universal_new_lines(out):
-        return '\n'.join(out.splitlines())
+        return re.sub(PexpectMixin.UNIV_NL, '\n', out)
 
     def _emulate_ansi_terminal(self, chunks, join=True):
         for chunk in chunks:
@@ -249,41 +277,115 @@ class PexpectMixin(object):
     def _emulate_as_is_terminal(self, chunks):
         return ''.join((self._universal_new_lines(chunk) for chunk in chunks))
 
-    def _expect_prompt(self, options, timeout, prompt_re=None):
+    def _expect_prompt_or_type(
+        self, options, countdown, prompt_re=None, input_list=[]
+    ):
+        assert isinstance(input_list, list)
+
+        i = 0
+        prompt_found = False
+        while i < len(input_list):
+            prefix, prefix_regex, input = input_list[i]
+
+            # the regex may contain "escaped" newlines (\n) while
+            # the runner may output any form of end line like
+            # \n, \r and \r\n. In order to match any of those
+            # we replace the litera "escaped" \n with a regex
+            prefix_regex = prefix_regex.replace('\\\n', r'(?:\r\n|\n|\r)')
+            try:
+                prompt_found = self._expect_prompt(
+                    options, countdown, prompt_re, earlier_re=prefix_regex
+                )
+            except TimeoutException as ex:
+                raise InputPrefixNotFound(prefix, input, ex)
+
+            if prompt_found:
+                break
+
+            # Add the prefix (output comming from the interpreter) and
+            # the [ <input> ] that we typed in. This is a sort of
+            # echo-emulation (TODO: some interpreters have echo activated,
+            # should this be necessary?)
+            chunk = "{}[{}]\n".format(self.interpreter.match.group(), input)
+            self.output_between_prompts[-1] += chunk
+            assert self.last_output_may_be_incomplete
+
+            self.interpreter.sendline(input)
+            i += 1
+
+        # remove in-place the inputs that were typed
+        del input_list[:i]
+
+        if not prompt_found:
+            self._expect_prompt(options, countdown, prompt_re)
+
+    def _expect_prompt(
+        self, options, countdown, prompt_re=None, earlier_re=None
+    ):
         ''' Wait for a <prompt_re> (any self.any_PS_re if <prompt_re> is None)
             and raise a timeout if we cannot find one.
 
-            After the successful expect, collect the 'before' output into
-            self.last_output
+            If <earlier_re> is given, wait it along with the prompt: if it
+            is found before the prompt, _expect_prompt will return False,
+            otherwise will return True (or raise an exception if a timeout
+            happens)
+
+            During the waiting, collect the 'before' output into
+            self.output_between_prompts
         '''
-        if timeout == None:
-            timeout = options['timeout']
+        if countdown == None:
+            countdown = Countdown(options['timeout'])
+
+        if not isinstance(countdown, Countdown):
+            raise TypeError(
+                "Invalid object for countdown: %s" % type(countdown)
+            )
 
         # timeout of 0 or negative means do not wait, just do a single read and return back
-        timeout = max(timeout, 0)
+        timeout = countdown.left()
+        assert timeout >= 0
 
         if not prompt_re:
             prompt_re = self.any_PS_re
 
-        expect = [prompt_re, pexpect.TIMEOUT]
-        PS_found, Timeout = range(len(expect))
+        expect = [prompt_re, pexpect.TIMEOUT, earlier_re]
+        PS_found, Timeout, Earlier = range(len(expect))
 
+        # remove it if it was actually None (adding it before and
+        # removing it now is weird but it makes the code easier and shorter)
+        if earlier_re is None:
+            del expect[-1]
+
+        countdown.start()
         what = self.interpreter.expect(expect, timeout=timeout)
-        self.last_output.append(self.interpreter.before)
+        countdown.stop()
+
+        output = self.interpreter.before
+        if self.last_output_may_be_incomplete:
+            self.output_between_prompts[-1] += output
+        else:
+            self.output_between_prompts.append(output)
 
         if what == Timeout:
             msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s"
-            msg = msg % ''.join(self.last_output)[-1000:]
+            msg = msg % ''.join(self.output_between_prompts)[-1000:]
             out = self._get_output(options)
             raise TimeoutException(msg, out)
 
+        elif what == Earlier:
+            self.last_output_may_be_incomplete = True
+            return False
+
+        self.last_output_may_be_incomplete = False
+        return True
+
     def _get_output(self, options):
         if options['term'] == 'dumb':
-            out = self._emulate_dumb_terminal(self.last_output)
+            out = self._emulate_dumb_terminal(self.output_between_prompts)
         elif options['term'] == 'ansi':
-            out = self._emulate_ansi_terminal(self.last_output)
+            out = self._emulate_ansi_terminal(self.output_between_prompts)
         elif options['term'] == 'as-is':
-            out = self._emulate_as_is_terminal(self.last_output)
+            out = self._emulate_as_is_terminal(self.output_between_prompts)
         else:
             raise TypeError(
                 "Unknown terminal type '+term=%s'." % options['term']
@@ -298,12 +400,12 @@ class PexpectMixin(object):
         # so this breaks badly self._get_output
         # experimental feature, use this instead of _get_output
 
-        # self.last_output is a list of strings found by pexpect
+        # self.output_between_prompts is a list of strings found by pexpect
         # after returning of each pexpect.expect
         # in other words if we prefix each line with the prompt
         # should get the original output from the process
         cookie = '[byexamplecookie]$'
-        lines = (cookie + ' ' + line for line in self.last_output)
+        lines = (cookie + ' ' + line for line in self.output_between_prompts)
         self._drop_output()
 
         # now, feed those lines to our ANSI Terminal emulator
@@ -406,7 +508,7 @@ class PexpectMixin(object):
             # wait for the prompt, ignore any extra output
             self._expect_prompt(
                 options,
-                timeout=options['x']['dfl_timeout'],
+                countdown=Countdown(options['x']['dfl_timeout']),
                 prompt_re=self.PS1_re
             )
             self._drop_output()
@@ -424,7 +526,7 @@ class PexpectMixin(object):
                     # are without be read)
                     self._expect_prompt(
                         options,
-                        timeout=options['x']['dfl_timeout'],
+                        countdown=Countdown(options['x']['dfl_timeout']),
                         prompt_re=self.PS1_re
                     )
                     self._drop_output()

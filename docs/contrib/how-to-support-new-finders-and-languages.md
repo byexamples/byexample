@@ -270,7 +270,7 @@ the scenes so you do not to be worry about the details):
 
 ```python
 >>> from byexample.options import Options, OptionParser
->>> parser = ArnoldCParser(0, 'utf-8', Options(rm=[], norm_ws=False, tags=True, optparser=OptionParser(add_help=False)))
+>>> parser = ArnoldCParser(0, 'utf-8', Options(rm=[], norm_ws=False, tags=True, input=False, input_prefix_range=(6,12), optparser=OptionParser(add_help=False)))
 
 >>> from byexample.finder import Example
 >>> runner = None # not yet
@@ -296,6 +296,9 @@ knows how to extract these options from a *raw* example because is a language
 specific task.
 
 ```python
+>>> from byexample.log import init_log_system
+>>> init_log_system()   # needed becuase parse_yourself requires the log system
+
 >>> example = example.parse_yourself()
 
 >>> print(example.source)

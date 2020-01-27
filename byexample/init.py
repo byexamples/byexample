@@ -190,6 +190,14 @@ def geometry(x):
     return (lines, columns)
 
 
+def _range(x):
+    min, max = [int(v.strip()) for v in str(x).split(':')]
+    if min < 0 or max < 0 or min > max:
+        raise ValueError("Invalid range %s" % x)
+
+    return (min, max)
+
+
 def get_default_options_parser(cmdline_args):
     options_parser = OptionParser()
     options_parser.add_flag(
@@ -247,6 +255,17 @@ def get_default_options_parser(cmdline_args):
         choices=['as-is', 'dumb', 'ansi'],
         help=
         "select a terminal emulator to interpret the output (default to 'dumb')."
+    )
+    options_parser.add_flag(
+        "input", default=False, help="enable the input tags [...]"
+    )
+
+    options_parser.add_argument(
+        "+input-prefix-range",
+        default=(6, 12),
+        type=_range,
+        help=
+        "amount of characters that must precede at minimum/maximum an input tag in the form min:max"
     )
 
     return options_parser
