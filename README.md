@@ -65,6 +65,8 @@ Currently we support:
  - [Shell](https://byexamples.github.io/byexample/languages/shell)
  - [GDB](https://byexamples.github.io/byexample/languages/gdb)
  - [C/C++](https://byexamples.github.io/byexample/languages/cpp)
+ - [Elixir](https://byexamples.github.io/byexample/languages/elixir)
+ - [PHP](https://byexamples.github.io/byexample/languages/php)
 
 More languages will be supported in the future. Stay tuned.
 
