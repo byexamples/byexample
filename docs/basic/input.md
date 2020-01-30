@@ -6,7 +6,7 @@ $ alias byexample=byexample\ --pretty\ none\ -x-not-recover-timeout\ --timeout\ 
 
 -->
 
-# Typing Text
+# Type Text
 
 There are cases when an example requires input from the user
 like when you are running an *interactive* code or command.
