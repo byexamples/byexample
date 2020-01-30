@@ -76,7 +76,8 @@ See the full
 ## 8.1.0
 
 This minor release defines `bash` as the default `shell` and allows
-the user to change it using the new `+shell` option.
+the user to change it using the new `+shell`
+[option](/{{ site.uprefix }}/languages/shell).
 
 Before `8.1.0` using `shell` used `sh` which it is commonly a symbolic
 link to `bash`, `dash` and who-knows-else. So this release *may*
@@ -91,7 +92,8 @@ See the full
 ## 8.0.0
 
 Several changes were added:
- - a terminal ANSI emulator (enabled with `+term=ansi`), specially useful
+ - a [terminal ANSI emulator](/{{ site.uprefix }}/advanced/terminal-emulation)
+(enabled with `+term=ansi`), specially useful
 for those examples that are designed with a cli.
  - deterministic output for Ruby examples
  - cancellation of runs (performance improvement)
@@ -114,7 +116,7 @@ Probably the major impact comes from the zone delimiter: now `byexample`
 will *not* find examples anywhere, instead, it will find them in very
 specific places or zones that depends of the file extension.
 
-For C/C++ examples, now we use ``?:`` and ``::`` as the primary and
+For [C/C++ examples](/{{ site.uprefix }}/languages/cpp), now we use ``?:`` and ``::`` as the primary and
 secondary prompts.
 
 And a lot of more little enhancements, fixes and improvements.
@@ -124,7 +126,8 @@ See the full
 
 ## 7.4.0
 
-This release comes with an *experimental* support for Javascript/Nodejs
+This release comes with an *experimental* support for
+[Javascript/Nodejs](/{{ site.uprefix }}/languages/javascript)
 and the ability to run examples in parallel.
 
 See the full
