@@ -382,8 +382,7 @@ We can disable this fix with ``-py-remove-empty-lines``
 ...   return a
   File <...>
     return a
-    ^
-IndentationError: unexpected indent
+<...>IndentationError: unexpected indent
 ```
 
 You may ask why if the ``byexample`` fix works, why anyone would like to disable
