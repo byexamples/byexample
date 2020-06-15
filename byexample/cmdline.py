@@ -279,7 +279,7 @@ def parse_args(args=None):
     g.add_argument(
         "--encoding",
         metavar='<enc>',
-        default=sys.stdout.encoding,
+        default=sys.stdout.encoding.lower(),
         help='select the encoding (default: %(default)s).'
     )
     g.add_argument(

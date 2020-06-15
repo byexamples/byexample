@@ -141,7 +141,7 @@ Miscellaneous Options:
                         (with -l)
   -m <dir>, --modules <dir>
                         append a directory for searching modules there.
-  --encoding <enc>      select the encoding (default: UTF-8).
+  --encoding <enc>      select the encoding (default: utf-8).
   --pretty {none,all}   control how to pretty print the output.
   -V, --version         show byexample's version and license, then exit
 ~
