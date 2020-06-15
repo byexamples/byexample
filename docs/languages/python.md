@@ -145,7 +145,7 @@ At difference with ``doctest``, syntax errors are also captured.
 ```python
 >>> f(]        # invalid syntax
   File<...>
-SyntaxError: invalid syntax
+SyntaxError: <...>
 ```
 
 If you enabled the compatibility mode, any output that it looks like an
@@ -382,8 +382,7 @@ We can disable this fix with ``-py-remove-empty-lines``
 ...   return a
   File <...>
     return a
-    ^
-IndentationError: unexpected indent
+<...>IndentationError: unexpected indent
 ```
 
 You may ask why if the ``byexample`` fix works, why anyone would like to disable

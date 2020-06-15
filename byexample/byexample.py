@@ -37,6 +37,9 @@ def main(args=None):
 
     cache_disabled = os.getenv('BYEXAMPLE_CACHE_DISABLED', "1") != "0"
     cache_verbose = os.getenv('BYEXAMPLE_CACHE_VERBOSE', "0") != "0"
+    if sys.version_info > (3, 7):
+        # The feature is not supported for Python 3.8
+        cache_disabled = True
     cache = RegexCache('0', cache_disabled, cache_verbose)
 
     with cache.activated(auto_sync=True, label="0"):
