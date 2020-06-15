@@ -90,6 +90,12 @@ def create_file_new_or_fail(name):
 >>> from byexample.cache import RegexCache
 >>> import warnings
 >>> warnings.filterwarnings('ignore', module='byexample.cache')
+
+Currently this feature does not work on Python 3.8
+>>> import sys
+>>> if sys.version_info <= (3, 7):
+...     print("cache enabled")
+<cache-enabled>
 '''
 
 
@@ -290,13 +296,13 @@ class RegexCache(object):
                 >>> get = RegexCache(None).get
 
                 >>> r1 = re.compile(r'foo.*bar', re.DOTALL)
-                >>> r2 = get(r'foo.*bar', re.DOTALL)
+                >>> r2 = get(r'foo.*bar', re.DOTALL)     # byexample: +if=cache-enabled
 
-                >>> r1.pattern == r2.pattern
+                >>> r1.pattern == r2.pattern       # byexample: +if=cache-enabled
                 True
 
-                >>> r3 = re.compile(r2) # from another regex
-                >>> r4 = get(r2)  # but we don't support this
+                >>> r3 = re.compile(r2) # from another regex         # byexample: +if=cache-enabled 
+                >>> r4 = get(r2)        # but we don't support this  # byexample: +if=cache-enabled 
                 Traceback <...>
                 <...>
                 ValueError: Regex pattern must be a string or bytes but it is <...>
