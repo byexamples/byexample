@@ -290,7 +290,7 @@ class PexpectMixin(object):
             # the regex may contain "escaped" newlines (\n) while
             # the runner may output any form of end line like
             # \n, \r and \r\n. In order to match any of those
-            # we replace the litera "escaped" \n with a regex
+            # we replace the literal "escaped" \n with a regex
             prefix_regex = prefix_regex.replace('\\\n', r'(?:\r\n|\n|\r)')
             try:
                 prompt_found = self._expect_prompt(
