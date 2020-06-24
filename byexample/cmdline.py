@@ -392,7 +392,7 @@ def parse_args(args=None):
             type=_key_val_type,
             help="set the <log-level> of a module named <dotted-prefix> " + \
                  "(ex: byexample.exec.python:chat will put in 'chat' level "+ \
-                 "the logs comming from the python execution module.)")
+                 "the logs coming from the python execution module.)")
     namespace = parser.parse_args(args)
 
     # Some extra checks
