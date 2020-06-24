@@ -209,7 +209,7 @@ class ElixirInterpreter(ExampleRunner, PexpectMixin):
             # need to switch or not the display suppression.
             if not example._elixir_print_expected and self._print_expre_activated:
                 self._exec_and_wait(
-                    r'IEx.configure(inspect: [inspect_fun: fn a,b -> "" end])',
+                    r'IEx.configure(inspect: [inspect_fun: fn _a,_b -> "" end])',
                     options
                 )
                 self._print_expre_activated = False
