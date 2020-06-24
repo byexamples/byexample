@@ -19,7 +19,6 @@ def _build_fake_example(
     expected,
     language='python',
     start_lineno=0,
-    specific=False,
     fully_parsed=True,
     opts=None
 ):
@@ -30,8 +29,6 @@ def _build_fake_example(
 
     class F:
         pass  # <- fake finder instance
-
-    F.specific = specific  # <- is finder specific?
 
     # fake a parser
     parser = ExampleParser(0, 'utf8', Options())
@@ -408,8 +405,6 @@ class ExampleHarvest(object):
 
 
 class ExampleFinder(object):
-    specific = True
-
     def __init__(self, verbosity, encoding, **unused):
         self.verbosity = verbosity
         self.encoding = encoding
