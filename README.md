@@ -116,6 +116,8 @@ between major versions.
  - ``deprecated``: it will disappear in a future version.
 
 See the latest [releases and tags](https://github.com/byexamples/byexample/tags)
+and the
+[changelog](https://github.com/byexamples/byexample/tree/master/CHANGELOG.md)
 
 Current version:
 
