@@ -1,37 +1,37 @@
 ## 9.2.0 (828b26e) - Wed Jun 24 14:48:01 2020 +0000
 
-Changes from previous version:
+### Changes from previous version:
 
-Enhancements
+### Enhancements
  - new option: +force-echo-filtering+input, allow the user to force
    the echo filtering needing in some cases. It is an experimental
    feature (see 451b218a)
 
-Fixes
+### Fixes
  - fix the zone finder for python modules (docstring): now find the
    examples only in docstrings and in the strings at the module level
    (see 6bc53be7)
 
-Others
+### Others
  - minor fixes in the tests of Elixir, Python and GDB
    (see 0e7eb38a, 696f1dbf, 274f177e)
 
 ## 9.1.1 (93eb446) - Mon Jun 15 13:50:47 2020 +0000
 
-Changes from previous version:
+### Changes from previous version:
 
-Enhancements
+### Enhancements
  - Support Python 3.8 and 3.9 (issue #116)
 
-Others
+### Others
  - Enforce disable cache for Python 3.8 and up. This is an undocumented
    feature that never left the 'experimental'.
 
 ## 9.1.0 (1b16ea4) - Mon Jan 27 15:27:53 2020 +0000
 
-Changes from previous version:
+### Changes from previous version:
 
-Enhancements
+### Enhancements
  - new option: +input, allow the user to type input in a running example
 (1070aa40, 72e6cb9) (closes #78)
  - InputPrefixNotFound subclass of Timeout exception (ce3f7a94)
@@ -39,26 +39,26 @@ Enhancements
 inputs (bd281952)
  - minor enhancements in the log's comments (20a07ab3)
 
-Incompatible changes (lib)
+### Incompatible changes (lib)
  - _expect_prompt can wait for other things than prompts (3174d48)
  - track remaining time with Countdown (5f995f, 895537f, cc1f4759,
 911719e)
  - capture_tag_regexs now returns a namedtuple (5985e6d)
-Others
+### Others
  - refactor and code relocation of Example/Where/Zone (6935cf9)
  - _exec_and_wait now receive the example as a context (6b862ee)
  - other renames (8278a74)
 
 ## 9.0.1 (17f9303) - Tue Dec 31 01:44:58 2019 +0000
 
-Changes from previous version:
+### Changes from previous version:
 
-Enhancements
+### Enhancements
  - Configure the prompts (and pretty printer) of Python after
 initialized the interpreter (#106)
  - Allow `byexample` to use Django's manage.py shell (#105)
 
-Others:
+### Others:
  - Reformat the source code to follow the PEP 8 using yapf. Now this is
 part of the automated tests to keep the code in good shape. (f4d2af69,
 d92e6012)
@@ -68,19 +68,19 @@ d92e6012)
 This is an inflexion point in byexample as it officially drops support for
 Python 2.7.
 
-Changes from previous version:
+### Changes from previous version:
 
-Fixes
+### Fixes
  - Fix recover mechanism (not always worked), still not perfect. (b48c4aed2)
 
-Enhancements
+### Enhancements
  - Allow to wait for a custom prompt during the spawn (84b6d5ed)
  - PHP interpreter (experimental) (eedb025b52)
  - Elixir interpreter (experimental) (8462de107, 1fce7ecce)
  - Refactor get output without echoed input (C++ and PHP) (2e4cfd19)
  - Several enhancements in the log systems.
 
-Incompatible changes (examples)
+### Incompatible changes (examples)
  - Byexample does not longer support Python 2.7 (2.x). Python 2.7 will reach
 to its end of life on January 1st 2020. Due this, having magical code in
 the PythonRunner to *mask and hide* the difference between Python 2.x's
@@ -88,14 +88,14 @@ str and unicodes and 3.x's bytes and str has little value: the
 str/unicode/bytes marker are not hidden anymore and the "b'" bytes
 marker will be visible again.
 
-Incompatible changes (lib)
+### Incompatible changes (lib)
  - Remove common.log (API break) (f7bdda65) (#96)
  - Send the formatted logs to Progress; don't format in Progress
 (lib-level incompatible change) (8d34657d9) (#96)
  - Use clog instead of log (lib-level incompatible change) (b0367987)
 (#96)
 
-Others:
+### Others:
  - Specialized Dockerfile to set up an environment with all the
 interpreters supported by byexample, ready to run the tests.
  - Several fixes in the documentation (thanks @matt17r)
@@ -107,36 +107,36 @@ Python.
 
 ## 8.1.3 (258c11d) - Sat Aug 3 12:58:22 2019 +0000
 
-Changes from previous version:
-Fixes
+### Changes from previous version:
+### Fixes
  - The License is packaged with the code (#89)
  - Alternative impl for fcntl in Window envs (#90)
  - Warn if the experimental and hidden RegexCache is used
 
 ## 8.1.2 (ba48bf7) - Thu Jul 11 15:00:43 2019 +0000
 
-Changes from previous version:
-Enhancements
+### Changes from previous version:
+### Enhancements
  - Enhance some messages to the user
  - Update the project url to point to github page and not the repo
 
 ## 8.1.1 (c7e2e08) - Mon Jun 24 02:05:11 2019 +0000
 
-Changes from previous version:
-Fixes
+### Changes from previous version:
+### Fixes
  - Disable edit/readline feature (autocompletion and others) for Bash
 (shell module). (fixes #87)
 
 ## 8.1.0 (60ab38a) - Tue Mar 5 15:23:08 2019 +0000
 
-Changes from previous version:
-Fixes
+### Changes from previous version:
+### Fixes
  - Fixed typo of class name ``PexepctMixin``, replaced by ``PexpectMixin``
 (57452bdc39). Backward compatibility layer implemented in 7eafbb3b.
  - Fixed undefined ``sh`` shell and set to ``bash`` (3c3f59ba8).
  - Default implementation for the ``__init__`` of ``Concern`` (de26777a7).
 
-Enhancements
+### Enhancements
  - Allow to change the shell with some predefined options: ``bash``, ``dash``,
 ``ksh`` (3c3f59ba8) with the new ``+shell`` option.
  - Add better logs for the initial phases of ``byexample``: modules load
@@ -157,11 +157,11 @@ uses. Related to issue #32 .
 ``--diff tool`` and set the diff command line with ``--difftool <cmd>``.
 Closes #20.
 
-Documentation:
+### Documentation:
  - More notes about checks (5bd91a047).
  - FAQs (8028bb4b, a5707d48)
 
-Potential incompatible changes (examples)
+### Potential incompatible changes (examples)
  - In Debian/Ubuntu based distros, ``sh`` is a symlink to ``dash``. In
 ``byexample 8.1.0``, ``sh`` is replaced by ``bash`` which it could break
 some examples. See the comments in 3c3f59ba8 for a full explanation.
@@ -172,8 +172,8 @@ it should be ok.
 
 ## 8.0.1 (33845bb) - Tue Feb 19 13:24:28 2019 +0000
 
-Changes from previous version:
-Fixes
+### Changes from previous version:
+### Fixes
  - Printing a utf-8 example when byexample's output is redirected to a
 file fails in Python 2.7 (fixes #80)
 
@@ -182,8 +182,8 @@ file fails in Python 2.7 (fixes #80)
 
 ## 8.0.0 (16a89a4) - Sun Feb 17 00:03:27 2019 +0000
 
-Changes from previous version:
-Fixes
+### Changes from previous version:
+### Fixes
  - ``cling`` errors including ASCII escape sequences are interpreted
 correctly (210ee637)
  - Enhance the diff mapping ctrl unicodes to ``'?'`` and only mapping
@@ -204,7 +204,7 @@ the message of the timeout (eb2107e08e)
  - Best effort for shutdown the runners (3bc281d2a)
  - Count example once, even if ``finish_parse`` is called twice (a9322b562)
 
-Enhancements
+### Enhancements
  - Capture greedy/non-greedy (heuristic): named tags are non-greedy as they
 are used to capture interesting, typically short strings; unnamed tags are
 non-greedy too except at the end of a line where typically capture
@@ -247,7 +247,7 @@ too (4d9fc174f).
  - Recover the runner after a timeout and do not abort. (47557f7060)
  - Support for cancel an ongoing example. (802d88a49)
 
-Potential incompatible changes (examples)
+### Potential incompatible changes (examples)
  - The unnamed tag's regex is greedy; named tags are not (c94def08)
  - The C/C++ now require the use of a full terminal emulator
 (``+terminal=ansi``) always and its geometry cannot change. (210ee637,
@@ -257,7 +257,7 @@ which it is more useful and reduce the need of ``+norm-ws`` (2605f5d2).
  - The hacky ``# >>`` Ruby prompt is not supported, superseded by Zone
 Delimiter for Ruby files (.rb) (a5b5dcd0f)
 
-Incompatible changes (examples)
+### Incompatible changes (examples)
  - Limit the number of output rows for C/C++ examples (bedef7ef)
  - Do not allow an underscore in a tag name (38766d83d)
  - Capture greedy/non-greedy (heuristic): named tags are non-greedy as they
@@ -277,7 +277,7 @@ are supported. (bb86873fa, 08051927)
  - To set options in the C/C++ examples, use ``// byexample: ...`` only
 (``/* .. */`` is not supported anymore) (21060dac0)
 
-Incompatible changes (lib)
+### Incompatible changes (lib)
  - Refactor ``_spawn_interpreter`` (3670321c3)
  - Refactor ``PexepctMixin``/``ExampleRunner`` passing options explicitly
 (``_exec_and_wait``, ``_expect_prompt``, ``_change_terminal_geometry_ctx``,
@@ -285,7 +285,7 @@ Incompatible changes (lib)
  - Refactor and removed unused code in ``Expected`` (193a5a99f, 426e4801d)
  - Explicit timeout value for ``_expect_prompt`` (28be774c5)
 
-Incompatible changes (modules)
+### Incompatible changes (modules)
  - Each runner needs to implement its ``ExampleRunner.run`` in terms of
 ``PexepctMixin._run``; ``PexepctMixin._run`` will delegate the runner-specific
 code calling ``PexepctMixin._run_impl`` (to be overridden by the runner)
@@ -296,7 +296,7 @@ code calling ``PexepctMixin._run_impl`` (to be overridden by the runner)
  - Extend ``user_aborted`` to a more generic aborted hook; ``user_aborted`` is
 not supported anymore. (4356a9a4a)
 
-Others
+### Others
  - New dependency: ``pyte`` version 0.8.0.
  - Makefile: Allow run the tests using multiple processors (e379c427)
  - Documentation refactor (87fcdca3, eca2d804, 4b700163, 374dc0926,
@@ -306,20 +306,20 @@ bc5921392, 6f75b4fae, f67e1dcb, d6676dd80, e0a17c8d32, 653b5b30)
 
 ## 7.4.5 (8940e10) - Wed Dec 5 03:40:34 2018 +0000
 
-Changes from previous version:
-Fixes:
+### Changes from previous version:
+### Fixes:
  - Disable readline for irb (ruby interpreter). Fixes #70.
 
 ## 7.4.4 (0bf93de) - Sun Nov 11 23:53:11 2018 +0000
 
-Changes from previous version:
-Enhancements:
+### Changes from previous version:
+### Enhancements:
  - Use 'provisional' as alias for 'unstable'.
 
 ## 7.4.3 (eb38a9e) - Fri Oct 26 12:01:50 2018 +0000
 
-Changes from previous version:
-Fixes:
+### Changes from previous version:
+### Fixes:
  - Changed how the Ruby runner toggles the echo mode of IRB
 (+ruby-expr-print) due a change in Ruby 2.5 (see 539d3a19). Closes #62
  - Added a missing module (sys) and fixed a typo in one attr name (see
@@ -327,21 +327,21 @@ d44d9b07)
 
 ## 7.4.2 (0a424e4) - Tue Oct 23 02:14:20 2018 +0000
 
-Changes from previous version:
-Enhancements:
+### Changes from previous version:
+### Enhancements:
  - Print a warning if a Parser/Finder/Runner/Concern is loaded but it
 has its key attibute (target, language, concerns) missing.
  - Print the Python version used to run byexample.
 
 ## 7.4.1 (070b3ec) - Fri Oct 19 12:35:30 2018 +0000
 
-Changes from previous version:
-Enhancements:
+### Changes from previous version:
+### Enhancements:
  - Extended the KeyboardInterrupt capture scope (see 0e8e09ef6a)
  - Prevent sigints in critical paths (see 6dfbba75). Closes #54
  - Minor improvements to the progress report (see a43a0f37)
 
-Fixes:
+### Fixes:
  - A KeyboardInterrupt (aka ^C) abort the whole execution in
 the most possible ordered way without printing a traceback (see
 c56f79d4, 6dfbba7 and 0a33405c)
@@ -354,13 +354,13 @@ resources leaked or blocked.
 
 ## 7.4.0 (ca856e8) - Mon Oct 15 00:26:22 2018 +0000
 
-Changes from previous version:
-Enhancements:
+### Changes from previous version:
+### Enhancements:
  - Support report progress in parallel (see 48ef2c16).
  - Support run concurrently (see d6d2e42b). Closes #45.
  - Experimental support for Javascript-nodejs (see 9febf82). Closes #55.
 
-Fixes:
+### Fixes:
  - Fix "leak" of options' up (see a04fe83c)
 
 Possible incompatible changes (usability minor level)
@@ -369,8 +369,8 @@ installed.
 
 ## 7.3.0 (cece44f) - Fri Oct 12 19:05:57 2018 +0000
 
-Changes from previous version:
-Enhancements:
+### Changes from previous version:
+### Enhancements:
  - Regex cache (experimental) (see a73eb2fa, 501da7c, 260dee67, 59ca1008)
 disabled by default.
  - First line with a lowe indentation level cuts the example (fa4a10f6).
@@ -378,38 +378,38 @@ disabled by default.
  - Improved timeout message (see fd4d6f). Closes #27
  - Change terminal's geometry from cmdline (see 90ac4fc, 8dc9460). Closes #34
 
-Fixes:
+### Fixes:
  - A timeout is now considered an ABORT (see ab9c860d). Closes #44.
 
 Possible incompatible changes (modules)
   - Concern.finish will receive another parameter: timedout.
   - Python 3.3 support is gone.
 
-Others:
+### Others:
  - New dependency: appdirs
  - Internal helper script r.py updated.
  - Updated the docs.
 
 ## 7.2.3 (08107f8) - Thu Oct 4 15:17:07 2018 +0000
 
-Changes from previous version:
-Enhancements:
+### Changes from previous version:
+### Enhancements:
  - Small optimizations (see bd8a740a, 92d8982)
  - Improved error message when two examples overlap (see 5e08f80)
  - Other minor optimization.
-Fixes:
+### Fixes:
  - Made Markdown examples compatible with others (see 38793dc)
  - Count new lines correctly avoiding hacks (see 2a67300f)
  - Timeout (--timeout) accepts float now (see bfdd8e1)
  - Made optional the capture at the end (see 528a7c85, fixes #51 )
 
-Others:
+### Others:
  - Removed huff (see dbe0497)
 
 ## 7.2.2 (116e197) - Mon Sep 3 14:24:21 2018 +0000
 
-Changes from previous version:
-Enhancements:
+### Changes from previous version:
+### Enhancements:
  - Cached the extension of the options parser (see bf8abfd9)
  - Cached the already parsed options (see 4ee34e96)
  - Other minor optimization.
@@ -418,15 +418,15 @@ Note: the runtime should be reduced by a ~33% with these optimizations.
 
 ## 7.2.1 (78778f8) - Sat Sep 1 22:58:31 2018 +0000
 
-Changes from previous version:
-Enhancements:
+### Changes from previous version:
+### Enhancements:
  - Removed obsolete code.
  - Improved the documentation.
 
 ## 7.2.0 (ced5262) - Sat Sep 1 22:13:03 2018 +0000
 
-Changes from previous version:
-Enhancements:
+### Changes from previous version:
+### Enhancements:
  - Find prompt-based examples of Ruby even if they are prefixed by #
    This *may* detect new examples but it should be unlikely and with
    low impact. (The Ruby module is still experimental)
@@ -435,19 +435,19 @@ Enhancements:
  - Enable -skip inside in an example to executing even if the execution
    is failing fast #43 See c17f433
  - Improved the documentation.
-Fixes:
+### Fixes:
  - Don't let gdb to ask for confirmation.
 
 ## 7.1.2 (64dfa5e) - Thu Aug 23 16:30:53 2018 +0000
 
-Changes from previous version:
-Fix:
+### Changes from previous version:
+### Fix:
  - Fixed the README in PyPI and improve it a little.
 
 ## 7.1.1 (bad260a) - Tue Aug 21 02:14:05 2018 +0000
 
-Changes from previous version:
-Fix:
+### Changes from previous version:
+### Fix:
  - Fixed the setup.py that was requiring Python >= 2.6 for running
 byexample. The support for Python 2.6 was dropped in 6.0.0. However,
 almost everything in byexample can run under 2.6 (except shebang
@@ -455,8 +455,8 @@ feature).
 
 ## 7.1.0 (8319e72) - Sat Aug 18 23:28:25 2018 +0000
 
-Changes from previous version:
-Enhancements
+### Changes from previous version:
+### Enhancements
  - Implemented the stop-on-silence option for Shell: instead of raising a
 timeout, if an example takes too long the runner will stop the long-running
 process. It is undefined if there isn't a process running and the
@@ -465,27 +465,27 @@ possible usage of this.
 
 ## 7.0.3 (0cbf5f3) - Fri Aug 10 00:56:15 2018 +0000
 
-Changes from previous version:
-Enhancements
+### Changes from previous version:
+### Enhancements
  - Disable output with colors if the terminal doesn't support them.
 
 ## 7.0.2 (0ec11ff) - Thu Aug 2 14:01:33 2018 +0000
 
-Changes from previous version:
-Enhancements
+### Changes from previous version:
+### Enhancements
  - Allow to load command line options from a file using '@file' syntax.
 
 ## 7.0.1 (d7ae00e) - Wed Aug 1 15:34:11 2018 +0000
 
-Changes from previous version:
-Fixes
+### Changes from previous version:
+### Fixes
  - The tag names that contains a minus - like <foo-bar> will work in
 paste mode (+paste).
 
 ## 7.0.0 (0a861f3) - Sun Jul 29 22:33:13 2018 +0000
 
-Changes from previous version:
-Fixes
+### Changes from previous version:
+### Fixes
  - Save in Example its own local options and not its options merged with
 the global one. It will be during the execution of the example that its
 options will be merged.
@@ -499,7 +499,7 @@ expected output (in which case expected_str will be the empty string).
 over the generic one even if they are of different languages.
  - Fix print traceback for Python 2.x
 
-Enhancements
+### Enhancements
  - Allow a Ruby => following by the end of the string: this trigger the
 auto print expressions without needing a value after the =>.
  - The Concerns can add their own options and flags like the Parsers.
@@ -515,10 +515,10 @@ allow the modification of an example before parsing (like its expected).
 720916aa. Use +paste option to enable it.
  - Better prints (logs). See 45e3188e.
 
-Incompatible changes (examples)
+### Incompatible changes (examples)
  - Removed +shell option from Shell runner
 
-Incompatible changes (lib)
+### Incompatible changes (lib)
  - No more ExampleMatch, Example will do its job. See f949d64b.
 Initially the Example is created by the Finder in an "incomplete, not
 parsed yet" state. Later, the Example is parsed calling
@@ -526,7 +526,7 @@ Example.parse_yourself which calls Parser.parse.
  - Parser.build_example renamed to Parse.parse (and simplified its
 interface).
 
-Incompatible changes (modules)
+### Incompatible changes (modules)
  - The option parser optparser is not passed explicitly, you can still
 get it from options['optparser'].
  - Runner.initialize will not be called with the examples.
@@ -539,15 +539,15 @@ have an extra attribute.
 
 ## 6.0.1 (c7927f1) - Fri Jul 20 02:27:48 2018 +0000
 
-Changes from previous version:
-Fixes
+### Changes from previous version:
+### Fixes
     - Added support for the heredoc syntax used by the Ruby interpreter
 ``irb``.
 
 ## 6.0.0 (b13e349) - Wed Jul 11 15:16:22 2018 +0000
 
-Changes from previous version:
-Fixes
+### Changes from previous version:
+### Fixes
  - Made deterministic the output of the captured texts shown when the
 example fails.
  - Parse the examples *after* removing duplicated/overlapping ones. This
@@ -558,7 +558,7 @@ option a long time ago.
  - Fix the traceback printed when the example crashes.
  - Fix ExampleHarvest's name.
 
-Enhancements
+### Enhancements
  - Added a ``rm`` option to define a set of chars that should be removed
 from the expected and the got strings. See 6050a884 for a small example.
  - Detect when a ``Ruby`` example expects the representation of
@@ -581,14 +581,14 @@ the runner/interpreted supported by ``byexample``. See 6e3abae0 or
  - Tagged each module with a stability tag: fine tuned the versioning.
 See 5f3d0494 and ``README.md``.
 
-Incompatible changes (examples)
+### Incompatible changes (examples)
  - Enable by default pp (pretty print) for ruby exprs' outputs. This can
 be disabled from the command line with the option ``ruby-pretty-print``
  - Use ``..`` as the second prompt for the ``Ruby`` examples. This make
 the life easier when the examples are multilines. See 9784f38 for more
 details.
 
-Incompatible changes (lib)
+### Incompatible changes (lib)
  - The ``shebang`` option required a non backward compatibility change
 of the internal class ``PexepctMixin``.
  - The ``shebang`` option also is "not" compatible with ``Python 2.6``.
@@ -598,9 +598,9 @@ of the internal class ``PexepctMixin``.
 
 ## 5.0.0 (ffb8dc9) - Sat Jun 23 23:00:55 2018 +0000
 
-Changes from previous version:
+### Changes from previous version:
 
-Fixes
+### Fixes
  - Prevented long running checks (#28) using a linear matching
 algorithm.
  - When an example fails, byexample will try to fill the tags in the
@@ -613,7 +613,7 @@ which leaded to a lot of backtracking.
 whitespace)
  - Fixed an integer division on Python 3, in the Differ code.
 
-Enhancements
+### Enhancements
  - New doc about how byexample show the differences in a failing example:
 docs/differences.rst
  - Implemented a linear matching algorithm (#28) to see if a expected string
@@ -627,7 +627,7 @@ expected with the got's pieces. The algorithm now performs a more
 aggressive strategy to make more clear expected strings and therefore
 more clear diffs.
 
-Incompatible changes (examples)
+### Incompatible changes (examples)
  - Repeating a named capture tag (<foo>) in the same example is not
 allowed anymore. Previously this meant that the captured string under
 the same tag must be the same string. But this prevented further
@@ -635,10 +635,10 @@ improvements and it was a feature implemented without a real reason of
 the benefits.
  - Replaced 'capture' option by 'tags'
 
-Incompatible changes (command line)
+### Incompatible changes (command line)
  - Replaced 'capture' option by 'tags'
 
-Incompatible changes (lib)
+### Incompatible changes (lib)
  - Refactor the Checker and replaced by Differ (who do the diffs) and
 the Expected's subclasses (who do the comparison): LinearExpected and
 RegexExpected.
@@ -647,26 +647,26 @@ RegexExpected.
  - Renamed module checker.py by differ.py and created a new one:
 expected.py
 
-Incompatible changes (modules)
+### Incompatible changes (modules)
  - Because the Checker interface changed (now is Differ) and the
 Expected changed too, this may affect the third party modules (3rd party
 interpreters and concerns)
 
 ## 4.2.1 (c162021) - Mon Apr 30 02:47:54 2018 +0000
 
-Changes from previous version:
+### Changes from previous version:
 
-Fixes:
+### Fixes:
  - Fixed an incorrect comparision in the diff algorithm.
 
-Enhancements:
+### Enhancements:
  - Implemented huff: a more human readable diff program.
 
 ## 4.2.0 (ff15714) - Wed Feb 28 01:36:13 2018 +0000
 
-Changes from previous version:
+### Changes from previous version:
 
-Enhancements
+### Enhancements
  - Do not print the traceback by default to avoid printing internal
    stuff for common mistakes. But print it if verbose is greather than
    0.
@@ -675,7 +675,7 @@ Enhancements
    messages. Extend them adding in which file and number line (if
    possible) the error is located and who was the responsible of it.
 
-Incompatible changes (lib)
+### Incompatible changes (lib)
  - Remove the 'where' attribute/parameter from almost everywhere
    This affects some very public methods:
     * ExampleParser: process_snippet_and_expected, extract_options
@@ -686,15 +686,15 @@ Incompatible changes (lib)
 
 ## 4.1.0 (f072c8d) - Mon Feb 26 15:25:16 2018 +0000
 
-Changes from previous version:
-Fixes
+### Changes from previous version:
+### Fixes
  - Reimplemented (and fixed) the universal newlines: now the sequence
    \r\n and \r are replaced by \n correctly.
  - Removed a hardcoded delay when sending something to the underlying
    interpreter. Before was a delay of 0.01 secs, now it is disabled.
    See eb37d358.
 
-Enhancements
+### Enhancements
  - Cached the compilation of the regexs avoiding calling re.compile
    more than once for a regex.
    The improvement is small as re.compile already has a cache for this
@@ -719,9 +719,9 @@ Changes:
 
 ## 4.0.0 (97df502) - Thu Feb 15 01:04:16 2018 +0000
 
-Changes from previous version:
+### Changes from previous version:
 
-Fixes
+### Fixes
  - The empty lines at the end of the expected and got strings are
    really ignored, not only the last one. This was the original
    intention as most of the time an empty line at the end is an artifact
@@ -737,7 +737,7 @@ Fixes
    replaced by ' in every case. Now, we replace this only if b' is a
    real string marker. The same for u'
 
-Enhancements
+### Enhancements
  - Before calculating the diff, the captured tags in the expected string
    are replaced by the captured string from the got string.
    This improves the posterior diff.
@@ -777,7 +777,7 @@ Enhancements
  - Show the version, license, author and github url in the output of
    --version/-V
 
-Incompatible changes (lib)
+### Incompatible changes (lib)
  - expected_as_regexs now returns a list of regular expressions
    instead of a single regex. In addition, the position from where
    each regex was created in the expected string is recorded.
@@ -807,7 +807,7 @@ Incompatible changes (lib)
        - byexample.runner -> byexample.executor
        - byexample.interpreter -> byexample.runner
 
-Incompatible changed (modules)
+### Incompatible changed (modules)
  - the classes that extend Parser needs to use a OptionParser (based on
    Python's argparse) to parse the options of an example.
    This is a disruptive change but it simplify the code (see b81f2106)
@@ -834,17 +834,17 @@ Incompatible changed (modules)
    believe that a indented-block was closed when it is not. See f5a86f59.
    This fix can be disabled with -py-remove-empty-lines
 
-Documentation:
+### Documentation:
  - improved the docs in general.
 
 ## 3.0.0 (e57a0ef) - Tue Jan 9 12:18:59 2018 +0000
 
-Changes from previous version:
+### Changes from previous version:
 
-Fixes
+### Fixes
  - Fixed a bug in shell.py: remove the space after the prompt.
 
-Enhancements
+### Enhancements
  - New language: GDB (GNU Debugger)
  - New language: C++
  - Find the examples written inside a fenced-code-block (Markdown style)
@@ -868,16 +868,16 @@ skipped examples count.
 at time. See commit #8e86d7f48 for the details, pros and contras.
  - Added a --version flag
 
-Incompatible changes (command line)
+### Incompatible changes (command line)
  - Replaced --no-color by --pretty.
  - Removed -f (you can still use --ff and --fail-fast)
  - Renamed --search by --modules (you can also use -m)
 
-Incompatible changes (interpreters)
+### Incompatible changes (interpreters)
  - Removed support for prompt # in Shell examples: the # symbol is too
 common and it is easy for byexample to get confuse
 
-Incompatible changes (lib)
+### Incompatible changes (lib)
  - Refactor -> we have three components:
     * Finder: who will find the examples in a given string
     * Parser: who will parse the findings and transform them into Examples
@@ -886,14 +886,14 @@ See docs/how_to_extend.rst
 
 ## 2.1.1 (6d6ffb9) - Tue Nov 28 17:12:37 2017 +0000
 
-Changes from previous version:
+### Changes from previous version:
 
-Fixes
+### Fixes
  - Python 2.6 incompatibilities
  - Python 3.x incompatibilities
  - Fixed a +/-1 line number
 
-Enhancements
+### Enhancements
  - Example timeout doesn't produce an exception anymore. Instead, log
 the error and fail the execution (like fail-fast)
  - Improved the documentation.
@@ -902,7 +902,7 @@ the error and fail the execution (like fail-fast)
 True/False like +FOO=VAL
  - Added a TIMEOUT option to change the timeout of a given example.
 
-Incompatible changes
+### Incompatible changes
  - Ruby example will use >> as the primary and secondary prompt. The rb>
 and ... were removed. This is closer to the irb interpreter behaviour as
 well as how others show or write Ruby examples (in tutorials).
