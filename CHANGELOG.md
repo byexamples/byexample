@@ -1,7 +1,5 @@
 ## 9.2.0 (828b26e) - Wed Jun 24 14:48:01 2020 +0000
 
-### Changes from previous version:
-
 ### Enhancements
  - new option: +force-echo-filtering+input, allow the user to force
    the echo filtering needing in some cases. It is an experimental
@@ -18,8 +16,6 @@
 
 ## 9.1.1 (93eb446) - Mon Jun 15 13:50:47 2020 +0000
 
-### Changes from previous version:
-
 ### Enhancements
  - Support Python 3.8 and 3.9 (issue #116)
 
@@ -28,8 +24,6 @@
    feature that never left the 'experimental'.
 
 ## 9.1.0 (1b16ea4) - Mon Jan 27 15:27:53 2020 +0000
-
-### Changes from previous version:
 
 ### Enhancements
  - new option: +input, allow the user to type input in a running example
@@ -51,8 +45,6 @@ inputs (bd281952)
 
 ## 9.0.1 (17f9303) - Tue Dec 31 01:44:58 2019 +0000
 
-### Changes from previous version:
-
 ### Enhancements
  - Configure the prompts (and pretty printer) of Python after
 initialized the interpreter (#106)
@@ -64,11 +56,9 @@ part of the automated tests to keep the code in good shape. (f4d2af69,
 d92e6012)
 
 ## 9.0.0 (cb4a1e9) - Sun Dec 8 20:12:22 2019 +0000
-
 This is an inflexion point in byexample as it officially drops support for
 Python 2.7.
 
-### Changes from previous version:
 
 ### Fixes
  - Fix recover mechanism (not always worked), still not perfect. (b48c4aed2)
@@ -104,32 +94,23 @@ Python.
 
 ## 8.2.0-a1 (bb864ce) - Sun Sep 22 22:55:49 2019 +0000
 
-
 ## 8.1.3 (258c11d) - Sat Aug 3 12:58:22 2019 +0000
-
-### Changes from previous version:
 ### Fixes
  - The License is packaged with the code (#89)
  - Alternative impl for fcntl in Window envs (#90)
  - Warn if the experimental and hidden RegexCache is used
 
 ## 8.1.2 (ba48bf7) - Thu Jul 11 15:00:43 2019 +0000
-
-### Changes from previous version:
 ### Enhancements
  - Enhance some messages to the user
  - Update the project url to point to github page and not the repo
 
 ## 8.1.1 (c7e2e08) - Mon Jun 24 02:05:11 2019 +0000
-
-### Changes from previous version:
 ### Fixes
  - Disable edit/readline feature (autocompletion and others) for Bash
 (shell module). (fixes #87)
 
 ## 8.1.0 (60ab38a) - Tue Mar 5 15:23:08 2019 +0000
-
-### Changes from previous version:
 ### Fixes
  - Fixed typo of class name ``PexepctMixin``, replaced by ``PexpectMixin``
 (57452bdc39). Backward compatibility layer implemented in 7eafbb3b.
@@ -171,18 +152,13 @@ For Red Hat/Fedora based distros, ``sh`` is a symlink to ``bash`` so
 it should be ok.
 
 ## 8.0.1 (33845bb) - Tue Feb 19 13:24:28 2019 +0000
-
-### Changes from previous version:
 ### Fixes
  - Printing a utf-8 example when byexample's output is redirected to a
 file fails in Python 2.7 (fixes #80)
 
 ## 8.0.0-a1 (0e8eb7d) - Mon Dec 17 14:47:18 2018 +0000
 
-
 ## 8.0.0 (16a89a4) - Sun Feb 17 00:03:27 2019 +0000
-
-### Changes from previous version:
 ### Fixes
  - ``cling`` errors including ASCII escape sequences are interpreted
 correctly (210ee637)
@@ -305,20 +281,14 @@ bc5921392, 6f75b4fae, f67e1dcb, d6676dd80, e0a17c8d32, 653b5b30)
  - Make provisional the Ruby and the Clipboard modules. (5345ec3e0e)
 
 ## 7.4.5 (8940e10) - Wed Dec 5 03:40:34 2018 +0000
-
-### Changes from previous version:
 ### Fixes:
  - Disable readline for irb (ruby interpreter). Fixes #70.
 
 ## 7.4.4 (0bf93de) - Sun Nov 11 23:53:11 2018 +0000
-
-### Changes from previous version:
 ### Enhancements:
  - Use 'provisional' as alias for 'unstable'.
 
 ## 7.4.3 (eb38a9e) - Fri Oct 26 12:01:50 2018 +0000
-
-### Changes from previous version:
 ### Fixes:
  - Changed how the Ruby runner toggles the echo mode of IRB
 (+ruby-expr-print) due a change in Ruby 2.5 (see 539d3a19). Closes #62
@@ -326,16 +296,12 @@ bc5921392, 6f75b4fae, f67e1dcb, d6676dd80, e0a17c8d32, 653b5b30)
 d44d9b07)
 
 ## 7.4.2 (0a424e4) - Tue Oct 23 02:14:20 2018 +0000
-
-### Changes from previous version:
 ### Enhancements:
  - Print a warning if a Parser/Finder/Runner/Concern is loaded but it
 has its key attibute (target, language, concerns) missing.
  - Print the Python version used to run byexample.
 
 ## 7.4.1 (070b3ec) - Fri Oct 19 12:35:30 2018 +0000
-
-### Changes from previous version:
 ### Enhancements:
  - Extended the KeyboardInterrupt capture scope (see 0e8e09ef6a)
  - Prevent sigints in critical paths (see 6dfbba75). Closes #54
@@ -353,8 +319,6 @@ when an asynchronous SIGINT signal is received (aka KeyboardInterrupt or
 resources leaked or blocked.
 
 ## 7.4.0 (ca856e8) - Mon Oct 15 00:26:22 2018 +0000
-
-### Changes from previous version:
 ### Enhancements:
  - Support report progress in parallel (see 48ef2c16).
  - Support run concurrently (see d6d2e42b). Closes #45.
@@ -368,8 +332,6 @@ Possible incompatible changes (usability minor level)
 installed.
 
 ## 7.3.0 (cece44f) - Fri Oct 12 19:05:57 2018 +0000
-
-### Changes from previous version:
 ### Enhancements:
  - Regex cache (experimental) (see a73eb2fa, 501da7c, 260dee67, 59ca1008)
 disabled by default.
@@ -391,8 +353,6 @@ Possible incompatible changes (modules)
  - Updated the docs.
 
 ## 7.2.3 (08107f8) - Thu Oct 4 15:17:07 2018 +0000
-
-### Changes from previous version:
 ### Enhancements:
  - Small optimizations (see bd8a740a, 92d8982)
  - Improved error message when two examples overlap (see 5e08f80)
@@ -407,8 +367,6 @@ Possible incompatible changes (modules)
  - Removed huff (see dbe0497)
 
 ## 7.2.2 (116e197) - Mon Sep 3 14:24:21 2018 +0000
-
-### Changes from previous version:
 ### Enhancements:
  - Cached the extension of the options parser (see bf8abfd9)
  - Cached the already parsed options (see 4ee34e96)
@@ -417,15 +375,11 @@ Possible incompatible changes (modules)
 Note: the runtime should be reduced by a ~33% with these optimizations.
 
 ## 7.2.1 (78778f8) - Sat Sep 1 22:58:31 2018 +0000
-
-### Changes from previous version:
 ### Enhancements:
  - Removed obsolete code.
  - Improved the documentation.
 
 ## 7.2.0 (ced5262) - Sat Sep 1 22:13:03 2018 +0000
-
-### Changes from previous version:
 ### Enhancements:
  - Find prompt-based examples of Ruby even if they are prefixed by #
    This *may* detect new examples but it should be unlikely and with
@@ -439,14 +393,10 @@ Note: the runtime should be reduced by a ~33% with these optimizations.
  - Don't let gdb to ask for confirmation.
 
 ## 7.1.2 (64dfa5e) - Thu Aug 23 16:30:53 2018 +0000
-
-### Changes from previous version:
 ### Fix:
  - Fixed the README in PyPI and improve it a little.
 
 ## 7.1.1 (bad260a) - Tue Aug 21 02:14:05 2018 +0000
-
-### Changes from previous version:
 ### Fix:
  - Fixed the setup.py that was requiring Python >= 2.6 for running
 byexample. The support for Python 2.6 was dropped in 6.0.0. However,
@@ -454,8 +404,6 @@ almost everything in byexample can run under 2.6 (except shebang
 feature).
 
 ## 7.1.0 (8319e72) - Sat Aug 18 23:28:25 2018 +0000
-
-### Changes from previous version:
 ### Enhancements
  - Implemented the stop-on-silence option for Shell: instead of raising a
 timeout, if an example takes too long the runner will stop the long-running
@@ -464,27 +412,19 @@ example times out. See docs/languages/shell for a complete overview and
 possible usage of this.
 
 ## 7.0.3 (0cbf5f3) - Fri Aug 10 00:56:15 2018 +0000
-
-### Changes from previous version:
 ### Enhancements
  - Disable output with colors if the terminal doesn't support them.
 
 ## 7.0.2 (0ec11ff) - Thu Aug 2 14:01:33 2018 +0000
-
-### Changes from previous version:
 ### Enhancements
  - Allow to load command line options from a file using '@file' syntax.
 
 ## 7.0.1 (d7ae00e) - Wed Aug 1 15:34:11 2018 +0000
-
-### Changes from previous version:
 ### Fixes
  - The tag names that contains a minus - like <foo-bar> will work in
 paste mode (+paste).
 
 ## 7.0.0 (0a861f3) - Sun Jul 29 22:33:13 2018 +0000
-
-### Changes from previous version:
 ### Fixes
  - Save in Example its own local options and not its options merged with
 the global one. It will be during the execution of the example that its
@@ -538,15 +478,11 @@ end_example to finish_example
 have an extra attribute.
 
 ## 6.0.1 (c7927f1) - Fri Jul 20 02:27:48 2018 +0000
-
-### Changes from previous version:
 ### Fixes
     - Added support for the heredoc syntax used by the Ruby interpreter
 ``irb``.
 
 ## 6.0.0 (b13e349) - Wed Jul 11 15:16:22 2018 +0000
-
-### Changes from previous version:
 ### Fixes
  - Made deterministic the output of the captured texts shown when the
 example fails.
@@ -597,8 +533,6 @@ of the internal class ``PexepctMixin``.
 ``Python``)
 
 ## 5.0.0 (ffb8dc9) - Sat Jun 23 23:00:55 2018 +0000
-
-### Changes from previous version:
 
 ### Fixes
  - Prevented long running checks (#28) using a linear matching
@@ -654,8 +588,6 @@ interpreters and concerns)
 
 ## 4.2.1 (c162021) - Mon Apr 30 02:47:54 2018 +0000
 
-### Changes from previous version:
-
 ### Fixes:
  - Fixed an incorrect comparision in the diff algorithm.
 
@@ -663,8 +595,6 @@ interpreters and concerns)
  - Implemented huff: a more human readable diff program.
 
 ## 4.2.0 (ff15714) - Wed Feb 28 01:36:13 2018 +0000
-
-### Changes from previous version:
 
 ### Enhancements
  - Do not print the traceback by default to avoid printing internal
@@ -685,8 +615,6 @@ interpreters and concerns)
     * ExampleParser: expected_as_regexs
 
 ## 4.1.0 (f072c8d) - Mon Feb 26 15:25:16 2018 +0000
-
-### Changes from previous version:
 ### Fixes
  - Reimplemented (and fixed) the universal newlines: now the sequence
    \r\n and \r are replaced by \n correctly.
@@ -710,7 +638,6 @@ interpreters and concerns)
    options string.
 
 ## 4.0.1 (54c279c) - Sat Feb 17 23:41:08 2018 +0000
-
 Changes:
  - Instead of patching an internal function of pprint for the custom
    display hook of the Python interpreter, patch the repr function.
@@ -718,8 +645,6 @@ Changes:
  - Improve the docs.
 
 ## 4.0.0 (97df502) - Thu Feb 15 01:04:16 2018 +0000
-
-### Changes from previous version:
 
 ### Fixes
  - The empty lines at the end of the expected and got strings are
@@ -839,8 +764,6 @@ Changes:
 
 ## 3.0.0 (e57a0ef) - Tue Jan 9 12:18:59 2018 +0000
 
-### Changes from previous version:
-
 ### Fixes
  - Fixed a bug in shell.py: remove the space after the prompt.
 
@@ -885,8 +808,6 @@ common and it is easy for byexample to get confuse
 See docs/how_to_extend.rst
 
 ## 2.1.1 (6d6ffb9) - Tue Nov 28 17:12:37 2017 +0000
-
-### Changes from previous version:
 
 ### Fixes
  - Python 2.6 incompatibilities
