@@ -7,6 +7,27 @@ You can visit the
 [changelog](https://github.com/byexamples/byexample/releases)
 for a more complete overview.
 
+## 9.2.0
+
+Minor release that brings support for Python 3.8 and 3.9
+and it close the distance to have `byexample` running in MacOS and
+Windows.
+
+An important fix was done also. For Python files, now the examples
+are searched only in docstrings.
+
+These docstrings follow the definition of docstring of Python: a string
+that it is immediately after a function or class definition (see
+https://docs.python.org/3/library/ast.html).
+
+Because it was tradition to put some initialization code in a string at
+the module level without being a module's docstring, the zone finder
+will also find zones and examples there (but only in the module's
+strings).
+
+Without this change, the previous finder was too naive and it could
+confuse a normal string with a docstring breaking the finder.
+
 ## 9.1.0
 
 This minor release brings one of the oldest feature requested:
