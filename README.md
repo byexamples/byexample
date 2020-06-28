@@ -5,8 +5,6 @@ $ hash byexample                                    # byexample: +fail-fast
 
 # ``byexample``
 
-<img src="https://api.travis-ci.org/byexamples/byexample.svg?branch=master" alt="Travis CI is not available">
-
 ``byexample`` is a literate programming engine where you mix
 ordinary text and snippets of code in the same file and then you
 execute them as regression tests.
