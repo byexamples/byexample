@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import os, sys
+import os, sys, multiprocessing
 
 if sys.version_info < (3, 0):
     print(
@@ -32,6 +32,14 @@ def execute_examples(filename, sigint_handler):
 
 def main(args=None):
     global cache, harvester, executor, options, dry
+
+    # byexample relays on UNIX's fork to pass data from the
+    # parent process (us) to its children (Job's). Due the
+    # complexity of the objects passed, pickle cannot be used
+    # to serialize them so other start methods ('spawn', 'forkserver')
+    # cannot be used
+    # see https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods
+    multiprocessing.set_start_method('fork')
 
     init_log_system()
 
