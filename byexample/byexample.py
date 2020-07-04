@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import os, sys
+import os, sys, multiprocessing
 
 if sys.version_info < (3, 0):
     print(
@@ -11,6 +11,21 @@ from .cache import RegexCache
 from .jobs import Jobs, Status, allow_sigint
 from .log import init_log_system
 
+def set_multiprocess_start_method():
+    ''' Change the multiprocessing start method based on the
+        BYEXAMPLE_MP_METHOD environment variable. If not set,
+        use the default for the current Python implementation.
+
+        See https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods
+        '''
+    method = os.getenv('BYEXAMPLE_MP_METHOD', "default")
+    if method not in multiprocessing.get_all_start_methods():
+        method = "default"
+
+    if method != "default":
+        multiprocessing.set_start_method(method)
+
+    return method
 
 def execute_examples(filename, sigint_handler):
     global cache, harvester, executor, options, dry
@@ -32,6 +47,9 @@ def execute_examples(filename, sigint_handler):
 
 def main(args=None):
     global cache, harvester, executor, options, dry
+
+    # call this at the begin, as earlier as possible
+    set_multiprocess_start_method()
 
     init_log_system()
 
