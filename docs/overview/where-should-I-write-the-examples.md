@@ -144,6 +144,15 @@ hello
 world!
 ```
 
+Any symbol can be used as well like `°` or even ` ` (the invisible
+unicode character U+00A0)
+
+```python
+>>> print("hello\n\nworld!")    # byexample: +rm= 
+hello
+ 
+world!
+```
 
 ## New lines at the end are ignored
 

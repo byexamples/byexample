@@ -27,6 +27,16 @@ Line1
 Line3
 ```
 
+Tip: you can use the invisible unicode character U+00A0 (` `) instead
+of an `~`:
+
+```python
+>>> print("Line1\n\nLine3")         # byexample: +rm= 
+Line1
+ 
+Line3
+```
+
 ### How to ignore the capture tag ``<xxx>``?
 
 If the output of your example has the literal ``<xxx>`` and you want

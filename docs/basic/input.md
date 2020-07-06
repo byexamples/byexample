@@ -107,14 +107,14 @@ however, when a capture tag is found, `byexample` requires at minimum
 of text before the input tag and if there is not enough it will complain:
 
 ```shell
-$ cat test/ds/minimum-ctx-input.md          # byexample: +rm=~
-<...>
-~>>> x = input("say: ")      # byexample: +input
-sa<...>y: [foo]
-~
-~>>> x
-'foo'
-<...>
+$ cat test/ds/minimum-ctx-input.md          # byexample: +rm= 
+ <...>
+ >>> x = input("say: ")      # byexample: +input
+ sa<...>y: [foo]
+ 
+ >>> x
+ 'foo'
+ <...>
 
 
 $ byexample -l python test/ds/minimum-ctx-input.md
@@ -137,14 +137,14 @@ the given text; if the example keeps waiting for it the example will
 eventually timeout:
 
 ```shell
-$ cat test/ds/maximum-ctx-input.md      # byexample: +rm=~
-<...>
-~>>> x = input("Some large text: ")      # byexample: +input
-Some typo! text: [foo]
-~
-~>>> x
-'foo'
-<...>
+$ cat test/ds/maximum-ctx-input.md      # byexample: +rm= 
+ <...>
+ >>> x = input("Some large text: ")      # byexample: +input
+ Some typo! text: [foo]
+ 
+ >>> x
+ 'foo'
+ <...>
 
 $ byexample -l python test/ds/maximum-ctx-input.md
 <...>=> Execution timedout at example 1 of 2.

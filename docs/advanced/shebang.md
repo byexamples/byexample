@@ -25,19 +25,19 @@ Consider the following example that prints interesting things to standard output
 and debug/uninteresting things to standard error:
 
 ```
-$ cat test/ds/blog-database                          # byexample: +rm=~
-~    >>> from __future__ import print_function
-~    >>> import sys
-~
-~    >>> def load_database():
-~    ...     print("Loading...")
-~    ...     print("debug 314kb", file=sys.stderr)
-~    ...     print("Done")
-~
-~    >>> load_database()
-~    Loading...
-~    Done
-~
+$ cat test/ds/blog-database                          # byexample: +rm= 
+     >>> from __future__ import print_function
+     >>> import sys
+ 
+     >>> def load_database():
+     ...     print("Loading...")
+     ...     print("debug 314kb", file=sys.stderr)
+     ...     print("Done")
+ 
+     >>> load_database()
+     Loading...
+     Done
+ 
 ```
 
 Running this will fail because the debug print will be mixed with the normal

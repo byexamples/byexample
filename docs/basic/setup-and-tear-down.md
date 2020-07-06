@@ -26,18 +26,18 @@ It is also reasonable to *tear down* the database connection at the end.
 You could write:
 
 ```
-$ cat test/ds/db-stock-model                         # byexample: +rm=°
+$ cat test/ds/db-stock-model                         # byexample: +rm= 
 This is a quick introduction to the database schema.
-°    >>> import sqlite3
-°    >>> c = sqlite3.connect(':memory:')
-°    >>> _ = c.executescript(open('test/ds/stock.sql').read())  # ---> # byexample: +fail-fast
-°
+     >>> import sqlite3
+     >>> c = sqlite3.connect(':memory:')
+     >>> _ = c.executescript(open('test/ds/stock.sql').read())  # ---> # byexample: +fail-fast
+ 
 Get the stocks' prices
-°    >>> _ = c.execute('select price from stocks')
-°
+     >>> _ = c.execute('select price from stocks')
+ 
 Do not forget to close the connection
-°    >>> c.close()                         # ---> # byexample: -skip
-°
+     >>> c.close()                         # ---> # byexample: -skip
+ 
 ```
 
 In a happy and perfect world this should run smoothly:

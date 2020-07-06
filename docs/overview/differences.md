@@ -69,19 +69,19 @@ For this reason ``byexample`` allows you to change the diff algorithm
 with ``--diff``:
 
 ```
-$ byexample -l shell --diff ndiff test/ds/about-lic.doc   # byexample: +rm=~
+$ byexample -l shell --diff ndiff test/ds/about-lic.doc   # byexample: +rm= 
 <...>
 Differences:
 - To protect your rights, we need to prevent others from denying you
 ?                                             ^^ --
-~
+ 
 + To protect your rights, we need to prevent no-one from denying you
 ?                                            + ^^^
-~
+ 
 - these rights or asking you to surrender the rights.  Therefore, you have
 + these rights or asking you to surrender the rights.  Therefore, you don't have
 ?                                                                    ++++++
-~
+ 
   certain responsibilities if you distribute copies of the software, or if
   you modify it: responsibilities to respect the freedom of others.
 <...>
@@ -152,15 +152,15 @@ and *replaced* the tags by the captured text.
 These *guesses* makes the differences shorter and more easy to spot:
 
 ```
-$ byexample -l shell --diff ndiff test/ds/about-lic-with-tags.doc   # byexample: +rm=~
+$ byexample -l shell --diff ndiff test/ds/about-lic-with-tags.doc   # byexample: +rm= 
 <...>
 Differences:
 - To protect your rights, we need to prevent others from <prevent1>
 ?                                             ^^ --      ^^^^^  ^^^
-~
+ 
 + To protect your rights, we need to prevent no-one from denying you
 ?                                            + ^^^       ^  ^^^^^^^^
-~
+ 
 - or <prevent2>.  Therefore, you have
 + these rights or asking you to surrender the rights.  Therefore, you don't have
   certain responsibilities if you distribute copies of the software, or if
@@ -183,7 +183,7 @@ You can disable this with the ``--no-enhance-diff`` from the command line.
 You will see a much harder to interpreter diff with more errors:
 
 ```shell
-$ byexample -l shell --diff ndiff --no-enhance-diff test/ds/about-lic-with-tags.doc   # byexample: +rm=~
+$ byexample -l shell --diff ndiff --no-enhance-diff test/ds/about-lic-with-tags.doc   # byexample: +rm= 
 <...>
 Differences:
 - To protect <protect>, we need to prevent others from <prevent1>
