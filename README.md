@@ -128,13 +128,13 @@ between major versions.
 
 See the latest [releases and tags](https://github.com/byexamples/byexample/tags)
 and the
-[changelog](https://github.com/byexamples/byexample/tree/master/CHANGELOG.md)
+[changelog](https://github.com/byexamples/byexample/releases)
 
 Current version:
 
 ```shell
 $ byexample -V
-byexample 9.2.0 (Python <...>) - GNU GPLv3
+byexample 9.2.1 (Python <...>) - GNU GPLv3
 <...>
 Copyright (C) Di Paola Martin - https://byexamples.github.io
 <...>
