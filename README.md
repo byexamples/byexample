@@ -68,7 +68,7 @@ Currently we support:
 
 More languages will be supported in the future. Stay tuned.
 
-## Platform supported
+## Platforms supported
 
 Linux is the preferable choice as it is very well tested.
 

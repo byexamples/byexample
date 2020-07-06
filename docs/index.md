@@ -85,7 +85,7 @@ $ byexample -l python,ruby,shell README.md      # run it    # byexample: +skip
 [PASS] Pass: <...> Fail: <...> Skip: <...>
 ```
 
-## Platform supported
+## Platforms supported
 
 Linux is the preferable choice as it is very well tested.
 
