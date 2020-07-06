@@ -48,9 +48,20 @@ to take it *literally*, you could disable the
 <a>, <b>, and <tag>
 ```
 
+### And if I want to ignore one but not all the tags ``<xxx>``?
+
+You can add an invalid character in the tag that you want to ignore (the
+one that you want to take it *literally*) and remove the character
+before the comparison with `+rm`
+
+```python
+>>> print("<a>, <b>, and random string to capture")     # byexample: +rm=~
+<~a>, <~b>, and <tag>
+```
+
 ### How to escape a prompt inside of another example?
 
-``byexample`` uses the prompts to detect examples and in which langueges
+``byexample`` uses the prompts to detect examples and in which languages
 are written.
 
 It uses different heuristics to avoid false positives but it is possible
