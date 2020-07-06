@@ -85,6 +85,36 @@ $ byexample -l python,ruby,shell README.md      # run it    # byexample: +skip
 [PASS] Pass: <...> Fail: <...> Skip: <...>
 ```
 
+## Platform supported
+
+Linux is the preferable choice as it is very well tested.
+
+Since `9.2.1` MacOS is also supported`*` for the testing is more limited
+and it is expected to have little variations from Linux.
+
+You can even run `byexample` in Windows`**` using
+[Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+but keep in mind that the testing is even more limited;
+a native execution in Windows (outside of WSL) is currently not
+supported.
+
+<div class="logos">
+  <div class="row">
+    <div class="col-lg-4">
+      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/linux_logo.png" alt="Linux Logo" width="64" height="64" />
+      <h3><a href="/{{ site.uprefix }}/languages/python">Linux</a></h3>
+    </div>
+    <div class="col-lg-4">
+      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/macos_logo.png" alt="MacOS Logo" width="64" height="64" />
+      <h3><a href="/{{ site.uprefix }}/languages/ruby">MacOS*</a></h3>
+    </div>
+    <div class="col-lg-4">
+      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/windows_logo.png" alt="Windows Logo" width="64" height="64" />
+      <h3><a href="/{{ site.uprefix }}/languages/shell">Windows**</a></h3>
+    </div>
+  </div>
+</div>
+
 ## License
 
 This project is licensed under GPLv3

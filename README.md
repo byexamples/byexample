@@ -68,6 +68,19 @@ Currently we support:
 
 More languages will be supported in the future. Stay tuned.
 
+## Platform supported
+
+Linux is the preferable choice as it is very well tested.
+
+Since `9.2.1` macOS is also supported for the testing is more limited
+and it is expected to have little variations from Linux.
+
+You can even run `byexample` in Windows`**` using
+[Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+but keep in mind that the testing is even more limited;
+a native execution in Windows (outside of WSL) is currently not
+supported.
+
 ## Contributing
 
 First off, thanks for using and considering contributing to ``byexample``.
