@@ -7,6 +7,13 @@ You can visit the
 [changelog](https://github.com/byexamples/byexample/releases)
 for a more complete overview.
 
+## 9.2.1
+
+Patch version to support MacOS with the newer version of Python.
+
+Windows is also supported but only if the Windows Subsystem for Linux is
+used.
+
 ## 9.2.0
 
 Minor release that brings support for Python 3.8 and 3.9
