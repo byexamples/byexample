@@ -36,3 +36,7 @@ def awesome():
 # >>> 1 + 2
 # No, this is not an example.
 ''' '''
+
+files with invalid syntax (like this one!) may affect the ability of
+byexample to find the docstrings and the examples but byexample will try
+to do its best.

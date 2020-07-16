@@ -383,7 +383,7 @@ class ExampleHarvest(object):
         charno = 0
         items = []
 
-        for match in matcher.get_matches(string):
+        for match in matcher.get_matches(string, filepath):
             str_matched = string[match.start():match.end()]
             if str_matched.endswith('\n'):
                 str_matched = str_matched[:-1]
@@ -412,7 +412,7 @@ class ExampleFinder(object):
     def example_regex(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def get_matches(self, string):
+    def get_matches(self, string, filepath='<string>'):
         return self.example_regex().finditer(string)
 
     def get_language_of(self, options, match, where):
@@ -563,7 +563,7 @@ class ZoneDelimiter(object):
     def zone_regex(self):
         raise NotImplementedError()  # pragma: no cover
 
-    def get_matches(self, string):
+    def get_matches(self, string, filepath='<string>'):
         return self.zone_regex().finditer(string)
 
     def get_zone(self, match, where):
