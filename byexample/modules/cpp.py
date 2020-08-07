@@ -30,7 +30,8 @@ Example:
 """
 
 from __future__ import unicode_literals
-import re, sys, time
+import sys, time
+import byexample.regex as re
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate

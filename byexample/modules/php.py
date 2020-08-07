@@ -37,7 +37,7 @@ Example:
 """
 
 from __future__ import unicode_literals
-import re
+import byexample.regex as re
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
