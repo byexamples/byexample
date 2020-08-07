@@ -54,4 +54,7 @@ RUN wget https://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb && d
         esl-erlang      \
         elixir
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends install -y \
+        python3-dev
+
 CMD /bin/bash
