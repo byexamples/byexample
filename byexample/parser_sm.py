@@ -1,4 +1,4 @@
-import re
+from . import regex as re
 from .common import constant, short_string
 from .log import clog, log_context, DEBUG
 import pprint
@@ -12,7 +12,7 @@ tLIT = ('wspaces', 'newlines', 'literals')
 
 >>> from byexample.parser_sm import SM, SM_NormWS, SM_NotNormWS
 >>> from byexample.parser import ExampleParser
->>> import re
+>>> import byexample.regex as re
 >>> from functools import partial
 
 >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
