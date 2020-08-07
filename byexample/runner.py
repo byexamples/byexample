@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
-import re, pexpect, time, termios, operator, os, itertools, contextlib
+import pexpect, time, termios, operator, os, itertools, contextlib
+import re as re_orig
+from . import regex as re
 from functools import reduce, partial
 from .executor import TimeoutException, InputPrefixNotFound
 from .common import tohuman, ShebangTemplate, Countdown, short_string
@@ -250,7 +252,7 @@ class PexpectMixin(object):
 
     @staticmethod
     def _universal_new_lines(out):
-        return re.sub(PexpectMixin.UNIV_NL, '\n', out)
+        return re.compile(PexpectMixin.UNIV_NL).sub('\n', out)
 
     def _emulate_ansi_terminal(self, chunks, join=True):
         for chunk in chunks:

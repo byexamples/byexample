@@ -53,7 +53,8 @@ Example:
 """
 
 from __future__ import unicode_literals
-import re, pexpect, sys, time
+import pexpect, sys, time
+import byexample.regex as re
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
