@@ -42,6 +42,7 @@ required_deps=[
     'pexpect>=4,<5',     # pexpect 4.x.x required
     'appdirs>=1.4.3,<2', # appdirs 1.4.x (x >= 3) required
     'pyte==0.8.0',       # pyte exact version 0.8.0 required
+    'regex>=2017.01.12', # regex's pickle was introduced in 2016
     ]
 
 # these, on the other hand, are optional nice to have
