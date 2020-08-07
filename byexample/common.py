@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
-import pprint, traceback, contextlib, os, re, string, shlex, logging, time
+import pprint, traceback, contextlib, os, string, shlex, logging, time
+from . import regex as re
 '''
 >>> from byexample.common import tohuman, short_string
 >>> import time
@@ -11,7 +12,7 @@ def indent(s, indent=4):
     ''' Indent the given text.
         See doctest._indent for the code that inspired this.
         '''
-    return re.sub('(?m)^(?!$)', indent * ' ', s)
+    return re.compile('(?m)^(?!$)').sub(indent * ' ', s)
 
 
 def short_string(s, max=14, sep='..'):
