@@ -12,6 +12,13 @@ Don't forget to send your feedback to the ``cling`` community.
 > **Stability**: ``experimental`` - non backward compatibility changes are
 > possible or even removal between versions (even patch versions).
 
+Because installing and using `cling` may be a little difficult, we
+offer a simple
+[Dockerfile for cling](https://github.com/byexamples/byexample/tree/master/test/Dockerfile-cling))
+
+See the comments inside of it to know how to build the image and how to
+use the docker container with `byexample`.
+
 ### Variable definition
 
 All the variables are global and can be accessed by other examples
@@ -45,6 +52,67 @@ and check the output later:
 1
 2
 ```
+
+### External libs
+
+In addition to ``stdlib`` you can add your own. These can be
+in the form of C++ code and it will be compiled by `cling` or in
+the form of PIC, shared and dynamically linked library (aka, `.so`)
+
+For the first case you need to pass the path to the source code
+with `.L` or these `pragma`
+
+```cpp
+?: #pragma cling load("test/ds/mylib1.cpp")   // this will compile mylib1.cpp
+?: #include "test/ds/mylib1.h"    // the headers are needed to, as usual
+
+?: mylib1_foo(2)
+calling my lib1
+(int) 4
+```
+
+For the second case, we need to compile the code ourselves:
+
+```shell
+$ g++ -shared -fPIC -o test/ds/libmylib2.so test/ds/mylib2.cpp
+```
+
+The load then proceeds as before.
+
+```cpp
+?: #pragma cling load("test/ds/libmylib2.so")   // already compiled
+?: #include "test/ds/mylib2.h"    // the headers are needed to, as usual
+
+?: mylib2_foo(2)
+increased performance with lib2
+(int) 6
+```
+
+We can define where to search for libraries and headers via two `pragma`
+so we can avoid some typing
+
+```cpp
+?: #pragma cling add_library_path("test/ds/")
+?: #pragma cling add_include_path("test/ds/")
+
+?: #pragma cling load("mylib3.cpp")   // works for .so too
+?: #include "mylib3.h"
+
+?: mylib3_foo(2)
+lib3, four times better
+(int) 8
+```
+
+> Note: `cling` is quite experimental and at least for the 0.6 version,
+> it has not good diagnostic messages.
+>
+> If you find an error like `fatal error: 'libmylib2.so' file not found`
+> it may indicate that you are not configuring the path correctly **or** that
+> the library was not compiled as shared.
+>
+> Best way to troubleshoot is to use explicit paths to distinguish one
+> error from the other.
+
 
 ### Syntax errors
 
@@ -110,3 +178,7 @@ timeout.
 
 The [input](/{{ site.uprefix }}/basic/input)
 feature (`+input`) is not supported.
+
+<!--
+$ rm -f test/ds/libmylib*.so  # byexample: -skip +pass
+-->
