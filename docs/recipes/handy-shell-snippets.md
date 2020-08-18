@@ -56,7 +56,7 @@ $ exec {lockfd}>&-              # byexample: -skip +pass
 $ rm -f test/ds/f               # byexample: -skip +pass
 ```
 
-### Keep tracking a log
+### <a href="#keep-track-log">Keep tracking a log<a/>
 
 You have a program that logs something of you interest *asynchronously*.
 
