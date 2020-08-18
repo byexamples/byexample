@@ -1,6 +1,6 @@
-# C++
+# C/C++
 
-To support C++, ``byexample`` relays in the ``cling`` interpreter.
+To support C/C++, ``byexample`` relays in the ``cling`` interpreter.
 
 You need to have [cling](https://github.com/root-project/cling) installed first.
 
