@@ -113,6 +113,32 @@ lib3, four times better
 > Best way to troubleshoot is to use explicit paths to distinguish one
 > error from the other.
 
+### Running C code (and not C++)
+
+`cling` only supports C++ however it is possible to test C code
+if it is compiled outside of `cling` and loaded as a library.
+
+```shell
+$ gcc -std=c99 -shared -fPIC -o test/ds/libmylibC.so test/ds/mylibC.c
+```
+
+```cpp
+?: #pragma cling load("test/ds/libmylibC.so")   // C code
+?: #include "test/ds/mylibC.h"    // the declarations must be inside the extern "C" {...}
+
+?: mylibC_foo(2)
+(int) 3
+```
+
+While the examples will be running as C++ code, the function
+`mylibC_foo` was compiled as C code.
+
+Keep in mind that the header `mylibC.h` must have all the function
+declarations inside `extern "C" { ... }` so `cling` will know that it
+has to use the "C" calling convention and not the "C++" one.
+
+See [language linkage](https://en.cppreference.com/w/cpp/language/language_linkage)
+for reference.
 
 ### Syntax errors
 
