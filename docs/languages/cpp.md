@@ -14,7 +14,7 @@ Don't forget to send your feedback to the ``cling`` community.
 
 Because installing and using `cling` may be a little difficult, we
 offer a simple
-[Dockerfile for cling](https://github.com/byexamples/byexample/tree/master/test/Dockerfile-cling))
+[Dockerfile for cling](https://github.com/byexamples/byexample/tree/master/test/Dockerfile-cling)
 
 See the comments inside of it to know how to build the image and how to
 use the docker container with `byexample`.

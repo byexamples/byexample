@@ -200,7 +200,7 @@ class DocStringDelimiter(ZoneDelimiter):
             >>> source = 'invalid syntax'
             >>> filepath = 'foo.py'
             >>> offsets = DocStringDelimiter(0,0).near_offsets_of_docstrings(source, filepath)  # byexample: +norm-ws
-            [w] A syntax error was found parsing "foo.py": we may not found all the examples in the docstrings correctl correctly.
+            [w] A syntax error was found parsing "foo.py": we may not found all the examples in the docstrings correctly.
             [w] Traceback (most recent call last):
               File "foo.py", line 1
                 invalid syntax
@@ -213,7 +213,7 @@ class DocStringDelimiter(ZoneDelimiter):
             tree = ast.parse(source)
         except SyntaxError as e:
             clog().warn(
-                'A syntax error was found parsing "%s": we may not found all the examples in the docstrings correctl correctly.',
+                'A syntax error was found parsing "%s": we may not found all the examples in the docstrings correctly.',
                 filepath
             )
 
