@@ -1,6 +1,6 @@
 # Advanced Checks
 
-### <a href="#rich-comp">Rich comparison<a/>
+### Rich comparison
 
 Imagine that you want to check how many words has a file
 but you cannot check the *exact* count.
