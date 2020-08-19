@@ -14,17 +14,19 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
 <style>
-/*
-h2 > a:hover, h3 > a:hover
-{
+h2:hover > span.selfanchor,
+h3:hover > span.selfanchor,
+h4:hover > span.selfanchor,
+h5:hover > span.selfanchor,
+h6:hover > span.selfanchor {
     background: transparent url('{{ '/assets/link-solid.svg' | relative_url }}') no-repeat center right;
-    padding-right: 30px;
 }
 
-h2 > a, h3 > a {
+a.selfanchor {
     text-decoration: none !important;
+    color: inherit !important;
 }
-*/
+
 </style>
 {% seo %}
   </head>
@@ -86,6 +88,34 @@ h2 > a, h3 > a {
         ga('send', 'pageview');
       </script>
     {% endif %}
+
+    <script>
+(function(){
+    'use strict';
+
+    var headings = [];
+    var tags = ['h2', 'h3', 'h4', 'h5', 'h6'];
+
+    tags.forEach(function(tag){
+        var elems = document.getElementsByTagName(tag);
+        Array.prototype.push.apply(headings, elems);
+    });
+
+    headings.forEach(function(node){
+        var span = document.createElement('span');
+        span.className = 'selfanchor';
+        span.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
+        node.appendChild(span);
+
+        var link = document.createElement('a');
+        link.className = 'selfanchor';
+        link.href = '#' + node.getAttribute('id');
+        node.parentNode.insertBefore(link, node);
+        link.appendChild(node);
+    });
+
+})();
+    </script>
   </body>
 </html>
 
