@@ -12,8 +12,8 @@ from .jobs import Jobs, Status, allow_sigint
 from .log import init_log_system
 
 
-def execute_examples(filename, sigint_handler):
-    global cache, harvester, executor, options, dry
+def execute_examples(filename, harvester, executor, sigint_handler):
+    global cache, options, dry
     from .common import human_exceptions
 
     with human_exceptions("processing the file '%s'" % filename) as exc, \
@@ -31,7 +31,7 @@ def execute_examples(filename, sigint_handler):
 
 
 def main(args=None):
-    global cache, harvester, executor, options, dry
+    global cache, options, dry
 
     # byexample relays on UNIX's fork to pass data from the
     # parent process (us) to its children (Job's). Due the
@@ -53,16 +53,16 @@ def main(args=None):
     with cache.activated(auto_sync=True, label="0"):
         from .cmdline import parse_args
         from .common import human_exceptions
-        from .init import init
+        from .init import init_byexample
 
         args = parse_args(args)
 
         dry = args.dry
         with human_exceptions('initializing byexample') as exc:
-            testfiles, harvester, executor, options = init(args)
+            testfiles, options, registry, cfg = init_byexample(args)
 
         if exc:
             sys.exit(Status.error)
 
         jobs = Jobs(args.jobs)
-        return jobs.run(execute_examples, testfiles, options['fail_fast'])
+        return jobs.run(execute_examples, testfiles, options['fail_fast'], registry, cfg)

@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 from multiprocessing import Queue, Process
 import signal, contextlib
 from .log import clog, CHAT
-
+from .init import init_worker
 
 class Status:
     ok = 0
@@ -11,7 +11,7 @@ class Status:
     error = 3
 
 
-def worker(func, sigint_handler, input, output):
+def worker(func, sigint_handler, input, output, registry, cfg):
     ''' Generic worker: call <func> for each item pulled from
         the <input> queue until a None gets pulled.
 
@@ -20,8 +20,9 @@ def worker(func, sigint_handler, input, output):
 
         After receiving a None, close the <output> queue.
         '''
+    harvester, executor = init_worker(registry, cfg)
     for item in iter(input.get, None):
-        output.put(func(item, sigint_handler))
+        output.put(func(item, harvester, executor, sigint_handler))
     output.close()
     output.join_thread()
 
@@ -30,7 +31,7 @@ class Jobs(object):
     def __init__(self, njobs):
         self.njobs = njobs
 
-    def spawn_jobs(self, func, items):
+    def spawn_jobs(self, func, items, registry, cfg):
         ''' Spawn <njobs> jobs to process <items> in parallel/concurrently.
 
             The processes are started and feeded with the first <njobs> items
@@ -53,7 +54,7 @@ class Jobs(object):
             Process(
                 target=worker,
                 name=str(n),
-                args=(func, self.sigint_handler, self.input, self.output)
+                args=(func, self.sigint_handler, self.input, self.output, registry, cfg)
             ) for n in range(njobs)
         ]
         for p in self.processes:
@@ -132,11 +133,11 @@ class Jobs(object):
         self.join_jobs()
         return exit_status
 
-    def run(self, func, items, fail_fast):
+    def run(self, func, items, fail_fast, registry, cfg):
         ''' Process all the <items> in background, aborting earlier
             if one fails and <fail_fast> is True (see loop()).
             '''
-        rest = self.spawn_jobs(func, items)
+        rest = self.spawn_jobs(func, items, registry, cfg)
         return self.loop(len(items), rest, fail_fast)
 
 
