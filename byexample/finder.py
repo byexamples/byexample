@@ -90,7 +90,7 @@ class ExampleHarvest(object):
                                        \         .
     '''
     def __init__(
-        self, allowed_languages, registry, verbosity, options, use_colors,
+        self, registry, allowed_languages, verbosity, options, use_colors,
         encoding, **unused
     ):
         self.allowed_languages = allowed_languages
@@ -189,9 +189,9 @@ class ExampleHarvest(object):
         And create a harvester to play with it:
 
             >>> from byexample.finder import ExampleHarvest
-            >>> f = ExampleHarvest([], dict((k, {}) for k in \
+            >>> f = ExampleHarvest(dict((k, {}) for k in \
             ...                   ('parsers', 'finders', 'runners', 'zdelimiters')),
-            ...                     0, 0, None, 'utf-8')
+            ...                    [], 0, 0, None, 'utf-8')
 
         Okay, back to the check_example_overlap documentation,
         given the examples sorted in that way, a collision is detected if
