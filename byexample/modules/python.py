@@ -174,9 +174,10 @@ class PythonParser(ExampleParser):
 
     def extend_option_parser(self, parser, ctx):
         '''
-        Add a few extra options and if self.compatibility_mode is True,
+        Add a few extra options and if ctx['python_compatibility_mode'] is True,
         add all the Python doctest's options.
         '''
+        compatibility_mode = ctx.get('python_compatibility_mode', True)
         parser.add_flag(
             "py-doctest",
             default=False,
@@ -193,7 +194,7 @@ class PythonParser(ExampleParser):
             help="enable the deletion of empty lines (enabled by default)."
         )
 
-        if getattr(self, 'compatibility_mode', True):
+        if compatibility_mode:
             parser.add_flag(
                 "NORMALIZE_WHITESPACE",
                 default=False,
@@ -239,37 +240,6 @@ class PythonParser(ExampleParser):
             )
 
         return parser
-
-    def get_extended_option_parser(self, parent_parser, **kw):
-        original_compatibility_mode = getattr(self, 'compatibility_mode', None)
-
-        # compatibility mode: True if it wasn't explicitly set
-        compatibility_mode = True if original_compatibility_mode == None \
-                                  else original_compatibility_mode
-
-        tmp = {}
-
-        # fake the two compatibility mode (True and False)
-        # and build an extended parser for each mode
-        self.compatibility_mode = True
-        tmp[self.compatibility_mode
-            ] = ExtendOptionParserMixin.get_extended_option_parser(
-                self, parent_parser, **kw
-            )
-
-        self.compatibility_mode = False
-        tmp[self.compatibility_mode
-            ] = ExtendOptionParserMixin.get_extended_option_parser(
-                self, parent_parser, **kw
-            )
-
-        # restore the compatibility mode (even if it was unset)
-        if original_compatibility_mode == None:
-            del self.compatibility_mode
-        else:
-            self.compatibility_mode = original_compatibility_mode
-
-        return tmp[compatibility_mode]
 
     def _map_doctest_opts_to_byexample_opts(self):
         '''
@@ -333,8 +303,8 @@ class PythonParser(ExampleParser):
         # let's force a compatibility mode before parsing,
         # the compatibility mode uses a parser that it is a superset of the
         # parser in non-compatibility mode so we should be safe
-        self.compatibility_mode = True
-        options = parse_method(*args, **kwargs)
+        ctx = {'python_compatibility_mode': True}
+        options = parse_method(*args, ctx, **kwargs)
 
         # temporally, merge the new options found (options) with the
         # the obtained previously (self.options)
@@ -342,12 +312,13 @@ class PythonParser(ExampleParser):
 
         if self.options['py_doctest']:
             # okay, the user really wanted to be in compatibility mode
-            pass
+            self.compatibility_mode = True
         else:
             # ups, the user don't want this mode, re parse the options
             # in non-compatibility mode
+            ctx = {'python_compatibility_mode': False}
+            options = parse_method(*args, ctx, **kwargs)
             self.compatibility_mode = False
-            options = parse_method(*args, **kwargs)
 
         # take the self.options and see if there are doctest flags
         # to be mapped to byexample's options
