@@ -292,7 +292,7 @@ class ExampleParser(ExtendOptionParserMixin):
         return sm.parse(expected, tags_enabled, input_enabled)
 
     @profile
-    def extract_cmdline_options(self, opts_from_cmdline):
+    def extract_cmdline_options(self, opts_from_cmdline, ctx={}):
         # now we can re-parse this argument 'options' from the command line
         # this will enable the user to set some options for a specific language
         #
@@ -300,11 +300,11 @@ class ExampleParser(ExtendOptionParserMixin):
         # command line may contain language-specific options for other
         # languages than this parser (self) is targeting.
         optparser = self.options['optparser']
-        optparser_extended = self.get_extended_option_parser(optparser)
+        optparser_extended = self.get_extended_option_parser(optparser, ctx)
         return optparser_extended.parse(opts_from_cmdline, strict=False)
 
     @profile
-    def extract_options(self, snippet):
+    def extract_options(self, snippet, ctx={}):
         optstring_match = self.example_options_string_regex().search(snippet)
 
         if not optstring_match:
@@ -320,10 +320,11 @@ class ExampleParser(ExtendOptionParserMixin):
             )
 
         return self._extend_parser_and_parse_options_strictly_and_cache(
-            optlist
+            optlist,
+            ctx
         )
 
-    def _extend_parser_and_parse_options_strictly(self, optlist):
+    def _extend_parser_and_parse_options_strictly(self, optlist, ctx):
         # we parse the example's options
         # in this case, at difference with extract_cmdline_options,
         # we parse it strictly because the example's options
@@ -331,7 +332,7 @@ class ExampleParser(ExtendOptionParserMixin):
         # parser (self)
         # any other options is an error
         optparser = self.options['optparser']
-        optparser_extended = self.get_extended_option_parser(optparser)
+        optparser_extended = self.get_extended_option_parser(optparser, ctx)
         try:
             opts = optparser_extended.parse(optlist, strict=True)
         except UnrecognizedOption as e:
@@ -339,7 +340,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
         return opts
 
-    def _extend_parser_and_parse_options_strictly_and_cache(self, optlist):
+    def _extend_parser_and_parse_options_strictly_and_cache(self, optlist, ctx):
         ''' This is a thin wrapper around _extend_parser_and_parse_options_strictly
             to cache its results based on the optlist.
 
@@ -356,13 +357,14 @@ class ExampleParser(ExtendOptionParserMixin):
             example *would* be parsed by the same *X parser* and it *would*
             yield the *same* result.
 
-            If the parser object or its behaviour changes in runtime, you
-            will need to override this method and change or disable the cache.
+            If the parser object or its behaviour changes in runtime or
+            it depends of a context (ctx), you will have to override this
+            method and change or disable the cache.
             '''
         try:
             return self._opts_cache[tuple(optlist)]
         except KeyError:
-            val = self._extend_parser_and_parse_options_strictly(optlist)
+            val = self._extend_parser_and_parse_options_strictly(optlist, ctx)
             self._opts_cache[tuple(optlist)] = val
             return val
 

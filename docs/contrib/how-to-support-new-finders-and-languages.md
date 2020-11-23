@@ -226,7 +226,7 @@ It is our job to extend this parser adding more flags or arguments to parse our
 own specific options (``ArnoldC``'s specific).
 
 ```python
->>> def extend_option_parser(parser):
+>>> def extend_option_parser(parser, ctx={}):
 ...     parser.add_flag("awesome")
 ```
 
@@ -260,8 +260,8 @@ define a ``language`` attribute and implement the missing methods:
 ...         global opts_string_re
 ...         return opts_string_re
 ...
-...     def extend_option_parser(self, parser):
-...         return extend_option_parser(parser)
+...     def extend_option_parser(self, parser, ctx={}, **kw):
+...         return extend_option_parser(parser, ctx={})
 ```
 
 The user can select which languages should be parsed and executed and which

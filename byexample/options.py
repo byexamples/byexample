@@ -368,7 +368,7 @@ class OptionParser(argparse.ArgumentParser):
 
 
 class ExtendOptionParserMixin(object):
-    def extend_option_parser(self, parser, ctx):
+    def extend_option_parser(self, parser, ctx={}):
         '''
         Extend the the instance of OptionParser that will be in
         charge of parsing the options from the command line and
@@ -379,11 +379,11 @@ class ExtendOptionParserMixin(object):
         '''
         raise NotImplementedError()
 
-    def get_extended_option_parser(self, parent_parser, **kw):
+    def get_extended_option_parser(self, parent_parser, ctx={}, **kw):
         parents = [parent_parser] if parent_parser else []
 
         optparser_extended = OptionParser(parents=parents, **kw)
-        self.extend_option_parser(optparser_extended, **kw)
+        self.extend_option_parser(optparser_extended, ctx)
         if not isinstance(optparser_extended, argparse.ArgumentParser):
             raise ValueError(
                 "The option parser is not an instance of ArgumentParser!. This probably means that there is a bug in %s."
