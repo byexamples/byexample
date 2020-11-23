@@ -8,7 +8,7 @@ from .executor import FileExecutor
 from .differ import Differ
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
-from .common import enhance_exceptions
+from .common import enhance_exceptions, transfer_constants
 from .log import clog, log_context, configure_log_system, setLogLevels, TRACE, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL
 
 
@@ -143,13 +143,19 @@ def load_modules(dirnames, cfg):
 
     return registry
 
-@log_context('byexample.reload')
+@log_context('byexample.load')
 def recreate_registry(registry, cfg):
     ''' Create a copy of the registry recreating its objects. '''
     new = {}
     for what in registry:
         container = registry[what]
-        new[what] = {k: obj.__class__(**cfg) for k, obj in container.items()}
+        new[what] = {}
+
+        for k, obj in container.items():
+            obj2 = obj.__class__(**cfg)
+            transfer_constants(obj, obj2)
+
+            new[what][k] = obj2
 
     return new
 
@@ -527,6 +533,17 @@ def init_byexample(args):
 
 @log_context('byexample.init')
 def init_worker(registry, cfg):
+    ''' Initialize a worker.
+
+        Both parameters will not be changed
+        so they are thread-safe.
+
+        The registry's elements (parsers, runners, concerns,
+        zdelimiters and finders) are recreated.
+
+        If the recreation process is thread safe (depends of the objects'
+        implementations), then init_worker is thread safe.
+    '''
     registry = recreate_registry(registry, cfg)
     concerns = ConcernComposite(registry, **cfg)
 
