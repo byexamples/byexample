@@ -55,7 +55,7 @@ class Concern(ExtendOptionParserMixin):
     def __repr__(self):
         return '%s Concern' % tohuman(self.target if self.target else self)
 
-    def extend_option_parser(self, parser):
+    def extend_option_parser(self, parser, ctx):
         '''
         See options.ExtendOptionParserMixin.
         By default do not add any new flag.

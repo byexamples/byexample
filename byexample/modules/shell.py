@@ -77,7 +77,7 @@ class ShellParser(ExampleParser):
     def example_options_string_regex(self):
         return re.compile(r'#\s*byexample:\s*([^\n\'"]*)$', re.MULTILINE)
 
-    def extend_option_parser(self, parser):
+    def extend_option_parser(self, parser, ctx):
         parser.add_flag(
             "stop-on-timeout",
             default=False,

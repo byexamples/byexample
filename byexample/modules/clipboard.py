@@ -22,7 +22,7 @@ class Clipboard(Concern):
     def __init__(self, verbosity, encoding, **unused):
         pass
 
-    def extend_option_parser(self, parser):
+    def extend_option_parser(self, parser, ctx):
         parser.add_flag(
             "paste",
             default=False,

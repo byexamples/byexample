@@ -19,7 +19,7 @@ class UnknownConditionTag(Exception):
 class Conditional(Concern):
     target = 'conditional'
 
-    def extend_option_parser(self, parser):
+    def extend_option_parser(self, parser, ctx):
         mutexg = parser.add_mutually_exclusive_group()
         mutexg.add_argument(
             "+if",

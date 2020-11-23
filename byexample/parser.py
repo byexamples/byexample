@@ -61,7 +61,7 @@ class ExampleParser(ExtendOptionParserMixin):
         '''
         return shlex.split(string)
 
-    def extend_option_parser(self, parser):
+    def extend_option_parser(self, parser, ctx):
         '''
         See options.ExtendOptionParserMixin.
 

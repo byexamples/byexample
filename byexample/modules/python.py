@@ -172,7 +172,7 @@ class PythonParser(ExampleParser):
         return self._opts_re_for_comp if self.compatibility_mode \
                 else self._opts_re_for_noncomp
 
-    def extend_option_parser(self, parser):
+    def extend_option_parser(self, parser, ctx):
         '''
         Add a few extra options and if self.compatibility_mode is True,
         add all the Python doctest's options.
