@@ -145,6 +145,15 @@ def load_modules(dirnames, cfg):
 
     return registry
 
+@log_context('byexample.reload')
+def recreate_registry(registry, cfg):
+    ''' Create a copy of the registry recreating its objects. '''
+    new = {}
+    for what in registry:
+        container = registry[what]
+        new[what] = {k: obj.__class__(**cfg) for k, obj in container.items()}
+
+    return new
 
 def get_allowed_languages(registry, selected):
     available = set([obj.language for obj in registry['runners'].values()] + \
@@ -452,7 +461,7 @@ def verbosity_to_log_levels(verbosity, quiet):
 
 @log_context('byexample.init')
 @profile
-def init(args):
+def init_byexample(args):
     lvl = verbosity_to_log_levels(args.verbosity, args.quiet)
     lvl.update(args.log_masks)
     setLogLevels(lvl)
@@ -514,12 +523,22 @@ def init(args):
     clog().chat("Configuration:\n%s.", pprint.pformat(cfg))
     clog().chat("Registry:\n%s.", pprint.pformat(registry))
 
+    cfg['allowed_languages'] = allowed_languages
+
+    concerns = ConcernComposite(registry, **cfg)
+    configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
+
+    return testfiles, options, registry, cfg
+
+@log_context('byexample.init')
+@profile
+def init_worker(registry, cfg):
+    registry = recreate_registry(registry, cfg)
     concerns = ConcernComposite(registry, **cfg)
 
     differ = Differ(**cfg)
 
-    harvester = ExampleHarvest(allowed_languages, registry, **cfg)
+    harvester = ExampleHarvest(registry, **cfg)
     executor = FileExecutor(concerns, differ, **cfg)
 
-    configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
-    return testfiles, harvester, executor, options
+    return harvester, executor
