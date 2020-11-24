@@ -104,7 +104,14 @@ class Jobs(object):
         exit_status = Status.ok
         end_sentinels_sent = False
         while nitems:
-            failed, aborted, user_aborted, error = self.output.get()
+            with allow_sigint(self.interrupt_handler):
+                try:
+                    failed, aborted, user_aborted, error = self.output.get()
+                except KeyboardInterrupt:
+                    clog().note("User aborted. Closing...")
+                    failed = aborted = error = False
+                    user_aborted = True
+
             nitems -= 1
 
             if failed:
@@ -127,13 +134,15 @@ class Jobs(object):
                 end_sentinels_sent = True
                 self.stop_workers()
 
-        self.join_jobs()
+        with allow_sigint(self.interrupt_handler):
+            self.join_jobs()
         return exit_status
 
     def run(self, func, items, fail_fast, cfg):
         ''' Process all the <items> in background, aborting earlier
             if one fails and <fail_fast> is True (see loop()).
             '''
+        self.interrupt_handler = self.ignore_sigint()
         rest = self.spawn_jobs(func, items, cfg)
         return self.loop(len(items), rest, fail_fast)
 
