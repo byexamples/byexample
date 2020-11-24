@@ -550,6 +550,7 @@ def init_worker(registry, cfg):
         If the recreation process is thread safe (depends of the objects'
         implementations), then init_worker is thread safe.
     '''
+    cfg['options'] = cfg['options'].copy()
     registry = recreate_registry(registry, cfg)
     concerns = ConcernComposite(registry, **cfg)
 
