@@ -143,7 +143,6 @@ def load_modules(dirnames, cfg):
 
     return registry
 
-@log_context('byexample.load')
 def recreate_registry(registry, cfg):
     ''' Create a copy of the registry recreating its objects. '''
     new = {}
@@ -157,6 +156,29 @@ def recreate_registry(registry, cfg):
 
             new[what][k] = obj2
 
+    return new
+
+def copy_cfg_and_recreate_registry(cfg):
+    ''' Copy the configuration object borrowing references
+        with a special copy operation for the registry and options
+        keys.
+    '''
+    new = {}
+    const_types = (int, tuple, frozenset, str, bool, bytes)
+    for k, v in cfg.items():
+        if k == 'options':
+            v = v.copy()
+        elif k == 'registry':
+            continue # skip
+        elif k == 'output':
+            pass # mutable but don't copy
+        else:
+            # ensure it is constant
+            assert isinstance(v, const_types)
+
+        new[k] = v
+
+    new['registry'] = recreate_registry(cfg['registry'], new)
     return new
 
 def get_allowed_languages(registry, selected):
@@ -524,19 +546,30 @@ def init_byexample(args):
     clog().chat("Configuration:\n%s.", pprint.pformat(cfg))
     clog().chat("Registry:\n%s.", pprint.pformat(registry))
 
-    cfg['allowed_languages'] = allowed_languages
+    cfg['allowed_languages'] = frozenset(allowed_languages)
+    cfg['registry'] = registry
 
-    concerns = ConcernComposite(registry, **cfg)
+    concerns = ConcernComposite(**cfg)
     configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
 
-    return testfiles, options, registry, cfg
+    cfg = ensure_cfg_is_constant(cfg)
+    return testfiles, cfg
+
+def ensure_cfg_is_constant(cfg):
+    const_types = (int, tuple, frozenset, str, bool, bytes)
+    exception_keys = ('options', 'output', 'registry')
+    for k, v in cfg.items():
+        if k in exception_keys:
+            continue
+
+        if not isinstance(v, const_types):
+            raise Exception("Non-immutable value for cfg['%s']: '%s'" % (k, v.__class__))
+
+    return cfg
 
 @log_context('byexample.init')
-def init_worker(registry, cfg):
+def init_worker(cfg):
     ''' Initialize a worker.
-
-        Both parameters will not be changed
-        so they are thread-safe.
 
         The registry's elements (parsers, runners, concerns,
         zdelimiters and finders) are recreated.
@@ -544,13 +577,13 @@ def init_worker(registry, cfg):
         If the recreation process is thread safe (depends of the objects'
         implementations), then init_worker is thread safe.
     '''
-    cfg['options'] = cfg['options'].copy()
-    registry = recreate_registry(registry, cfg)
-    concerns = ConcernComposite(registry, **cfg)
+    cfg = copy_cfg_and_recreate_registry(cfg)
+    registry = cfg['registry']
+    concerns = ConcernComposite(**cfg)
 
     differ = Differ(**cfg)
 
-    harvester = ExampleHarvest(registry, **cfg)
+    harvester = ExampleHarvest(**cfg)
     executor = FileExecutor(concerns, differ, **cfg)
 
     return harvester, executor
