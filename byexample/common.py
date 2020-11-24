@@ -169,6 +169,7 @@ def constant(argumentless_method):
 
     return wrapped
 
+
 def transfer_constants(src, dst):
     ''' Transfer the cached results from one object to another.
 
@@ -177,6 +178,7 @@ def transfer_constants(src, dst):
     for name, val in src.__dict__.items():
         if name.startswith('_saved_constant_result_of_'):
             setattr(dst, name, val)
+
 
 @contextlib.contextmanager
 def human_exceptions(where_default):

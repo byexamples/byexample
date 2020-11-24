@@ -8,10 +8,10 @@ from .executor import FileExecutor
 from .differ import Differ
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
-from .common import enhance_exceptions, transfer_constants
+from .common import enhance_exceptions
 from .log import clog, log_context, configure_log_system, setLogLevels, TRACE, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL
 from .prof import profile
-
+from .cfg import Config
 
 def are_tty_colors_supported(output):
     def get_colors():
@@ -144,44 +144,6 @@ def load_modules(dirnames, cfg):
                 clog().chat("No classes found for '%s'.", what)
 
     return registry
-
-def recreate_registry(registry, cfg):
-    ''' Create a copy of the registry recreating its objects. '''
-    new = {}
-    for what in registry:
-        container = registry[what]
-        new[what] = {}
-
-        for k, obj in container.items():
-            obj2 = obj.__class__(**cfg)
-            transfer_constants(obj, obj2)
-
-            new[what][k] = obj2
-
-    return new
-
-def copy_cfg_and_recreate_registry(cfg):
-    ''' Copy the configuration object borrowing references
-        with a special copy operation for the registry and options
-        keys.
-    '''
-    new = {}
-    const_types = (int, tuple, frozenset, str, bool, bytes)
-    for k, v in cfg.items():
-        if k == 'options':
-            v = v.copy()
-        elif k == 'registry':
-            continue # skip
-        elif k == 'output':
-            pass # mutable but don't copy
-        else:
-            # ensure it is constant
-            assert isinstance(v, const_types)
-
-        new[k] = v
-
-    new['registry'] = recreate_registry(cfg['registry'], new)
-    return new
 
 def get_allowed_languages(registry, selected):
     available = set([obj.language for obj in registry['runners'].values()] + \
@@ -557,20 +519,7 @@ def init_byexample(args):
     concerns = ConcernComposite(**cfg)
     configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
 
-    cfg = ensure_cfg_is_constant(cfg)
-    return testfiles, cfg
-
-def ensure_cfg_is_constant(cfg):
-    const_types = (int, tuple, frozenset, str, bool, bytes)
-    exception_keys = ('options', 'output', 'registry')
-    for k, v in cfg.items():
-        if k in exception_keys:
-            continue
-
-        if not isinstance(v, const_types):
-            raise Exception("Non-immutable value for cfg['%s']: '%s'" % (k, v.__class__))
-
-    return cfg
+    return testfiles, Config(cfg)
 
 @log_context('byexample.init')
 @profile
@@ -583,8 +532,7 @@ def init_worker(cfg):
         If the recreation process is thread safe (depends of the objects'
         implementations), then init_worker is thread safe.
     '''
-    cfg = copy_cfg_and_recreate_registry(cfg)
-    registry = cfg['registry']
+    cfg = cfg.copy()
     concerns = ConcernComposite(**cfg)
 
     differ = Differ(**cfg)
