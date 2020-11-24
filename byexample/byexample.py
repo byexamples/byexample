@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import os, sys, multiprocessing
+import os, sys
 
 if sys.version_info < (3, 0):
     print(
@@ -8,17 +8,16 @@ if sys.version_info < (3, 0):
     sys.exit(1)
 
 from .cache import RegexCache
-from .jobs import Jobs, Status, allow_sigint
+from .jobs import Jobs, Status
 from .log import init_log_system
 
 
-def execute_examples(filename, harvester, executor, sigint_handler):
+def execute_examples(filename, harvester, executor):
     global cache, dry
     from .common import human_exceptions
 
     with human_exceptions("processing the file '%s'" % filename) as exc, \
-            cache.synced(label=filename), \
-            allow_sigint(sigint_handler):
+            cache.synced(label=filename):
         examples = harvester.get_examples_from_file(filename)
         if dry:
             return executor.dry_execute(examples, filename)
@@ -32,14 +31,6 @@ def execute_examples(filename, harvester, executor, sigint_handler):
 
 def main(args=None):
     global cache, dry
-
-    # byexample relays on UNIX's fork to pass data from the
-    # parent process (us) to its children (Job's). Due the
-    # complexity of the objects passed, pickle cannot be used
-    # to serialize them so other start methods ('spawn', 'forkserver')
-    # cannot be used
-    # see https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods
-    multiprocessing.set_start_method('fork')
 
     init_log_system()
 
