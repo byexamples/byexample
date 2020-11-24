@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import traceback, time, os, sys, multiprocessing
+import traceback, time, os, sys, threading
 from byexample.executor import InputPrefixNotFound, InterpreterClosedUnexpectedly
 from byexample.common import colored, highlight_syntax, indent, short_string
 from byexample.concern import Concern
@@ -50,7 +50,7 @@ class SimpleReporter(Concern):
         write_lock = getattr(cls, 'write_lock', None)
         if write_lock is None:
             if self.jobs != 1:
-                cls.write_lock = multiprocessing.RLock()
+                cls.write_lock = threading.RLock()
             else:
                 cls.write_lock = _DummyLock()
 
@@ -344,9 +344,9 @@ class ProgressBarReporter(SimpleReporter):
         if self.jobs == 1:
             position = None
         else:
-            # use multiprocessing.Process' id (number) as the position
+            # use threading.Thread' name (number) as the position
             # of its bar
-            position = int(multiprocessing.current_process().name) + 1
+            position = int(threading.current_thread().name) + 1
 
         SimpleReporter.start(self, examples, runners, filepath, options)
 
