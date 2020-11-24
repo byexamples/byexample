@@ -13,7 +13,7 @@ from .log import init_log_system
 
 
 def execute_examples(filename, harvester, executor, sigint_handler):
-    global cache, options, dry
+    global cache, dry
     from .common import human_exceptions
 
     with human_exceptions("processing the file '%s'" % filename) as exc, \
@@ -31,7 +31,7 @@ def execute_examples(filename, harvester, executor, sigint_handler):
 
 
 def main(args=None):
-    global cache, options, dry
+    global cache, dry
 
     # byexample relays on UNIX's fork to pass data from the
     # parent process (us) to its children (Job's). Due the
