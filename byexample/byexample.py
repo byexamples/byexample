@@ -12,8 +12,8 @@ from .jobs import Jobs, Status
 from .log import init_log_system
 
 
-def execute_examples(filename, harvester, executor):
-    global cache, dry
+def execute_examples(filename, harvester, executor, dry):
+    global cache
     from .common import human_exceptions
 
     with human_exceptions("processing the file '%s'" % filename) as exc, \
@@ -30,7 +30,7 @@ def execute_examples(filename, harvester, executor):
 
 
 def main(args=None):
-    global cache, dry
+    global cache
 
     init_log_system()
 
@@ -48,7 +48,6 @@ def main(args=None):
 
         args = parse_args(args)
 
-        dry = args.dry
         with human_exceptions('initializing byexample') as exc:
             testfiles, cfg = init_byexample(args)
 

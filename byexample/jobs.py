@@ -6,6 +6,7 @@ import signal, contextlib
 from .log import clog, CHAT
 from .init import init_worker
 
+
 class Status:
     ok = 0
     failed = 1
@@ -24,7 +25,7 @@ def worker(func, input, output, cfg):
         '''
     harvester, executor = init_worker(cfg)
     for item in iter(input.get, None):
-        output.put(func(item, harvester, executor))
+        output.put(func(item, harvester, executor, cfg['dry']))
 
 
 class Jobs(object):
