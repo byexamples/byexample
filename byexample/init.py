@@ -13,6 +13,7 @@ from .log import clog, log_context, configure_log_system, setLogLevels, TRACE, D
 from .prof import profile
 from .cfg import Config
 
+
 def are_tty_colors_supported(output):
     def get_colors():
         try:
@@ -144,6 +145,7 @@ def load_modules(dirnames, cfg):
                 clog().chat("No classes found for '%s'.", what)
 
     return registry
+
 
 def get_allowed_languages(registry, selected):
     available = set([obj.language for obj in registry['runners'].values()] + \
@@ -466,6 +468,7 @@ def init_byexample(args):
         'output': sys.stdout,
         'interact': False,
         'opts_from_cmdline': args.options_str,
+        'dry': args.dry,
     }
 
     allowed_files = set(args.files) - set(args.skip)
@@ -520,6 +523,7 @@ def init_byexample(args):
     configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
 
     return testfiles, Config(cfg)
+
 
 @log_context('byexample.init')
 @profile
