@@ -11,7 +11,7 @@ class Status:
     error = 3
 
 
-def worker(func, sigint_handler, input, output, registry, cfg):
+def worker(func, sigint_handler, input, output, cfg):
     ''' Generic worker: call <func> for each item pulled from
         the <input> queue until a None gets pulled.
 
@@ -20,7 +20,7 @@ def worker(func, sigint_handler, input, output, registry, cfg):
 
         After receiving a None, close the <output> queue.
         '''
-    harvester, executor = init_worker(registry, cfg)
+    harvester, executor = init_worker(cfg)
     for item in iter(input.get, None):
         output.put(func(item, harvester, executor, sigint_handler))
     output.close()
@@ -31,7 +31,7 @@ class Jobs(object):
     def __init__(self, njobs):
         self.njobs = njobs
 
-    def spawn_jobs(self, func, items, registry, cfg):
+    def spawn_jobs(self, func, items, cfg):
         ''' Spawn <njobs> jobs to process <items> in parallel/concurrently.
 
             The processes are started and feeded with the first <njobs> items
@@ -54,7 +54,7 @@ class Jobs(object):
             Process(
                 target=worker,
                 name=str(n),
-                args=(func, self.sigint_handler, self.input, self.output, registry, cfg)
+                args=(func, self.sigint_handler, self.input, self.output, cfg)
             ) for n in range(njobs)
         ]
         for p in self.processes:
@@ -133,11 +133,11 @@ class Jobs(object):
         self.join_jobs()
         return exit_status
 
-    def run(self, func, items, fail_fast, registry, cfg):
+    def run(self, func, items, fail_fast, cfg):
         ''' Process all the <items> in background, aborting earlier
             if one fails and <fail_fast> is True (see loop()).
             '''
-        rest = self.spawn_jobs(func, items, registry, cfg)
+        rest = self.spawn_jobs(func, items, cfg)
         return self.loop(len(items), rest, fail_fast)
 
 

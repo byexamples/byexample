@@ -59,10 +59,12 @@ def main(args=None):
 
         dry = args.dry
         with human_exceptions('initializing byexample') as exc:
-            testfiles, options, registry, cfg = init_byexample(args)
+            testfiles, cfg = init_byexample(args)
 
         if exc:
             sys.exit(Status.error)
 
         jobs = Jobs(args.jobs)
-        return jobs.run(execute_examples, testfiles, options['fail_fast'], registry, cfg)
+        return jobs.run(
+            execute_examples, testfiles, cfg['options']['fail_fast'], cfg
+        )
