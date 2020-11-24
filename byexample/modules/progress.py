@@ -42,10 +42,17 @@ class SimpleReporter(Concern):
         self.verbosity = verbosity
 
         self.jobs = jobs
-        if self.jobs != 1:
-            self.write_lock = multiprocessing.RLock()
-        else:
-            self.write_lock = _DummyLock()
+
+        # Initialize once the write_lock the first time that
+        # a SimpleReporter is created. Next SimpleReporter instances
+        # will use the same write_lock
+        cls = self.__class__
+        write_lock = getattr(cls, 'write_lock', None)
+        if write_lock is None:
+            if self.jobs != 1:
+                cls.write_lock = multiprocessing.RLock()
+            else:
+                cls.write_lock = _DummyLock()
 
         self.header_printed = False
 
