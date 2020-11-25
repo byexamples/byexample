@@ -60,7 +60,7 @@ To accomplish this we need to create a regular expression to find the
 ``~~~``, where the snippet of code is and where the expected output is.
 
 ```python
->>> import re
+>>> import byexample.regex as re
 
 >>> example_re = re.compile(r'''
 ...     # begin with ~~~
@@ -106,6 +106,11 @@ if any that to compare.
 The ``indent`` group is to count how many spaces are not part of the example
 and they are just for indentation: ``byexample`` will *drop* the first line that
 has a lower level of indentation and any subsequent line.
+
+While you can use the standard
+[``re`` module](https://docs.python.org/3/library/re.html) it is
+recommended to use ``byexample.regex`` which has some built-in
+optimizations.
 
 ### Detect the language
 
@@ -351,7 +356,7 @@ you do not need to install a real ``ArnoldC`` compiler.
 ...     output = []
 ...     for line in source_code.split('\n'):
 ...         if line.startswith("TALK TO THE HAND"):
-...             to_print = re.search(r'"([^"]*)"', line).group(1)
+...             to_print = re.compile(r'"([^"]*)"').search(line).group(1)
 ...             output.append(to_print + '\n')
 ...
 ...     return '\n'.join(output)
