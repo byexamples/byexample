@@ -71,3 +71,22 @@ optimizations.
 
 And optionally, the ``get_zone`` can be overridden to post-process the captured
 string: use it to remove any spurious string that may had been captured.
+
+
+## Concurrency model
+
+Each `ZoneDelimiter` instance will be created once during the setup of
+`byexample` and then it will be created once per job thread.
+
+By default there is only one job thread but more threads can be added
+with the `--jobs` option.
+
+The instances are independent and therefore thread-safe.
+
+If you want to *share* data among them you will have to use a
+thread-safe structure in a shared place (like mutexes plus class
+variables which are shared among the instances).
+
+``byexample`` uses this mechanism to synchronize the jobs progress
+reports in
+[byexample/modules/progress.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/progress.py).
