@@ -23,7 +23,8 @@ all:
 	@echo "installed them or to add/modify custom flags."
 	@echo " - lib-test: run the tests in the lib (unit test)."
 	@echo " - modules-test: run the tests of the modules (unit test)."
-	@echo " - docs-test: run the tests in the docs."
+	@echo " - docs-test: run the tests in the docs (except docs about languages)."
+	@echo " - lang-test: run the tests in the docs about languages."
 	@echo " - examples-test: run the examples."
 	@echo
 	@echo "Usage: make docker-test"
@@ -80,7 +81,11 @@ modules-test: clean_test
 
 docs-test: clean_test
 	@$(python_bin) test/r.py @test/minimum.env -- *.md
-	@$(python_bin) test/r.py @test/minimum.env -- `find docs -name "*.md"`
+	@$(python_bin) test/r.py @test/minimum.env -- `find docs \( -name languages -prune -o  -name "*.md" \) -type f`
+	@make -s clean_test
+
+lang-test: clean_test
+	@$(python_bin) test/r.py @test/minimum.env -- `find docs/languages -name "*.md"`
 	@make -s clean_test
 
 examples-test: clean_test
@@ -90,7 +95,7 @@ examples-test: clean_test
 index-links-test: clean_test
 	@./test/idx.sh
 
-test: lib-test modules-test docs-test examples-test index-links-test
+test: lib-test modules-test docs-test lang-test examples-test index-links-test
 
 #
 ##
