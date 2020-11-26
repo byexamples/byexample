@@ -16,5 +16,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: make deps-dev
-      - run: make test
+      - run: make lib-test
+      - run: make modules-test
+      - run: make docs-test
 
