@@ -23,7 +23,8 @@ all:
 	@echo "installed them or to add/modify custom flags."
 	@echo " - lib-test: run the tests in the lib (unit test)."
 	@echo " - modules-test: run the tests of the modules (unit test)."
-	@echo " - docs-test: run the tests in the docs."
+	@echo " - docs-test: run the tests in the docs (except docs about languages)."
+	@echo " - lang-test: run the tests in the docs about languages."
 	@echo " - examples-test: run the examples."
 	@echo
 	@echo "Usage: make docker-test"
@@ -33,9 +34,9 @@ all:
 	@echo "Modify test/docker.env to modify the flags of the execution."
 	@echo "This should complement the suite of tests executed by 'make test'"
 	@echo
-	@echo "Usage: make travis-<lang>-test"
+	@echo "Usage: make lang-<lang>-test"
 	@echo "Run a small suite of tests using <lang> and Shell as the only"
-	@echo "interpreters. Designed to be executed in the Travis CI environment"
+	@echo "interpreters. Designed to be executed in the CI environment"
 	@echo
 	@echo "Usage: make docker-[build|shell]"
 	@echo "Create the docker image (build) used by the tests or run a"
@@ -80,7 +81,11 @@ modules-test: clean_test
 
 docs-test: clean_test
 	@$(python_bin) test/r.py @test/minimum.env -- *.md
-	@$(python_bin) test/r.py @test/minimum.env -- `find docs -name "*.md"`
+	@$(python_bin) test/r.py @test/minimum.env -- `find docs \( -name languages -prune -o  -name "*.md" \) -type f`
+	@make -s clean_test
+
+lang-test: clean_test
+	@$(python_bin) test/r.py @test/minimum.env -- `find docs/languages -name "*.md"`
 	@make -s clean_test
 
 examples-test: clean_test
@@ -90,16 +95,18 @@ examples-test: clean_test
 index-links-test: clean_test
 	@./test/idx.sh
 
-test: lib-test modules-test docs-test examples-test index-links-test
+test: lib-test modules-test docs-test lang-test examples-test index-links-test
 
 #
 ##
 
-## Tests for specific interpreters to be used in Travis
-#  ===================================================
-travis-ruby-test: clean_test
-	@$(python_bin) test/r.py @test/travis-ruby.env
+## Tests for specific interpreters to be used in CI
+#  ================================================
+lang-ruby-test: clean_test
+	@$(python_bin) test/r.py @test/lang-ruby.env
 
+lang-python-test: clean_test
+	@$(python_bin) test/r.py @test/lang-python.env
 #
 ##
 
