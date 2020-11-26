@@ -34,9 +34,9 @@ all:
 	@echo "Modify test/docker.env to modify the flags of the execution."
 	@echo "This should complement the suite of tests executed by 'make test'"
 	@echo
-	@echo "Usage: make travis-<lang>-test"
+	@echo "Usage: make lang-<lang>-test"
 	@echo "Run a small suite of tests using <lang> and Shell as the only"
-	@echo "interpreters. Designed to be executed in the Travis CI environment"
+	@echo "interpreters. Designed to be executed in the CI environment"
 	@echo
 	@echo "Usage: make docker-[build|shell]"
 	@echo "Create the docker image (build) used by the tests or run a"
@@ -100,11 +100,13 @@ test: lib-test modules-test docs-test lang-test examples-test index-links-test
 #
 ##
 
-## Tests for specific interpreters to be used in Travis
-#  ===================================================
-travis-ruby-test: clean_test
-	@$(python_bin) test/r.py @test/travis-ruby.env
+## Tests for specific interpreters to be used in CI
+#  ================================================
+lang-ruby-test: clean_test
+	@$(python_bin) test/r.py @test/lang-ruby.env
 
+lang-python-test: clean_test
+	@$(python_bin) test/r.py @test/lang-python.env
 #
 ##
 
