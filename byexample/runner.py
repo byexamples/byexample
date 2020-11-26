@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
-import re, pexpect, time, termios, operator, os, itertools, contextlib
+import pexpect, time, termios, operator, os, itertools, contextlib
+import re as python_re
+from . import regex as re
 from functools import reduce, partial
 from .executor import TimeoutException, InputPrefixNotFound
 from .common import tohuman, ShebangTemplate, Countdown, short_string
@@ -78,6 +80,45 @@ class ExampleRunner(object):
         return False
 
 
+class PexpectSpawnAdapter(pexpect.spawn):
+    def compile_pattern_list(self, patterns):
+        ''' This is an extension of pexpect.spawn.compile_pattern_list
+            to accept not only Python's regex objects (re module) but
+            also Barnett's regexs (third-party regex module).
+
+            This is a workaround for the issue #655
+            (https://github.com/pexpect/pexpect/issues/655)
+            '''
+        if patterns is None:
+            return []
+        if not isinstance(patterns, list):
+            patterns = [patterns]
+
+        # Allow dot to match \n
+        compile_flags = python_re.DOTALL
+        if self.ignorecase:
+            compile_flags = compile_flags | python_re.IGNORECASE
+        compiled_pattern_list = []
+        cls = pexpect.spawnbase
+        for idx, p in enumerate(patterns):
+            if isinstance(p, self.allowed_string_types):
+                p = self._coerce_expect_string(p)
+                compiled_pattern_list.append(
+                    python_re.compile(p, compile_flags)
+                )
+            elif p is cls.EOF:
+                compiled_pattern_list.append(cls.EOF)
+            elif p is cls.TIMEOUT:
+                compiled_pattern_list.append(cls.TIMEOUT)
+            elif isinstance(p, type(python_re.compile(''))):
+                compiled_pattern_list.append(p)
+            elif isinstance(p, type(re.compile(''))):  # <-- the workaround
+                compiled_pattern_list.append(p)
+            else:
+                self._pattern_type_err(p)
+        return compiled_pattern_list
+
+
 class PexpectMixin(object):
     def __init__(self, PS1_re, any_PS_re):
         self.PS1_re = re.compile(PS1_re)
@@ -104,7 +145,7 @@ class PexpectMixin(object):
         env.update({'LINES': str(rows), 'COLUMNS': str(cols)})
 
         self._drop_output()  # there shouldn't be any output yet but...
-        self.interpreter = pexpect.spawn(
+        self.interpreter = PexpectSpawnAdapter(
             cmd,
             echo=False,
             encoding=self.encoding,
@@ -250,7 +291,7 @@ class PexpectMixin(object):
 
     @staticmethod
     def _universal_new_lines(out):
-        return re.sub(PexpectMixin.UNIV_NL, '\n', out)
+        return re.compile(PexpectMixin.UNIV_NL).sub('\n', out)
 
     def _emulate_ansi_terminal(self, chunks, join=True):
         for chunk in chunks:
