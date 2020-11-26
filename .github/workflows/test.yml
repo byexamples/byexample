@@ -1,0 +1,20 @@
+name: test
+on: [pull_request]
+jobs:
+  test:
+    name: "Python ${{ matrix.python-version }}"
+    runs-on: ubuntu-latest
+    strategy:
+        matrix:
+            python-version: ["3.5", "3.6", "3.7", "3.8", "3.9"]
+    env:
+        TERM: xterm-color
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: make deps-dev
+      - run: make test
+
