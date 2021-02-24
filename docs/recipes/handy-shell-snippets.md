@@ -42,7 +42,7 @@ Combine this with a
 [fail fast](/{{ site.uprefix }}/basic/setup-and-tear-down) to fail quickly
 if the lock cannot be obtained and with a
 [skip](/{{ site.uprefix }}/basic/setup-and-tear-down) to make your that
-you unlock the file at the end:
+sure unlock the file at the end:
 
 ```shell
 $ # try to get the lock, fail fast if we cannot
