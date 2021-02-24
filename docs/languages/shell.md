@@ -22,6 +22,32 @@ but other shells are supported like ``dash`` and ``ksh``.
 > changes may occur between versions; but in general a change like that
 > will happen only between major versions.
 
+## POSIX-conformant
+
+`byexample` configures ``bash`` to run in POSIX-conformant by default.
+
+If you execute an shell example and you get a syntax error, you may be
+using a non-POSIX syntax.
+
+You can disable the POSIX-conformant from *within* `bash` with `set
++o posix`:
+
+```shell
+$ echo $POSIXLY_CORRECT  # this Bash's variable says yes if we are in POSIX
+y
+
+$ set +o posix
+$ echo $POSIXLY_CORRECT  # we are not longer in POSIX mode, happy hacking
+
+$ set -o posix
+$ echo $POSIXLY_CORRECT  # back to the default of byexample
+y
+```
+
+<!--
+$ set -o posix           # byexample: +pass -skip
+-->
+
 ## Find interactive examples
 
 For ``Shell``, we use the simple ``$`` marker as the primary prompt
@@ -298,8 +324,10 @@ you to use ``-x-shebang`` to control
 [how to spawn a runner](/{{ site.uprefix }}/advanced/shebang), in this case,
 a shell.
 
-For example to use ``bash`` without the constraint to be POSIX-conformant
-we could run:
+You could run `ssh` to have a remote shell for example.
+
+Or you could run ``bash`` without the constraint to be POSIX-conformant
+by default (but see `set +o posix` as mentioned above before trying to do this):
 
 ```shell
 $ byexample -l shell -x-shebang 'shell:%e bash --norc --noprofile' test/ds/shell-example

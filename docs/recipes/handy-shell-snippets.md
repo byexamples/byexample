@@ -112,3 +112,30 @@ $ kill %% ; fg ; wait       # byexample: -skip
 tail -f test/ds/some.log
 Terminated
 ```
+
+### No POSIX-conformant Bash
+
+By default, `byexample` uses `bash` in POSIX-conformant mode.
+
+If you execute an shell example and you get a syntax error, you may be
+using a non-POSIX syntax.
+
+You can disable the POSIX-conformant from *within* `bash` with `set
++o posix`:
+
+```shell
+$ echo $POSIXLY_CORRECT  # this Bash's variable says yes if we are in POSIX
+y
+
+$ set +o posix
+$ echo $POSIXLY_CORRECT  # we are not longer in POSIX mode, happy hacking
+
+$ set -o posix
+$ echo $POSIXLY_CORRECT  # back to the default of byexample
+y
+```
+
+<!--
+$ set -o posix           # byexample: +pass -skip
+-->
+
