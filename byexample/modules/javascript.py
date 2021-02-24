@@ -113,7 +113,7 @@ class JavascriptInterpreter(ExampleRunner, PexpectMixin):
         return "%e %p %a", {
             'e': '/usr/bin/env',
             'p': 'nodejs',
-            'a': [abspath(__file__, 'byexample-repl.js')]
+            'a': [abspath(__file__, 'gadgets', 'byexample-repl.js')]
         }
 
     def initialize(self, options):
