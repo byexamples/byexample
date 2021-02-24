@@ -108,6 +108,7 @@ setup(
 
     packages=['byexample', 'byexample.modules'],
     data_files=[("", ["LICENSE"])],
+    package_data={'byexample':["modules/gadgets/*"]},
 
     entry_points={
         'console_scripts': [
