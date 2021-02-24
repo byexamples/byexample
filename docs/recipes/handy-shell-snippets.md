@@ -58,15 +58,11 @@ $ rm -f test/ds/f               # byexample: -skip +pass
 
 ### Keep tracking a log
 
-You have a program that logs something of you interest *asynchronously*.
+You have a program that logs something of your interest *asynchronously*.
 
-You want to check it but you don't want to do a simple ``cat``
-because, by the time you do the ``cat``, the your program may not had
-change to log.
-
-The solution is to use ``tail -f`` (or ``tailf``) to keep track of
-the log file *in the background*, run your program and bring the ``tail``
-back to the foreground to do the check.
+Use ``tail -f`` (or ``tailf``) to keep track of
+the log file *in the background*, only then run your program and
+lastly bring the ``tail`` back to the foreground to do the check.
 
 <!--
 # create and wipe the log
@@ -81,7 +77,7 @@ to the background:
 $ tail -f test/ds/some.log      # byexample: +stop-on-silence
 ```
 
-The we run the asynchronous command (here you put *your* command)
+Then we run the asynchronous command (here you put *your* command)
 
 ```shell
 $ (sleep 0.5 ; echo "very important message!" >> test/ds/some.log) &
@@ -105,7 +101,8 @@ very important message!
 > the timeout is over.
 
 Because ``fg %1`` will never end we *need* to
-send it the background again and not fail with a timeout.
+send it the background again and not fail with a timeout (that's why
+we use `+stop-on-timeout`).
 
 To finish it, we can kill it like any other process. You typically
 do not want to [skip](/{{ site.uprefix }}/basic/setup-and-tear-down) this.
