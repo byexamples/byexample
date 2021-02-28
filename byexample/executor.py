@@ -18,6 +18,12 @@ class InputPrefixNotFound(TimeoutException):
         self.prefix, self.input = prefix, input
 
 
+class UnexpectedInterpreterClose(Exception):
+    def __init__(self, msg, output):
+        Exception.__init__(self, msg)
+        self.output = output
+
+
 class FileExecutor(object):
     def __init__(
         self, concerns, differ, verbosity, use_colors, options, **unused
