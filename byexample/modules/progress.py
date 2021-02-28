@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 import traceback, time, os, sys, multiprocessing
-from byexample.executor import InputPrefixNotFound
+from byexample.executor import InputPrefixNotFound, UnexpectedInterpreterClose
 from byexample.common import colored, highlight_syntax, indent, short_string
 from byexample.concern import Concern
 
@@ -168,12 +168,31 @@ class SimpleReporter(Concern):
         msg = '\n'
         msg += self._error_header(example)
 
-        tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
-        ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
         msg += self._bullet('red') + ' '
-        msg += 'Execution of example %i of %i crashed.\n%s\n%s\n' % (
-            self.examplenro, self.num_examples, tb, ex
+        msg += 'Execution of example %i of %i crashed.\n' % (
+            self.examplenro, self.num_examples
         )
+
+        if isinstance(exception, UnexpectedInterpreterClose):
+            msg += self._bullet('cyan', '-') + ' '
+            msg += 'Interpreter closed unexpectedly: the interpreter or runner closed unexpectedly.\n' + \
+                   'This could happen because the example triggered a close/shutdown/exit action,\n' + \
+                   'the interpreter was killed by someone else or because the interpreter just crashed.\n' + \
+                   '\n' + \
+                   'If the interpreter is just crashing, it may be possible to find a workaround,\n' + \
+                   'you can open an issue at https://github.com/byexamples/byexample/issues\n'
+
+            if exception.output:
+                msg += self._bullet('cyan', '-') + ' '
+                msg += 'This is the last output obtained:\n%s\n' % str(
+                    exception.output
+                )
+        else:
+            tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
+            ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
+
+            msg += '%s\n%s\n' % (self.examplenro, self.num_examples, tb, ex)
+
         self._write(msg)
 
     def start_parse(self, example, options):
