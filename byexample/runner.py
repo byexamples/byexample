@@ -123,8 +123,8 @@ class PexpectMixin(object):
                 msg = 'The command was not found or was not executable.'
                 msg += '\nThe full command line tried is as follows:\n'
                 msg += cmd
-                msg += '\n\nThis could happen because you do not have it installed ' + \
-                       'or it is not in the PATH.'
+                msg += '\n\nThis could happen because you do not have it installed or' + \
+                       '\nit is not in the PATH.'
                 e = InterpreterNotFound(msg, self.cmd).with_traceback(
                     sys.exc_info()[2]
                 )
@@ -388,7 +388,7 @@ class PexpectMixin(object):
             self.output_between_prompts.append(output)
 
         if what == Timeout:
-            msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s"
+            msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\n\nLast 1000 bytes read:\n%s"
             msg = msg % ''.join(self.output_between_prompts)[-1000:]
             out = self._get_output(options)
             raise TimeoutException(msg, out)
@@ -398,7 +398,7 @@ class PexpectMixin(object):
             return False
 
         elif what == EOF:
-            msg = "Interpreter closed unexpectedly: the interpreter or runner closed unexpectedly.\nThis could happen because the example triggered a close/shutdown/exit action, the interpreter was killed by someone else or because the interpreter just crashed.\nLast 1000 bytes read:\n%s"
+            msg = "Interpreter closed unexpectedly.\nThis could happen because the example triggered a close/shutdown/exit action,\nthe interpreter was killed by someone else or because the interpreter just crashed.\n\nLast 1000 bytes read:\n%s"
             msg = msg % ''.join(self.output_between_prompts)[-1000:]
             out = self._get_output(options)
             raise UnexpectedInterpreterClose(msg, out)
