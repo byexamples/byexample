@@ -3,12 +3,13 @@ import pexpect, time, termios, operator, os, itertools, contextlib
 import re as python_re
 from . import regex as re
 from functools import reduce, partial
-from .executor import TimeoutException, InputPrefixNotFound
+from .executor import TimeoutException, InputPrefixNotFound, InterpreterClosedUnexpectedly, InterpreterNotFound
 from .common import tohuman, ShebangTemplate, Countdown, short_string
 from .example import Example
 from .log import clog
 
 from pyte import Stream, Screen
+import sys
 
 
 class ExampleRunner(object):
@@ -126,6 +127,7 @@ class PexpectMixin(object):
 
         self.output_between_prompts = []
         self.last_output_may_be_incomplete = False
+        self.cmd = None
 
     def _spawn_interpreter(
         self,
@@ -135,6 +137,8 @@ class PexpectMixin(object):
         first_prompt_timeout=None,
         initial_prompt=None
     ):
+        self.cmd = None
+
         if first_prompt_timeout is None:
             first_prompt_timeout = options['x']['dfl_timeout']
 
@@ -145,13 +149,29 @@ class PexpectMixin(object):
         env.update({'LINES': str(rows), 'COLUMNS': str(cols)})
 
         self._drop_output()  # there shouldn't be any output yet but...
-        self.interpreter = PexpectSpawnAdapter(
-            cmd,
-            echo=False,
-            encoding=self.encoding,
-            dimensions=(rows, cols),
-            env=env
-        )
+        self.cmd = cmd
+
+        try:
+            self.interpreter = PexpectSpawnAdapter(
+                cmd,
+                echo=False,
+                encoding=self.encoding,
+                dimensions=(rows, cols),
+                env=env
+            )
+        except Exception as err:
+            if 'command was not found' in str(err):
+                msg = 'The command was not found or was not executable.'
+                msg += '\nThe full command line tried is as follows:\n'
+                msg += cmd
+                msg += '\n\nThis could happen because you do not have it installed or' + \
+                       '\nit is not in the PATH.'
+                e = InterpreterNotFound(msg, self.cmd).with_traceback(
+                    sys.exc_info()[2]
+                )
+                raise e from None
+            raise
+
         self.interpreter.delaybeforesend = options['x']['delaybeforesend']
         self.interpreter.delayafterread = None
 
@@ -389,8 +409,9 @@ class PexpectMixin(object):
         if not prompt_re:
             prompt_re = self.any_PS_re
 
-        expect = [prompt_re, pexpect.TIMEOUT, earlier_re]
-        PS_found, Timeout, Earlier = range(len(expect))
+        # Note: earlier_re must be the last item of the list (see below why)
+        expect = [prompt_re, pexpect.TIMEOUT, pexpect.EOF, earlier_re]
+        PS_found, Timeout, EOF, Earlier = range(len(expect))
 
         # remove it if it was actually None (adding it before and
         # removing it now is weird but it makes the code easier and shorter)
@@ -408,7 +429,7 @@ class PexpectMixin(object):
             self.output_between_prompts.append(output)
 
         if what == Timeout:
-            msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\nLast 1000 bytes read:\n%s"
+            msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\n\nLast 1000 bytes read:\n%s"
             msg = msg % ''.join(self.output_between_prompts)[-1000:]
             out = self._get_output(options)
             raise TimeoutException(msg, out)
@@ -417,6 +438,13 @@ class PexpectMixin(object):
             self.last_output_may_be_incomplete = True
             return False
 
+        elif what == EOF:
+            msg = "Interpreter closed unexpectedly.\nThis could happen because the example triggered a close/shutdown/exit action,\nthe interpreter was killed by someone else or because the interpreter just crashed.\n\nLast 1000 bytes read:\n%s"
+            msg = msg % ''.join(self.output_between_prompts)[-1000:]
+            out = self._get_output(options)
+            raise InterpreterClosedUnexpectedly(msg, out)
+
+        assert what == PS_found
         self.last_output_may_be_incomplete = False
         return True
 
