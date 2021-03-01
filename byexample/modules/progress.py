@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 import traceback, time, os, sys, multiprocessing
-from byexample.executor import InputPrefixNotFound, UnexpectedInterpreterClose
+from byexample.executor import InputPrefixNotFound, InterpreterClosedUnexpectedly
 from byexample.common import colored, highlight_syntax, indent, short_string
 from byexample.concern import Concern
 
@@ -173,7 +173,7 @@ class SimpleReporter(Concern):
             self.examplenro, self.num_examples
         )
 
-        if isinstance(exception, UnexpectedInterpreterClose):
+        if isinstance(exception, InterpreterClosedUnexpectedly):
             msg += self._bullet('cyan', '-') + ' '
             msg += 'Interpreter closed unexpectedly: the interpreter or runner closed unexpectedly.\n' + \
                    'This could happen because the example triggered a close/shutdown/exit action,\n' + \

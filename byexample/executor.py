@@ -18,7 +18,7 @@ class InputPrefixNotFound(TimeoutException):
         self.prefix, self.input = prefix, input
 
 
-class UnexpectedInterpreterClose(Exception):
+class InterpreterClosedUnexpectedly(Exception):
     def __init__(self, msg, output):
         Exception.__init__(self, msg)
         self.output = output
