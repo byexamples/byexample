@@ -71,16 +71,15 @@ When an interpreter runs an *syntactically incorrect* example, it may
 confuse and wait for more input from the user, input that it will not
 receive.
 
-Solution? Do a quick check increasing the timeout with `+timeout=N`. If
-the problem disappears the example was taking too much time.
+Solution? Do a quick check
+[increasing the timeout](/{{ site.uprefix }}/basic/timeout) with `+timeout=N`.
+If the problem disappears the example was taking too much time.
 
 If the problem persists, it is probably a syntax error somewhere.
 
 If the error happens in the first example or during the initialization
 of the interpreter/runner, it may be an incompatibility with
-`byexample`.
-
-Consider
+`byexample`. Consider
 [opening a ticket](https://github.com/byexamples/byexample/issues) in
 that case.
 

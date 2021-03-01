@@ -3,7 +3,7 @@ import pexpect, time, termios, operator, os, itertools, contextlib
 import re as python_re
 from . import regex as re
 from functools import reduce, partial
-from .executor import TimeoutException, InputPrefixNotFound, UnexpectedInterpreterClose, InterpreterNotFound
+from .executor import TimeoutException, InputPrefixNotFound, InterpreterClosedUnexpectedly, InterpreterNotFound
 from .common import tohuman, ShebangTemplate, Countdown, short_string
 from .example import Example
 from .log import clog
@@ -442,7 +442,7 @@ class PexpectMixin(object):
             msg = "Interpreter closed unexpectedly.\nThis could happen because the example triggered a close/shutdown/exit action,\nthe interpreter was killed by someone else or because the interpreter just crashed.\n\nLast 1000 bytes read:\n%s"
             msg = msg % ''.join(self.output_between_prompts)[-1000:]
             out = self._get_output(options)
-            raise UnexpectedInterpreterClose(msg, out)
+            raise InterpreterClosedUnexpectedly(msg, out)
 
         assert what == PS_found
         self.last_output_may_be_incomplete = False
