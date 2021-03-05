@@ -42,7 +42,7 @@ everything except the code between ``<pre>`` and ``</pre>`` tags.
 This is what you need to write:
 
 ```python
->>> import byexample.regex as re
+>>> import re
 >>> from byexample.finder import ZoneDelimiter
 
 >>> class HTMLPreBlockDelimiter(ZoneDelimiter):
@@ -63,11 +63,6 @@ or set of several extensions.
 
 The ``zone_regex`` method should return a regular expression to find and capture
 the zones.
-
-While you can use the standard
-[``re`` module](https://docs.python.org/3/library/re.html) it is
-recommended to use ``byexample.regex`` which has some built-in
-optimizations.
 
 And optionally, the ``get_zone`` can be overridden to post-process the captured
 string: use it to remove any spurious string that may had been captured.

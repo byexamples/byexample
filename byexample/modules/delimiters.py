@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
-import ast, itertools
-import byexample.regex as re
+import re, ast, itertools
 from byexample.finder import ZoneDelimiter
 from byexample.common import constant
 from byexample.log import clog

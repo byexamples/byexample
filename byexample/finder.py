@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
-import os
-from . import regex as re
+import re, os
 from .common import build_where_msg, tohuman, \
                     enhance_exceptions
 
@@ -477,14 +476,14 @@ class ExampleFinder(object):
         'check_and_remove_indent' and other processing functions.
 
             >>> from byexample.finder import ExampleFinder
-            >>> import byexample.regex as re
+            >>> import re
 
             >>> mfinder = ExampleFinder(0, 'utf8'); mfinder.target = 'python-prompt'
             >>> check_and_remove_indent = mfinder.check_and_remove_indent
             >>> check_keep_matching     = mfinder.check_keep_matching
 
             >>> code = '  >>> 1 + 2'
-            >>> match = re.compile(r'[ ]*>>> [^\n]*').match(code)
+            >>> match = re.match(r'[ ]*>>> [^\n]*', code)
 
             >>> code_i = check_and_remove_indent(code, '  ', (1, 2, 'foo.rst', None))
             >>> code_i != code

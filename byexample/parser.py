@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
-import shlex, argparse, bisect, collections
-from . import regex as re
+import re, shlex, argparse, bisect, collections
 from .common import tohuman, constant
 from .options import OptionParser, UnrecognizedOption, ExtendOptionParserMixin
 from .expected import _LinearExpected, _RegexExpected
@@ -219,7 +218,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
             >>> from byexample.parser import ExampleParser
             >>> from functools import partial
-            >>> import byexample.regex as re
+            >>> import re
 
             >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
             >>> _as_regexs = partial(parser.expected_as_regexs, tags_enabled=True, input_enabled=True, normalize_whitespace=False, input_prefix_len_range=(6,12))

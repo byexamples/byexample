@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 from .log import clog, log_context
-import string, time
-from . import regex as re
+import string, re, time
 '''
 >>> from byexample.log import init_log_system
 >>> init_log_system()

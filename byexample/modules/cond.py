@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from byexample.concern import Concern
+import re
 from functools import partial
 
 stability = 'experimental'
