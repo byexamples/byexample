@@ -1,7 +1,6 @@
 from time import perf_counter as mark
 import contextlib, functools, inspect
-import os.path
-import os
+import os.path, os, sys, atexit
 '''
 This module implements a "deterministic profiler".
 
@@ -96,12 +95,39 @@ Nested is possible too:
 stdin>::nested;stdin>::nested;stdin>::nested 30<...>
 stdin>::nested;stdin>::nested 20<...>
 stdin>::nested 10<...>
+
+The engine is thread safe. Due how the engine works
+the traces may be written out of order and they may be
+delayed but all of the traces will be written at the end
+of the program execution.
 '''
 
 enabled = os.getenv("BYEXAMPLE_PROFILE", "0") != "0"
 
-_callees_measures = [0]
-_call_stack = []
+import threading
+from queue import Queue, Empty
+
+
+# Profile functions may be called from different threads and the
+# data collected is thread-specific so we need to maintain a
+# separated structure for each thread. In the jargon this is called
+# "thread local" data.
+class _ProfileLocalData(threading.local):
+    def __init__(self):
+        self.callees_measures = [0]
+        self.call_stack = []
+
+
+# It is okay to share this: each thread will see the *same* _pld
+# object but it will see a *different* _pld's content.
+_pld = _ProfileLocalData()
+
+# Queue and lock to synchronize the access to the out file.
+_out_q = Queue()
+_out_lck = threading.Lock()
+
+# The out file.
+out_file = sys.stdout
 
 
 @contextlib.contextmanager
@@ -123,8 +149,10 @@ def profile_ctx(name=None, _func=None):
         The internal (private) <_func> servers to use that function
         instead of the calling function for the same purpose.
         '''
-    global _callees_measures
-    global _call_stack
+    global _pld
+    global out_file
+    global _out_q
+    global _out_lck
     global enabled
 
     if not enabled:
@@ -132,7 +160,7 @@ def profile_ctx(name=None, _func=None):
         return
 
     ini_mark = mark()
-    _callees_measures.append(0)
+    _pld.callees_measures.append(0)
 
     # If we have a function it means that we are being
     # called from the profile decorator
@@ -159,7 +187,7 @@ def profile_ctx(name=None, _func=None):
 
     assert name
     name = name.replace("<", "")
-    _call_stack.append(name)
+    _pld.call_stack.append(name)
 
     begin_mark = mark()
     try:
@@ -168,10 +196,10 @@ def profile_ctx(name=None, _func=None):
         end_mark = mark()
 
         # Build a "stack trace"
-        stack = ';'.join(_call_stack)
+        stack = ';'.join(_pld.call_stack)
 
         # pop "func" name
-        _call_stack.pop()
+        _pld.call_stack.pop()
 
         # calculate the total elapsed time (temporal)
         elapsed = round(
@@ -179,22 +207,77 @@ def profile_ctx(name=None, _func=None):
         )  # elapsed time in nanoseconds
 
         # how much time our children (callees) spent
-        ours = _callees_measures.pop()
+        ours = _pld.callees_measures.pop()
 
         # calculate the "self" elapsed time
         elapsed -= ours
         assert elapsed >= 0
 
-        # print
-        print("%s %i" % (stack, elapsed))
+        # print now if we can do it without interfering
+        # with other thread's printing
+        msg = "%s %i" % (stack, elapsed)
+        if _out_lck.acquire(blocking=False):
+            try:
+                try:
+                    while True:
+                        print(_out_q.get_nowait(), file=out_file)
+                except Empty:
+                    pass
+
+                print(msg, file=out_file, flush=True)
+            finally:
+                _out_lck.release()
+        else:
+            # Delay the print: make other thread (may be us in the future)
+            # to print the stack later.
+            # the idea is that the thread (us) does not have to wait for
+            # Another doing the print which can be expensive. Instead we
+            # put the message into a queue which should be faster.
+            _out_q.put(msg)
+
         del stack
+        del msg
 
         # notify to our parent (caller) how much time we spent
         # including the time spent by the profile instrumentation
         callee_t = round(
             (mark() - ini_mark) * 1000000000
         )  # elapsed time in nanoseconds
-        _callees_measures[-1] += callee_t
+        _pld.callees_measures[-1] += callee_t
+
+
+@atexit.register
+def _flush_traces():
+    ''' Ensure that all the traces that may had been put on hold
+        are written to disk.
+        '''
+    global _out_q
+    global _out_lck
+    global out_file
+    global enabled
+
+    # fast path
+    if not enabled:
+        return
+
+    # This should never happen but it is possible that some other thread
+    # is still alive running profiled code.
+    # We cannot do much about it (or them).
+    # The thread that is holding the lock will empty the queue for us
+    # but that does not guaranty that other threads may be putting traces
+    # in the queue that the first thread may not see.
+    # Those events may get lost.
+    # Should print a warning to notify about this?
+    if not _out_lck.acquire(blocking=True, timeout=5):
+        return
+
+    try:
+        while True:
+            print(_out_q.get_nowait(), file=out_file)
+    except Empty:
+        pass
+    finally:
+        _out_lck.release()
 
 
 def _name_from_frame(frame):
