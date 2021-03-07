@@ -27,6 +27,11 @@ all:
 	@echo " - lang-test: run the tests in the docs about languages."
 	@echo " - examples-test: run the examples."
 	@echo
+	@echo "Usage: make [lib]-profiler-[1|2|4]"
+	@echo "Run a suite of tests with the profiler enabled with 1, 2 or 4 jobs"
+	@echo "The traces will be in prof-traces. See the results with flamegraph as"
+	@echo "  cat prof-traces | ./flamegraph.pl > prof.svg"
+	@echo
 	@echo "Usage: make docker-test"
 	@echo "Run the suite of tests of the modules and examples and a few"
 	@echo "others using all the languages available inside a docker"
@@ -97,6 +102,22 @@ index-links-test: clean_test
 
 test: lib-test modules-test docs-test lang-test examples-test index-links-test
 
+#
+##
+
+## Performance
+#  ===========
+lib-profiler-1: clean_test
+	@BYEXAMPLE_PROFILE=1 $(python_bin) test/r.py --jobs 1 @test/profiler.env -- byexample/*.py > prof-traces
+	@make -s clean_test
+
+lib-profiler-2: clean_test
+	@BYEXAMPLE_PROFILE=1 $(python_bin) test/r.py --jobs 2 @test/profiler.env -- byexample/*.py > prof-traces
+	@make -s clean_test
+
+lib-profiler-4: clean_test
+	@BYEXAMPLE_PROFILE=1 $(python_bin) test/r.py --jobs 4 @test/profiler.env -- byexample/*.py > prof-traces
+	@make -s clean_test
 #
 ##
 
@@ -196,7 +217,7 @@ clean: clean_test
 	rm -Rf build/ *.egg-info
 	find . -name "*.pyc" -delete
 	find . -type d -name "__pycache__" -delete
-	rm -f README.rst
+	rm -f README.rst prof-traces
 
 #
 ##
