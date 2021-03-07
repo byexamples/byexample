@@ -392,4 +392,4 @@ class Countdown:
         return self._start_mark is not None
 
     def _now(self):
-        return time.time()
+        return time.perf_counter()

@@ -23,7 +23,7 @@ class Concern(ExtendOptionParserMixin):
      - start
          - start_parse
              - before_build_regex
-         - finish_parse
+         - finish_parse (may be called without start_parse called)
 
          - skip_example
 
