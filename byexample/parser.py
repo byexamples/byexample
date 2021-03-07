@@ -4,6 +4,7 @@ from .common import tohuman, constant
 from .options import OptionParser, UnrecognizedOption, ExtendOptionParserMixin
 from .expected import _LinearExpected, _RegexExpected
 from .parser_sm import SM_NormWS, SM_NotNormWS
+from .prof import profile, profile_ctx
 '''
 >>> from byexample.log import init_log_system
 >>> init_log_system()
@@ -138,15 +139,19 @@ class ExampleParser(ExtendOptionParserMixin):
 
         return snippet, expected
 
+    @profile
     def parse(self, example, concerns):
         options = self.options
 
-        local_options = self.extract_options(example.snippet)
+        with profile_ctx("extract_options"):
+            local_options = self.extract_options(example.snippet)
+
         options.up(local_options)
 
-        example.source, example.expected_str = self.process_snippet_and_expected(
-            example.snippet, example.expected_str
-        )
+        with profile_ctx("process_snippet_and_expected"):
+            example.source, example.expected_str = self.process_snippet_and_expected(
+                example.snippet, example.expected_str
+            )
 
         # the options to customize this example
         example.options = local_options
@@ -195,6 +200,7 @@ class ExampleParser(ExtendOptionParserMixin):
         options.down()
         return example
 
+    @profile
     def expected_as_regexs(
         self, expected, tags_enabled, input_enabled, normalize_whitespace,
         input_prefix_len_range
@@ -284,6 +290,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
         return sm.parse(expected, tags_enabled, input_enabled)
 
+    @profile
     def extract_cmdline_options(self, opts_from_cmdline):
         # now we can re-parse this argument 'options' from the command line
         # this will enable the user to set some options for a specific language
@@ -295,6 +302,7 @@ class ExampleParser(ExtendOptionParserMixin):
         optparser_extended = self.get_extended_option_parser(optparser)
         return optparser_extended.parse(opts_from_cmdline, strict=False)
 
+    @profile
     def extract_options(self, snippet):
         optstring_match = self.example_options_string_regex().search(snippet)
 

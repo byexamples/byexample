@@ -3,6 +3,7 @@ import sys, argparse, os, multiprocessing
 from . import __version__, __doc__, _author, _license, _url, _license_disclaimer
 
 from .log_level import str_to_level
+from .prof import profile
 
 
 class _CSV(argparse.Action):
@@ -150,6 +151,7 @@ class _HelpExtraAction(argparse.Action):
         parser.exit()
 
 
+@profile
 def parse_args(args=None):
     '''Parse the arguments args and return the them.
        If args is None, parse the sys.argv[1:].

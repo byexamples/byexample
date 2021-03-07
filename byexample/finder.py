@@ -7,6 +7,8 @@ from .parser import ExampleParser
 from .options import Options
 from .log import clog, log_context, DEBUG, CHAT, log_with
 
+from .prof import profile
+
 from .example import Where, Zone, Example
 '''
 >>> from byexample.log import init_log_system
@@ -172,6 +174,7 @@ class ExampleHarvest(object):
         )
         return all_examples
 
+    @profile
     def check_example_overlap(self, examples, filepath):
         r'''
         It may be possible that two or more examples found by different
@@ -308,12 +311,14 @@ class ExampleHarvest(object):
     def _log_debug(self, what, where):
         clog().debug(build_where_msg(where, self, what))
 
+    @profile
     def get_examples_using(self, finder, string, filepath, start_lineno):
         return self.from_string_get_items_using(
             finder, string, self.get_example, 'examples', filepath,
             start_lineno
         )
 
+    @profile
     def get_zones_using(self, zdelimiter, string, filepath, start_lineno):
         return self.from_string_get_items_using(
             zdelimiter, string, self.get_zone, 'zones', filepath, start_lineno

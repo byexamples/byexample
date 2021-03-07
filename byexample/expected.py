@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from .log import clog, log_context
 import string, re, time
+from .prof import profile
 '''
 >>> from byexample.log import init_log_system
 >>> init_log_system()
@@ -206,6 +207,7 @@ class _LinearExpected(Expected):
                 example, got, options
             )
 
+    @profile
     def _linear_matching(
         self, regexs, tags_by_idx, charnos, expected_str, got
     ):
@@ -256,6 +258,7 @@ class _RegexExpected(Expected):
         self.check_good = False
         self._check_got_output_called = False
 
+    @profile
     def _get_all_capture_or_none(self, example, got, options):
         r = re.compile(
             ''.join(example.expected.regexs), re.MULTILINE | re.DOTALL
@@ -317,6 +320,7 @@ class _RegexExpected(Expected):
             return self._get_all_capture_as_possible(example, got, options)
 
     @log_context('byexample.match')
+    @profile
     def _get_captures_by_incremental_match(
         self, captures, expected_regexs, charnos, rcounts, expected, got,
         min_rcount, timeout

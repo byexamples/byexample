@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from .common import enhance_exceptions
 from .log import clog, log_context, log_with
+from .prof import profile, profile_ctx
 
 
 class TimeoutException(Exception):
@@ -41,6 +42,7 @@ class FileExecutor(object):
 
         self.options = options
 
+    @profile
     def initialize_runners(self, runners, options):
         tmp = []
         for runner in runners:
@@ -54,6 +56,7 @@ class FileExecutor(object):
                     log.warn("Initialization of %s failed.", str(runner))
                     raise
 
+    @profile
     def shutdown_runners(self, runners, stop_on_failure=True):
         tmp = list(runners)
         for runner in runners:
@@ -104,6 +107,7 @@ class FileExecutor(object):
 
         return failed, (crashed or broken or timedout), user_aborted, False
 
+    @profile
     def _exec(self, examples, filepath, options, runners):
         failing_fast = False
         failed = False
@@ -121,7 +125,8 @@ class FileExecutor(object):
                         break  # cancel if an example couldn't get parsed
 
                 with enhance_exceptions(example, self, self.use_colors), \
-                     log_with(example.runner.language):
+                     log_with(example.runner.language), \
+                     profile_ctx("inner"):
                     # are we in failing fast mode? if we do, skip all the
                     # examples by default
                     if failing_fast:
@@ -148,7 +153,8 @@ class FileExecutor(object):
                         try:
                             with enhance_exceptions(
                                 example, example.runner, self.use_colors
-                            ):
+                            ), \
+                                    profile_ctx("run"):
                                 example.got = example.runner.run(
                                     example, options
                                 )
@@ -243,6 +249,7 @@ class FileExecutor(object):
 
         return failed, user_aborted, crashed, broken, timedout
 
+    @profile
     def _parse(self, example, options):
         try:
             with enhance_exceptions(example, example.parser, self.use_colors):
