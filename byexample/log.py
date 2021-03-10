@@ -4,6 +4,7 @@ import contextlib
 
 from .common import colored, highlight_syntax, indent
 from .log_level import TRACE, DEBUG, CHAT, INFO, NOTE, WARNING, ERROR, CRITICAL
+import functools
 
 
 class XFormatter(Formatter):
@@ -194,6 +195,7 @@ def log_context(logger_name):
     global _logger_stack
 
     def decorator(func):
+        @functools.wraps(func)
         def wrapped(*args, **kargs):
             assert _logger_stack
             current = getLogger(name=logger_name)

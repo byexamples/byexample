@@ -5,6 +5,7 @@ from .executor import TimeoutException, InputPrefixNotFound
 from .common import tohuman, ShebangTemplate, Countdown, short_string
 from .example import Example
 from .log import clog
+from .prof import profile, profile_ctx
 
 from pyte import Stream, Screen
 
@@ -86,6 +87,7 @@ class PexpectMixin(object):
         self.output_between_prompts = []
         self.last_output_may_be_incomplete = False
 
+    @profile
     def _spawn_interpreter(
         self,
         cmd,
@@ -161,12 +163,14 @@ class PexpectMixin(object):
         self.output_between_prompts = []
         self.last_output_may_be_incomplete = False
 
+    @profile
     def _shutdown_interpreter(self):
         self.interpreter.sendeof()
         self.interpreter.close()
         time.sleep(0.001)
         self.interpreter.terminate(force=True)
 
+    @profile
     def _exec_and_wait(self, source, options, *, from_example=None, **kargs):
         if from_example is None:
             input_list = kargs.get('input_list', [])
@@ -180,13 +184,17 @@ class PexpectMixin(object):
 
         countdown = Countdown(timeout)
         lines = source.split('\n')
+
         for line in lines[:-1]:
-            self.interpreter.sendline(line)
+            with profile_ctx("sendline"):
+                self.interpreter.sendline(line)
             self._expect_prompt_or_type(
                 options, countdown, input_list=input_list
             )
 
-        self.interpreter.sendline(lines[-1])
+        with profile_ctx("sendline"):
+            self.interpreter.sendline(lines[-1])
+
         self._expect_prompt_or_type(
             options, countdown, prompt_re=self.PS1_re, input_list=input_list
         )
@@ -277,6 +285,7 @@ class PexpectMixin(object):
     def _emulate_as_is_terminal(self, chunks):
         return ''.join((self._universal_new_lines(chunk) for chunk in chunks))
 
+    @profile
     def _expect_prompt_or_type(
         self, options, countdown, prompt_re=None, input_list=[]
     ):
@@ -319,6 +328,7 @@ class PexpectMixin(object):
         if not prompt_found:
             self._expect_prompt(options, countdown, prompt_re)
 
+    @profile
     def _expect_prompt(
         self, options, countdown, prompt_re=None, earlier_re=None
     ):
@@ -357,7 +367,8 @@ class PexpectMixin(object):
             del expect[-1]
 
         countdown.start()
-        what = self.interpreter.expect(expect, timeout=timeout)
+        with profile_ctx("expect"):
+            what = self.interpreter.expect(expect, timeout=timeout)
         countdown.stop()
 
         output = self.interpreter.before
@@ -379,6 +390,7 @@ class PexpectMixin(object):
         self.last_output_may_be_incomplete = False
         return True
 
+    @profile
     def _get_output(self, options):
         if options['force_echo_filtering']:
             return self._get_output_echo_filtered(options)

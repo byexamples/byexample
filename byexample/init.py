@@ -10,6 +10,7 @@ from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
 from .common import enhance_exceptions
 from .log import clog, log_context, configure_log_system, setLogLevels, TRACE, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL
+from .prof import profile
 
 
 def are_tty_colors_supported(output):
@@ -67,6 +68,7 @@ def is_a(target_class, key_attr, warn_missing_key_attr):
 
 
 @log_context('byexample.load')
+@profile
 def load_modules(dirnames, cfg):
     verbosity = cfg['verbosity']
     registry = {
@@ -361,6 +363,7 @@ def show_options(cfg, registry, allowed_languages):
             parser.get_extended_option_parser(parent_parser=None).print_help()
 
 
+@profile
 def extend_option_parser_with_concerns(cfg, registry):
     concerns = [c for c in registry['concerns'].values()]
 
@@ -386,6 +389,7 @@ def extend_option_parser_with_concerns(cfg, registry):
 
 
 @log_context('byexample.options')
+@profile
 def extend_options_with_language_specific(cfg, registry, allowed_languages):
     parsers = [
         p for p in registry['parsers'].values()
@@ -447,6 +451,7 @@ def verbosity_to_log_levels(verbosity, quiet):
 
 
 @log_context('byexample.init')
+@profile
 def init(args):
     lvl = verbosity_to_log_levels(args.verbosity, args.quiet)
     lvl.update(args.log_masks)
