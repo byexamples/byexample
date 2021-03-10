@@ -1,5 +1,5 @@
 from logging import Formatter, Logger, getLogger
-import sys, logging
+import sys, logging, logging.handlers, queue
 import contextlib
 
 from .common import colored, highlight_syntax, indent
@@ -252,6 +252,11 @@ class XStreamHandler(logging.StreamHandler):
         return
 
 
+class XQueueHandler(logging.handlers.QueueHandler):
+    def prepare(self, record):
+        return record
+
+
 def init_log_system(level=NOTE, use_colors=False):
     global _logger_stack
 
@@ -273,8 +278,13 @@ def init_log_system(level=NOTE, use_colors=False):
     fmtter = XFormatter('%(message)s')
     ch.setFormatter(fmtter)
 
-    rlog.addHandler(ch)
+    q = queue.Queue()
+    qh = XQueueHandler(q)
+    ql = logging.handlers.QueueListener(q, ch)
+
+    rlog.addHandler(qh)
     rlog.xstream_handler = ch
+    rlog.bg_queue_listener = ql
 
     # Set up the global logger.
     # Activate and deactivate sub loggers using log_context
@@ -285,6 +295,9 @@ def init_log_system(level=NOTE, use_colors=False):
     assert use_colors is not None
     configure_log_system(default_level=level, use_colors=use_colors)
     rlog.xstream_handler.concerns = None
+
+    # start forwarding the messages
+    rlog.bg_queue_listener.start()
 
 
 def configure_log_system(default_level=None, use_colors=None, concerns=None):
@@ -310,3 +323,8 @@ def setLogLevels(levels):
         l.setLevel(lvl)
 
     return prev_lvls
+
+
+def shutdown_log_system():
+    rlog = getLogger(name='byexample')  # root
+    rlog.bg_queue_listener.stop()
