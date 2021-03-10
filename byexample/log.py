@@ -4,7 +4,7 @@ import contextlib
 
 from .common import colored, highlight_syntax, indent
 from .log_level import TRACE, DEBUG, CHAT, INFO, NOTE, WARNING, ERROR, CRITICAL
-import functools
+import functools, threading
 
 
 class XFormatter(Formatter):
@@ -184,7 +184,30 @@ class XLogger(Logger):
             )
 
 
-_logger_stack = []
+class _LoggerLocalStack(threading.local):
+    def __init__(self):
+        self.stack = []
+
+    def __len__(self):
+        return len(self.stack)
+
+    def append(self, item):
+        return self.stack.append(item)
+
+    def pop(self):
+        return self.stack.pop()
+
+    def __getitem__(self, ix):
+        return self.stack[ix]
+
+    def __setitem__(self, ix, v):
+        self.stack[ix] = v
+
+    def __delitem__(self, ix):
+        del self.stack[ix]
+
+
+_logger_stack = _LoggerLocalStack()
 
 
 def clog():
@@ -286,10 +309,12 @@ def init_log_system(level=NOTE, use_colors=False):
     rlog.xstream_handler = ch
     rlog.bg_queue_listener = ql
 
-    # Set up the global logger.
+    # Set up the global logger (for this thread).
     # Activate and deactivate sub loggers using log_context
     # decorator on the top level functions
-    _logger_stack.append(rlog)
+    #
+    # Other threads will have to call this function too
+    init_thread_specific_log_system()
 
     assert level is not None
     assert use_colors is not None
@@ -298,6 +323,13 @@ def init_log_system(level=NOTE, use_colors=False):
 
     # start forwarding the messages
     rlog.bg_queue_listener.start()
+
+
+def init_thread_specific_log_system():
+    global _logger_stack
+
+    rlog = getLogger(name='byexample')  # root
+    _logger_stack.append(rlog)
 
 
 def configure_log_system(default_level=None, use_colors=None, concerns=None):
