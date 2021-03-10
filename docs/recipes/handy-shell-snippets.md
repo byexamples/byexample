@@ -21,7 +21,7 @@ If instead you want to pick a free port do something like this:
 
 ```shell
 $ free_port() {
->   for port in {1500..65000}; do netstat -tan | grep -q ":$port " || echo "Port $port" && break; done
+>   for port in {1500..65000}; do ss -tln | grep -q ":$port " || echo "Port $port" && break; done
 > }
 
 $ free_port     # byexample: +fail-fast
@@ -33,6 +33,9 @@ Like before you may want to combine this with a
 can use the
 [capture and paste](/{{ site.uprefix }}/basic/capture-and-paste) functionality
 to save and use the port later without parsing the output yourself.
+
+> Note: `ss` is an "utility to investigate sockets". You may use
+> the older `netstat -tan` of the same purpose.
 
 ### Lock a file
 
