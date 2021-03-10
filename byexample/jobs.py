@@ -3,7 +3,7 @@ from threading import Thread
 from queue import Queue
 
 import signal, contextlib
-from .log import clog, CHAT
+from .log import clog, CHAT, init_thread_specific_log_system
 from .init import init_worker
 
 
@@ -23,6 +23,7 @@ def worker(func, input, output, cfg):
 
         After receiving a None, close the <output> queue.
         '''
+    init_thread_specific_log_system()
     harvester, executor = init_worker(cfg)
     for item in iter(input.get, None):
         output.put(func(item, harvester, executor, cfg['dry']))
