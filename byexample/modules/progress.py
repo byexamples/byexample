@@ -285,6 +285,13 @@ class ProgressBarReporter(SimpleReporter):
         else:
             self.target = 'progress'
 
+        cls = self.__class__
+        if not getattr(cls, 'tqdm_lock_set', False):
+            # this write lock is shared among all the instances of tqdm
+            tqdm.set_lock(cls.write_lock)
+            cls.tqdm_lock_set = True
+
+        # the tqdm bar will be created at the start of the examples
         self.bar = None
 
     def _clear_all_bars(self):
@@ -341,7 +348,6 @@ class ProgressBarReporter(SimpleReporter):
             position=position,
             disable=None  # means disable if the output is not TTY
         )
-        self.bar.set_lock(self.write_lock)
 
     def finish(self, failed, user_aborted, crashed, broken, timedout):
         SimpleReporter.finish(
