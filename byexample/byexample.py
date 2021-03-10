@@ -9,7 +9,7 @@ if sys.version_info < (3, 0):
 
 from .cache import RegexCache
 from .jobs import Jobs, Status
-from .log import init_log_system
+from .log import init_log_system, shutdown_log_system
 
 
 def execute_examples(filename, harvester, executor, dry):
@@ -55,6 +55,9 @@ def main(args=None):
             sys.exit(Status.error)
 
         jobs = Jobs(args.jobs)
-        return jobs.run(
+        ret = jobs.run(
             execute_examples, testfiles, cfg['options']['fail_fast'], cfg
         )
+
+        shutdown_log_system()
+        return ret
