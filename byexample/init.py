@@ -9,7 +9,7 @@ from .differ import Differ
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
 from .common import enhance_exceptions
-from .log import clog, log_context, configure_log_system, setLogLevels, TRACE, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL
+from .log import clog, log_context, configure_log_system, setLogLevels, TRACE, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL, init_thread_specific_log_system, log_with
 from .prof import profile
 from .cfg import Config
 
@@ -525,7 +525,6 @@ def init_byexample(args):
     return testfiles, Config(cfg)
 
 
-@log_context('byexample.init')
 @profile
 def init_worker(cfg):
     ''' Initialize a worker.
@@ -539,9 +538,12 @@ def init_worker(cfg):
     cfg = cfg.copy()
     concerns = ConcernComposite(**cfg)
 
-    differ = Differ(**cfg)
+    init_thread_specific_log_system(concerns)
 
-    harvester = ExampleHarvest(**cfg)
-    executor = FileExecutor(concerns, differ, **cfg)
+    with log_with('byexample.init') as log:
+        differ = Differ(**cfg)
 
-    return harvester, executor
+        harvester = ExampleHarvest(**cfg)
+        executor = FileExecutor(concerns, differ, **cfg)
+
+        return harvester, executor
