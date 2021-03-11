@@ -150,6 +150,13 @@ def tohuman(s):
 
 
 def constant(argumentless_method):
+    ''' Cache the result of calling the method in the first call
+        and save the result in <self>.
+
+        The method must always return the same results and the result
+        itself must be an immutable object so it is safe to cache the
+        result and share it among different threads.
+        '''
     placeholder = '_saved_constant_result_of_%s' % argumentless_method.__name__
 
     def wrapped(self):
@@ -161,6 +168,16 @@ def constant(argumentless_method):
             return val
 
     return wrapped
+
+
+def transfer_constants(src, dst):
+    ''' Transfer the cached results from one object to another.
+
+        See common.constant().
+        '''
+    for name, val in src.__dict__.items():
+        if name.startswith('_saved_constant_result_of_'):
+            setattr(dst, name, val)
 
 
 @contextlib.contextmanager

@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import traceback, time, os, sys, multiprocessing
+import traceback, time, os, sys, threading
 from byexample.executor import InputPrefixNotFound
 from byexample.common import colored, highlight_syntax, indent, short_string
 from byexample.concern import Concern
@@ -42,10 +42,17 @@ class SimpleReporter(Concern):
         self.verbosity = verbosity
 
         self.jobs = jobs
-        if self.jobs != 1:
-            self.write_lock = multiprocessing.RLock()
-        else:
-            self.write_lock = _DummyLock()
+
+        # Initialize once the write_lock the first time that
+        # a SimpleReporter is created. Next SimpleReporter instances
+        # will use the same write_lock
+        cls = self.__class__
+        write_lock = getattr(cls, 'write_lock', None)
+        if write_lock is None:
+            if self.jobs != 1:
+                cls.write_lock = threading.RLock()
+            else:
+                cls.write_lock = _DummyLock()
 
         self.header_printed = False
 
@@ -278,6 +285,13 @@ class ProgressBarReporter(SimpleReporter):
         else:
             self.target = 'progress'
 
+        cls = self.__class__
+        if not getattr(cls, 'tqdm_lock_set', False):
+            # this write lock is shared among all the instances of tqdm
+            tqdm.set_lock(cls.write_lock)
+            cls.tqdm_lock_set = True
+
+        # the tqdm bar will be created at the start of the examples
         self.bar = None
 
     def _clear_all_bars(self):
@@ -318,9 +332,9 @@ class ProgressBarReporter(SimpleReporter):
         if self.jobs == 1:
             position = None
         else:
-            # use multiprocessing.Process' id (number) as the position
+            # use threading.Thread' name (number) as the position
             # of its bar
-            position = int(multiprocessing.current_process().name) + 1
+            position = int(threading.current_thread().name) + 1
 
         SimpleReporter.start(self, examples, runners, filepath, options)
 
@@ -334,7 +348,6 @@ class ProgressBarReporter(SimpleReporter):
             position=position,
             disable=None  # means disable if the output is not TTY
         )
-        self.bar.set_lock(self.write_lock)
 
     def finish(self, failed, user_aborted, crashed, broken, timedout):
         SimpleReporter.finish(

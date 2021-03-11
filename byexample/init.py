@@ -9,8 +9,9 @@ from .differ import Differ
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
 from .common import enhance_exceptions
-from .log import clog, log_context, configure_log_system, setLogLevels, TRACE, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL
+from .log import clog, log_context, configure_log_system, setLogLevels, TRACE, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL, init_thread_specific_log_system, log_with
 from .prof import profile
+from .cfg import Config
 
 
 def are_tty_colors_supported(output):
@@ -452,7 +453,7 @@ def verbosity_to_log_levels(verbosity, quiet):
 
 @log_context('byexample.init')
 @profile
-def init(args):
+def init_byexample(args):
     lvl = verbosity_to_log_levels(args.verbosity, args.quiet)
     lvl.update(args.log_masks)
     setLogLevels(lvl)
@@ -467,6 +468,7 @@ def init(args):
         'output': sys.stdout,
         'interact': False,
         'opts_from_cmdline': args.options_str,
+        'dry': args.dry,
     }
 
     allowed_files = set(args.files) - set(args.skip)
@@ -491,9 +493,16 @@ def init(args):
     if not testfiles:
         if not cfg['quiet']:
             clog().error(
-                "No files were found (you passed %i files and %i were skipped)",
-                (len(set(args.files)), len(set(args.files) - allowed_files))
+                "No files were found (you passed %i files, %i were skipped)",
+                len(set(args.files)), len(set(args.skip))
             )
+            if not set(args.files) and set(args.skip):
+                clog().warn(
+                    "You are probably skipping more files than you want.\n" +\
+                    "You may need to add a '--' to separate the files that\n" +\
+                    "you want to skip from the ones that you want to execute:\n" +\
+                    "\n  byexample --skip <files to skip> -- <files to execute>"
+                )
         sys.exit(1)
 
     # extend the option parser with all the parsers of the concerns.
@@ -514,12 +523,34 @@ def init(args):
     clog().chat("Configuration:\n%s.", pprint.pformat(cfg))
     clog().chat("Registry:\n%s.", pprint.pformat(registry))
 
-    concerns = ConcernComposite(registry, **cfg)
+    cfg['allowed_languages'] = frozenset(allowed_languages)
+    cfg['registry'] = registry
 
-    differ = Differ(**cfg)
-
-    harvester = ExampleHarvest(allowed_languages, registry, **cfg)
-    executor = FileExecutor(concerns, differ, **cfg)
-
+    concerns = ConcernComposite(**cfg)
     configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
-    return testfiles, harvester, executor, options
+
+    return testfiles, Config(cfg)
+
+
+@profile
+def init_worker(cfg):
+    ''' Initialize a worker.
+
+        The registry's elements (parsers, runners, concerns,
+        zdelimiters and finders) are recreated.
+
+        If the recreation process is thread safe (depends of the objects'
+        implementations), then init_worker is thread safe.
+    '''
+    cfg = cfg.copy()
+    concerns = ConcernComposite(**cfg)
+
+    init_thread_specific_log_system(concerns)
+
+    with log_with('byexample.init') as log:
+        differ = Differ(**cfg)
+
+        harvester = ExampleHarvest(**cfg)
+        executor = FileExecutor(concerns, differ, **cfg)
+
+        return harvester, executor

@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import os, sys, multiprocessing
+import os, sys
 
 if sys.version_info < (3, 0):
     print(
@@ -8,17 +8,16 @@ if sys.version_info < (3, 0):
     sys.exit(1)
 
 from .cache import RegexCache
-from .jobs import Jobs, Status, allow_sigint
-from .log import init_log_system
+from .jobs import Jobs, Status
+from .log import init_log_system, shutdown_log_system
 
 
-def execute_examples(filename, sigint_handler):
-    global cache, harvester, executor, options, dry
+def execute_examples(filename, harvester, executor, dry):
+    global cache
     from .common import human_exceptions
 
     with human_exceptions("processing the file '%s'" % filename) as exc, \
-            cache.synced(label=filename), \
-            allow_sigint(sigint_handler):
+            cache.synced(label=filename):
         examples = harvester.get_examples_from_file(filename)
         if dry:
             return executor.dry_execute(examples, filename)
@@ -31,15 +30,7 @@ def execute_examples(filename, sigint_handler):
 
 
 def main(args=None):
-    global cache, harvester, executor, options, dry
-
-    # byexample relays on UNIX's fork to pass data from the
-    # parent process (us) to its children (Job's). Due the
-    # complexity of the objects passed, pickle cannot be used
-    # to serialize them so other start methods ('spawn', 'forkserver')
-    # cannot be used
-    # see https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods
-    multiprocessing.set_start_method('fork')
+    global cache
 
     init_log_system()
 
@@ -53,16 +44,20 @@ def main(args=None):
     with cache.activated(auto_sync=True, label="0"):
         from .cmdline import parse_args
         from .common import human_exceptions
-        from .init import init
+        from .init import init_byexample
 
         args = parse_args(args)
 
-        dry = args.dry
         with human_exceptions('initializing byexample') as exc:
-            testfiles, harvester, executor, options = init(args)
+            testfiles, cfg = init_byexample(args)
 
         if exc:
             sys.exit(Status.error)
 
         jobs = Jobs(args.jobs)
-        return jobs.run(execute_examples, testfiles, options['fail_fast'])
+        ret = jobs.run(
+            execute_examples, testfiles, cfg['options']['fail_fast'], cfg
+        )
+
+        shutdown_log_system()
+        return ret

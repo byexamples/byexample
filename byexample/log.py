@@ -4,15 +4,45 @@ import contextlib
 
 from .common import colored, highlight_syntax, indent
 from .log_level import TRACE, DEBUG, CHAT, INFO, NOTE, WARNING, ERROR, CRITICAL
-import functools
+import functools, threading
+from .prof import profile
+'''
+
+Byexample's logging system:
+
+                                     all messages   |  messages enabled only
+                                    (must be fast)  |    (can be slow)
+                                                    |
+                                                    |        (none) XFormatter
+                                                    |    filter :     : format
+          log                    log       propagate            :     :
+  Thread 1 --> _logger_stack[top] --> XLogger --> XLogger --> XStreamHandler
+                                        (A)    |  (root)        |     |
+                                               |                |     V emit
+  Thread 2 --> _logger_stack[top] --> XLogger -/    |           |   Stream
+                                        (B)         |           |   Handler
+                                                    |           | (no concerns)
+                                                    |      emit V
+                                                    |        Concern
+                                                    |   (thread specific)
+
+The _logger_stack, XLogger objects, the filter (none), the XFormatter and the
+XStreamHandler objects are *shared* among the threads and therefore they *must*
+be thread-safe.
+
+'Concern' is a thread-specific object so it is *not* shared. If the one o more
+concern objects access to a shared object by themselves, it is up to them to
+make the access thread-safe. See byexample.concern.
+
+StreamHandler is the default handler when the Concern system was not loaded
+yet. It is thread-safe because we use an explicit RLock.
+This should not be a performance problem because we expect to call StreamHandler
+*only* in early stages of byexample bootstrap, when there is a single thread
+anyways.
+'''
 
 
 class XFormatter(Formatter):
-    def format(self, record):
-        self._cur_record = record
-        self._cur_logger = getLogger(record.name)
-        return Formatter.format(self, record)
-
     def shorter_name(self, name):
         t = 'byexample.'
         if name.startswith(t):
@@ -84,9 +114,17 @@ class XFormatter(Formatter):
             else:
                 s += '\n' + indent(highlight_syntax(ex, use_colors))
 
+        # Precompute the message for the exception (if any).
+        # Record's exc_text will be added to the format message by
+        # the parent class Formatter
+        if record.exc_info and not record.exc_text:
+            record.exc_text = self.formatException(
+                record.exc_info, logger.isEnabledFor(INFO)
+            )
+
         return s
 
-    def formatException(self, ei):
+    def formatException(self, ei, enabled_for_info_or_below=False):
         ''' Format the stack of the exception only
             if the log level is INFO or below (eg DEBUG).
 
@@ -97,7 +135,7 @@ class XFormatter(Formatter):
             to see the traceback he/she can see it enabling a
             more verbose log level.
             '''
-        if self._cur_logger.isEnabledFor(INFO):
+        if enabled_for_info_or_below:
             return Formatter.formatException(self, ei)
         else:
             return '%s\n\n%s' % (
@@ -184,7 +222,31 @@ class XLogger(Logger):
             )
 
 
-_logger_stack = []
+class _LoggerLocalStack(threading.local):
+    def __init__(self):
+        self.stack = []
+        self.concerns = None
+
+    def __len__(self):
+        return len(self.stack)
+
+    def append(self, item):
+        return self.stack.append(item)
+
+    def pop(self):
+        return self.stack.pop()
+
+    def __getitem__(self, ix):
+        return self.stack[ix]
+
+    def __setitem__(self, ix, v):
+        self.stack[ix] = v
+
+    def __delitem__(self, ix):
+        del self.stack[ix]
+
+
+_logger_stack = _LoggerLocalStack()
 
 
 def clog():
@@ -230,15 +292,30 @@ def log_with(logger_name, child=True):
 class XStreamHandler(logging.StreamHandler):
     def __init__(self, *args, **kargs):
         logging.StreamHandler.__init__(self, *args, **kargs)
-        self.concerns = None
 
+        # We have this lock only to protect our parent
+        # StreamHandler's emit call.
+        # We don't relay on self.createLock/self.acquire/self.release
+        # which are called more times than the needed so they are disabled
+        self._stream_handler_lck = threading.RLock()
+
+    @profile
     def emit(self, record):
-        if self.concerns is None:
-            return logging.StreamHandler.emit(self, record)
+        # XStreamHandler will be called from different threads
+        # so we need to send the messages to the corrensponding
+        # 'concerns' set for the current thread.
+        concerns = _logger_stack.concerns
 
+        # If None, it means that we are not running un multithreading
+        # mode and the concerns system is not up.
+        if concerns is None:
+            with self._stream_handler_lck:
+                return logging.StreamHandler.emit(self, record)
+
+        # format() and handleError() "are" thread safe. See XFormatter
         try:
             msg = self.format(record)
-            self.concerns.event('log', msg=msg)
+            concerns.event('log', msg=msg)
         except Exception:
             self.handleError(record)
 
@@ -253,6 +330,32 @@ class XStreamHandler(logging.StreamHandler):
 
 
 def init_log_system(level=NOTE, use_colors=False):
+    ''' Initialize the log system.
+
+        The log system has 4 stages:
+
+         - not initialized:
+            you can log things but what will happen is undefined
+         - initialized but basic configuration only:
+            things will be logged to stderr, not thread safe;
+            logs should come from the main thread only
+         - fully configured globally but not per thread
+            the messages will be forwarded to the concerns' emit()
+            hooks, it is up to them what to do with the messages;
+            logs should come from the main thread only
+         - thread specific configured (per thread)
+            enable the thread to interact with the logging system
+            in a thread-safe way
+
+        To move from one stage to the other call:
+
+         - init_log_system (in the main thread)
+         - configure_log_system (in the main thread)
+         - init_thread_specific_log_system (in each thread)
+
+        At the end of the program execution the program should
+        call to shutdown_log_system.
+    '''
     global _logger_stack
 
     logging.setLoggerClass(XLogger)
@@ -274,20 +377,40 @@ def init_log_system(level=NOTE, use_colors=False):
     ch.setFormatter(fmtter)
 
     rlog.addHandler(ch)
-    rlog.xstream_handler = ch
 
-    # Set up the global logger.
+    # Set up the global logger (for this thread).
     # Activate and deactivate sub loggers using log_context
     # decorator on the top level functions
-    _logger_stack.append(rlog)
+    #
+    # Other threads will have to call the public version of this
+    # function too with a non-None 'concerns' parameter
+    _internal_init_thread_specific_log_system(None)
 
     assert level is not None
     assert use_colors is not None
-    configure_log_system(default_level=level, use_colors=use_colors)
-    rlog.xstream_handler.concerns = None
+
+    # The main thead will have to call the public version of this
+    # function with a non-None 'concerns' parameter.
+    _internal_configure_log_system(
+        concerns=None, default_level=level, use_colors=use_colors
+    )
 
 
-def configure_log_system(default_level=None, use_colors=None, concerns=None):
+def _internal_init_thread_specific_log_system(concerns):
+    global _logger_stack
+
+    rlog = getLogger(name='byexample')  # root
+    _logger_stack.append(rlog)
+    _logger_stack.concerns = concerns
+
+
+def init_thread_specific_log_system(concerns):
+    assert concerns is not None
+    _internal_init_thread_specific_log_system(concerns)
+
+
+def _internal_configure_log_system(concerns, default_level, use_colors):
+    global _logger_stack
     rlog = getLogger(name='byexample')  # root
     if default_level is not None:
         rlog.setLevel(default_level)
@@ -296,7 +419,14 @@ def configure_log_system(default_level=None, use_colors=None, concerns=None):
         rlog.use_colors = use_colors
 
     if concerns is not None:
-        rlog.xstream_handler.concerns = concerns
+        _logger_stack.concerns = concerns
+
+
+def configure_log_system(default_level=None, use_colors=None, concerns=None):
+    assert concerns is not None
+    _internal_configure_log_system(
+        default_level=default_level, use_colors=use_colors, concerns=concerns
+    )
 
 
 def setLogLevels(levels):
@@ -310,3 +440,7 @@ def setLogLevels(levels):
         l.setLevel(lvl)
 
     return prev_lvls
+
+
+def shutdown_log_system():
+    rlog = getLogger(name='byexample')  # root
