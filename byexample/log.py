@@ -8,11 +8,6 @@ import functools, threading
 
 
 class XFormatter(Formatter):
-    def format(self, record):
-        self._cur_record = record
-        self._cur_logger = getLogger(record.name)
-        return Formatter.format(self, record)
-
     def shorter_name(self, name):
         t = 'byexample.'
         if name.startswith(t):
@@ -84,9 +79,15 @@ class XFormatter(Formatter):
             else:
                 s += '\n' + indent(highlight_syntax(ex, use_colors))
 
+        # Precompute the message for the exception (if any).
+        # Record's exc_text will be added to the format message by
+        # the parent class Formatter
+        if record.exc_info and not record.exc_text:
+            record.exc_text = self.formatException(record.exc_info, logger.isEnabledFor(INFO))
+
         return s
 
-    def formatException(self, ei):
+    def formatException(self, ei, enabled_for_info_or_below=False):
         ''' Format the stack of the exception only
             if the log level is INFO or below (eg DEBUG).
 
@@ -97,7 +98,7 @@ class XFormatter(Formatter):
             to see the traceback he/she can see it enabling a
             more verbose log level.
             '''
-        if self._cur_logger.isEnabledFor(INFO):
+        if enabled_for_info_or_below:
             return Formatter.formatException(self, ei)
         else:
             return '%s\n\n%s' % (
