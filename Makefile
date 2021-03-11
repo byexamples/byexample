@@ -27,6 +27,10 @@ all:
 	@echo " - lang-test: run the tests in the docs about languages."
 	@echo " - examples-test: run the examples."
 	@echo
+	@echo "Usage: make lib-trace"
+	@echo "Run lib-test but with a lot of debug info. Used to test"
+	@echo "the logging system. Output is sent to /dev/null."
+	@echo
 	@echo "Usage: make [lib]-profiler-[1|2|4]"
 	@echo "Run a suite of tests with the profiler enabled with 1, 2 or 4 jobs"
 	@echo "The traces will be in prof-traces. See the results with flamegraph as"
@@ -80,6 +84,11 @@ lib-test: clean_test
 	@$(python_bin) test/r.py @test/minimum.env -- byexample/*.py
 	@make -s clean_test
 
+lib-trace: clean_test
+	@echo "Running lib-trace"
+	@$(python_bin) test/r.py @test/minimum.env -vvvvvvvvvvvvvvvvvvvvv -- byexample/*.py > /dev/null
+	@make -s clean_test
+
 modules-test: clean_test
 	@$(python_bin) test/r.py @test/minimum.env -- byexample/modules/*.py
 	@make -s clean_test
@@ -98,9 +107,10 @@ examples-test: clean_test
 	@make -s clean_test
 
 index-links-test: clean_test
+	@echo "Running index-links-test"
 	@./test/idx.sh
 
-test: lib-test modules-test docs-test lang-test examples-test index-links-test
+test: lib-test modules-test docs-test lang-test examples-test index-links-test lib-trace
 
 #
 ##
@@ -108,14 +118,17 @@ test: lib-test modules-test docs-test lang-test examples-test index-links-test
 ## Performance
 #  ===========
 lib-profiler-1: clean_test
+	@echo "Running profile"
 	@BYEXAMPLE_PROFILE=1 $(python_bin) test/r.py --jobs 1 @test/profiler.env -- byexample/*.py > prof-traces
 	@make -s clean_test
 
 lib-profiler-2: clean_test
+	@echo "Running profile"
 	@BYEXAMPLE_PROFILE=1 $(python_bin) test/r.py --jobs 2 @test/profiler.env -- byexample/*.py > prof-traces
 	@make -s clean_test
 
 lib-profiler-4: clean_test
+	@echo "Running profile"
 	@BYEXAMPLE_PROFILE=1 $(python_bin) test/r.py --jobs 4 @test/profiler.env -- byexample/*.py > prof-traces
 	@make -s clean_test
 #
