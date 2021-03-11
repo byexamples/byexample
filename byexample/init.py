@@ -493,9 +493,16 @@ def init_byexample(args):
     if not testfiles:
         if not cfg['quiet']:
             clog().error(
-                "No files were found (you passed %i files and %i were skipped)",
-                (len(set(args.files)), len(set(args.files) - allowed_files))
+                "No files were found (you passed %i files, %i were skipped)",
+                len(set(args.files)), len(set(args.skip))
             )
+            if not set(args.files) and set(args.skip):
+                clog().warn(
+                    "You are probably skipping more files than you want.\n" +\
+                    "You may need to add a '--' to separate the files that\n" +\
+                    "you want to skip from the ones that you want to execute:\n" +\
+                    "\n  byexample --skip <files to skip> -- <files to execute>"
+                )
         sys.exit(1)
 
     # extend the option parser with all the parsers of the concerns.
