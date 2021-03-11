@@ -66,7 +66,7 @@ class Jobs(object):
 
         if clog().isEnabledFor(CHAT):
             for p in self.processes:
-                clog().chat("Worker %s (PID %i).", p.name, p.pid)
+                clog().chat("Worker %s.", p.name)
 
         return items[njobs:]
 
