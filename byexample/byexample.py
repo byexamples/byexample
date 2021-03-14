@@ -7,17 +7,14 @@ if sys.version_info < (3, 0):
     )
     sys.exit(1)
 
-from .cache import RegexCache
 from .jobs import Jobs, Status
 from .log import init_log_system, shutdown_log_system
 
 
 def execute_examples(filename, harvester, executor, dry):
-    global cache
     from .common import human_exceptions
 
-    with human_exceptions("processing the file '%s'" % filename) as exc, \
-            cache.synced(label=filename):
+    with human_exceptions("processing the file '%s'" % filename) as exc:
         examples = harvester.get_examples_from_file(filename)
         if dry:
             return executor.dry_execute(examples, filename)
@@ -30,34 +27,24 @@ def execute_examples(filename, harvester, executor, dry):
 
 
 def main(args=None):
-    global cache
-
     init_log_system()
 
-    cache_disabled = os.getenv('BYEXAMPLE_CACHE_DISABLED', "1") != "0"
-    cache_verbose = os.getenv('BYEXAMPLE_CACHE_VERBOSE', "0") != "0"
-    if sys.version_info > (3, 7):
-        # The feature is not supported for Python 3.8
-        cache_disabled = True
-    cache = RegexCache('0', cache_disabled, cache_verbose)
+    from .cmdline import parse_args
+    from .common import human_exceptions
+    from .init import init_byexample
 
-    with cache.activated(auto_sync=True, label="0"):
-        from .cmdline import parse_args
-        from .common import human_exceptions
-        from .init import init_byexample
+    args = parse_args(args)
 
-        args = parse_args(args)
+    with human_exceptions('initializing byexample') as exc:
+        testfiles, cfg = init_byexample(args)
 
-        with human_exceptions('initializing byexample') as exc:
-            testfiles, cfg = init_byexample(args)
+    if exc:
+        sys.exit(Status.error)
 
-        if exc:
-            sys.exit(Status.error)
+    jobs = Jobs(args.jobs)
+    ret = jobs.run(
+        execute_examples, testfiles, cfg['options']['fail_fast'], cfg
+    )
 
-        jobs = Jobs(args.jobs)
-        ret = jobs.run(
-            execute_examples, testfiles, cfg['options']['fail_fast'], cfg
-        )
-
-        shutdown_log_system()
-        return ret
+    shutdown_log_system()
+    return ret
