@@ -91,7 +91,9 @@ modules-test: clean_test
 
 docs-test: clean_test
 	@$(python_bin) test/r.py @test/minimum.env -- *.md
-	@$(python_bin) test/r.py @test/minimum.env -- `find docs \( -name languages -prune -o  -name "*.md" \) -type f`
+	@$(python_bin) test/r.py @test/minimum.env --skip docs/recipes/python-doctest.md -- `find docs \( -name languages -prune -o  -name "*.md" \) -type f`
+	@$(python_bin) test/r.py @test/minimum.env -o '+py-doctest' docs/recipes/python-doctest.md
+	@$(python_bin) -m doctest docs/recipes/python-doctest.md
 	@make -s clean_test
 
 lang-test: clean_test
