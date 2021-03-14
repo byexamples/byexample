@@ -119,7 +119,7 @@ lib3, four times better
 if it is compiled outside of `cling` and loaded as a library.
 
 ```shell
-$ gcc -std=c99 -shared -fPIC -o test/ds/libmylibC.so test/ds/mylibC.c # byexample: +timeout=20
+$ gcc -std=c99 -shared -fPIC -o test/ds/libmylibC.so test/ds/mylibC.c   # byexample: +timeout=16
 ```
 
 ```cpp
