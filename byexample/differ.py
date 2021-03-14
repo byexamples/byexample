@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from .common import colored, ShebangTemplate
-import string, re, difflib, tempfile, os, subprocess
+import string, difflib, tempfile, os, subprocess
+from . import regex as re
 
 # what unicodes are control code?
 #   import unicodedata

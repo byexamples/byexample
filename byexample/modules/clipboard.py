@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 from byexample.concern import Concern
-import re
+import byexample.regex as re
 from functools import partial
 
 stability = 'provisional'
@@ -52,9 +52,8 @@ class Clipboard(Concern):
         repl = partial(
             self.repl_from_clipboard, clipboard=self.clipboard, missing=[]
         )
-        example.expected_str = re.sub(
-            self.PASTE_RE, repl, example.expected_str
-        )
+        example.expected_str = re.compile(self.PASTE_RE
+                                          ).sub(repl, example.expected_str)
 
         # do not check for missings: we assume that they are capture tags
 
@@ -75,7 +74,7 @@ class Clipboard(Concern):
             clipboard=self.clipboard,
             missing=missing
         )
-        example.source = re.sub(self.PASTE_RE, repl, example.source)
+        example.source = re.compile(self.PASTE_RE).sub(repl, example.source)
 
         if missing:
             raise PasteError(example, missing)
