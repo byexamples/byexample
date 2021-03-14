@@ -237,6 +237,11 @@ class PythonParser(ExampleParser):
                 default=False,
                 help="[doctest] alias for +diff ndiff."
             )
+            parser.add_flag(
+                "FAIL_FAST",
+                default=False,
+                help="[doctest] alias for +fail-fast."
+            )
 
         return parser
 
@@ -305,6 +310,9 @@ class PythonParser(ExampleParser):
 
             if options['REPORT_NDIFF']:
                 mapped['diff'] = 'ndiff'
+
+            if options['FAIL_FAST']:
+                mapped['fail_fast'] = True
 
             # the following are not supported: ignore them and print a note
             # somewhere
