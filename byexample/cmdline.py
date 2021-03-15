@@ -69,6 +69,23 @@ def _jobs_type(item):
     return jobs_num * ncpus
 
 
+def _show_failures_type(item):
+    failures_str = item.strip()
+    if failures_str == 'all':
+        return failures_str
+
+    try:
+        failures_num = int(failures_str)
+        assert failures_num >= 0
+    except:
+        raise argparse.ArgumentTypeError(
+            "Invalid show-failures specification '%s'. Use 'all', '0' or <n> (a positive number)."
+            % item
+        )
+
+    return failures_num
+
+
 class HelpExtraFormatter(argparse.HelpFormatter):
     __hide = True
     EPILOG = "==EPILOG=="
@@ -283,6 +300,15 @@ def parse_args(args=None):
         metavar='<enc>',
         default=sys.stdout.encoding.lower(),
         help='select the encoding (default: %(default)s).'
+    )
+    g.add_argument(
+        "--show-failures",
+        metavar='<n>',
+        default='all',
+        type=_show_failures_type,
+        help='show up to <n> failures per file (%(default)s by default) ' +\
+             'and suppress the rest (the execution of the examples is not ' +\
+             'stopped, only the failures are not shown)'
     )
     g.add_argument(
         "--pretty",

@@ -94,7 +94,7 @@ usage: byexample -l <languages> [--ff] [--timeout <secs>] [-j <n>] [--dry]
                  [--skip <file> [<file> ...]]
                  [-d {none,unified,ndiff,context,tool}] [--difftool <cmd>]
                  [--no-enhance-diff] [-o <options>] [--show-options]
-                 [-m <dir>] [--encoding <enc>] [--pretty {none,all}] [-V]
+                 [-m <dir>] [--encoding <enc>] [--show-failures <n>] [--pretty {none,all}] [-V]
                  [-v | -q] [-h | -xh]
  
 Write snippets of code in C++, Python, Ruby, and others as documentation and
@@ -142,6 +142,9 @@ Miscellaneous Options:
   -m <dir>, --modules <dir>
                         append a directory for searching modules there.
   --encoding <enc>      select the encoding (default: utf-8).
+  --show-failures <n>   show up to <n> failures per file (all by default) and
+                        suppress the rest (the execution of the examples is
+                        not stopped, only the failures are not shown)
   --pretty {none,all}   control how to pretty print the output.
   -V, --version         show byexample's version and license, then exit
  

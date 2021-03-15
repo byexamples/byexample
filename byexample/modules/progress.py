@@ -250,6 +250,15 @@ class SimpleReporter(Concern):
 
     def failure(self, example, got, differ):
         self._update(1)
+
+        show_failures = example.current_options['show_failures']
+        if show_failures != 'all' and self.fail >= show_failures:
+            # increment the counter without doing anything else
+            # we are effectively suppressing this and any further
+            # failure
+            self.fail += 1
+            return
+
         msg = "\n"
 
         msg += self._error_header(example)
