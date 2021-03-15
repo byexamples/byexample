@@ -212,7 +212,7 @@ is a summary of the equivalent options:
 ``diff``              ``REPORT_CDIFF``              With ``context`` as argument.
 ``diff``              ``REPORT_NDIFF``              With ``ndiff`` as argument.
 ``fail-fast``         ``FAIL_FAST``                 Same functionality.
-??                    ``REPORT_ONLY_FIRST_FAILURE`` Supported
+``show-failures`      ``REPORT_ONLY_FIRST_FAILURE`` Same as `+show-failures 1`
 ====================  ============================= ============================
 ```
 

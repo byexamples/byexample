@@ -242,6 +242,11 @@ class PythonParser(ExampleParser):
                 default=False,
                 help="[doctest] alias for +fail-fast."
             )
+            parser.add_flag(
+                "REPORT_ONLY_FIRST_FAILURE",
+                default=False,
+                help="[doctest] alias for +show-failures 1."
+            )
 
         return parser
 
@@ -313,6 +318,9 @@ class PythonParser(ExampleParser):
 
             if options['FAIL_FAST']:
                 mapped['fail_fast'] = True
+
+            if options["REPORT_ONLY_FIRST_FAILURE"]:
+                mapped['show_failures'] = 1
 
             # the following are not supported: ignore them and print a note
             # somewhere
