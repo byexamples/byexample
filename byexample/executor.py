@@ -124,6 +124,7 @@ class FileExecutor(object):
                     # a 'skip' if the user wants to run this even in failing fast
                     # mode
                     options.up(example.options)
+                    example.current_options = options
                     try:
                         # ask to the example if we should fail fast if it fails
                         # no matter what the user said from the command line
@@ -229,6 +230,7 @@ class FileExecutor(object):
                         # do not keep it in memory
                         if hasattr(example, 'got'):
                             del example.got
+                        del example.current_options
                         options.down()
             except KeyboardInterrupt:  # pragma: no cover
                 self.concerns.aborted(example, True, options)
