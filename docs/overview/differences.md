@@ -288,3 +288,41 @@ Return code: 1
 
 The ``%e`` and ``%g`` tokens are replaced with the file names with
 the content of the expected and the got outputs.
+
+## Showing only the first failures
+
+Sometimes is useful to show only the first failure. This hides the
+errors of subsequent examples while keep executing them.
+
+```shell
+$ byexample -l python --show-failures 1 test/ds/python-tutorial.v1.md  # byexample: +rm= 
+ 
+**********************************************************************
+File "test/ds/python-tutorial.v1.md", line 13
+Failed example:
+    2j * 2
+Expected:
+4
+Got:
+4j
+ 
+ 
+File test/ds/python-tutorial.v1.md, 4/4 test ran in <...> seconds
+[FAIL] Pass: 2 Fail: 2 Skip: 0
+```
+
+As you may imagine `--show-failures` receives the numbers of failures
+allowed before start suppressing the output.
+
+You can pass a zero to suppress all the failures or `all` to show all of
+them (this is the default).
+
+```shell
+$ byexample -l python --show-failures 0 test/ds/python-tutorial.v1.md # byexample: +rm= 
+ 
+File test/ds/python-tutorial.v1.md, 4/4 test ran in <...> seconds
+[FAIL] Pass: 2 Fail: 2 Skip: 0
+```
+
+If what you want is to stop on the first failure and don't execute any
+example further, you should use `--fail-fast` instead.

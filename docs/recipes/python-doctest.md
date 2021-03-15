@@ -316,7 +316,7 @@ The examples are still executed and validated but any further failure is
 not shown.
 
 ```shell
-$ byexample -l python -o '+py-doctest +REPORT_ONLY_FIRST_FAILURE' test/ds/doctest-hard-diff.md  # byexample: +tags +skip
+$ byexample -l python -o '+py-doctest +REPORT_ONLY_FIRST_FAILURE' test/ds/doctest-hard-diff.md  # byexample: +tags
 <...>
 File test/ds/doctest-hard-diff.md, 5/5 test ran in <...> seconds
 [FAIL] Pass: 3 Fail: 2 Skip: 0
@@ -411,7 +411,7 @@ uses a different set of options. Here is a summary of the equivalent options:
 ``diff``              ``REPORT_CDIFF``              With ``context`` as argument.
 ``diff``              ``REPORT_NDIFF``              With ``ndiff`` as argument.
 ``fail-fast``         ``FAIL_FAST``                 Same functionality.
-??                    ``REPORT_ONLY_FIRST_FAILURE`` Supported
+``show-failures`      ``REPORT_ONLY_FIRST_FAILURE`` Same as `+show-failures 1`
 ====================  ============================= ============================
 ```
 

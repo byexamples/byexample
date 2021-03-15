@@ -12,6 +12,7 @@ from .common import enhance_exceptions
 from .log import clog, log_context, configure_log_system, setLogLevels, TRACE, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL, init_thread_specific_log_system, log_with
 from .prof import profile
 from .cfg import Config
+from .cmdline import _show_failures_type
 
 
 def are_tty_colors_supported(output):
@@ -276,6 +277,13 @@ def get_default_options_parser(cmdline_args):
         default=False,
         help=
         "each interpreter disables the echo from the terminal but in some cases this cannot be done and an active filtering is required (this is an experimental feature, it will break your tests if no echo is received and it will force a full terminal emulation (see +term=ansi and +geometry))."
+    )
+
+    options_parser.add_argument(
+        "+show-failures",
+        default=cmdline_args.show_failures,
+        type=_show_failures_type,
+        help="show up to <n> failures per file and suppress the rest"
     )
 
     return options_parser
