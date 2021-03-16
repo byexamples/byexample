@@ -66,27 +66,29 @@ class FileExecutor(object):
 
     @profile
     def initialize_runners(self, runners, options):
-        tmp = []
+        # in case of an error, these are the runners initialized so far
+        # that we must shutdown
+        so_far = []
         for runner in runners:
             with log_with(runner.language) as log:
                 if runner in self.still_alive_runners:
                     log.info("Reusing %s", str(runner))
-                    tmp.append(runner)
+                    so_far.append(runner)
                     continue
 
                 log.info("Initializing %s", str(runner))
                 with self.on_failure_shutdown_runners(
                     should_raise=True,
-                    runners_left=tmp,
+                    runners_left=so_far,
                     err_args=("Initialization of %s failed.", str(runner))
                 ):
                     runner.initialize(options)
                     self.still_alive_runners.add(runner)
-                    tmp.append(runner)
+                    so_far.append(runner)
 
         # or we have all of them or we should not be executing this line
         # because something failed and an exception should be flying around
-        assert len(tmp) == len(runners)
+        assert len(so_far) == len(runners)
 
         # the 'equal or greater than' is needed because some runners may had
         # been initialized in another round and they are not going to be used
@@ -95,6 +97,7 @@ class FileExecutor(object):
 
     @profile
     def reset_runners(self, runners, should_raise=True, force_shutdown=True):
+        # in case of an error, these are the runners that we must shutdown
         left = list(runners)
         for runner in runners:
             with log_with(runner.language) as log:
