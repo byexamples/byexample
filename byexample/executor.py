@@ -119,6 +119,12 @@ class FileExecutor(object):
 
         assert not left
 
+    @log_context('byexample.close')
+    def close(self):
+        self.reset_runners(
+            self.still_alive_runners, should_raise=True, force_shutdown=True
+        )
+
     def __repr__(self):
         return 'File Executor'
 
