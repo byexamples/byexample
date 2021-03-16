@@ -107,6 +107,10 @@ class ExampleHarvest(object):
 
         self.options = options
 
+    @log_context('byexample.close')
+    def close(self):
+        pass
+
     def __repr__(self):
         return 'Example Harvester'
 
