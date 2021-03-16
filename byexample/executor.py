@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from .common import enhance_exceptions
 from .log import clog, log_context, log_with
 from .prof import profile, profile_ctx
+import contextlib
 
 
 class TimeoutException(Exception):
@@ -41,39 +42,94 @@ class FileExecutor(object):
         self.verbosity = verbosity
 
         self.options = options
+        self.still_alive_runners = set()
+
+    @contextlib.contextmanager
+    def on_failure_shutdown_runners(
+        self, should_raise, runners_left, err_args
+    ):
+        try:
+            yield
+        except:
+            if should_raise:
+                # should_raise is False because we want to raise only the first
+                # exception (the current one)
+                self.reset_runners(
+                    runners_left, should_raise=False, force_shutdown=True
+                )
+                assert not runners_left
+
+            log.warn(*err_args)
+
+            if should_raise:
+                raise
 
     @profile
     def initialize_runners(self, runners, options):
         tmp = []
         for runner in runners:
             with log_with(runner.language) as log:
-                log.info("Initializing %s", str(runner))
-                try:
-                    runner.initialize(options)
+                if runner in self.still_alive_runners:
+                    log.info("Reusing %s", str(runner))
                     tmp.append(runner)
-                except:
-                    self.shutdown_runners(tmp, stop_on_failure=False)
-                    log.warn("Initialization of %s failed.", str(runner))
-                    raise
+                    continue
+
+                log.info("Initializing %s", str(runner))
+                with self.on_failure_shutdown_runners(
+                    should_raise=True,
+                    runners_left=tmp,
+                    err_args=("Initialization of %s failed.", str(runner))
+                ):
+                    runner.initialize(options)
+                    self.still_alive_runners.add(runner)
+                    tmp.append(runner)
+
+        # or we have all of them or we should not be executing this line
+        # because something failed and an exception should be flying around
+        assert len(tmp) == len(runners)
+
+        # the 'equal or greater than' is needed because some runners may had
+        # been initialized in another round and they are not going to be used
+        # in this one
+        assert len(self.still_alive_runners) >= len(runners)
 
     @profile
-    def shutdown_runners(self, runners, stop_on_failure=True):
-        tmp = list(runners)
+    def reset_runners(self, runners, should_raise=True, force_shutdown=True):
+        left = list(runners)
         for runner in runners:
             with log_with(runner.language) as log:
+                assert runner in self.still_alive_runners
+                if not force_shutdown:
+                    with self.on_failure_shutdown_runners(
+                        should_raise=should_raise,
+                        runners_left=left,
+                        err_args=("Reset of %s failed.", str(runner))
+                    ):
+                        if runner.reset():
+                            del left[0]
+                            log.info("Reset of %s succeeded.", str(runner))
+                            continue
+
+                # Reset is not available or it failed, try to shutdown
+                # It is ok to try a shutdown if the reset failed because:
+                #  - if it is the first failure, the on_failure_shutdown_runners
+                #  would already shutdown the runners *AND* raise and exception
+                #  so we would *not* be executing this
+                #  - if it is the non-first failure, we are in a recursive call
+                #  where on_failure_shutdown_runners did *not* shutdown anything
+                #  and we have to do it.
+                del left[0]
+                self.still_alive_runners.remove(runner)
+
                 log.info("Shutting down %s", str(runner))
-                try:
+                with self.on_failure_shutdown_runners(
+                    should_raise=should_raise,
+                    runners_left=left,
+                    err_args=("Shutdown of %s failed.", str(runner))
+                ):
                     runner.shutdown()
-                    del tmp[0]
-                except:
-                    del tmp[0]
-                    if stop_on_failure:
-                        self.shutdown_runners(tmp, stop_on_failure=False)
 
-                    log.warn("Shutdown of %s failed.", str(runner))
-
-                    if stop_on_failure:
-                        raise
+        assert not left
 
     def __repr__(self):
         return 'File Executor'
@@ -103,7 +159,7 @@ class FileExecutor(object):
                 failed, user_aborted, crashed, broken, timedout
             )
         finally:
-            self.shutdown_runners(runners)
+            self.reset_runners(runners)
 
         return failed, (crashed or broken or timedout), user_aborted, False
 
