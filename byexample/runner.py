@@ -71,6 +71,21 @@ class ExampleRunner(object):
         executing any example.
 
         See also shutdown()
+
+        The following state diagram should picture this:
+
+                           new file,
+        (not alive) --> call initialize() --> (alive, clean) --> call run() <-|
+              ^                                      ^               |        |
+              |                                      |               v        |
+              |                                 reset True    (alive, dirty) -/
+              |                                      ^               |
+              |                     if forced        |               v
+              |                  /- shutdown  <----- | ----- no more examples;
+              |                 /                    |               |
+              |                /                     |               v
+         call shutdown() <----/- reset False or  <---\---- not forced shutdown,
+                                     failed                   call reset()
         '''
         raise NotImplementedError()  # pragma: no cover
 
@@ -84,7 +99,9 @@ class ExampleRunner(object):
         of examples (another file) so *no* shutdown will be done.
 
         shutdown() will **not** be called as long as reset() is being
-        called and returning True.
+        called and returning True in general but it *MAY* be called even that
+        if an error is detected in another runner or the whole execution
+        is shutting down.
 
         Otherwise it will be called after executing each file's examples.
 
