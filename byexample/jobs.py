@@ -27,6 +27,9 @@ def worker(func, input, output, cfg):
     for item in iter(input.get, None):
         output.put(func(item, harvester, executor, cfg['dry']))
 
+    harvester.close()
+    executor.close()
+
 
 class Jobs(object):
     def __init__(self, njobs):
