@@ -14,7 +14,7 @@ class Status:
     error = 3
 
 
-def worker(func, input, output, cfg):
+def worker(func, input, output, cfg, job_num):
     ''' Generic worker: call <func> for each item pulled from
         the <input> queue until a None gets pulled.
 
@@ -23,7 +23,7 @@ def worker(func, input, output, cfg):
 
         After receiving a None, close the <output> queue.
         '''
-    harvester, executor = init_worker(cfg)
+    harvester, executor = init_worker(cfg, job_num)
     for item in iter(input.get, None):
         output.put(func(item, harvester, executor, cfg['dry']))
 
@@ -56,7 +56,7 @@ class Jobs(object):
             Thread(
                 target=worker,
                 name=str(n),
-                args=(func, self.input, self.output, cfg)
+                args=(func, self.input, self.output, cfg, n)
             ) for n in range(njobs)
         ]
         for p in self.processes:
