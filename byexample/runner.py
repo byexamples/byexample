@@ -59,6 +59,33 @@ class ExampleRunner(object):
         '''
         Hook to initialize the runner. This method will be called
         before running any example.
+
+        If the reset() method is called and return True, it is assumed
+        that the runner was reset and can be reused for another round
+        of examples (another file) *without* calling initialize() again.
+
+        initialize() will **not** be called as long as reset() is being
+        called and returning True.
+
+        Otherwise it will be called on each new file to process before
+        executing any example.
+
+        See also shutdown()
+
+        The following state diagram should picture this:
+
+                           new file,
+        (not alive) --> call initialize() --> (alive, clean) --> call run() <-|
+              ^                                      ^               |        |
+              |                                      |               v        |
+              |                                 reset True    (alive, dirty) -/
+              |                                      ^               |
+              |                     if forced        |               v
+              |                  /- shutdown  <----- | ----- no more examples;
+              |                 /                    |               |
+              |                /                     |               v
+         call shutdown() <----/- reset False or  <---\---- not forced shutdown,
+                                     failed                   call reset()
         '''
         raise NotImplementedError()  # pragma: no cover
 
@@ -66,8 +93,49 @@ class ExampleRunner(object):
         '''
         Hook to shutdown the runner. This method will be called
         after running all the examples.
+
+        If the reset() method is called and return True, it is assumed
+        that the runner was reset and can be reused for another round
+        of examples (another file) so *no* shutdown will be done.
+
+        shutdown() will **not** be called as long as reset() is being
+        called and returning True in general but it *MAY* be called even that
+        if an error is detected in another runner or the whole execution
+        is shutting down.
+
+        Otherwise it will be called after executing each file's examples.
+
+        If the shutdown() was not called and no more files are assigned to
+        this job (FileExecutor), the method will be called once at the end.
+
+        Regardless of reset(), there is a 1-to-1 relationship with
+        initialize(): if the initialize() is called N times, the shutdown()
+        will be called N times and the calls will be interleaved (initialize()
+        then shutdown() the initialize() then shutdown() and so on).
         '''
         raise NotImplementedError()  # pragma: no cover
+
+    def reset(self, options):
+        '''
+        Hook to reset the runner. This method *may* be called
+        after running all the examples of the current processed file.
+
+        The job (FileExecutor) will decide if this method will be called
+        or not based on the user's options.
+
+        It is up to the runner's implementation if the reset
+        can be made without restarting the interpreter in which case *must*
+        return True; otherwise False.
+
+        A reset without a restart should keep the interpreter alive
+        but with an clean state to run a new set of examples independently.
+
+        By default, reset returns False (not supported).
+
+        Returning False means that shutdown() will be called instead (and
+        initialize() will be called on the next file)
+        '''
+        return False
 
     def cancel(self, example, options):
         '''

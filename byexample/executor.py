@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from .common import enhance_exceptions
 from .log import clog, log_context, log_with
 from .prof import profile, profile_ctx
+import contextlib
 
 
 class TimeoutException(Exception):
@@ -19,6 +20,110 @@ class InputPrefixNotFound(TimeoutException):
         self.prefix, self.input = prefix, input
 
 
+'''
+>>> from byexample.runner import ExampleRunner
+>>> from byexample.executor import FileExecutor
+
+>>> from byexample.log import init_log_system
+>>> init_log_system()
+
+>>> class Buggy(ExampleRunner):
+...     def __init__(self, name, bug_in):
+...         self.language = self.name = name
+...         self.bug_in = bug_in
+...     def run(self, example, options):
+...         print("run()", self.name)
+...         if self.bug_in == 'run':
+...             raise Exception("Faked on %s of %s" % (self.bug_in, self.name))
+...     def initialize(self, options):
+...         print("initialize()", self.name)
+...         if self.bug_in == 'initialize':
+...             raise Exception("Faked on %s of %s" % (self.bug_in, self.name))
+...     def shutdown(self):
+...         print("shutdown()", self.name)
+...         if self.bug_in == 'shutdown':
+...             raise Exception("Faked on %s of %s" % (self.bug_in, self.name))
+...     def reset(self, options):
+...         print("reset()", self.name)
+...         if self.bug_in == 'reset':
+...             raise Exception("Faked on %s of %s" % (self.bug_in, self.name))
+
+>>> fexec = FileExecutor(None, None, None, None, None)
+
+FileExecutor will initialize the runners in order, stopping on the
+first failure and shutting down any previous initialized runner (if any).
+
+In this case 'not-buggy1' should never being called because the first
+runner will fail in the 'initialize' phase.
+
+>>> runners = [Buggy("buggy1", "initialize"), Buggy("not-buggy1", "never")]
+
+>>> fexec.initialize_runners(runners, None)
+initialize() buggy1
+[w] Initialization of Buggy1 Runner failed.
+Traceback (most recent call last):
+<...>
+Exception: Faked on initialize of buggy1
+
+But if we change the order, initialize() of 'not-buggy1' is called
+but on the failure of 'buggy1', the shutdown() is called too.
+
+>>> runners = [Buggy("not-buggy1", "never"), Buggy("buggy1", "initialize")]
+>>> fexec.initialize_runners(runners, None)
+initialize() not-buggy1
+initialize() buggy1
+shutdown() not-buggy1
+[w] Initialization of Buggy1 Runner failed.
+Traceback (most recent call last):
+<...>
+Exception: Faked on initialize of buggy1
+
+If an exception is raised during a shutdown when the initialize() was
+aborted, the call to the shutdown()s is not stopped and only the first
+exception is raised (the other are just logged).
+
+Note the order of the calls to shutdown(): the reverse order of the calls
+to initialize() (like a stack).
+
+>>> runners = [Buggy("not-buggy1", "never"), Buggy("buggy2", "shutdown"), Buggy("buggy1", "initialize")]
+>>> fexec.initialize_runners(runners, None)
+initialize() not-buggy1
+initialize() buggy2
+initialize() buggy1
+shutdown() buggy2
+[w] Shutdown of Buggy2 Runner failed.
+shutdown() not-buggy1
+[w] Initialization of Buggy1 Runner failed.
+Traceback (most recent call last):
+<...>
+Exception: Faked on initialize of buggy1
+
+On reset/shutdown we have a similar situation except that reset_runners
+receives the list of runners and it is caller's responsibility (us) to
+pass a reversed list to have the same stack-like de-initialization order.
+
+>>> runners = [Buggy("not-buggy1", "never"), Buggy("buggy1", "shutdown"), Buggy("buggy2", "shutdown")]
+>>> fexec.initialize_runners(runners, None)
+initialize() not-buggy1
+initialize() buggy1
+initialize() buggy2
+
+>>> fexec.reset_runners(list(reversed(runners)))
+shutdown() buggy2
+shutdown() buggy1
+[w] Shutdown of Buggy1 Runner failed.
+shutdown() not-buggy1
+[w] Shutdown of Buggy2 Runner failed.
+Traceback (most recent call last):
+<...>
+Exception: Faked on shutdown of buggy2
+
+Note: no tests nor documentation about 'reset' is done yet.
+
+>>> fexec.close()   # byexample: -skip
+'''
+
+
 class FileExecutor(object):
     def __init__(
         self, concerns, differ, verbosity, use_colors, options, **unused
@@ -29,39 +134,108 @@ class FileExecutor(object):
         self.verbosity = verbosity
 
         self.options = options
+        self.still_alive_runners = set()
+
+    @contextlib.contextmanager
+    def on_failure_shutdown_runners(
+        self, should_raise, runners_left, log, err_args
+    ):
+        try:
+            yield
+        except:
+            if should_raise:
+                # should_raise is False because we want to raise only the first
+                # exception (the current one)
+                self.reset_runners(
+                    runners_left, should_raise=False, force_shutdown=True
+                )
+
+            log.warn(*err_args)
+
+            if should_raise:
+                raise
 
     @profile
     def initialize_runners(self, runners, options):
-        tmp = []
+        # in case of an error, these are the runners initialized so far
+        # that we must shutdown
+        so_far = []
         for runner in runners:
             with log_with(runner.language) as log:
+                if runner in self.still_alive_runners:
+                    log.info("Reusing %s", str(runner))
+                    so_far.append(runner)
+                    continue
+
                 log.info("Initializing %s", str(runner))
-                try:
+                with self.on_failure_shutdown_runners(
+                    should_raise=True,
+                    runners_left=list(reversed(so_far)),
+                    log=log,
+                    err_args=("Initialization of %s failed.", str(runner))
+                ):
                     runner.initialize(options)
-                    tmp.append(runner)
-                except:
-                    self.shutdown_runners(tmp, stop_on_failure=False)
-                    log.warn("Initialization of %s failed.", str(runner))
-                    raise
+                    self.still_alive_runners.add(runner)
+                    so_far.append(runner)
+
+        # or we have all of them or we should not be executing this line
+        # because something failed and an exception should be flying around
+        assert len(so_far) == len(runners)
+
+        # the 'equal or greater than' is needed because some runners may had
+        # been initialized in another round and they are not going to be used
+        # in this one
+        assert len(self.still_alive_runners) >= len(runners)
 
     @profile
-    def shutdown_runners(self, runners, stop_on_failure=True):
-        tmp = list(runners)
+    def reset_runners(self, runners, should_raise=True, force_shutdown=True):
+        # in case of an error, these are the runners that we must shutdown
+        left = list(runners)
         for runner in runners:
             with log_with(runner.language) as log:
+                assert runner in self.still_alive_runners
+                if not force_shutdown:
+                    with self.on_failure_shutdown_runners(
+                        should_raise=should_raise,
+                        runners_left=left,
+                        log=log,
+                        err_args=("Reset of %s failed.", str(runner))
+                    ):
+                        if runner.reset():
+                            del left[0]
+                            log.info("Reset of %s succeeded.", str(runner))
+                            continue
+
+                # Reset is not available or it failed, try to shutdown
+                # It is ok to try a shutdown if the reset failed because:
+                #  - if it is the first failure, the on_failure_shutdown_runners
+                #  would already shutdown the runners *AND* raise and exception
+                #  so we would *not* be executing this
+                #  - if it is the non-first failure, we are in a recursive call
+                #  where on_failure_shutdown_runners did *not* shutdown anything
+                #  and we have to do it.
+                del left[0]
+                self.still_alive_runners.remove(runner)
+
                 log.info("Shutting down %s", str(runner))
-                try:
+                with self.on_failure_shutdown_runners(
+                    should_raise=should_raise,
+                    runners_left=left,
+                    log=log,
+                    err_args=("Shutdown of %s failed.", str(runner))
+                ):
                     runner.shutdown()
-                    del tmp[0]
-                except:
-                    del tmp[0]
-                    if stop_on_failure:
-                        self.shutdown_runners(tmp, stop_on_failure=False)
 
-                    log.warn("Shutdown of %s failed.", str(runner))
+        assert not left
 
-                    if stop_on_failure:
-                        raise
+    @log_context('byexample.close')
+    def close(self):
+        # no order is guaranteed
+        self.reset_runners(
+            list(self.still_alive_runners),
+            should_raise=True,
+            force_shutdown=True
+        )
 
     def __repr__(self):
         return 'File Executor'
@@ -91,7 +265,7 @@ class FileExecutor(object):
                 failed, user_aborted, crashed, broken, timedout
             )
         finally:
-            self.shutdown_runners(runners)
+            self.reset_runners(runners)
 
         return failed, (crashed or broken or timedout), user_aborted, False
 
