@@ -477,6 +477,9 @@ def init_byexample(args):
         'interact': False,
         'opts_from_cmdline': args.options_str,
         'dry': args.dry,
+        # special value to denote that we are not in a worker/job yet
+        # but in the main thread.
+        'job_number': '__main__'
     }
 
     allowed_files = set(args.files) - set(args.skip)
@@ -541,16 +544,26 @@ def init_byexample(args):
 
 
 @profile
-def init_worker(cfg):
-    ''' Initialize a worker.
+def init_worker(cfg, job_num):
+    ''' Initialize a worker with worker/job number is passed
+        by parameter.
 
         The registry's elements (parsers, runners, concerns,
-        zdelimiters and finders) are recreated.
+        zdelimiters and finders) from <cfg> are recreated and
+        the rest are copied so the worker is initialized with
+        a fresh and independent copy.
+
+        The only difference is that <cfg> will have <job_num>
+        as the value of the 'job_number' key.
 
         If the recreation process is thread safe (depends of the objects'
         implementations), then init_worker is thread safe.
     '''
-    cfg = cfg.copy()
+    # let the rest of byexample for this worker to know
+    # in which worker is on
+    assert cfg['job_number'] == '__main__'
+    cfg = cfg.copy(patch={'job_number': int(job_num)})
+
     concerns = ConcernComposite(**cfg)
 
     init_thread_specific_log_system(concerns)
