@@ -30,7 +30,7 @@ class _DummyLock(object):
 class SimpleReporter(Concern):
     target = None  # progress
 
-    def __init__(self, verbosity, encoding, jobs, **unused):
+    def __init__(self, verbosity, encoding, jobs, job_number, **unused):
         if 'use_progress_bar' in unused and unused['use_progress_bar'] \
                 and progress_bar_available:
             self.target = None  # disable ourselves
@@ -46,9 +46,8 @@ class SimpleReporter(Concern):
         # Initialize once the write_lock the first time that
         # a SimpleReporter is created. Next SimpleReporter instances
         # will use the same write_lock
-        cls = self.__class__
-        write_lock = getattr(cls, 'write_lock', None)
-        if write_lock is None:
+        if job_number == '__main__':
+            cls = self.__class__
             if self.jobs != 1:
                 cls.write_lock = threading.RLock()
             else:
@@ -286,19 +285,20 @@ class SimpleReporter(Concern):
 class ProgressBarReporter(SimpleReporter):
     target = None  # progress
 
-    def __init__(self, verbosity, encoding, jobs, **unused):
-        SimpleReporter.__init__(self, verbosity, encoding, jobs, **unused)
+    def __init__(self, verbosity, encoding, jobs, job_number, **unused):
+        SimpleReporter.__init__(
+            self, verbosity, encoding, jobs, job_number, **unused
+        )
         if ('use_progress_bar' in unused and not unused['use_progress_bar']) \
                 or not progress_bar_available:
             self.target = None  # disable ourselves
         else:
             self.target = 'progress'
 
-        cls = self.__class__
-        if not getattr(cls, 'tqdm_lock_set', False):
+        if job_number == '__main__':
             # this write lock is shared among all the instances of tqdm
+            cls = self.__class__
             tqdm.set_lock(cls.write_lock)
-            cls.tqdm_lock_set = True
 
         # the tqdm bar will be created at the start of the examples
         self.bar = None
