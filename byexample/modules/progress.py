@@ -316,8 +316,9 @@ class ProgressBarReporter(SimpleReporter):
 
         if job_number == '__main__':
             # this write lock is shared among all the instances of tqdm
-            cls = self.__class__
-            tqdm.set_lock(cls.write_lock)
+            tqdm.set_lock(self.write_lock)
+        else:
+            self.job_number = job_number
 
         # the tqdm bar will be created at the start of the examples
         self.bar = None
@@ -360,9 +361,8 @@ class ProgressBarReporter(SimpleReporter):
         if self.jobs == 1:
             position = None
         else:
-            # use threading.Thread' name (number) as the position
-            # of its bar
-            position = int(threading.current_thread().name) + 1
+            # use the job number as the position of this bar
+            position = self.job_number + 1
 
         SimpleReporter.start(self, examples, runners, filepath, options)
 
