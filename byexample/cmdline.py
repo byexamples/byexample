@@ -462,4 +462,14 @@ def parse_args(args=None):
             "argument --x-log-mask: '%s' is an unknown log level." % k
         )
 
+    # which files are allowed to be executed: these are the 'testfiles'
+    # Note: the order is undefined, we sort them but this is not guaranteed
+    # to be like this in the future
+    allowed = set(namespace.files) - set(namespace.skip)
+    namespace.testfiles = list(
+        sorted(f for f in namespace.files if f in allowed)
+    )
+
+    # Do not spawn more jobs than testfiles
+    namespace.jobs = min(namespace.jobs, len(namespace.testfiles))
     return namespace
