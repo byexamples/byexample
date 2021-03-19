@@ -477,6 +477,7 @@ def init_byexample(args, sharer, ns):
         'interact': False,
         'opts_from_cmdline': args.options_str,
         'dry': args.dry,
+        'jobs': args.jobs,
         # special value to denote that we are not in a worker/job yet
         # but in the main thread.
         'job_number': '__main__',
@@ -485,11 +486,10 @@ def init_byexample(args, sharer, ns):
         'ns': ns
     }
 
-    allowed_files = set(args.files) - set(args.skip)
-    testfiles = list(sorted(f for f in args.files if f in allowed_files))
+    testfiles = args.testfiles
 
-    # Do not spawn more jobs than testfiles
-    args.jobs = cfg['jobs'] = min(args.jobs, len(testfiles))
+    # ensure consistency: we cannot spawn more jobs than testfiles
+    assert cfg['jobs'] <= len(testfiles)
 
     options = get_options(args, cfg)
 
