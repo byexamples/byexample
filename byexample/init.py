@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import sys, pkgutil, inspect, pprint, os
+import sys, pkgutil, inspect, pprint, os, collections
 
 from .options import Options, OptionParser
 from .runner import ExampleRunner
@@ -461,7 +461,7 @@ def verbosity_to_log_levels(verbosity, quiet):
 
 @log_context('byexample.init')
 @profile
-def init_byexample(args):
+def init_byexample(args, sharer, ns):
     lvl = verbosity_to_log_levels(args.verbosity, args.quiet)
     lvl.update(args.log_masks)
     setLogLevels(lvl)
@@ -477,13 +477,19 @@ def init_byexample(args):
         'interact': False,
         'opts_from_cmdline': args.options_str,
         'dry': args.dry,
+        'jobs': args.jobs,
+        # special value to denote that we are not in a worker/job yet
+        # but in the main thread.
+        'job_number': '__main__',
+        # sharer and ns are temporal, see the end of this function
+        'sharer': sharer,
+        'ns': ns
     }
 
-    allowed_files = set(args.files) - set(args.skip)
-    testfiles = list(sorted(f for f in args.files if f in allowed_files))
+    testfiles = args.testfiles
 
-    # Do not spawn more jobs than testfiles
-    args.jobs = cfg['jobs'] = min(args.jobs, len(testfiles))
+    # ensure consistency: we cannot spawn more jobs than testfiles
+    assert cfg['jobs'] <= len(testfiles)
 
     options = get_options(args, cfg)
 
@@ -537,20 +543,40 @@ def init_byexample(args):
     concerns = ConcernComposite(**cfg)
     configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
 
+    # not longer needed: all the runner, parsers, concerns objects
+    # were created and if they wanted to setup a shared object that was
+    # their opportunity.
+    cfg['sharer'] = None
+    # the namespace where all the shared objects lives now it is read-only
+    # you can interact with the shared objects as you want but you cannot
+    # add nor remove them
+    keys = [k for k in dir(ns) if k[0] != '_']
+    NS = collections.namedtuple('NS', keys)
+    cfg['ns'] = NS(*[getattr(ns, k) for k in keys])
     return testfiles, Config(cfg)
 
 
 @profile
-def init_worker(cfg):
-    ''' Initialize a worker.
+def init_worker(cfg, job_num):
+    ''' Initialize a worker with worker/job number is passed
+        by parameter.
 
         The registry's elements (parsers, runners, concerns,
-        zdelimiters and finders) are recreated.
+        zdelimiters and finders) from <cfg> are recreated and
+        the rest are copied so the worker is initialized with
+        a fresh and independent copy.
+
+        The only difference is that <cfg> will have <job_num>
+        as the value of the 'job_number' key.
 
         If the recreation process is thread safe (depends of the objects'
         implementations), then init_worker is thread safe.
     '''
-    cfg = cfg.copy()
+    # let the rest of byexample for this worker to know
+    # in which worker is on
+    assert cfg['job_number'] == '__main__'
+    cfg = cfg.copy(patch={'job_number': int(job_num)})
+
     concerns = ConcernComposite(**cfg)
 
     init_thread_specific_log_system(concerns)

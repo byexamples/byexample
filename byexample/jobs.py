@@ -1,10 +1,10 @@
 from __future__ import unicode_literals
-from threading import Thread
-from queue import Queue
 
 import signal, contextlib
 from .log import clog, CHAT
 from .init import init_worker
+
+from .concurrency import load_concurrency_engine
 
 
 class Status:
@@ -14,7 +14,7 @@ class Status:
     error = 3
 
 
-def worker(func, input, output, cfg):
+def worker(func, input, output, cfg, job_num):
     ''' Generic worker: call <func> for each item pulled from
         the <input> queue until a None gets pulled.
 
@@ -23,7 +23,7 @@ def worker(func, input, output, cfg):
 
         After receiving a None, close the <output> queue.
         '''
-    harvester, executor = init_worker(cfg)
+    harvester, executor = init_worker(cfg, job_num)
     for item in iter(input.get, None):
         output.put(func(item, harvester, executor, cfg['dry']))
 
@@ -32,8 +32,37 @@ def worker(func, input, output, cfg):
 
 
 class Jobs(object):
-    def __init__(self, njobs):
+    def __init__(self, njobs, concurrency_model):
+        if concurrency_model not in ('multithreading', 'multiprocessing'):
+            raise ValueError(
+                "Unexpected concurrency model '%s'. Expected multithreading or multiprocessing."
+                % concurrency_model
+            )
+
+        if concurrency_model == 'multiprocessing':
+            raise NotImplementedError("Not supported yet")
+
+        if njobs == 1:
+            concurrency_model = 'singlethreading'
+
         self.njobs = njobs
+
+        self.Process, self.Manager, self.Queue = load_concurrency_engine(
+            concurrency_model
+        )
+
+    @contextlib.contextmanager
+    def start_sharer(self):
+        class NS:
+            pass
+
+        ns = NS()
+        with self.Manager() as sharer:
+            try:
+                yield (sharer, ns)
+            finally:
+                # remove any reference to the shared objects (if any)
+                del ns
 
     def spawn_jobs(self, func, items, cfg):
         ''' Spawn <njobs> jobs to process <items> in parallel/concurrently.
@@ -49,14 +78,14 @@ class Jobs(object):
         njobs = self.njobs
         assert njobs <= len(items)
 
-        self.input = Queue()
-        self.output = Queue()
+        self.input = self.Queue()
+        self.output = self.Queue()
 
         self.processes = [
-            Thread(
+            self.Process(
                 target=worker,
                 name=str(n),
-                args=(func, self.input, self.output, cfg)
+                args=(func, self.input, self.output, cfg, n)
             ) for n in range(njobs)
         ]
         for p in self.processes:

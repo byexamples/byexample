@@ -7,9 +7,9 @@ class Config(collections.Mapping):
     ''' An immutable configuration object.
 
         Once the configuration was loaded, this object should be
-        used to maintain a constant reference/value.
+        used to maintain constant references/values.
 
-        Only 3 keys are allowed to be mutable:
+        Only 3 keys are allowed to reference mutable values:
          - options: to hold dynamic options
          - output: the file where write to
          - registry: the parsers, runners and other dynamic objects
@@ -34,7 +34,7 @@ class Config(collections.Mapping):
         return len(self._d)
 
     def _ensure_cfg_is_constant(self):
-        const_types = (int, tuple, frozenset, str, bool, bytes)
+        const_types = (int, tuple, frozenset, str, bool, bytes, type(None))
         exception_keys = ('options', 'output', 'registry')
         for k, v in self._d.items():
             if k in exception_keys:
@@ -46,7 +46,7 @@ class Config(collections.Mapping):
                     (k, v.__class__)
                 )
 
-    def copy(self):
+    def copy(self, patch={}):
         ''' Copy the configuration object borrowing references
             with a special copy operation for the registry and options
             keys.
@@ -65,7 +65,18 @@ class Config(collections.Mapping):
             will be independent of the original.
 
             The only exception will be the output file.
+
+            After the copy but before the recreation (_recreate_registry),
+            the copied dictionary is optionally updated with <patch> dict.
+
+            While it is technically possible to update/patch everything,
+            the idea of <patch> is to allows to do a small update/change/patch
+            to the configuration before becoming a constant again.
+
+            The key and values of <patch> *must* follow the same 'constantness'
+            rules of Config.
         '''
+        patch = Config(patch)
         new = {}
         for k, v in self._d.items():
             if k == 'options':
@@ -77,6 +88,7 @@ class Config(collections.Mapping):
 
             new[k] = v
 
+        new.update(patch)
         new['registry'] = self._recreate_registry(self['registry'], new)
         return Config(new)
 

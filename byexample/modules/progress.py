@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import traceback, time, os, sys, threading
+import traceback, time, os, sys
 from byexample.executor import InputPrefixNotFound
 from byexample.common import colored, highlight_syntax, indent, short_string
 from byexample.concern import Concern
@@ -13,24 +13,12 @@ except ImportError:
 stability = 'provisional'
 
 
-class _DummyLock(object):
-    def __enter__(self):
-        return
-
-    def __exit__(self, *args):
-        pass
-
-    def acquire(self, *args, **kargs):
-        pass
-
-    def release(self, *args, **kargs):
-        pass
-
-
 class SimpleReporter(Concern):
     target = None  # progress
 
-    def __init__(self, verbosity, encoding, jobs, **unused):
+    def __init__(
+        self, verbosity, encoding, jobs, job_number, ns, sharer, **unused
+    ):
         if 'use_progress_bar' in unused and unused['use_progress_bar'] \
                 and progress_bar_available:
             self.target = None  # disable ourselves
@@ -46,14 +34,10 @@ class SimpleReporter(Concern):
         # Initialize once the write_lock the first time that
         # a SimpleReporter is created. Next SimpleReporter instances
         # will use the same write_lock
-        cls = self.__class__
-        write_lock = getattr(cls, 'write_lock', None)
-        if write_lock is None:
-            if self.jobs != 1:
-                cls.write_lock = threading.RLock()
-            else:
-                cls.write_lock = _DummyLock()
+        if job_number == '__main__':
+            ns.progress__write_lock = sharer.RLock()
 
+        self.write_lock = ns.progress__write_lock
         self.header_printed = False
 
     def _write(self, msg, nl=False):
@@ -286,19 +270,23 @@ class SimpleReporter(Concern):
 class ProgressBarReporter(SimpleReporter):
     target = None  # progress
 
-    def __init__(self, verbosity, encoding, jobs, **unused):
-        SimpleReporter.__init__(self, verbosity, encoding, jobs, **unused)
+    def __init__(
+        self, verbosity, encoding, jobs, job_number, ns, sharer, **unused
+    ):
+        SimpleReporter.__init__(
+            self, verbosity, encoding, jobs, job_number, ns, sharer, **unused
+        )
         if ('use_progress_bar' in unused and not unused['use_progress_bar']) \
                 or not progress_bar_available:
             self.target = None  # disable ourselves
         else:
             self.target = 'progress'
 
-        cls = self.__class__
-        if not getattr(cls, 'tqdm_lock_set', False):
+        if job_number == '__main__':
             # this write lock is shared among all the instances of tqdm
-            tqdm.set_lock(cls.write_lock)
-            cls.tqdm_lock_set = True
+            tqdm.set_lock(self.write_lock)
+        else:
+            self.job_number = job_number
 
         # the tqdm bar will be created at the start of the examples
         self.bar = None
@@ -341,9 +329,8 @@ class ProgressBarReporter(SimpleReporter):
         if self.jobs == 1:
             position = None
         else:
-            # use threading.Thread' name (number) as the position
-            # of its bar
-            position = int(threading.current_thread().name) + 1
+            # use the job number as the position of this bar
+            position = self.job_number + 1
 
         SimpleReporter.start(self, examples, runners, filepath, options)
 
