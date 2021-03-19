@@ -34,7 +34,7 @@ class Config(collections.Mapping):
         return len(self._d)
 
     def _ensure_cfg_is_constant(self):
-        const_types = (int, tuple, frozenset, str, bool, bytes)
+        const_types = (int, tuple, frozenset, str, bool, bytes, type(None))
         exception_keys = ('options', 'output', 'registry')
         for k, v in self._d.items():
             if k in exception_keys:
