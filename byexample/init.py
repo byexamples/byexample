@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import sys, pkgutil, inspect, pprint, os
+import sys, pkgutil, inspect, pprint, os, collections
 
 from .options import Options, OptionParser
 from .runner import ExampleRunner
@@ -461,7 +461,7 @@ def verbosity_to_log_levels(verbosity, quiet):
 
 @log_context('byexample.init')
 @profile
-def init_byexample(args):
+def init_byexample(args, sharer, ns):
     lvl = verbosity_to_log_levels(args.verbosity, args.quiet)
     lvl.update(args.log_masks)
     setLogLevels(lvl)
@@ -479,7 +479,10 @@ def init_byexample(args):
         'dry': args.dry,
         # special value to denote that we are not in a worker/job yet
         # but in the main thread.
-        'job_number': '__main__'
+        'job_number': '__main__',
+        # sharer and ns are temporal, see the end of this function
+        'sharer': sharer,
+        'ns': ns
     }
 
     allowed_files = set(args.files) - set(args.skip)
@@ -540,6 +543,16 @@ def init_byexample(args):
     concerns = ConcernComposite(**cfg)
     configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
 
+    # not longer needed: all the runner, parsers, concerns objects
+    # were created and if they wanted to setup a shared object that was
+    # their opportunity.
+    cfg['sharer'] = None
+    # the namespace where all the shared objects lives now it is read-only
+    # you can interact with the shared objects as you want but you cannot
+    # add nor remove them
+    keys = [k for k in dir(ns) if k[0] != '_']
+    NS = collections.namedtuple('NS', keys)
+    cfg['ns'] = NS(*[getattr(ns, k) for k in keys])
     return testfiles, Config(cfg)
 
 
