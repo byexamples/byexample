@@ -1,4 +1,3 @@
-
 def load_concurrency_engine(concurrency_model):
     if concurrency_model in ('singlethreading', 'multithreading'):
         from multiprocessing.dummy import Process
@@ -27,7 +26,10 @@ def load_concurrency_engine(concurrency_model):
         return (Process, Manager, Queue)
 
     else:
-        raise ValueError("Unexpected concurrency model '%s'. Expected singlethreading, multithreading or multiprocessing." % concurrency_model)
+        raise ValueError(
+            "Unexpected concurrency model '%s'. Expected singlethreading, multithreading or multiprocessing."
+            % concurrency_model
+        )
 
 
 class _DummyLock(object):

@@ -35,16 +35,17 @@ def main(args=None):
 
     args = parse_args(args)
 
-    with human_exceptions('initializing byexample') as exc:
-        testfiles, cfg = init_byexample(args)
+    jobs = Jobs(args.jobs, 'multithreading')
+    with jobs.start_sharer() as (sharer, ns):
+        with human_exceptions('initializing byexample') as exc:
+            testfiles, cfg = init_byexample(args, sharer, ns)
 
-    if exc:
-        sys.exit(Status.error)
+        if exc:
+            sys.exit(Status.error)
 
-    jobs = Jobs(args.jobs)
-    ret = jobs.run(
-        execute_examples, testfiles, cfg['options']['fail_fast'], cfg
-    )
+        ret = jobs.run(
+            execute_examples, testfiles, cfg['options']['fail_fast'], cfg
+        )
 
     shutdown_log_system()
     return ret
