@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import traceback, time, os, sys, threading
+import traceback, time, os, sys
 from byexample.executor import InputPrefixNotFound, InterpreterClosedUnexpectedly
 from byexample.common import colored, highlight_syntax, indent, short_string
 from byexample.concern import Concern
@@ -13,24 +13,12 @@ except ImportError:
 stability = 'provisional'
 
 
-class _DummyLock(object):
-    def __enter__(self):
-        return
-
-    def __exit__(self, *args):
-        pass
-
-    def acquire(self, *args, **kargs):
-        pass
-
-    def release(self, *args, **kargs):
-        pass
-
-
 class SimpleReporter(Concern):
     target = None  # progress
 
-    def __init__(self, verbosity, encoding, jobs, job_number, **unused):
+    def __init__(
+        self, verbosity, encoding, jobs, job_number, ns, sharer, **unused
+    ):
         if 'use_progress_bar' in unused and unused['use_progress_bar'] \
                 and progress_bar_available:
             self.target = None  # disable ourselves
@@ -47,12 +35,9 @@ class SimpleReporter(Concern):
         # a SimpleReporter is created. Next SimpleReporter instances
         # will use the same write_lock
         if job_number == '__main__':
-            cls = self.__class__
-            if self.jobs != 1:
-                cls.write_lock = threading.RLock()
-            else:
-                cls.write_lock = _DummyLock()
+            ns.progress__write_lock = sharer.RLock()
 
+        self.write_lock = ns.progress__write_lock
         self.header_printed = False
 
     def _write(self, msg, nl=False):
@@ -304,9 +289,11 @@ class SimpleReporter(Concern):
 class ProgressBarReporter(SimpleReporter):
     target = None  # progress
 
-    def __init__(self, verbosity, encoding, jobs, job_number, **unused):
+    def __init__(
+        self, verbosity, encoding, jobs, job_number, ns, sharer, **unused
+    ):
         SimpleReporter.__init__(
-            self, verbosity, encoding, jobs, job_number, **unused
+            self, verbosity, encoding, jobs, job_number, ns, sharer, **unused
         )
         if ('use_progress_bar' in unused and not unused['use_progress_bar']) \
                 or not progress_bar_available:
