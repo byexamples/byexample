@@ -63,7 +63,7 @@ use a context manager for that.
 ...         time.sleep(0.2)
 
 >>> bar()           # byexample: +timeout=8
-stdin>::bar 20<...>
+stdin>::bar 2<...>
 
 By default the context manager uses the name of the calling function
 for the stack trace.
@@ -78,8 +78,8 @@ managers from the same function:
 ...         time.sleep(0.2)
 
 >>> baz()           # byexample: +timeout=8
-stdin>::baz::head 10<...>
-stdin>::baz::tail 20<...>
+stdin>::baz::head 1<...>
+stdin>::baz::tail 2<...>
 
 Nested is possible too:
 
@@ -92,9 +92,9 @@ Nested is possible too:
 ...             time.sleep(0.3)
 
 >>> nested()           # byexample: +timeout=8
-stdin>::nested;stdin>::nested;stdin>::nested 30<...>
-stdin>::nested;stdin>::nested 20<...>
-stdin>::nested 10<...>
+stdin>::nested;stdin>::nested;stdin>::nested 3<...>
+stdin>::nested;stdin>::nested 2<...>
+stdin>::nested 1<...>
 
 The engine is thread safe. Due how the engine works
 the traces may be written out of order and they may be
