@@ -274,9 +274,9 @@ class ElixirInterpreter(ExampleRunner, PexpectMixin):
         return self._get_output_echo_filtered(options)
 
     def shutdown(self):
-        self.interpreter.sendcontrol('c')
+        self._sendcontrol('c')
         time.sleep(0.001)
-        self.interpreter.sendcontrol('c')
+        self._sendcontrol('c')
         self._shutdown_interpreter()
 
     def cancel(self, example, options):
@@ -284,8 +284,8 @@ class ElixirInterpreter(ExampleRunner, PexpectMixin):
         # at the begin of a new line so IEx will interpret it
         # unfortunatelly this also means that we will get spurious prompts
         # and ':nil' results.
-        self.interpreter.sendline("")
-        self.interpreter.sendline("")
-        self.interpreter.sendline("#iex:break")
+        self._sendline("")
+        self._sendline("")
+        self._sendline("#iex:break")
 
         return self._recover_prompt_sync(example, options)

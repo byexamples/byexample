@@ -158,6 +158,18 @@ class PexpectMixin(object):
         self._last_output_may_be_incomplete = False
         self._cmd = None
 
+    def _send(self, s):
+        self._interpreter.send(s)
+
+    def _sendline(self, line):
+        self._interpreter.sendline(line)
+
+    def _sendcontrol(self, control):
+        self._interpreter.sendcontrol(control)
+
+    def _setwindowsize(self, rows, cols):
+        self._interpreter.setwinsize(rows, cols)
+
     @profile
     def _spawn_interpreter(
         self,
@@ -232,14 +244,16 @@ class PexpectMixin(object):
         attr = termios.tcgetattr(self._interpreter.child_fd)
         try:
             if send:
-                self._interpreter.send(send)
+                self._send(send)
             self._interpreter.interact(
                 escape_character=escape_character,
                 input_filter=ensure_cooked_mode,
                 output_filter=output_filter
             )
         finally:
-            termios.tcsetattr(self._interpreter.child_fd, termios.TCSANOW, attr)
+            termios.tcsetattr(
+                self._interpreter.child_fd, termios.TCSANOW, attr
+            )
 
     def _run(self, example, options):
         with self._change_terminal_geometry_ctx(options):
@@ -276,13 +290,13 @@ class PexpectMixin(object):
 
         for line in lines[:-1]:
             with profile_ctx("sendline"):
-                self._interpreter.sendline(line)
+                self._sendline(line)
             self._expect_prompt_or_type(
                 options, countdown, input_list=input_list
             )
 
         with profile_ctx("sendline"):
-            self._interpreter.sendline(lines[-1])
+            self._sendline(lines[-1])
 
         self._expect_prompt_or_type(
             options, countdown, prompt_re=self._PS1_re, input_list=input_list
@@ -341,7 +355,7 @@ class PexpectMixin(object):
             extend this with more things.
             '''
         self._screen.resize(rows, cols)
-        self._interpreter.setwinsize(rows, cols)
+        self._setwindowsize(rows, cols)
 
     UNIV_NL = re.compile('\r\n|\r')
 
@@ -408,7 +422,7 @@ class PexpectMixin(object):
             self._output_between_prompts[-1] += chunk
             assert self._last_output_may_be_incomplete
 
-            self._interpreter.sendline(input)
+            self._sendline(input)
             i += 1
 
         # remove in-place the inputs that were typed
@@ -598,7 +612,7 @@ class PexpectMixin(object):
             raise
 
     def _abort(self, example, options):
-        self._interpreter.sendcontrol('c')
+        self._sendcontrol('c')
         return self._recover_prompt_sync(example, options)
 
     def _recover_prompt_sync(self, example, options, cnt=5):
