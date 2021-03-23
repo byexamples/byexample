@@ -69,6 +69,22 @@ def is_a(target_class, key_attr, warn_missing_key_attr):
     return _is_X
 
 
+class NS:
+    def __setattr__(self, name, val):
+        if name[0] == '_':
+            raise AttributeError(
+                "You cannot store 'private' attributes (the ones that starts with underscore)."
+            )
+
+        return object.__setattr__(self, name, val)
+
+    def _attribute_names(self):
+        return frozenset(k for k in dir(self) if k[0] != '_')
+
+    def _as_dict(self):
+        return {k: getattr(self, k) for k in self._attribute_names()}
+
+
 @log_context('byexample.load')
 @profile
 def load_modules(dirnames, cfg):
@@ -466,9 +482,6 @@ def init_byexample(args, sharer):
     lvl.update(args.log_masks)
     setLogLevels(lvl)
 
-    class NS:
-        pass
-
     ns = NS()
 
     verify_encodings(args.encoding, args.verbosity)
@@ -555,11 +568,8 @@ def init_byexample(args, sharer):
 
     # The namespace where all the shared objects lives.
 
-    ns_attr_names = frozenset([ns_k for ns_k in dir(ns) if ns_k[0] != '_'])
-    cfg['ns_attr_names'] = ns_attr_names
-    cfg['ns'] = sharer.Namespace()
-    for name in ns_attr_names:
-        setattr(cfg['ns'], name, getattr(ns, name))
+    cfg['ns'] = sharer.Namespace(**ns._as_dict())
+    cfg['ns']._attribute_names = ns._attribute_names()
 
     return testfiles, Config(cfg)
 
