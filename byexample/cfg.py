@@ -104,9 +104,8 @@ class Config(collections.Mapping):
             elif k == 'ns':
                 # "tuplefy": make the mutable namespace 'ns' an
                 # immutable named tuple
-                ns_attr_names = self._d['ns_attr_names']
-                NS = collections.namedtuple('Namespace', ns_attr_names)
-                v = NS(*[getattr(v, ns_k) for ns_k in ns_attr_names])
+                NS = collections.namedtuple('Namespace', v._attribute_names)
+                v = NS(**{n: getattr(v, n) for n in v._attribute_names})
 
             new[k] = v
 
