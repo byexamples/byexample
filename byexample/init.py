@@ -547,12 +547,15 @@ def init_byexample(args, sharer, ns):
     # were created and if they wanted to setup a shared object that was
     # their opportunity.
     cfg['sharer'] = None
-    # the namespace where all the shared objects lives now it is read-only
-    # you can interact with the shared objects as you want but you cannot
-    # add nor remove them
-    keys = [k for k in dir(ns) if k[0] != '_']
-    NS = collections.namedtuple('NS', keys)
-    cfg['ns'] = NS(*[getattr(ns, k) for k in keys])
+
+    # The namespace where all the shared objects lives.
+
+    ns_attr_names = frozenset([ns_k for ns_k in dir(ns) if ns_k[0] != '_'])
+    cfg['ns_attr_names'] = ns_attr_names
+    cfg['ns'] = sharer.Namespace()
+    for name in ns_attr_names:
+        setattr(cfg['ns'], name, getattr(ns, name))
+
     return testfiles, Config(cfg)
 
 
