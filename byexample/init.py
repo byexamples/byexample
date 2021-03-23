@@ -461,10 +461,15 @@ def verbosity_to_log_levels(verbosity, quiet):
 
 @log_context('byexample.init')
 @profile
-def init_byexample(args, sharer, ns):
+def init_byexample(args, sharer):
     lvl = verbosity_to_log_levels(args.verbosity, args.quiet)
     lvl.update(args.log_masks)
     setLogLevels(lvl)
+
+    class NS:
+        pass
+
+    ns = NS()
 
     verify_encodings(args.encoding, args.verbosity)
     cfg = {

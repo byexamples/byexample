@@ -53,16 +53,8 @@ class Jobs(object):
 
     @contextlib.contextmanager
     def start_sharer(self):
-        class NS:
-            pass
-
-        ns = NS()
         with self.Manager() as sharer:
-            try:
-                yield (sharer, ns)
-            finally:
-                # remove any reference to the shared objects (if any)
-                del ns
+            yield sharer
 
     def spawn_jobs(self, func, items, cfg):
         ''' Spawn <njobs> jobs to process <items> in parallel/concurrently.
