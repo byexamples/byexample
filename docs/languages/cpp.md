@@ -74,7 +74,7 @@ calling my lib1
 For the second case, we need to compile the code ourselves:
 
 ```shell
-$ g++ -shared -fPIC -o test/ds/libmylib2.so test/ds/mylib2.cpp
+$ g++ -shared -fPIC -o test/ds/libmylib2.so test/ds/mylib2.cpp  # byexample: +timeout=16
 ```
 
 The load then proceeds as before.
