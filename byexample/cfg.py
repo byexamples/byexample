@@ -9,16 +9,18 @@ class Config(collections.Mapping):
         Once the configuration was loaded, this object should be
         used to maintain constant references/values.
 
-        Only 3 keys are allowed to reference mutable values:
+        Only 4 keys are allowed to reference mutable values:
          - options: to hold dynamic options
          - output: the file where write to
          - registry: the parsers, runners and other dynamic objects
+         - ns: a namespace shared among the workers
 
         The rest of the keys-values must be of immutable types.
 
-        To use Config in a multithread environment, you need to call
-        copy() to get an independent copy to work with. See the method's
-        doc.
+        To use Config in a multithread/multiprocess environment,
+        you need to call copy() to get an independent copy to work with.
+
+        See the method's doc to know how those 4 mutable keys are handled.
     '''
     def __init__(self, *args, **kargs):
         self._d = dict(*args, **kargs)
@@ -58,13 +60,27 @@ class Config(collections.Mapping):
              - options: which a real copy is made (see Options.copy)
              - output: a file which it is NOT copied
              - registry: which a recreation is made (see _recreate_registry)
+             - ns: a namespace shared among the workers
 
-            Assuming that the registry's content (parsers, runners) are thread
-            safe (they don't use class methods/attributes) and assuming that
-            the options' values where copied, then the Config copied object
-            will be independent of the original.
+            The copy of this Config object will be independent of
+            the original because:
 
-            The only exception will be the output file.
+             - The mutable 'options' are copied and therefore independent
+             - The mutable 'registry' is recreated (and if we assume that the
+             registry's values (parsers, runners) do not share things (like
+             global variables, class attributes) then the copy is independent.
+             - The mutable 'ns' is transformed in a named tuple.
+
+            The copied Config will be independent of the original except in
+            2 places:
+
+             - The output file will be the same
+             - The content of 'ns' which it is expected to be shareable
+             by definition and therefore *not* independent. The copy() method
+             will make this object a named tuple, constant by definition, but
+             it will not touch the *content* of 'ns'.
+             It is up to the user/client avoid any race condition that may
+             arose in the access of ns' content. See byexample.jobs.
 
             After the copy but before the recreation (_recreate_registry),
             the copied dictionary is optionally updated with <patch> dict.
@@ -85,6 +101,12 @@ class Config(collections.Mapping):
                 continue  # skip
             elif k == 'output':
                 pass  # mutable but don't copy
+            elif k == 'ns':
+                # "tuplefy": make the mutable namespace 'ns' an
+                # immutable named tuple
+                ns_attr_names = self._d['ns_attr_names']
+                NS = collections.namedtuple('Namespace', ns_attr_names)
+                v = NS(*[getattr(v, ns_k) for ns_k in ns_attr_names])
 
             new[k] = v
 
