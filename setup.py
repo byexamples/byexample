@@ -79,7 +79,7 @@ setup(
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Topic :: Documentation',
         'Topic :: Software Development :: Documentation',
@@ -96,12 +96,17 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
-        'Programming Language :: Ruby',
+        'Programming Language :: C',
         'Programming Language :: C++',
+        'Programming Language :: JavaScript',
+        'Programming Language :: Other',
+        'Programming Language :: Other Scripting Engines',
+        'Programming Language :: PHP',
+        'Programming Language :: Ruby',
         'Programming Language :: Unix Shell',
     ],
 
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     install_requires=install_deps,
 
     keywords='doctest documentation test testing',
