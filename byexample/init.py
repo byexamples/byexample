@@ -84,6 +84,9 @@ class NS:
     def _as_dict(self):
         return {k: getattr(self, k) for k in self._attribute_names()}
 
+    def _is_empty(self):
+        return not bool(self._attribute_names())
+
 
 @log_context('byexample.load')
 @profile
@@ -96,6 +99,7 @@ def load_modules(dirnames, cfg):
         'concerns': {},
         'zdelimiters': {},
     }
+    namespaces_by_class = {}
     for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
         path = importer.path
 
@@ -142,7 +146,17 @@ def load_modules(dirnames, cfg):
                     ', '.join(k.__name__ for k in klasses_found)
                 )
 
-            objs = [klass(**cfg) for klass in klasses_found]
+            objs = []
+            for klass in klasses_found:
+                ns = NS()  # a private namespace for each object
+                objs.append(klass(ns=ns, **cfg))
+                if not ns._is_empty():
+                    # keep a reference of the namespace only if
+                    # it is not empty (because they are immutable from now on,
+                    # an empty namespace will remain empty and it will not
+                    # have any value for use)
+                    namespaces_by_class[klass] = ns
+
             if objs:
                 loaded_objs = []
                 for obj in objs:
@@ -161,7 +175,7 @@ def load_modules(dirnames, cfg):
             else:
                 clog().chat("No classes found for '%s'.", what)
 
-    return registry
+    return registry, namespaces_by_class
 
 
 def get_allowed_languages(registry, selected):
@@ -482,8 +496,6 @@ def init_byexample(args, sharer):
     lvl.update(args.log_masks)
     setLogLevels(lvl)
 
-    ns = NS()
-
     verify_encodings(args.encoding, args.verbosity)
     cfg = {
         'use_progress_bar': args.pretty == 'all',
@@ -499,9 +511,8 @@ def init_byexample(args, sharer):
         # special value to denote that we are not in a worker/job yet
         # but in the main thread.
         'job_number': '__main__',
-        # sharer and ns are temporal, see the end of this function
+        # sharer is temporal, see the end of this function
         'sharer': sharer,
-        'ns': ns
     }
 
     testfiles = args.testfiles
@@ -514,7 +525,7 @@ def init_byexample(args, sharer):
     # if the output has not color support, disable the color anyways
     cfg['use_colors'] &= are_tty_colors_supported(cfg['output'])
 
-    registry = load_modules(args.modules_dirs, cfg)
+    registry, namespaces_by_class = load_modules(args.modules_dirs, cfg)
 
     allowed_languages = get_allowed_languages(registry, args.languages)
 
@@ -567,9 +578,14 @@ def init_byexample(args, sharer):
     cfg['sharer'] = None
 
     # The namespace where all the shared objects lives.
+    namespaces = {}
+    for klass, ns in namespaces_by_class.items():
+        shared_ns = sharer.Namespace(**ns._as_dict())
+        shared_ns._attribute_names = ns._attribute_names()
+        namespaces[klass] = shared_ns
 
-    cfg['ns'] = sharer.Namespace(**ns._as_dict())
-    cfg['ns']._attribute_names = ns._attribute_names()
+    cfg['namespaces'] = namespaces
+    assert 'ns' not in cfg
 
     return testfiles, Config(cfg)
 
