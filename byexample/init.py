@@ -69,6 +69,25 @@ def is_a(target_class, key_attr, warn_missing_key_attr):
     return _is_X
 
 
+class NS:
+    def __setattr__(self, name, val):
+        if name[0] == '_':
+            raise AttributeError(
+                "You cannot store 'private' attributes (the ones that starts with underscore)."
+            )
+
+        return object.__setattr__(self, name, val)
+
+    def _attribute_names(self):
+        return frozenset(k for k in dir(self) if k[0] != '_')
+
+    def _as_dict(self):
+        return {k: getattr(self, k) for k in self._attribute_names()}
+
+    def _is_empty(self):
+        return not bool(self._attribute_names())
+
+
 @log_context('byexample.load')
 @profile
 def load_modules(dirnames, cfg):
@@ -80,6 +99,7 @@ def load_modules(dirnames, cfg):
         'concerns': {},
         'zdelimiters': {},
     }
+    namespaces_by_class = {}
     for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
         path = importer.path
 
@@ -126,7 +146,17 @@ def load_modules(dirnames, cfg):
                     ', '.join(k.__name__ for k in klasses_found)
                 )
 
-            objs = [klass(**cfg) for klass in klasses_found]
+            objs = []
+            for klass in klasses_found:
+                ns = NS()  # a private namespace for each object
+                objs.append(klass(ns=ns, **cfg))
+                if not ns._is_empty():
+                    # keep a reference of the namespace only if
+                    # it is not empty (because they are immutable from now on,
+                    # an empty namespace will remain empty and it will not
+                    # have any value for use)
+                    namespaces_by_class[klass] = ns
+
             if objs:
                 loaded_objs = []
                 for obj in objs:
@@ -145,7 +175,7 @@ def load_modules(dirnames, cfg):
             else:
                 clog().chat("No classes found for '%s'.", what)
 
-    return registry
+    return registry, namespaces_by_class
 
 
 def get_allowed_languages(registry, selected):
@@ -461,7 +491,7 @@ def verbosity_to_log_levels(verbosity, quiet):
 
 @log_context('byexample.init')
 @profile
-def init_byexample(args, sharer, ns):
+def init_byexample(args, sharer):
     lvl = verbosity_to_log_levels(args.verbosity, args.quiet)
     lvl.update(args.log_masks)
     setLogLevels(lvl)
@@ -481,9 +511,8 @@ def init_byexample(args, sharer, ns):
         # special value to denote that we are not in a worker/job yet
         # but in the main thread.
         'job_number': '__main__',
-        # sharer and ns are temporal, see the end of this function
+        # sharer is temporal, see the end of this function
         'sharer': sharer,
-        'ns': ns
     }
 
     testfiles = args.testfiles
@@ -496,7 +525,7 @@ def init_byexample(args, sharer, ns):
     # if the output has not color support, disable the color anyways
     cfg['use_colors'] &= are_tty_colors_supported(cfg['output'])
 
-    registry = load_modules(args.modules_dirs, cfg)
+    registry, namespaces_by_class = load_modules(args.modules_dirs, cfg)
 
     allowed_languages = get_allowed_languages(registry, args.languages)
 
@@ -547,12 +576,17 @@ def init_byexample(args, sharer, ns):
     # were created and if they wanted to setup a shared object that was
     # their opportunity.
     cfg['sharer'] = None
-    # the namespace where all the shared objects lives now it is read-only
-    # you can interact with the shared objects as you want but you cannot
-    # add nor remove them
-    keys = [k for k in dir(ns) if k[0] != '_']
-    NS = collections.namedtuple('NS', keys)
-    cfg['ns'] = NS(*[getattr(ns, k) for k in keys])
+
+    # The namespace where all the shared objects lives.
+    namespaces = {}
+    for klass, ns in namespaces_by_class.items():
+        shared_ns = sharer.Namespace(**ns._as_dict())
+        shared_ns._attribute_names = ns._attribute_names()
+        namespaces[klass] = shared_ns
+
+    cfg['namespaces'] = namespaces
+    assert 'ns' not in cfg
+
     return testfiles, Config(cfg)
 
 

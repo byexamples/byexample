@@ -35,9 +35,9 @@ class SimpleReporter(Concern):
         # a SimpleReporter is created. Next SimpleReporter instances
         # will use the same write_lock
         if job_number == '__main__':
-            ns.progress__write_lock = sharer.RLock()
+            ns.write_lock = sharer.RLock()
 
-        self.write_lock = ns.progress__write_lock
+        self.write_lock = ns.write_lock
         self.header_printed = False
 
     def _write(self, msg, nl=False):

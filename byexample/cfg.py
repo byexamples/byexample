@@ -9,16 +9,19 @@ class Config(collections.Mapping):
         Once the configuration was loaded, this object should be
         used to maintain constant references/values.
 
-        Only 3 keys are allowed to reference mutable values:
+        Only 4 keys are allowed to reference mutable values:
          - options: to hold dynamic options
          - output: the file where write to
          - registry: the parsers, runners and other dynamic objects
+         - namespaces: a dictionary of namespaces by registry objects' classes.
+           Each namespace is a mutable object shared among the workers.
 
         The rest of the keys-values must be of immutable types.
 
-        To use Config in a multithread environment, you need to call
-        copy() to get an independent copy to work with. See the method's
-        doc.
+        To use Config in a multithread/multiprocess environment,
+        you need to call copy() to get an independent copy to work with.
+
+        See the method's doc to know how those 4 mutable keys are handled.
     '''
     def __init__(self, *args, **kargs):
         self._d = dict(*args, **kargs)
@@ -34,8 +37,8 @@ class Config(collections.Mapping):
         return len(self._d)
 
     def _ensure_cfg_is_constant(self):
-        const_types = (int, tuple, frozenset, str, bool, bytes, type(None))
-        exception_keys = ('options', 'output', 'registry')
+        const_types = (int, frozenset, str, bool, bytes, type(None))
+        exception_keys = ('options', 'output', 'registry', 'namespaces')
         for k, v in self._d.items():
             if k in exception_keys:
                 continue
@@ -58,13 +61,30 @@ class Config(collections.Mapping):
              - options: which a real copy is made (see Options.copy)
              - output: a file which it is NOT copied
              - registry: which a recreation is made (see _recreate_registry)
+             - namespaces: a dictionary of namespaces by class
 
-            Assuming that the registry's content (parsers, runners) are thread
-            safe (they don't use class methods/attributes) and assuming that
-            the options' values where copied, then the Config copied object
-            will be independent of the original.
+            The copy of this Config object will be independent of
+            the original because:
 
-            The only exception will be the output file.
+             - The mutable 'options' are copied and therefore independent
+             - The mutable 'registry' is recreated (and if we assume that the
+             registry's values (parsers, runners) do not share things (like
+             global variables, class attributes) then the copy is independent.
+             - The mutable 'namespaces' is shallowly copied and each of its
+             namespaces are transformed in a named tuple (constant objects).
+
+            The copied Config will be independent of the original except in
+            2 places:
+
+             - The output file will be the same
+             - The content of each namespace in the 'namespaces' dictionary
+             are expected to be shareable by definition and
+             therefore *not* independent. The copy() method will make each of
+             these namespaces objects a named tuple, constant by definition, but
+             it will not touch the *content* of them.
+             It is up to the user/client avoid any race condition that may
+             arose in the access of the namespace objects' content.
+             See byexample.jobs.
 
             After the copy but before the recreation (_recreate_registry),
             the copied dictionary is optionally updated with <patch> dict.
@@ -85,22 +105,53 @@ class Config(collections.Mapping):
                 continue  # skip
             elif k == 'output':
                 pass  # mutable but don't copy
+            elif k == 'namespaces':
+                v = self._recreate_namespaces_as_namedtuples(v)
 
             new[k] = v
 
         new.update(patch)
-        new['registry'] = self._recreate_registry(self['registry'], new)
+        # pop out 'namespaces' because it is not a global configuration.
+        # instead, _recreate_registry will pass to each object its own local
+        # namespace (if any)
+        namespaces = new.pop('namespaces')
+        new['registry'] = self._recreate_registry(
+            self['registry'], new, namespaces
+        )
+        new['namespaces'] = namespaces
         return Config(new)
 
-    def _recreate_registry(self, registry, cfg):
+    def _namespace_as_namedtuple(self, ns):
+        # "tuplefy": make the mutable namespace 'ns' an
+        # immutable named tuple
+        NS = collections.namedtuple('Namespace', ns._attribute_names)
+        return NS(**{n: getattr(ns, n) for n in ns._attribute_names})
+
+    def _recreate_namespaces_as_namedtuples(self, namespaces_by_class):
+        ''' Return an independent copy of the namespaces making each
+            namespace an immutable named tuple.
+
+            Note that the content of each namespace is *still* mutable
+            and it may lead to RC but this is on purpose and it is up
+            to the user/client to not end in a race condition.
+        '''
+        return {
+            klass: self._namespace_as_namedtuple(ns)
+            for klass, ns in namespaces_by_class.items()
+        }
+
+    def _recreate_registry(self, registry, cfg, namespaces_by_class):
         ''' Create a copy of the registry recreating its objects. '''
         new = {}
+        EmptyNS = collections.namedtuple('Namespace', [])
+        empty_ns = EmptyNS()  # a placeholder when the object has no namespace
         for what in registry:
             container = registry[what]
             new[what] = {}
 
             for k, obj in container.items():
-                obj2 = obj.__class__(**cfg)
+                ns = namespaces_by_class.get(obj.__class__, empty_ns)
+                obj2 = obj.__class__(ns=ns, **cfg)
                 transfer_constants(obj, obj2)
 
                 new[what][k] = obj2

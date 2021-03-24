@@ -36,9 +36,9 @@ def main(args=None):
     args = parse_args(args)
 
     jobs = Jobs(args.jobs, 'multithreading')
-    with jobs.start_sharer() as (sharer, ns):
+    with jobs.start_sharer() as sharer:
         with human_exceptions('initializing byexample') as exc:
-            testfiles, cfg = init_byexample(args, sharer, ns)
+            testfiles, cfg = init_byexample(args, sharer)
 
         if exc:
             sys.exit(Status.error)
