@@ -182,7 +182,7 @@ class SimpleReporter(Concern):
             tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
             ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
 
-            msg += '%s\n%s\n' % (self.examplenro, self.num_examples, tb, ex)
+            msg += '%s\n%s\n' % (tb, ex)
 
         self._write(msg)
 
