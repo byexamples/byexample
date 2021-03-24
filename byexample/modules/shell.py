@@ -24,7 +24,8 @@ Example:
 """
 
 from __future__ import unicode_literals
-import re, pexpect, sys, time
+import pexpect, sys, time
+import byexample.regex as re
 from byexample.common import constant, Countdown
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
@@ -154,13 +155,13 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
                 # stop the process to get back the control of the shell.
                 # this require that the job monitoring system of
                 # the shell is on (set -m)
-                self.interpreter.sendcontrol('z')
+                self._sendcontrol('z')
 
                 # wait for the prompt, ignore any extra output
                 self._expect_prompt(
                     options,
                     countdown=Countdown(options['x']['dfl_timeout']),
-                    prompt_re=self.PS1_re
+                    prompt_re=self._PS1_re
                 )
 
                 self._drop_output()

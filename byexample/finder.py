@@ -1,11 +1,14 @@
 from __future__ import unicode_literals
-import re, os
+import os
+from . import regex as re
 from .common import build_where_msg, tohuman, \
                     enhance_exceptions
 
 from .parser import ExampleParser
 from .options import Options
 from .log import clog, log_context, DEBUG, CHAT, log_with
+
+from .prof import profile
 
 from .example import Where, Zone, Example
 '''
@@ -89,7 +92,7 @@ class ExampleHarvest(object):
                                        \         .
     '''
     def __init__(
-        self, allowed_languages, registry, verbosity, options, use_colors,
+        self, registry, allowed_languages, verbosity, options, use_colors,
         encoding, **unused
     ):
         self.allowed_languages = allowed_languages
@@ -103,6 +106,10 @@ class ExampleHarvest(object):
         self.zdelimiter_by_file_extension = registry['zdelimiters']
 
         self.options = options
+
+    @log_context('byexample.close')
+    def close(self):
+        pass
 
     def __repr__(self):
         return 'Example Harvester'
@@ -172,6 +179,7 @@ class ExampleHarvest(object):
         )
         return all_examples
 
+    @profile
     def check_example_overlap(self, examples, filepath):
         r'''
         It may be possible that two or more examples found by different
@@ -188,9 +196,9 @@ class ExampleHarvest(object):
         And create a harvester to play with it:
 
             >>> from byexample.finder import ExampleHarvest
-            >>> f = ExampleHarvest([], dict((k, {}) for k in \
+            >>> f = ExampleHarvest(dict((k, {}) for k in \
             ...                   ('parsers', 'finders', 'runners', 'zdelimiters')),
-            ...                     0, 0, None, 'utf-8')
+            ...                    [], 0, 0, None, 'utf-8')
 
         Okay, back to the check_example_overlap documentation,
         given the examples sorted in that way, a collision is detected if
@@ -308,12 +316,14 @@ class ExampleHarvest(object):
     def _log_debug(self, what, where):
         clog().debug(build_where_msg(where, self, what))
 
+    @profile
     def get_examples_using(self, finder, string, filepath, start_lineno):
         return self.from_string_get_items_using(
             finder, string, self.get_example, 'examples', filepath,
             start_lineno
         )
 
+    @profile
     def get_zones_using(self, zdelimiter, string, filepath, start_lineno):
         return self.from_string_get_items_using(
             zdelimiter, string, self.get_zone, 'zones', filepath, start_lineno
@@ -476,14 +486,14 @@ class ExampleFinder(object):
         'check_and_remove_indent' and other processing functions.
 
             >>> from byexample.finder import ExampleFinder
-            >>> import re
+            >>> import byexample.regex as re
 
             >>> mfinder = ExampleFinder(0, 'utf8'); mfinder.target = 'python-prompt'
             >>> check_and_remove_indent = mfinder.check_and_remove_indent
             >>> check_keep_matching     = mfinder.check_keep_matching
 
             >>> code = '  >>> 1 + 2'
-            >>> match = re.match(r'[ ]*>>> [^\n]*', code)
+            >>> match = re.compile(r'[ ]*>>> [^\n]*').match(code)
 
             >>> code_i = check_and_remove_indent(code, '  ', (1, 2, 'foo.rst', None))
             >>> code_i != code

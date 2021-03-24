@@ -23,7 +23,8 @@ Example:
 """
 
 from __future__ import unicode_literals
-import re, pexpect, sys, time
+import pexpect, sys, time
+import byexample.regex as re
 from byexample.common import constant
 from byexample.log import clog
 from byexample.parser import ExampleParser, ExtendOptionParserMixin
@@ -236,6 +237,16 @@ class PythonParser(ExampleParser):
                 default=False,
                 help="[doctest] alias for +diff ndiff."
             )
+            parser.add_flag(
+                "FAIL_FAST",
+                default=False,
+                help="[doctest] alias for +fail-fast."
+            )
+            parser.add_flag(
+                "REPORT_ONLY_FIRST_FAILURE",
+                default=False,
+                help="[doctest] alias for +show-failures 1."
+            )
 
         return parser
 
@@ -304,6 +315,12 @@ class PythonParser(ExampleParser):
 
             if options['REPORT_NDIFF']:
                 mapped['diff'] = 'ndiff'
+
+            if options['FAIL_FAST']:
+                mapped['fail_fast'] = True
+
+            if options["REPORT_ONLY_FIRST_FAILURE"]:
+                mapped['show_failures'] = 1
 
             # the following are not supported: ignore them and print a note
             # somewhere

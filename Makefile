@@ -15,7 +15,7 @@ all:
 	@echo "Usage: make test"
 	@echo "Run all the suite of tests using only Python and Shell."
 	@echo
-	@echo "Usage: make [lib|modules|docs|examples]-test"
+	@echo "Usage: make [lib|modules|docs|examples|corner]-test"
 	@echo "Run a suite of tests. We assume a minimum environment where"
 	@echo "only Python and Shell are available and therefor we run only"
 	@echo "a large but not complete subset of tests."
@@ -26,6 +26,12 @@ all:
 	@echo " - docs-test: run the tests in the docs (except docs about languages)."
 	@echo " - lang-test: run the tests in the docs about languages."
 	@echo " - examples-test: run the examples."
+	@echo " - corner-test: run some tests that are corner cases."
+	@echo
+	@echo "Usage: make [lib]-profiler-[1|2|4]"
+	@echo "Run a suite of tests with the profiler enabled with 1, 2 or 4 jobs"
+	@echo "The traces will be in prof-traces. See the results with flamegraph as"
+	@echo "  cat prof-traces | ./flamegraph.pl > prof.svg"
 	@echo
 	@echo "Usage: make docker-test"
 	@echo "Run the suite of tests of the modules and examples and a few"
@@ -75,13 +81,19 @@ lib-test: clean_test
 	@$(python_bin) test/r.py @test/minimum.env -- byexample/*.py
 	@make -s clean_test
 
+corner-test: clean_test
+	@$(python_bin) test/r.py @test/corner.env -- test/corner_cases.md
+	@make -s clean_test
+
 modules-test: clean_test
 	@$(python_bin) test/r.py @test/minimum.env -- byexample/modules/*.py
 	@make -s clean_test
 
 docs-test: clean_test
 	@$(python_bin) test/r.py @test/minimum.env -- *.md
-	@$(python_bin) test/r.py @test/minimum.env -- `find docs \( -name languages -prune -o  -name "*.md" \) -type f`
+	@$(python_bin) test/r.py @test/minimum.env --skip docs/recipes/python-doctest.md -- `find docs \( -name languages -prune -o  -name "*.md" \) -type f`
+	@$(python_bin) test/r.py @test/minimum.env -o '+py-doctest' docs/recipes/python-doctest.md
+	@$(python_bin) -m doctest docs/recipes/python-doctest.md
 	@make -s clean_test
 
 lang-test: clean_test
@@ -93,10 +105,30 @@ examples-test: clean_test
 	@make -s clean_test
 
 index-links-test: clean_test
+	@echo "Running index-links-test"
 	@./test/idx.sh
 
-test: lib-test modules-test docs-test lang-test examples-test index-links-test
+test: lib-test modules-test docs-test lang-test examples-test index-links-test corner-test
 
+#
+##
+
+## Performance
+#  ===========
+lib-profiler-1: clean_test
+	@echo "Running profile"
+	@BYEXAMPLE_PROFILE=1 $(python_bin) test/r.py --jobs 1 @test/profiler.env -- byexample/*.py > prof-traces
+	@make -s clean_test
+
+lib-profiler-2: clean_test
+	@echo "Running profile"
+	@BYEXAMPLE_PROFILE=1 $(python_bin) test/r.py --jobs 2 @test/profiler.env -- byexample/*.py > prof-traces
+	@make -s clean_test
+
+lib-profiler-4: clean_test
+	@echo "Running profile"
+	@BYEXAMPLE_PROFILE=1 $(python_bin) test/r.py --jobs 4 @test/profiler.env -- byexample/*.py > prof-traces
+	@make -s clean_test
 #
 ##
 
@@ -196,7 +228,7 @@ clean: clean_test
 	rm -Rf build/ *.egg-info
 	find . -name "*.pyc" -delete
 	find . -type d -name "__pycache__" -delete
-	rm -f README.rst
+	rm -f README.rst prof-traces
 
 #
 ##

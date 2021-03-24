@@ -3,11 +3,10 @@ on: [pull_request]
 jobs:
   byexample-test:
     name: "Byexample Python ${{ matrix.python-version }}"
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
         matrix:
-            python-version: ["3.5", "3.6", "3.7", "3.8", "3.9"]
-            os: ["ubuntu-latest"]
+            python-version: ["3.6", "3.7", "3.8", "3.9"]
     env:
         TERM: xterm-color
     steps:
@@ -29,7 +28,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.5"
+          python-version: "3.6"
       - run: make deps-dev
       - run: make format-test
 
@@ -50,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
         matrix:
-            python-version: ["3.5", "3.6", "3.7", "3.8", "3.9"]
+            python-version: ["3.6", "3.7", "3.8", "3.9"]
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -71,7 +70,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.5"
+          python-version: "3.6"
       - name: Setup ruby
         uses: ruby/setup-ruby@v1
         with:

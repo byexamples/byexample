@@ -3,6 +3,7 @@ import sys, argparse, os, multiprocessing
 from . import __version__, __doc__, _author, _license, _url, _license_disclaimer
 
 from .log_level import str_to_level
+from .prof import profile
 
 
 class _CSV(argparse.Action):
@@ -66,6 +67,23 @@ def _jobs_type(item):
         )
 
     return jobs_num * ncpus
+
+
+def _show_failures_type(item):
+    failures_str = item.strip()
+    if failures_str == 'all':
+        return failures_str
+
+    try:
+        failures_num = int(failures_str)
+        assert failures_num >= 0
+    except:
+        raise argparse.ArgumentTypeError(
+            "Invalid show-failures specification '%s'. Use 'all', '0' or <n> (a positive number)."
+            % item
+        )
+
+    return failures_num
 
 
 class HelpExtraFormatter(argparse.HelpFormatter):
@@ -150,6 +168,7 @@ class _HelpExtraAction(argparse.Action):
         parser.exit()
 
 
+@profile
 def parse_args(args=None):
     '''Parse the arguments args and return the them.
        If args is None, parse the sys.argv[1:].
@@ -281,6 +300,15 @@ def parse_args(args=None):
         metavar='<enc>',
         default=sys.stdout.encoding.lower(),
         help='select the encoding (default: %(default)s).'
+    )
+    g.add_argument(
+        "--show-failures",
+        metavar='<n>',
+        default='all',
+        type=_show_failures_type,
+        help='show up to <n> failures per file (%(default)s by default) ' +\
+             'and suppress the rest (the execution of the examples is not ' +\
+             'stopped, only the failures are not shown)'
     )
     g.add_argument(
         "--pretty",
@@ -434,4 +462,14 @@ def parse_args(args=None):
             "argument --x-log-mask: '%s' is an unknown log level." % k
         )
 
+    # which files are allowed to be executed: these are the 'testfiles'
+    # Note: the order is undefined, we sort them but this is not guaranteed
+    # to be like this in the future
+    allowed = set(namespace.files) - set(namespace.skip)
+    namespace.testfiles = list(
+        sorted(f for f in namespace.files if f in allowed)
+    )
+
+    # Do not spawn more jobs than testfiles
+    namespace.jobs = min(namespace.jobs, len(namespace.testfiles))
     return namespace

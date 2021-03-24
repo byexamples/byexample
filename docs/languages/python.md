@@ -98,19 +98,21 @@ foo...bar
 ### Compatibility overview
 
 ```
-==========================  ============================
-``doctest``                 Observations
-==========================  ============================
-``NORMALIZE_WHITESPACE``    Supported
-``DONT_ACCEPT_TRUE_FOR_1``  Ignored
-``ELLIPSIS``                Supported
-``SKIP``                    Supported
-``IGNORE_EXCEPTION_DETAIL`` Supported
-``DONT_ACCEPT_BLANKLINE``   Supported
-``REPORT_UDIFF``            Supported
-``REPORT_CDIFF``            Supported
-``REPORT_NDIFF``            Supported
-=========================== ============================
+============================= ============================
+``doctest``                   Observations
+============================= ============================
+``NORMALIZE_WHITESPACE``      Supported
+``DONT_ACCEPT_TRUE_FOR_1``    Ignored
+``ELLIPSIS``                  Supported
+``SKIP``                      Supported
+``IGNORE_EXCEPTION_DETAIL``   Supported
+``DONT_ACCEPT_BLANKLINE``     Supported
+``REPORT_UDIFF``              Supported
+``REPORT_CDIFF``              Supported
+``REPORT_NDIFF``              Supported
+``FAIL_FAST``                 Supported
+``REPORT_ONLY_FIRST_FAILURE`` Supported
+============================= ============================
 ```
 
 ``DONT_ACCEPT_TRUE_FOR_1`` is not supported as it was implemented in ``doctest``
@@ -196,20 +198,22 @@ As you can see ``byexample`` uses a different set of options. Here
 is a summary of the equivalent options:
 
 ```
-====================  ==========================  ============================
-``byexample``         ``doctest``                 Observations
-====================  ==========================  ============================
-``norm-ws``           ``NORMALIZE_WHITESPACE``    Same functionality.
-*not supported*       ``DONT_ACCEPT_TRUE_FOR_1``  Only useful for ``Python 2.3``.
-``tags``              ``ELLIPSIS``                More powerful than ``doctest`` version
-``skip``              ``SKIP``                    Same functionality.
-``pass``              *not supported*             Execute but do not check.
-*better alternative*  ``IGNORE_EXCEPTION_DETAIL`` Use the more general ``tags`` flag.
-*better alternative*  ``DONT_ACCEPT_BLANKLINE``   Use the more general ``tags`` flag.
-``diff``              ``REPORT_UDIFF``            With ``unified`` as argument.
-``diff``              ``REPORT_CDIFF``            With ``context`` as argument.
-``diff``              ``REPORT_NDIFF``            With ``ndiff`` as argument.
-====================  =========================== ============================
+====================  ============================  ============================
+``byexample``         ``doctest``                   Observations
+====================  ============================  ============================
+``norm-ws``           ``NORMALIZE_WHITESPACE``      Same functionality.
+*not supported*       ``DONT_ACCEPT_TRUE_FOR_1``    Only useful for ``Python 2.3``.
+``tags``              ``ELLIPSIS``                  More powerful than ``doctest`` version
+``skip``              ``SKIP``                      Same functionality.
+``pass``              *not supported*               Execute but do not check.
+``tags``              ``IGNORE_EXCEPTION_DETAIL``   ``tags`` is more general
+``tags`` or ``rm``    ``DONT_ACCEPT_BLANKLINE``     ``rm`` may be used instead of ``tags``.
+``diff``              ``REPORT_UDIFF``              With ``unified`` as argument.
+``diff``              ``REPORT_CDIFF``              With ``context`` as argument.
+``diff``              ``REPORT_NDIFF``              With ``ndiff`` as argument.
+``fail-fast``         ``FAIL_FAST``                 Same functionality.
+``show-failures`      ``REPORT_ONLY_FIRST_FAILURE`` Same as `+show-failures 1`
+====================  ============================= ============================
 ```
 
 ``DONT_ACCEPT_BLANKLINE`` and ``IGNORE_EXCEPTION_DETAIL`` are used to ignore

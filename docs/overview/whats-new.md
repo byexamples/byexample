@@ -7,6 +7,172 @@ You can visit the
 [changelog](https://github.com/byexamples/byexample/releases)
 for a more complete overview.
 
+## 10.0.0
+
+This is another major upgrade which brings some improvements,
+a lot of internal refactor, profiling and optimizations.
+
+The good thing is no changes to your examples will be needed as
+all the modifications are internal and backward compatible.
+
+The bad thing is the changes will require some adjustments
+to your `byexample` *modules* if you have one. This only affects to the
+developers of modules then.
+
+Finally, with this release we drop the support for Python 3.5 which it
+is already at its *end of life* since a few months.
+
+### `doctest` compatibility improvements
+
+The compatibility layer with Python's `doctest` was increased with the
+introduction of `FAIL_FAST` and `REPORT_ONLY_FIRST_FAILURE` flags.
+
+### Profiling
+
+A new profiling system was implemented for the internals of `byexample`
+and it is possible to be used in a module. It is *not* a replacement
+for standard tools like `cProfile` and `kernprof`; it is just another
+way to look.
+
+See `byexample/prof.py` file for the documentation.
+
+### New `byexample.regex`
+
+We use a home-made regex module as replacement for `re`, the regex
+implementation of Python.
+
+It is mostly backward-compatible with `re` so the transition should be
+trivial.
+
+Most of the cases you need to replace the import:
+
+```python
+>>> import re
+```
+
+by
+
+```python
+>>> import byexample.regex as re
+```
+
+and that's all.
+
+The new `byexample.regex` aims to centralize the regex
+construction so it does *not* offer global functions like `re.sub(..)`.
+Instead you need to call explicitly the `compile` function like
+`re.compile(..).sub(..)`
+
+You are **highly** recommended to use `byexample.regex` instead of `re`
+which now it is considered deprecated.
+
+Note that `byexample 10.0.0` will continue to work with `re` and it will
+not enforce the use of `byexample.regex` however this will change in the
+next versions.
+
+You had been warned!
+
+
+### Runner's `reset`
+
+The `Runner.reset()` is introduced. In `byexample 9.x.x` and before, the
+engine called `Runner`'s `initialize` and `shutdown` methods at the
+begin and end of each round of examples, coming from the same file.
+
+Now and only if it is enabled, `byexample` calls `reset` instead of
+`shutdown` and if the method returns `True` the `initialize` will *not*
+be called on the next round.
+
+In an ideal world a runner should support a way to *reset to a clean*
+internal state, implemented in the `reset` method so the same runner
+can be reused for different files without having to call
+`initialize`/`shutdown` a bunch of times.
+
+If the feature is not enabled or `reset` returns `False` (the default),
+`byexample` behaves as in `9.x.x`.
+
+It is an opportunistic optimization, not a mandatory one. So if you
+cannot do the optimization, no problem.
+
+### Replace multiprocessing with threading
+
+In `byexample 9.x.x` each `Runner`, `Parser`, `Finder` and `Concern` was
+instantiated **once** before spawning the workers.
+
+These workers were `multiprocessing`'s workers, copies of the process
+created by the `fork` method (see `multiprocessing` documentation).
+
+The `fork` allowed a trivial copy of the process image but it is
+supported only in Linux and partially in MacOS.
+
+To avoid the need of `fork`, `byexample 10.0.0` makes explicit the
+copies: it creates **once in the main thread** each  `Runner`, `Parser`,
+`Finder` and `Concern` but then it creates **once per worker/job
+thread** each of those.
+
+So a particular `Runner` like the standard `PythonRunner` will be
+created `N+1` times: 1 in the main thread and 1 per worker/job (assuming
+`N` jobs)
+
+This **may break** your module implementation if you depend on that
+and you **must** make the code *thread safe* (like not using global
+or class variables without a synchronization mechanism like a lock or
+queue).
+
+If you need to share data among the workers you can use `sharer` and
+namespaces.
+
+### Sharer and namespaces
+
+Each module's objects (parsers, runners, concerns and others) will
+receive in the constructor a `sharer` object.
+
+Then you can request to it the creation of data structures that will be
+shared among the workers. Things like `list`, `dict` and `queue`.
+
+The `sharer` can also create synchronization mechanisms like `RLock`.
+
+The objects that you created need to be saved in a place that it is
+shared itself.
+
+For this each constructor will receive a namespace object named `ns`
+where you can store your shared objects:
+
+```python
+def __init__(self, sharer, ns, **others):
+    if sharer is not None:
+        # we are in the main thread, ns is writeable
+        ns.mylist = sharer.list()
+        ns.mylock = sharer.RLock()
+
+    # we may be in the main thread or in a worker thread,
+    # so ns may not be writeable (we can read only)
+    with ns.mylock:
+        ns.mylist.append("cool")
+
+```
+
+`sharer` will be available in the main thread not in the workers
+threads and the namespace will be only writeable in the main thread as
+well, being read-only later.
+
+### API modification to PexpectMixing
+
+A few bits were changed in `PexpectMixing`. This will affect only the
+developers of runners.
+
+## 9.2.2 - 9.2.6
+
+Several bug fixing:
+ - improved the search for examples in a `.py` Python file.
+ - bundled `byexample-repl.js` next with `byexample` to run Javascript
+examples
+ - better logs on a timeout and added a `troubleshooting` page section.
+
+Note: this 9.2.5 is meant to override the previous 9.2.3/9.2.4 which
+were tagged from master by mistake. These two are not available anymore
+and you are recommended to upgrade at least to 9.2.5.
+
 ## 9.2.1
 
 Patch version to support MacOS with the newer version of Python.

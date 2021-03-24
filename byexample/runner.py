@@ -1,10 +1,12 @@
 from __future__ import unicode_literals
-import re, pexpect, time, termios, operator, os, itertools, contextlib
+import pexpect, time, operator, os, itertools, contextlib
+from . import regex as re
 from functools import reduce, partial
 from .executor import TimeoutException, InputPrefixNotFound, InterpreterClosedUnexpectedly, InterpreterNotFound
 from .common import tohuman, ShebangTemplate, Countdown, short_string
 from .example import Example
 from .log import clog
+from .prof import profile, profile_ctx
 
 from pyte import Stream, Screen
 import sys
@@ -58,6 +60,33 @@ class ExampleRunner(object):
         '''
         Hook to initialize the runner. This method will be called
         before running any example.
+
+        If the reset() method is called and return True, it is assumed
+        that the runner was reset and can be reused for another round
+        of examples (another file) *without* calling initialize() again.
+
+        initialize() will **not** be called as long as reset() is being
+        called and returning True.
+
+        Otherwise it will be called on each new file to process before
+        executing any example.
+
+        See also shutdown()
+
+        The following state diagram should picture this:
+
+                           new file,
+        (not alive) --> call initialize() --> (alive, clean) --> call run() <-|
+              ^                                      ^               |        |
+              |                                      |               v        |
+              |                                 reset True    (alive, dirty) -/
+              |                                      ^               |
+              |                     if forced        |               v
+              |                  /- shutdown  <----- | ----- no more examples;
+              |                 /                    |               |
+              |                /                     |               v
+         call shutdown() <----/- reset False or  <---\---- not forced shutdown,
+                                     failed                   call reset()
         '''
         raise NotImplementedError()  # pragma: no cover
 
@@ -65,8 +94,49 @@ class ExampleRunner(object):
         '''
         Hook to shutdown the runner. This method will be called
         after running all the examples.
+
+        If the reset() method is called and return True, it is assumed
+        that the runner was reset and can be reused for another round
+        of examples (another file) so *no* shutdown will be done.
+
+        shutdown() will **not** be called as long as reset() is being
+        called and returning True in general but it *MAY* be called even that
+        if an error is detected in another runner or the whole execution
+        is shutting down.
+
+        Otherwise it will be called after executing each file's examples.
+
+        If the shutdown() was not called and no more files are assigned to
+        this job (FileExecutor), the method will be called once at the end.
+
+        Regardless of reset(), there is a 1-to-1 relationship with
+        initialize(): if the initialize() is called N times, the shutdown()
+        will be called N times and the calls will be interleaved (initialize()
+        then shutdown() the initialize() then shutdown() and so on).
         '''
         raise NotImplementedError()  # pragma: no cover
+
+    def reset(self, options):
+        '''
+        Hook to reset the runner. This method *may* be called
+        after running all the examples of the current processed file.
+
+        The job (FileExecutor) will decide if this method will be called
+        or not based on the user's options.
+
+        It is up to the runner's implementation if the reset
+        can be made without restarting the interpreter in which case *must*
+        return True; otherwise False.
+
+        A reset without a restart should keep the interpreter alive
+        but with an clean state to run a new set of examples independently.
+
+        By default, reset returns False (not supported).
+
+        Returning False means that shutdown() will be called instead (and
+        initialize() will be called on the next file)
+        '''
+        return False
 
     def cancel(self, example, options):
         '''
@@ -81,13 +151,26 @@ class ExampleRunner(object):
 
 class PexpectMixin(object):
     def __init__(self, PS1_re, any_PS_re):
-        self.PS1_re = re.compile(PS1_re)
-        self.any_PS_re = re.compile(any_PS_re)
+        self._PS1_re = re.compile(PS1_re)
+        self._any_PS_re = re.compile(any_PS_re)
 
-        self.output_between_prompts = []
-        self.last_output_may_be_incomplete = False
-        self.cmd = None
+        self._output_between_prompts = []
+        self._last_output_may_be_incomplete = False
+        self._cmd = None
 
+    def _send(self, s):
+        self._interpreter.send(s)
+
+    def _sendline(self, line):
+        self._interpreter.sendline(line)
+
+    def _sendcontrol(self, control):
+        self._interpreter.sendcontrol(control)
+
+    def _setwindowsize(self, rows, cols):
+        self._interpreter.setwinsize(rows, cols)
+
+    @profile
     def _spawn_interpreter(
         self,
         cmd,
@@ -96,7 +179,7 @@ class PexpectMixin(object):
         first_prompt_timeout=None,
         initial_prompt=None
     ):
-        self.cmd = None
+        self._cmd = None
 
         if first_prompt_timeout is None:
             first_prompt_timeout = options['x']['dfl_timeout']
@@ -108,9 +191,9 @@ class PexpectMixin(object):
         env.update({'LINES': str(rows), 'COLUMNS': str(cols)})
 
         self._drop_output()  # there shouldn't be any output yet but...
-        self.cmd = cmd
+        self._cmd = cmd
         try:
-            self.interpreter = pexpect.spawn(
+            self._interpreter = pexpect.spawn(
                 cmd,
                 echo=False,
                 encoding=self.encoding,
@@ -124,19 +207,19 @@ class PexpectMixin(object):
                 msg += cmd
                 msg += '\n\nThis could happen because you do not have it installed or' + \
                        '\nit is not in the PATH.'
-                e = InterpreterNotFound(msg, self.cmd).with_traceback(
+                e = InterpreterNotFound(msg, self._cmd).with_traceback(
                     sys.exc_info()[2]
                 )
                 raise e from None
             raise
 
-        self.interpreter.delaybeforesend = options['x']['delaybeforesend']
-        self.interpreter.delayafterread = None
+        self._interpreter.delaybeforesend = options['x']['delaybeforesend']
+        self._interpreter.delayafterread = None
 
         self._create_terminal(options)
 
         if wait_first_prompt:
-            prompt_re = self.PS1_re if initial_prompt is None else initial_prompt
+            prompt_re = self._PS1_re if initial_prompt is None else initial_prompt
             self._expect_prompt(
                 options,
                 countdown=Countdown(first_prompt_timeout),
@@ -144,7 +227,7 @@ class PexpectMixin(object):
             )
             self._drop_output()  # discard banner and things like that
 
-    def interact(
+    def _interact(
         self,
         send='\n',
         escape_character=chr(29),
@@ -157,17 +240,20 @@ class PexpectMixin(object):
                 return input_filter(input_str)
             return input_str
 
-        attr = termios.tcgetattr(self.interpreter.child_fd)
+        import termios
+        attr = termios.tcgetattr(self._interpreter.child_fd)
         try:
             if send:
-                self.interpreter.send(send)
-            self.interpreter.interact(
+                self._send(send)
+            self._interpreter.interact(
                 escape_character=escape_character,
                 input_filter=ensure_cooked_mode,
                 output_filter=output_filter
             )
         finally:
-            termios.tcsetattr(self.interpreter.child_fd, termios.TCSANOW, attr)
+            termios.tcsetattr(
+                self._interpreter.child_fd, termios.TCSANOW, attr
+            )
 
     def _run(self, example, options):
         with self._change_terminal_geometry_ctx(options):
@@ -177,15 +263,17 @@ class PexpectMixin(object):
         raise NotImplementedError()  # pragma: no cover
 
     def _drop_output(self):
-        self.output_between_prompts = []
-        self.last_output_may_be_incomplete = False
+        self._output_between_prompts = []
+        self._last_output_may_be_incomplete = False
 
+    @profile
     def _shutdown_interpreter(self):
-        self.interpreter.sendeof()
-        self.interpreter.close()
+        self._interpreter.sendeof()
+        self._interpreter.close()
         time.sleep(0.001)
-        self.interpreter.terminate(force=True)
+        self._interpreter.terminate(force=True)
 
+    @profile
     def _exec_and_wait(self, source, options, *, from_example=None, **kargs):
         if from_example is None:
             input_list = kargs.get('input_list', [])
@@ -199,15 +287,19 @@ class PexpectMixin(object):
 
         countdown = Countdown(timeout)
         lines = source.split('\n')
+
         for line in lines[:-1]:
-            self.interpreter.sendline(line)
+            with profile_ctx("sendline"):
+                self._sendline(line)
             self._expect_prompt_or_type(
                 options, countdown, input_list=input_list
             )
 
-        self.interpreter.sendline(lines[-1])
+        with profile_ctx("sendline"):
+            self._sendline(lines[-1])
+
         self._expect_prompt_or_type(
-            options, countdown, prompt_re=self.PS1_re, input_list=input_list
+            options, countdown, prompt_re=self._PS1_re, input_list=input_list
         )
 
         if input_list:
@@ -263,13 +355,13 @@ class PexpectMixin(object):
             extend this with more things.
             '''
         self._screen.resize(rows, cols)
-        self.interpreter.setwinsize(rows, cols)
+        self._setwindowsize(rows, cols)
 
     UNIV_NL = re.compile('\r\n|\r')
 
     @staticmethod
     def _universal_new_lines(out):
-        return re.sub(PexpectMixin.UNIV_NL, '\n', out)
+        return re.compile(PexpectMixin.UNIV_NL).sub('\n', out)
 
     def _emulate_ansi_terminal(self, chunks, join=True):
         for chunk in chunks:
@@ -296,6 +388,7 @@ class PexpectMixin(object):
     def _emulate_as_is_terminal(self, chunks):
         return ''.join((self._universal_new_lines(chunk) for chunk in chunks))
 
+    @profile
     def _expect_prompt_or_type(
         self, options, countdown, prompt_re=None, input_list=[]
     ):
@@ -325,11 +418,11 @@ class PexpectMixin(object):
             # the [ <input> ] that we typed in. This is a sort of
             # echo-emulation (TODO: some interpreters have echo activated,
             # should this be necessary?)
-            chunk = "{}[{}]\n".format(self.interpreter.match.group(), input)
-            self.output_between_prompts[-1] += chunk
-            assert self.last_output_may_be_incomplete
+            chunk = "{}[{}]\n".format(self._interpreter.match.group(), input)
+            self._output_between_prompts[-1] += chunk
+            assert self._last_output_may_be_incomplete
 
-            self.interpreter.sendline(input)
+            self._sendline(input)
             i += 1
 
         # remove in-place the inputs that were typed
@@ -338,10 +431,11 @@ class PexpectMixin(object):
         if not prompt_found:
             self._expect_prompt(options, countdown, prompt_re)
 
+    @profile
     def _expect_prompt(
         self, options, countdown, prompt_re=None, earlier_re=None
     ):
-        ''' Wait for a <prompt_re> (any self.any_PS_re if <prompt_re> is None)
+        ''' Wait for a <prompt_re> (any self._any_PS_re if <prompt_re> is None)
             and raise a timeout if we cannot find one.
 
             If <earlier_re> is given, wait it along with the prompt: if it
@@ -350,7 +444,7 @@ class PexpectMixin(object):
             happens)
 
             During the waiting, collect the 'before' output into
-            self.output_between_prompts
+            self._output_between_prompts
         '''
         if countdown == None:
             countdown = Countdown(options['timeout'])
@@ -365,7 +459,7 @@ class PexpectMixin(object):
         assert timeout >= 0
 
         if not prompt_re:
-            prompt_re = self.any_PS_re
+            prompt_re = self._any_PS_re
 
         # Note: earlier_re must be the last item of the list (see below why)
         expect = [prompt_re, pexpect.TIMEOUT, pexpect.EOF, earlier_re]
@@ -377,45 +471,47 @@ class PexpectMixin(object):
             del expect[-1]
 
         countdown.start()
-        what = self.interpreter.expect(expect, timeout=timeout)
+        with profile_ctx("expect"):
+            what = self._interpreter.expect(expect, timeout=timeout)
         countdown.stop()
 
-        output = self.interpreter.before
-        if self.last_output_may_be_incomplete:
-            self.output_between_prompts[-1] += output
+        output = self._interpreter.before
+        if self._last_output_may_be_incomplete:
+            self._output_between_prompts[-1] += output
         else:
-            self.output_between_prompts.append(output)
+            self._output_between_prompts.append(output)
 
         if what == Timeout:
             msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\n\nLast 1000 bytes read:\n%s"
-            msg = msg % ''.join(self.output_between_prompts)[-1000:]
+            msg = msg % ''.join(self._output_between_prompts)[-1000:]
             out = self._get_output(options)
             raise TimeoutException(msg, out)
 
         elif what == Earlier:
-            self.last_output_may_be_incomplete = True
+            self._last_output_may_be_incomplete = True
             return False
 
         elif what == EOF:
             msg = "Interpreter closed unexpectedly.\nThis could happen because the example triggered a close/shutdown/exit action,\nthe interpreter was killed by someone else or because the interpreter just crashed.\n\nLast 1000 bytes read:\n%s"
-            msg = msg % ''.join(self.output_between_prompts)[-1000:]
+            msg = msg % ''.join(self._output_between_prompts)[-1000:]
             out = self._get_output(options)
             raise InterpreterClosedUnexpectedly(msg, out)
 
         assert what == PS_found
-        self.last_output_may_be_incomplete = False
+        self._last_output_may_be_incomplete = False
         return True
 
+    @profile
     def _get_output(self, options):
         if options['force_echo_filtering']:
             return self._get_output_echo_filtered(options)
 
         if options['term'] == 'dumb':
-            out = self._emulate_dumb_terminal(self.output_between_prompts)
+            out = self._emulate_dumb_terminal(self._output_between_prompts)
         elif options['term'] == 'ansi':
-            out = self._emulate_ansi_terminal(self.output_between_prompts)
+            out = self._emulate_ansi_terminal(self._output_between_prompts)
         elif options['term'] == 'as-is':
-            out = self._emulate_as_is_terminal(self.output_between_prompts)
+            out = self._emulate_as_is_terminal(self._output_between_prompts)
         else:
             raise TypeError(
                 "Unknown terminal type '+term=%s'." % options['term']
@@ -425,7 +521,7 @@ class PexpectMixin(object):
         return out
 
     def _get_output_echo_filtered(self, options):
-        lines = self._filter_echo(options, self.output_between_prompts)
+        lines = self._filter_echo(options, self._output_between_prompts)
 
         self._drop_output()
         return '\n'.join(lines)
@@ -436,7 +532,7 @@ class PexpectMixin(object):
         # so this breaks badly self._get_output
         # experimental feature, use this instead of _get_output
 
-        # self.output_between_prompts is a list of strings found by pexpect
+        # self._output_between_prompts is a list of strings found by pexpect
         # after returning of each pexpect.expect
         # in other words if we prefix each line with the prompt
         # should get the original output from the process
@@ -456,8 +552,8 @@ class PexpectMixin(object):
         # adapted adding more flags to it based in stty(1)
         errmsg = '_set_cooked_mode() may not be called on this platform'
 
-        fd = self.interpreter.child_fd
-
+        fd = self._interpreter.child_fd
+        import termios
         try:
             attr = termios.tcgetattr(fd)
         except termios.error as err:
@@ -516,7 +612,7 @@ class PexpectMixin(object):
             raise
 
     def _abort(self, example, options):
-        self.interpreter.sendcontrol('c')
+        self._sendcontrol('c')
         return self._recover_prompt_sync(example, options)
 
     def _recover_prompt_sync(self, example, options, cnt=5):
@@ -542,7 +638,7 @@ class PexpectMixin(object):
             self._expect_prompt(
                 options,
                 countdown=Countdown(options['x']['dfl_timeout']),
-                prompt_re=self.PS1_re
+                prompt_re=self._PS1_re
             )
             self._drop_output()
             good = True
@@ -560,7 +656,7 @@ class PexpectMixin(object):
                     self._expect_prompt(
                         options,
                         countdown=Countdown(options['x']['dfl_timeout']),
-                        prompt_re=self.PS1_re
+                        prompt_re=self._PS1_re
                     )
                     self._drop_output()
                     cnt += 1

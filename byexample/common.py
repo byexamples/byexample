@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
-import pprint, traceback, contextlib, os, re, string, shlex, logging, time
+import pprint, traceback, contextlib, os, string, shlex, logging, time
+from . import regex as re
 '''
 >>> from byexample.common import tohuman, short_string
 >>> import time
@@ -11,7 +12,7 @@ def indent(s, indent=4):
     ''' Indent the given text.
         See doctest._indent for the code that inspired this.
         '''
-    return re.sub('(?m)^(?!$)', indent * ' ', s)
+    return re.compile('(?m)^(?!$)').sub(indent * ' ', s)
 
 
 def short_string(s, max=14, sep='..'):
@@ -150,6 +151,13 @@ def tohuman(s):
 
 
 def constant(argumentless_method):
+    ''' Cache the result of calling the method in the first call
+        and save the result in <self>.
+
+        The method must always return the same results and the result
+        itself must be an immutable object so it is safe to cache the
+        result and share it among different threads.
+        '''
     placeholder = '_saved_constant_result_of_%s' % argumentless_method.__name__
 
     def wrapped(self):
@@ -161,6 +169,16 @@ def constant(argumentless_method):
             return val
 
     return wrapped
+
+
+def transfer_constants(src, dst):
+    ''' Transfer the cached results from one object to another.
+
+        See common.constant().
+        '''
+    for name, val in src.__dict__.items():
+        if name.startswith('_saved_constant_result_of_'):
+            setattr(dst, name, val)
 
 
 @contextlib.contextmanager
@@ -392,4 +410,4 @@ class Countdown:
         return self._start_mark is not None
 
     def _now(self):
-        return time.time()
+        return time.perf_counter()

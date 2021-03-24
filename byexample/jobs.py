@@ -1,7 +1,10 @@
 from __future__ import unicode_literals
-from multiprocessing import Queue, Process
+
 import signal, contextlib
 from .log import clog, CHAT
+from .init import init_worker
+
+from .concurrency import load_concurrency_engine
 
 
 class Status:
@@ -11,7 +14,7 @@ class Status:
     error = 3
 
 
-def worker(func, sigint_handler, input, output):
+def worker(func, input, output, cfg, job_num):
     ''' Generic worker: call <func> for each item pulled from
         the <input> queue until a None gets pulled.
 
@@ -20,17 +23,40 @@ def worker(func, sigint_handler, input, output):
 
         After receiving a None, close the <output> queue.
         '''
+    harvester, executor = init_worker(cfg, job_num)
     for item in iter(input.get, None):
-        output.put(func(item, sigint_handler))
-    output.close()
-    output.join_thread()
+        output.put(func(item, harvester, executor, cfg['dry']))
+
+    harvester.close()
+    executor.close()
 
 
 class Jobs(object):
-    def __init__(self, njobs):
+    def __init__(self, njobs, concurrency_model):
+        if concurrency_model not in ('multithreading', 'multiprocessing'):
+            raise ValueError(
+                "Unexpected concurrency model '%s'. Expected multithreading or multiprocessing."
+                % concurrency_model
+            )
+
+        if concurrency_model == 'multiprocessing':
+            raise NotImplementedError("Not supported yet")
+
+        if njobs == 1:
+            concurrency_model = 'singlethreading'
+
         self.njobs = njobs
 
-    def spawn_jobs(self, func, items):
+        self.Process, self.Manager, self.Queue = load_concurrency_engine(
+            concurrency_model
+        )
+
+    @contextlib.contextmanager
+    def start_sharer(self):
+        with self.Manager() as sharer:
+            yield sharer
+
+    def spawn_jobs(self, func, items, cfg):
         ''' Spawn <njobs> jobs to process <items> in parallel/concurrently.
 
             The processes are started and feeded with the first <njobs> items
@@ -44,16 +70,14 @@ class Jobs(object):
         njobs = self.njobs
         assert njobs <= len(items)
 
-        self.sigint_handler = self.ignore_sigint()
-
-        self.input = Queue()
-        self.output = Queue()
+        self.input = self.Queue()
+        self.output = self.Queue()
 
         self.processes = [
-            Process(
+            self.Process(
                 target=worker,
                 name=str(n),
-                args=(func, self.sigint_handler, self.input, self.output)
+                args=(func, self.input, self.output, cfg, n)
             ) for n in range(njobs)
         ]
         for p in self.processes:
@@ -65,7 +89,7 @@ class Jobs(object):
 
         if clog().isEnabledFor(CHAT):
             for p in self.processes:
-                clog().chat("Worker %s (PID %i).", p.name, p.pid)
+                clog().chat("Worker %s.", p.name)
 
         return items[njobs:]
 
@@ -79,12 +103,10 @@ class Jobs(object):
     def stop_workers(self):
         for _ in range(self.njobs):
             self.input.put(None)
-        self.input.close()
 
     def join_jobs(self):
         ''' Call me after sending the sentinels (stop_workers)
             and fetching all the results (loop) to avoid a deadlock.'''
-        self.input.join_thread()
         for p in self.processes:
             p.join()
 
@@ -106,7 +128,14 @@ class Jobs(object):
         exit_status = Status.ok
         end_sentinels_sent = False
         while nitems:
-            failed, aborted, user_aborted, error = self.output.get()
+            with allow_sigint(self.interrupt_handler):
+                try:
+                    failed, aborted, user_aborted, error = self.output.get()
+                except KeyboardInterrupt:
+                    clog().note("User aborted. Closing...")
+                    failed = aborted = error = False
+                    user_aborted = True
+
             nitems -= 1
 
             if failed:
@@ -129,14 +158,16 @@ class Jobs(object):
                 end_sentinels_sent = True
                 self.stop_workers()
 
-        self.join_jobs()
+        with allow_sigint(self.interrupt_handler):
+            self.join_jobs()
         return exit_status
 
-    def run(self, func, items, fail_fast):
+    def run(self, func, items, fail_fast, cfg):
         ''' Process all the <items> in background, aborting earlier
             if one fails and <fail_fast> is True (see loop()).
             '''
-        rest = self.spawn_jobs(func, items)
+        self.interrupt_handler = self.ignore_sigint()
+        rest = self.spawn_jobs(func, items, cfg)
         return self.loop(len(items), rest, fail_fast)
 
 

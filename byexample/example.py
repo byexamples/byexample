@@ -87,6 +87,19 @@ class Example(object):
      'rm': [],
      'tags': True}
 
+    The example will have a reference to the current options
+    which are the combination (stack) of all the options from the
+    command line and the example's option.
+
+    This is set only during the execution (see FileExecutor) so
+    it is undefined even after "parsing yourself" and because it is 
+    a temporal setting, it will be undefined after the execution
+    (the example should not have a reference for too much time)
+
+    >>> example.current_options
+    <...>
+    AttributeError: 'Example' object has no attribute 'current_options'
+
     '''
     def __init__(
         self, finder, runner, parser, snippet, expected_str, indent, where

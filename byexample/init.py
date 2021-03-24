@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import sys, pkgutil, inspect, pprint, os
+import sys, pkgutil, inspect, pprint, os, collections
 
 from .options import Options, OptionParser
 from .runner import ExampleRunner
@@ -9,7 +9,10 @@ from .differ import Differ
 from .parser import ExampleParser
 from .concern import Concern, ConcernComposite
 from .common import enhance_exceptions
-from .log import clog, log_context, configure_log_system, setLogLevels, TRACE, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL
+from .log import clog, log_context, configure_log_system, setLogLevels, TRACE, DEBUG, CHAT, INFO, NOTE, ERROR, CRITICAL, init_thread_specific_log_system, log_with
+from .prof import profile
+from .cfg import Config
+from .cmdline import _show_failures_type
 
 
 def are_tty_colors_supported(output):
@@ -66,7 +69,27 @@ def is_a(target_class, key_attr, warn_missing_key_attr):
     return _is_X
 
 
+class NS:
+    def __setattr__(self, name, val):
+        if name[0] == '_':
+            raise AttributeError(
+                "You cannot store 'private' attributes (the ones that starts with underscore)."
+            )
+
+        return object.__setattr__(self, name, val)
+
+    def _attribute_names(self):
+        return frozenset(k for k in dir(self) if k[0] != '_')
+
+    def _as_dict(self):
+        return {k: getattr(self, k) for k in self._attribute_names()}
+
+    def _is_empty(self):
+        return not bool(self._attribute_names())
+
+
 @log_context('byexample.load')
+@profile
 def load_modules(dirnames, cfg):
     verbosity = cfg['verbosity']
     registry = {
@@ -76,6 +99,7 @@ def load_modules(dirnames, cfg):
         'concerns': {},
         'zdelimiters': {},
     }
+    namespaces_by_class = {}
     for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
         path = importer.path
 
@@ -122,7 +146,17 @@ def load_modules(dirnames, cfg):
                     ', '.join(k.__name__ for k in klasses_found)
                 )
 
-            objs = [klass(**cfg) for klass in klasses_found]
+            objs = []
+            for klass in klasses_found:
+                ns = NS()  # a private namespace for each object
+                objs.append(klass(ns=ns, **cfg))
+                if not ns._is_empty():
+                    # keep a reference of the namespace only if
+                    # it is not empty (because they are immutable from now on,
+                    # an empty namespace will remain empty and it will not
+                    # have any value for use)
+                    namespaces_by_class[klass] = ns
+
             if objs:
                 loaded_objs = []
                 for obj in objs:
@@ -141,7 +175,7 @@ def load_modules(dirnames, cfg):
             else:
                 clog().chat("No classes found for '%s'.", what)
 
-    return registry
+    return registry, namespaces_by_class
 
 
 def get_allowed_languages(registry, selected):
@@ -275,6 +309,13 @@ def get_default_options_parser(cmdline_args):
         "each interpreter disables the echo from the terminal but in some cases this cannot be done and an active filtering is required (this is an experimental feature, it will break your tests if no echo is received and it will force a full terminal emulation (see +term=ansi and +geometry))."
     )
 
+    options_parser.add_argument(
+        "+show-failures",
+        default=cmdline_args.show_failures,
+        type=_show_failures_type,
+        help="show up to <n> failures per file and suppress the rest"
+    )
+
     return options_parser
 
 
@@ -361,6 +402,7 @@ def show_options(cfg, registry, allowed_languages):
             parser.get_extended_option_parser(parent_parser=None).print_help()
 
 
+@profile
 def extend_option_parser_with_concerns(cfg, registry):
     concerns = [c for c in registry['concerns'].values()]
 
@@ -386,6 +428,7 @@ def extend_option_parser_with_concerns(cfg, registry):
 
 
 @log_context('byexample.options')
+@profile
 def extend_options_with_language_specific(cfg, registry, allowed_languages):
     parsers = [
         p for p in registry['parsers'].values()
@@ -447,7 +490,8 @@ def verbosity_to_log_levels(verbosity, quiet):
 
 
 @log_context('byexample.init')
-def init(args):
+@profile
+def init_byexample(args, sharer):
     lvl = verbosity_to_log_levels(args.verbosity, args.quiet)
     lvl.update(args.log_masks)
     setLogLevels(lvl)
@@ -462,20 +506,26 @@ def init(args):
         'output': sys.stdout,
         'interact': False,
         'opts_from_cmdline': args.options_str,
+        'dry': args.dry,
+        'jobs': args.jobs,
+        # special value to denote that we are not in a worker/job yet
+        # but in the main thread.
+        'job_number': '__main__',
+        # sharer is temporal, see the end of this function
+        'sharer': sharer,
     }
 
-    allowed_files = set(args.files) - set(args.skip)
-    testfiles = list(sorted(f for f in args.files if f in allowed_files))
+    testfiles = args.testfiles
 
-    # Do not spawn more jobs than testfiles
-    args.jobs = cfg['jobs'] = min(args.jobs, len(testfiles))
+    # ensure consistency: we cannot spawn more jobs than testfiles
+    assert cfg['jobs'] <= len(testfiles)
 
     options = get_options(args, cfg)
 
     # if the output has not color support, disable the color anyways
     cfg['use_colors'] &= are_tty_colors_supported(cfg['output'])
 
-    registry = load_modules(args.modules_dirs, cfg)
+    registry, namespaces_by_class = load_modules(args.modules_dirs, cfg)
 
     allowed_languages = get_allowed_languages(registry, args.languages)
 
@@ -486,9 +536,16 @@ def init(args):
     if not testfiles:
         if not cfg['quiet']:
             clog().error(
-                "No files were found (you passed %i files and %i were skipped)",
-                (len(set(args.files)), len(set(args.files) - allowed_files))
+                "No files were found (you passed %i files, %i were skipped)",
+                len(set(args.files)), len(set(args.skip))
             )
+            if not set(args.files) and set(args.skip):
+                clog().warn(
+                    "You are probably skipping more files than you want.\n" +\
+                    "You may need to add a '--' to separate the files that\n" +\
+                    "you want to skip from the ones that you want to execute:\n" +\
+                    "\n  byexample --skip <files to skip> -- <files to execute>"
+                )
         sys.exit(1)
 
     # extend the option parser with all the parsers of the concerns.
@@ -509,12 +566,59 @@ def init(args):
     clog().chat("Configuration:\n%s.", pprint.pformat(cfg))
     clog().chat("Registry:\n%s.", pprint.pformat(registry))
 
-    concerns = ConcernComposite(registry, **cfg)
+    cfg['allowed_languages'] = frozenset(allowed_languages)
+    cfg['registry'] = registry
 
-    differ = Differ(**cfg)
-
-    harvester = ExampleHarvest(allowed_languages, registry, **cfg)
-    executor = FileExecutor(concerns, differ, **cfg)
-
+    concerns = ConcernComposite(**cfg)
     configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
-    return testfiles, harvester, executor, options
+
+    # not longer needed: all the runner, parsers, concerns objects
+    # were created and if they wanted to setup a shared object that was
+    # their opportunity.
+    cfg['sharer'] = None
+
+    # The namespace where all the shared objects lives.
+    namespaces = {}
+    for klass, ns in namespaces_by_class.items():
+        shared_ns = sharer.Namespace(**ns._as_dict())
+        shared_ns._attribute_names = ns._attribute_names()
+        namespaces[klass] = shared_ns
+
+    cfg['namespaces'] = namespaces
+    assert 'ns' not in cfg
+
+    return testfiles, Config(cfg)
+
+
+@profile
+def init_worker(cfg, job_num):
+    ''' Initialize a worker with worker/job number is passed
+        by parameter.
+
+        The registry's elements (parsers, runners, concerns,
+        zdelimiters and finders) from <cfg> are recreated and
+        the rest are copied so the worker is initialized with
+        a fresh and independent copy.
+
+        The only difference is that <cfg> will have <job_num>
+        as the value of the 'job_number' key.
+
+        If the recreation process is thread safe (depends of the objects'
+        implementations), then init_worker is thread safe.
+    '''
+    # let the rest of byexample for this worker to know
+    # in which worker is on
+    assert cfg['job_number'] == '__main__'
+    cfg = cfg.copy(patch={'job_number': int(job_num)})
+
+    concerns = ConcernComposite(**cfg)
+
+    init_thread_specific_log_system(concerns)
+
+    with log_with('byexample.init') as log:
+        differ = Differ(**cfg)
+
+        harvester = ExampleHarvest(**cfg)
+        executor = FileExecutor(concerns, differ, **cfg)
+
+        return harvester, executor
