@@ -139,6 +139,9 @@ lang-ruby-test: clean_test
 
 lang-python-test: clean_test
 	@$(python_bin) test/r.py @test/lang-python.env
+
+lang-shell-test: clean_test
+	@$(python_bin) test/r.py @test/lang-shell.env
 #
 ##
 

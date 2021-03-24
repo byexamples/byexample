@@ -77,3 +77,15 @@ jobs:
           ruby-version: ${{ matrix.ruby-version }}
       - run: make deps-dev
       - run: make lang-ruby-test
+
+  lang-shell-test:
+    name: "Lang Shell test"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.6"
+      - run: make deps-dev
+      - run: make lang-shell-test
