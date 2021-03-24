@@ -69,18 +69,24 @@ possible hooks and when they are called.
 
 ## Concurrency model
 
-Each `Concern` instance will be created once during the setup of
-`byexample` and then it will be created once per job thread.
+Each `Concern` instance will be created *once* during the setup of
+`byexample` and then it will be created *once per job* thread.
 
 By default there is only one job thread but more threads can be added
 with the `--jobs` option.
 
-The instances are independent and therefore thread-safe.
-
 If you want to *share* data among them you will have to use a
-thread-safe structure in a shared place (like mutexes plus class
-variables which are shared among the instances).
+thread-safe structures created by a `sharer` and store them
+in a `namespace`.
 
-``byexample`` uses this mechanism to synchronize the jobs progress
-reports in
-[byexample/modules/progress.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/progress.py).
+In the [concurrency model](/{{ site.uprefix }}/contrib/concurrency-model)
+documentation it is explained and in
+[byexample/modules/progress.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/progress.py)
+you can see a concrete example.
+
+> *Changed* in `byexample 10.0.0`. Before `10.0.0` you were forced to
+> use `multiprocessing` by hand but in `10.0.0` the concurrency model
+> is hidden so you cannot relay on `multiprocessing` because `byexample`
+> may not use processes at all!
+> `sharer` and `namespace` are objects that hide the details while
+> allowing you to have the same power.

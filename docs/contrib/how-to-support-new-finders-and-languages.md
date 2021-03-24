@@ -60,7 +60,7 @@ To accomplish this we need to create a regular expression to find the
 ``~~~``, where the snippet of code is and where the expected output is.
 
 ```python
->>> import re
+>>> from byexample import regex as re
 
 >>> example_re = re.compile(r'''
 ...     # begin with ~~~
@@ -106,6 +106,11 @@ if any that to compare.
 The ``indent`` group is to count how many spaces are not part of the example
 and they are just for indentation: ``byexample`` will *drop* the first line that
 has a lower level of indentation and any subsequent line.
+
+> *Changed* in `byexample 10.0.0`. Before `10.0.0` you could return a
+> Python regular expression but from `10.0.0` and on, you need to return
+> the regular expressions created by `byexample.regex`. The module is
+> almost identical to Python's `re` so the required changes are minimal.
 
 ### Detect the language
 
@@ -207,6 +212,7 @@ that starts with ``byexample`` is a comment that will contain options.
 This regular expression should capture that:
 
 ```python
+>>> from byexample import regex as re
 >>> opts_string_re = re.compile(r'#\s*byexample:\s*([^\n\'"]*)$',
 ...                                                re.MULTILINE)
 ```
@@ -347,6 +353,7 @@ you do not need to install a real ``ArnoldC`` compiler.
 
 
 ```python
+>>> from byexample import regex as re
 >>> def toy_arnoldc_interpreter(source_code):
 ...     output = []
 ...     for line in source_code.split('\n'):
@@ -408,18 +415,24 @@ PASS
 ## Concurrency model
 
 Each `ExampleFinder`, `ExampleParser` and `ExampleRunner` instances
-will be created once during the setup of
-`byexample` and then it will be created once per job thread.
+will be created *once* during the setup of
+`byexample` and then it will be created *once per job* thread.
 
 By default there is only one job thread but more threads can be added
 with the `--jobs` option.
 
-The instances are independent and therefore thread-safe.
-
 If you want to *share* data among them you will have to use a
-thread-safe structure in a shared place (like mutexes plus class
-variables which are shared among the instances).
+thread-safe structures created by a `sharer` and store them
+in a `namespace`.
 
-``byexample`` uses this mechanism to synchronize the jobs progress
-reports in
-[byexample/modules/progress.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/progress.py).
+In the [concurrency model](/{{ site.uprefix }}/contrib/concurrency-model)
+documentation it is explained and in
+[byexample/modules/progress.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/progress.py)
+you can see a concrete example.
+
+> *Changed* in `byexample 10.0.0`. Before `10.0.0` you were forced to
+> use `multiprocessing` by hand but in `10.0.0` the concurrency model
+> is hidden so you cannot relay on `multiprocessing` because `byexample`
+> may not use processes at all!
+> `sharer` and `namespace` are objects that hide the details while
+> allowing you to have the same power.
