@@ -194,6 +194,26 @@ A simple workaround is to make the lines of the code in the snippet
 shorter or increase the
 [terminal width](/{{ site.uprefix }}/advanced/geometry).
 
+<!--
+
+Regression test: we expect to see the output even if we didn't send
+the std::endl object.
+
+?: std::cout << 1;
+1
+
+?: std::cout << 2;
+2
+
+?: std::cout << 3 << '\n';
+3
+
+?: std::cout << 4 << '\n' << 5;
+4
+5
+
+-->
+
 ### Abort on a timeout
 
 If a C/C++ example takes too long and
