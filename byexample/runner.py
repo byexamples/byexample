@@ -545,7 +545,18 @@ class PexpectMixin(object):
         # get each line in the Terminal's display and ignore each one that
         # starts with our cookie: those are the "echo" lines that
         # *we* sent to the interpreter and they are not part of *its* output.
-        return (line for line in lines if not line.startswith(cookie))
+        filtered_lines = (
+            line for line in lines if not line.startswith(cookie)
+        )
+
+        # a prompt may be at the end of the last line if the interpreter printed
+        # something without adding a newline to separate it from the prompt.
+        # for simplicity I will remove any prompt that it may be at
+        # the end of all the lines:
+        return (
+            line[:-len(cookie)] if line.endswith(cookie) else line
+            for line in filtered_lines
+        )
 
     def _set_cooked_mode(self, state):  # pragma: no cover
         # code borrowed from ptyprocess/ptyprocess.py, _setecho, and
