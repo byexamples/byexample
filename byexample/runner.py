@@ -269,9 +269,33 @@ class PexpectMixin(object):
     @profile
     def _shutdown_interpreter(self):
         self._interpreter.sendeof()
-        self._interpreter.close()
+        try:
+            self._interpreter.close()
+        except Exception as ex:
+            clog().debug(
+                "Call to close() on interpreter failed (may happen): %s.",
+                str(ex)
+            )
+
         time.sleep(0.001)
-        self._interpreter.terminate(force=True)
+        try:
+            self._interpreter.terminate(force=True)
+        except Exception as ex:
+            clog().debug(
+                "Call to terminate() on interpreter failed (may happen): %s.",
+                str(ex)
+            )
+
+        time.sleep(0.001)
+        if self._interpreter.isalive():
+            who = tohuman(
+                self.language
+                if hasattr(self, 'language') and self.language else self
+            )
+            clog().warn(
+                "Incomplete '%s' Runner shutdown: too slow and it is still running.",
+                who
+            )
 
     @profile
     def _exec_and_wait(self, source, options, *, from_example=None, **kargs):
