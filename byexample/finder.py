@@ -114,11 +114,22 @@ class ExampleHarvest(object):
     def __repr__(self):
         return 'Example Harvester'
 
+    @log_context('byexample.find')
     def get_examples_from_file(self, filepath):
         f = open(filepath, 'rtU', encoding=self.encoding)
 
         with f as f:
-            string = f.read()
+            try:
+                string = f.read()
+            except UnicodeDecodeError as err:
+                msg1 = "Reading the file '%s' using the '%s' encoding failed due decoding errors." % (
+                    filepath, self.encoding
+                )
+
+                msg2 = msg1 + '\nTry a different encoding with \'--encoding\' from the command line.\n'
+
+                clog().exception(msg2)
+                raise SystemExit(msg1)
 
         return self.get_examples_from_string(string, filepath)
 
