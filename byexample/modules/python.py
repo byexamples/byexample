@@ -479,21 +479,27 @@ class PythonParser(ExampleParser):
 
 class PythonInterpreter(ExampleRunner, PexpectMixin):
     language = 'python'
+    flavors = {'python3', 'python'}
 
-    def __init__(self, verbosity, encoding, **unused):
+    def __init__(self, verbosity, encoding, selected_languages, **unused):
         self.encoding = encoding
 
         self._PS1 = r'/byexample/py/ps1> '
         self._PS2 = r'/byexample/py/ps2> '
+
+        supported_by_us = (self.flavors & selected_languages)
+        self._python_flavor = self.language if not supported_by_us else supported_by_us.pop(
+        )
 
         PexpectMixin.__init__(
             self, PS1_re=self._PS1, any_PS_re=r'/byexample/py/ps\d> '
         )
 
     def get_default_cmd(self, *args, **kargs):
+        p = self._python_flavor
         return "%e %p %a", {
             'e': "/usr/bin/env",
-            'p': "python",
+            'p': p,
             'a': [
                 "-i",  # mean interactive, even if we run a script
             ]
