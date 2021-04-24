@@ -137,3 +137,95 @@ ex:
 <...>
 File test/ds/db-stock-model, 5/5 test ran in <...>
 ```
+
+### An example times out. Why?
+
+An example will time out if the example is taking much time to complete
+*or* if the interpreter hang.
+
+A quick check would run `byexample` with a really large timeout (30
+seconds to say something).
+
+```shell
+$ byexample --timeout 30 -l python test/ds/db-stock-model
+<...>
+File test/ds/db-stock-model, 5/5 test ran in <...>
+```
+
+If that works it means that the example is just to slow. You may want to
+try to optimize it or tag it with [+timeout](/{{ site.uprefix }}/basic/timeout).
+
+If the example *still* times out it means that or the example is
+syntactically incorrect or incomplete or the interpreter hang.
+
+The first possibility is more likely. It is when you type an example but
+you miss to type a ending quote or parenthesis.
+
+Most of the interpreters don't see this as an error
+and instead assume that you are going to
+type more which it is not the case. You will have to review the example
+more closely.
+
+### I cannot run a single example, `byexample` fails.
+
+There can be a few reasons why this is happening.
+
+The interpreter that you want to use does not exists. This could happens
+because the interpreter is not in the PATH or it is not installed at
+all.
+
+```shell
+$ byexample -l python -x-shebang python:python99 test/ds/db-stock-model  # byexample: +norm-ws
+[w] Initialization of Python Runner failed.
+[!] Something went wrong processing the file 'test/ds/db-stock-model':
+The command was not found or was not executable.
+The full command line tried is as follows:
+ python99
+This could happen because you do not have it installed or
+it is not in the PATH.
+<...>
+```
+
+If you are sure that the interpreter is installed, you could try to use
+a [shebang](/{{ site.uprefix }}/advanced/shebang) to specify the exact
+location of the binary.
+
+Other error could be an *unexpected close*:
+
+```shell
+$ byexample -l python -x-shebang 'python:env python99' test/ds/db-stock-model   # byexample: +norm-ws
+[w] Initialization of Python Runner failed.
+[!] Something went wrong processing the file 'test/ds/db-stock-model':
+Interpreter closed unexpectedly.
+This could happen because the example triggered a close/shutdown/exit action,
+the interpreter was killed by someone else or because the interpreter just crashed.
+<...>
+Last 1000 bytes read:
+/usr/bin/env: ‘python99’: No such file or directory
+<...>
+```
+
+This could happen because the binary was found but it was never ready.
+In the example above, the program `env` was found and executed and in
+turns executed the non-existing `python99` program.
+
+The solution may be the same as above: check that the interpreter is
+installed and in the PATH and
+use [shebang](/{{ site.uprefix }}/advanced/shebang) to specify the exact
+location of it if necessary.
+
+If you want to know the exact command line used by `byexample`, you can
+find it adding more verbosity:
+
+```shell
+$ byexample -l python -x-shebang 'python:env python99' -v test/ds/db-stock-model   # byexample: +norm-ws
+[i] Initializing Python Runner
+[i] Spawn command line: env python99
+[w] Initialization of Python Runner failed.
+<...>
+```
+
+If you still have troubles then it may be a real problem. It will be
+super helpful if you
+[open an issue](https://github.com/byexamples/byexample/issues) with a
+minimal code to exemplify the issue.
