@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
-import sys, pkgutil, inspect, pprint, os, collections
+import sys, pkgutil, inspect, pprint, os, collections, operator
+
+from itertools import chain as chain_iters
 
 from .options import Options, OptionParser
 from .runner import ExampleRunner
@@ -178,12 +180,20 @@ def load_modules(dirnames, cfg):
     return registry, namespaces_by_class
 
 
-def get_allowed_languages(registry, selected):
-    available = set([obj.language for obj in registry['runners'].values()] + \
-                      [obj.language for obj in registry['parsers'].values()])
+def get_allowed_languages(registry, flavors):
+    runners = registry['runners'].values()
+    parsers = registry['parsers'].values()
 
-    selected = set(selected)
-    not_found = selected - available
+    flavor2lang = {
+        f: obj.language
+        for obj in chain_iters(runners, parsers)
+        for f in set(obj.flavors) | set([obj.language])
+    }
+
+    available_flavors = set(flavor2lang.keys())
+    flavors = set(flavors)
+
+    not_found = flavors - available_flavors
 
     if not_found:
         not_found = ', '.join(not_found)
@@ -193,7 +203,27 @@ def get_allowed_languages(registry, selected):
                           "find it with -m or --modules.\nRun again with -vvv to get " + \
                           "more information about why is this happening.") %
                                not_found)
-    return selected
+
+    languages = set(flavor2lang[f] for f in flavors)
+
+    if len(flavors) != len(languages):
+        flavor_lang_list = list(flavor2lang.items())
+        flavor_lang_list.sort(key=operator.itemgetter(1))  # sort by language
+
+        prev_flavor = prev_lang = None
+        for f, l in flavor_lang_list:
+            if l == prev_lang:
+                bad_flavor = f
+                break
+            prev_flavor, prev_lang = f, l
+        else:
+            assert False
+
+        raise ValueError(("The language flavors '%s' and '%s' refere to the same language '%s'.\n" + \
+                          "You need to choose one.") %
+                               (prev_flavor, bad_flavor, prev_lang))
+
+    return languages
 
 
 def verify_encodings(input_encoding, verbosity):
@@ -524,6 +554,7 @@ def init_byexample(args, sharer):
 
     # if the output has not color support, disable the color anyways
     cfg['use_colors'] &= are_tty_colors_supported(cfg['output'])
+    cfg['selected_languages'] = frozenset(args.languages)
 
     registry, namespaces_by_class = load_modules(args.modules_dirs, cfg)
 
