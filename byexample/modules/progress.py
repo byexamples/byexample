@@ -178,6 +178,12 @@ class SimpleReporter(Concern):
                 msg += 'This is the last output obtained:\n%s\n' % str(
                     exception.output
                 )
+        elif isinstance(exception, UnicodeDecodeError):
+            msg += self._bullet('cyan', '-') + ' '
+            msg += 'Incorrect encoding.\n'
+            msg += 'The output of the example is incompatible with the current encoding.\n'
+            msg += 'Try a different one with \'--encoding\' from the command line.\n'
+
         else:
             tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
             ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
