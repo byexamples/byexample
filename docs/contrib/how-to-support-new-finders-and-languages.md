@@ -271,6 +271,10 @@ should not from the command line with the flag ``-l``.
 So we need to declare what language is our Parser for: that's the reason
 behind the ``language`` attribute.
 
+Optionally you can add define the ``flavors`` attribute: a set of
+different flavors for your language that you have support that the user
+can select with ``-l`` (parse the example in a different way perhaps?).
+
 Let's create the example (in the practice this is done by ``byexample`` behind
 the scenes so you do not to be worry about the details):
 
@@ -411,6 +415,11 @@ What to do with them is up to you.
 >>> print("PASS" if found == example.expected.str else "FAIL")
 PASS
 ```
+
+Like in the `Parser`, you can define the optional ``flavors`` attribute
+to accept different flavors of the same language. The constructor of you
+`Runner` will receive the `language_flavors` argument with the list
+selected by the user so you can do something different on each case.
 
 ## Concurrency model
 

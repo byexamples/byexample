@@ -23,6 +23,8 @@ InputRegexs = collections.namedtuple(
 
 
 class ExampleParser(ExtendOptionParserMixin):
+    flavors = set()
+
     def __init__(self, verbosity, encoding, options, **unused):
         ExtendOptionParserMixin.__init__(self)
         self.verbosity = verbosity

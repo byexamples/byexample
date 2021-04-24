@@ -9,6 +9,13 @@ for this interpreter.
 > **Stability**: ``stable`` - non backward compatibility changes, if happen,
 > they will between major versions.
 
+You can enable ``Python`` with `-l python` and since `byexample 10.0.2`
+the explicit `-l python3` is supported too.
+
+If `-l python` is used in the command line, `byexample` will use the
+binary named `python` while if you use `-l python3` it will be the
+binary named `python3`.
+
 ## Find interactive examples
 
 For ``Python``, ``byexample`` uses the ``>>>`` string as the primary and ``...``

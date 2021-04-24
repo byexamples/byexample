@@ -13,6 +13,8 @@ import sys
 
 
 class ExampleRunner(object):
+    flavors = set()
+
     def __init__(self, verbosity, encoding, **unused):
         self.verbosity = verbosity
         self.encoding = encoding
