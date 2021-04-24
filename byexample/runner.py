@@ -194,6 +194,7 @@ class PexpectMixin(object):
 
         self._drop_output()  # there shouldn't be any output yet but...
         self._cmd = cmd
+        clog().info("Spawn command line: %s", cmd)
         try:
             self._interpreter = pexpect.spawn(
                 cmd,
