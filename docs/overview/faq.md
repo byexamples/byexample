@@ -126,6 +126,7 @@ of Python examples you can do:
 ```shell
 $ byexample -x-log-mask byexample.exec.python:chat -l python test/ds/db-stock-model
 [i:exec.python] Initializing Python Runner
+[i:exec.python] Spawn command line: /usr/bin/env python -i
 ex:
     import sqlite3
 ex:
