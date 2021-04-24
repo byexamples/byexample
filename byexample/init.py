@@ -122,12 +122,12 @@ def load_modules(dirnames, cfg):
             stability = 'experimental/%s?' % str(stability)
 
         clog().chat("From '%s' loaded '%s' (%s)", path, name, stability)
-        for klass, key, what in [
-            (ExampleRunner, 'language', 'runners'),
-            (ExampleParser, 'language', 'parsers'),
-            (ExampleFinder, 'target', 'finders'),
-            (ZoneDelimiter, 'target', 'zdelimiters'),
-            (Concern, 'target', 'concerns')
+        for klass, key, is_multikey, what in [
+            (ExampleRunner, 'language', False, 'runners'),
+            (ExampleParser, 'language', False, 'parsers'),
+            (ExampleFinder, 'target', False, 'finders'),
+            (ZoneDelimiter, 'target', True, 'zdelimiters'),
+            (Concern, 'target', False, 'concerns')
         ]:
 
             # we are interested in any class that is a subclass of 'klass'
@@ -164,7 +164,25 @@ def load_modules(dirnames, cfg):
                 for obj in objs:
                     key_value = getattr(obj, key)
                     if key_value:
-                        if not isinstance(key_value, (list, tuple, set)):
+                        if is_multikey:
+                            # ensure that the key is list-like iterable
+                            # (we accept a multi-valued key)
+                            if not isinstance(key_value, (list, tuple, set)):
+                                key_value = [key_value]
+                        else:
+                            # ensure that the keys is *not* a list-like
+                            # but a string-like (we accept a
+                            # single-valued key)
+                            if isinstance(key_value, (list, tuple, set)):
+                                raise ValueError(
+                                    "The attribute '%s' of %s must be a string-like but it is of type '%s'."
+                                    % (
+                                        key, obj.__class__.__name__,
+                                        type(key_value)
+                                    )
+                                )
+                            # for simplicity we see this single-valued a
+                            # a singleton list
                             key_value = [key_value]
 
                         for k in key_value:
