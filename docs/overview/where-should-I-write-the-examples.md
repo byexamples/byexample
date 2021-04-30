@@ -16,7 +16,13 @@ and ````` ``` ````` or between ``<!--`` and ``-->``. There is where
 you should write them.
 
 For Python files (``.py`` extension) you should write your examples
-in a docstring.
+in the *docstring* of modules, classes, methods and
+functions.
+
+For Ruby files (``.rb`` extension), Shell files (`.sh`),
+C++ files (`.cpp` and `.h`), Javascript files (`.js`) and
+PHP files (`.php`) you should write the examples
+in the comments of the source code.
 
 For the rest of the files, the examples are searched in the entire file
 so you are free to write your examples anywhere.
@@ -27,7 +33,13 @@ with a *prompt*.
 How to do that it will depend of the language of the example:
 ``>>>`` is the prompt for Python examples, ``>>`` for Ruby, ``$`` for Shell.
 
-Here are some examples:
+No matter in which file you are writing the examples, the language is
+defined only by the prompt.
+
+So you could write Python examples inside of a Ruby (`.rb`) file. In
+fact you could write examples in *different* languages inside any file.
+
+Here are some examples of Python and Ruby examples:
 
 ```python
 >>> 1 + 2   # python

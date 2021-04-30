@@ -56,7 +56,7 @@ class CppCommentDelimiter(ZoneDelimiter):
 
 
 class HashCommentDelimiter(ZoneDelimiter):
-    target = {'.rb'}
+    target = {'.rb', '.sh'}
 
     @constant
     def zone_regex(self):
