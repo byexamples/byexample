@@ -11,4 +11,5 @@ todo
 .flinks.tmp
 test/ds/some.log
 test/ds/django.conf
+test/ds/args
 prof-traces

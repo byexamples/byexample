@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import sys, argparse, os, multiprocessing
+import sys, argparse, os, multiprocessing, glob, itertools
 from . import __version__, __doc__, _author, _license, _url, _license_disclaimer
 
 from .log_level import str_to_level
@@ -166,6 +166,19 @@ class _HelpExtraAction(argparse.Action):
             HelpExtraFormatter.unhide()
         parser.print_help()
         parser.exit()
+
+
+def _expand_glob_patterns(gpatterns):
+    # expand the glob patterns into a list of names
+    names = itertools.chain(
+        *[glob.iglob(g, recursive=True) for g in gpatterns]
+    )
+
+    # filter out the names that are empty or are directories
+    fnames = (f for f in names if f.strip() and not os.path.isdir(f))
+
+    # remove duplicated and return a list (order is undefined)
+    return list(set(fnames))
 
 
 @profile
@@ -461,6 +474,10 @@ def parse_args(args=None):
         parser.error(
             "argument --x-log-mask: '%s' is an unknown log level." % k
         )
+
+    # expand the file list based on the glob patterns give (if any)
+    namespace.files = _expand_glob_patterns(namespace.files)
+    namespace.skip = _expand_glob_patterns(namespace.skip)
 
     # which files are allowed to be executed: these are the 'testfiles'
     # Note: the order is undefined, we sort them but this is not guaranteed
