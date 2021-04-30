@@ -97,3 +97,21 @@ Try a different one with '--encoding' from the command line.
 <...>
 [ABORT] Pass: 0 Fail: 0 Skip: 0
 ```
+
+## Dry and glob expansion
+
+`--dry` does not run any example, only parse them. And with a little of
+verbosity, it lists the files and the count of examples per file.
+
+The file names support *glob expansion* done by `byexample` itself.
+
+```shell
+$ byexample -l cpp,shell --dry -v --skip 'docs/languages/p*.md' -- 'docs/languages/*.md'
+[i] File docs/languages/cpp.md, 29 examples.
+[i] File docs/languages/elixir.md, 0 examples.
+[i] File docs/languages/gdb.md, 5 examples.
+[i] File docs/languages/javascript.md, 0 examples.
+[i] File docs/languages/ruby.md, 0 examples.
+[i] File docs/languages/shell.md, 37 examples.
+```
+

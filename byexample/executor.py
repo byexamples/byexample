@@ -254,9 +254,10 @@ class FileExecutor(object):
 
     @log_context('byexample.exec')
     def dry_execute(self, examples, filepath):
+        clog().info('File %s, %i examples.', filepath, len(examples))
         for example in examples:
             with enhance_exceptions(example, example.parser, self.use_colors), \
-                log_with(runner.language):
+                log_with(example.runner.language):
                 # build but ignore any output; even do not use the concerns
                 example.parse_yourself(concerns=None)
 
