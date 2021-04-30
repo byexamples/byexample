@@ -1,5 +1,5 @@
 ```python
->>> x = input("Some large text: ")      # byexample: +input
+>>> x = input("Some large text: ")      # byexample: +type
 Some typo! text: [foo]
 
 >>> x

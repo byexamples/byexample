@@ -13,16 +13,19 @@ like when you are running an *interactive* code or command.
 
 Starting from 9.1.0, `byexample` allows you to *type* text.
 
+This is enabled with `+input` and starting from 10.0.3 you
+can enable it with `+type`.
+
 Imagine the following scenario where an example requests your
 name:
 
 ```python
->>> name = input("your name please: ")      # byexample: +input
+>>> name = input("your name please: ")      # byexample: +type
 your name please: [john]
 ```
 
 The example works as usual with two peculiarities: first we
-enable the typing mode with `+input` and second we write between
+enable the typing mode with `+type` and second we write between
 brackets the text that we want to type like `[john]`.
 
 `byexample` will run the example and when it find the moment it will
@@ -42,7 +45,7 @@ Here is an example that ask several things at once:
 ...     a = input("age: ")
 ...     print("%s years old" % a)
 
->>> ask()               # byexample: +input
+>>> ask()               # byexample: +type
 name: [john]
 Nice to meet you john!
 age: [42]
@@ -72,7 +75,7 @@ how you need to input a text that spans *more than one* line.
 ...             break
 ...     print(''.join(lines))
 
->>> read_lines(3)               # byexample: +input
+>>> read_lines(3)               # byexample: +type
 [hello]
 [my name is John]
 [how are you?]
@@ -80,6 +83,28 @@ recv: hello
 recv: my name is John
 recv: how are you?
 ```
+
+## Alias: +input / +type
+
+Starting from `byexample 10.0.3` you can use `+type` or `+input`
+to enable this feature. Both are the same.
+
+```python
+>>> name = input("your name please: ")      # byexample: +type
+your name please: [john]
+
+>>> print(name)
+john
+
+>>> name = input("your name please: ")      # byexample: +input
+your name please: [joanna]
+
+>>> print(name)
+joanna
+```
+
+If you are using an older version of `byexample`, `+type` will
+not available and you will have to use `+input`.
 
 ## Support
 
@@ -109,7 +134,7 @@ of text before the input tag and if there is not enough it will complain:
 ```shell
 $ cat test/ds/minimum-ctx-input.md          # byexample: +rm= 
  <...>
- >>> x = input("say: ")      # byexample: +input
+ >>> x = input("say: ")      # byexample: +type
  sa<...>y: [foo]
  
  >>> x
@@ -139,7 +164,7 @@ eventually timeout:
 ```shell
 $ cat test/ds/maximum-ctx-input.md      # byexample: +rm= 
  <...>
- >>> x = input("Some large text: ")      # byexample: +input
+ >>> x = input("Some large text: ")      # byexample: +type
  Some typo! text: [foo]
  
  >>> x
@@ -195,16 +220,16 @@ and use it as input for another.
 
 The only thing you need is to enable the
 [paste mode](/{{ site.uprefix }}/basic/capture-and-paste)
-`+paste` and the input mode `+input`.
+`+paste` and the input mode `+type`.
 
 ```python
 >>> 42
 <magic>
 
->>> n = input("a number please: ")      # byexample: +paste +input
+>>> n = input("a number please: ")      # byexample: +paste +type
 a number please: [<magic>]
 
->>> s = input("a password: ")           # byexample: +paste +input
+>>> s = input("a password: ")           # byexample: +paste +type
 a password: [admin<magic>!]
 
 >>> n
@@ -225,6 +250,9 @@ a password: [admin<magic>!]
 Hide these examples/tests from the user: they don't add too much
 value but they are here because is a simple way to test if all
 the interpreters support the 'input' feature.
+
+Also use '+input' instead of '+type' to test this flag too
+which should be an alias.
 
 Python:
 >>> input("num: ")   # byexample: +input

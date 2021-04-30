@@ -167,7 +167,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
         input_prefix_len_range = options['input_prefix_range']
         expected_regexs, charnos, rcounts, tags_by_idx, input_list = self.expected_as_regexs(
-            example.expected_str, options['tags'], options['input'],
+            example.expected_str, options['tags'], options['type'],
             options['norm_ws'], input_prefix_len_range
         )
 

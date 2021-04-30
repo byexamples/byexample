@@ -1,5 +1,5 @@
 ```python
->>> x = input("say: ")      # byexample: +input
+>>> x = input("say: ")      # byexample: +type
 sa<...>y: [foo]
 
 >>> x

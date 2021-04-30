@@ -44,7 +44,7 @@ def _build_fake_example(
                 'norm_ws': False,
                 'tags': True,
                 'rm': [],
-                'input': False,
+                'type': False,
                 'input_prefix_range': (6, 12)
             }
         )

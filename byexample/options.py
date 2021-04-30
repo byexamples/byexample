@@ -306,16 +306,52 @@ class OptionParser(argparse.ArgumentParser):
         self.__defaults = {}
 
     def add_flag(self, name, group_required=False, **kw):
+        ''' Add '+foo' and '-foo' flags (where foo is taken from <name>).
+
+            The user cannot set +foo and -foo at the same time
+            (they are exclusive). The user may not provide none but
+            if <group_required> is True the user must provide one.
+
+            If <aliases> keyword is given, it must be a list of
+            more names which are aliases of <name>.
+        '''
         has_default = False
         if 'default' in kw:
             has_default = True
             tmp = kw.pop('default')
 
+        if 'aliases' in kw:
+            aliases = kw.pop('aliases')
+        else:
+            aliases = []
+
+        # Setup a mutual exclusive group so both +foo and -foo cannot
+        # be set. And if <group_required> is True, the user must provide
+        # one.
         g = self.add_mutually_exclusive_group(required=group_required)
         action = g.add_argument("+" + name, action='store_true', **kw)
         g.add_argument(
             "-" + name, action='store_false', help=argparse.SUPPRESS
         )
+
+        # ensure that all the aliases use the same 'destination' name
+        # so after the parsing of the options, all the aliases will be
+        # saved in the same 'destination' field.
+        dest = kw.get('dest', action.dest)
+
+        # for each alias, add in the help message a comment saying that
+        # this is an alias of x.
+        helpmsg = kw.get('help', None)
+        for alias in aliases:
+            if helpmsg is not None:
+                kw['help'] = helpmsg + (' (alias: +%s)' % name)
+            g.add_argument("+" + alias, action='store_true', dest=dest, **kw)
+            g.add_argument(
+                "-" + alias,
+                action='store_false',
+                dest=dest,
+                help=argparse.SUPPRESS
+            )
 
         if has_default:
             self.__defaults[action.dest] = tmp

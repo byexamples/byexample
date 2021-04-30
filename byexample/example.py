@@ -81,11 +81,11 @@ class Example(object):
     '42'
 
     >>> example.options
-    {'input': False,
-     'input_prefix_range': (6, 12),
+    {'input_prefix_range': (6, 12),
      'norm_ws': False,
      'rm': [],
-     'tags': True}
+     'tags': True,
+     'type': False}
 
     The example will have a reference to the current options
     which are the combination (stack) of all the options from the
