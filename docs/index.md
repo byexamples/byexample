@@ -62,6 +62,29 @@ Currently ``byexample`` supports the following languages:
   </div>
 </div>
 
+## Usage
+
+You [write your documentation with examples](https://byexamples.github.io/byexample/overview/where-should-I-write-the-examples)
+in a Markdown or other text file.
+
+Then, you run `byexample` from the command line selecting which
+language or languages you want to run:
+[Python](https://byexamples.github.io/byexample/languages/python),
+[Ruby](https://byexamples.github.io/byexample/languages/ruby),
+[Shell](https://byexamples.github.io/byexample/languages/shell) and
+[C/C++](https://byexamples.github.io/byexample/languages/cpp) to
+mention a few.
+
+And yes, you can write examples in different languages in the same
+file. [Combine them to combine their
+strengths](https://byexamples.github.io/byexample/recipes/advanced-checks)
+and make your life easier.
+
+That's all. `byexample` will compare the output of the examples with the
+expected ones and it will [show any
+difference](https://byexamples.github.io/byexample/overview/differences).
+
+
 ## How do I get started?
 
 First, you need to install it:
