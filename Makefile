@@ -191,7 +191,6 @@ coverage: clean_test
 	@PYTHONIOENCODING=utf-8 BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py @test/coverage.env --pretty none -vvvvvvvvvvvv README.md > /dev/null
 	@echo
 	@echo "Results:"
-	@coverage combine
 	@coverage report --include="byexample/*"
 	@make -s clean_test
 
