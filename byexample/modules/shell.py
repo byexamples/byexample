@@ -86,10 +86,12 @@ class ShellParser(ExampleParser):
         parser.add_argument(
             "+stop-on-silence",
             nargs='?',
+            metavar='secs',
             default=False,
             const=0.2,
             type=float,
-            help="stop the process if it timeout."
+            help=
+            "stop the process if no output is read in the last <secs> seconds (0.2 secs by default)."
         )
         parser.add_argument(
             "+shell",

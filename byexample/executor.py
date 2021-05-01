@@ -354,7 +354,7 @@ class FileExecutor(object):
                             recovered = example.runner.cancel(example, options)
                             clog().warn('Recovering control of %s %s',
                                     example.runner.language,
-                                    'succeded, continuing the execution.' if recovered else \
+                                    'succeeded, continuing the execution.' if recovered else \
                                             'failed.')
 
                         if crashed or (timedout and not recovered):
