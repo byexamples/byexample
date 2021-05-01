@@ -96,6 +96,9 @@ class Jobs(object):
     def ignore_sigint(self):
         return signal.signal(signal.SIGINT, signal.SIG_IGN)
 
+    def restore_sigint(self, handler):
+        return signal.signal(signal.SIGINT, handler)
+
     def send_next_item_from(self, rest):
         self.input.put(rest[0])
         del rest[0]
@@ -127,14 +130,20 @@ class Jobs(object):
             '''
         exit_status = Status.ok
         end_sentinels_sent = False
+        keyboard_interrupt_received = False
         while nitems:
             with allow_sigint(self.interrupt_handler):
                 try:
                     failed, aborted, user_aborted, error = self.output.get()
                 except KeyboardInterrupt:
-                    clog().note("User aborted. Closing...")
-                    failed = aborted = error = False
-                    user_aborted = True
+                    keyboard_interrupt_received = True
+
+            if keyboard_interrupt_received:
+                clog().note(
+                    "User aborted. Waiting to finish the current active executions..."
+                )
+                failed = aborted = error = False
+                user_aborted = True
 
             nitems -= 1
 
@@ -158,8 +167,20 @@ class Jobs(object):
                 end_sentinels_sent = True
                 self.stop_workers()
 
+        keyboard_interrupt_received = False
         with allow_sigint(self.interrupt_handler):
-            self.join_jobs()
+            try:
+                self.join_jobs()
+            except KeyboardInterrupt:
+                keyboard_interrupt_received = True
+
+        if keyboard_interrupt_received:
+            clog().warn(
+                "Not waiting for the current active executions to finish...\n" +\
+                "Pressing more times Ctrl-C will force an immediate shutdown\n" +\
+                "but it will leave resources uncleaned (dangerous/unsafe)."
+            )
+
         return exit_status
 
     def run(self, func, items, fail_fast, cfg):
@@ -167,8 +188,11 @@ class Jobs(object):
             if one fails and <fail_fast> is True (see loop()).
             '''
         self.interrupt_handler = self.ignore_sigint()
-        rest = self.spawn_jobs(func, items, cfg)
-        return self.loop(len(items), rest, fail_fast)
+        try:
+            rest = self.spawn_jobs(func, items, cfg)
+            return self.loop(len(items), rest, fail_fast)
+        finally:
+            self.restore_sigint(self.interrupt_handler)
 
 
 @contextlib.contextmanager
