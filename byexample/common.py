@@ -150,21 +150,29 @@ def tohuman(s):
     return s
 
 
-def constant(argumentless_method):
+def constant(method):
     ''' Cache the result of calling the method in the first call
         and save the result in <self>.
 
         The method must always return the same results and the result
         itself must be an immutable object so it is safe to cache the
         result and share it among different threads.
-        '''
-    placeholder = '_saved_constant_result_of_%s' % argumentless_method.__name__
 
-    def wrapped(self):
+        Further calls to the method will yield the same result even
+        if the arguments or <self> differ.
+
+        If you want to cache the different values returned under different
+        arguments, see functools.lru_cache. However, byexample may not be
+        able to preserve correctness and thread-safety for it. (consider
+        that as a "TODO").
+        '''
+    placeholder = '_saved_constant_result_of_%s' % method.__name__
+
+    def wrapped(self, *args, **kargs):
         try:
             return getattr(self, placeholder)
         except AttributeError:
-            val = argumentless_method(self)
+            val = method(self, *args, **kargs)
             setattr(self, placeholder, val)
             return val
 
