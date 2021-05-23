@@ -244,7 +244,8 @@ class RubyInterpreter(ExampleRunner, PexpectMixin):
         # if we force the mode from the command line (whe we spawn IRB)
         # Make sure that the first thing executed restores the default prompt.
         self._exec_and_wait(
-            'IRB.CurrentContext.prompt_mode = :DEFAULT\n',
+            'IRB.CurrentContext.prompt_mode = :DEFAULT\n' +
+            'IRB.CurrentContext.newline_before_multiline_output = false\n',
             options,
             timeout=dfl_timeout
         )
