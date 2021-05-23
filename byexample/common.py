@@ -257,7 +257,7 @@ except ImportError:
 class ShebangTemplate(string.Template):
     delimiter = '%'
 
-    def quote_and_substitute(self, tokens):
+    def quote_and_substitute(self, tokens, joined=True):
         '''
         Quote each token to be suitable for shell expansion and then
         perform a substitution in the template.
@@ -290,6 +290,16 @@ class ShebangTemplate(string.Template):
         >>> shebang = '/bin/sh -c \'%e %p %a >/dev/null\''
         >>> print(ShebangTemplate(shebang).quote_and_substitute(tokens))
         /bin/sh -c '/usr/bin/env '"'"'py'"'"'"'"'"'"'"'"'thon'"'"' -i -c '"'"'blue = '"'"'"'"'"'"'"'"'1'"'"'"'"'"'"'"'"''"'"' >/dev/null'
+
+        As seen, by default ShebangTemplate returns a string, a "joined"
+        version of all the elements expanded.
+
+        If you need it, you can skip that (suitable for calling
+        subprocess.call or similar without using a shell):
+        >>> shebang = '%e %p %a'
+        >>> l = ShebangTemplate(shebang).quote_and_substitute(tokens, joined=False)
+        >>> print(" --- ".join(l))
+        /usr/bin/env --- py'thon --- -i --- -c --- blue = '1'
         '''
 
         self._tokens = {}
@@ -315,7 +325,8 @@ class ShebangTemplate(string.Template):
 
             cmd.append(x)
 
-        return ' '.join(cmd)
+        cmd = ' '.join(cmd)
+        return cmd if joined else shlex.split(cmd)
 
 
 class Countdown:
