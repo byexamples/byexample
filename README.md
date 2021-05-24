@@ -154,7 +154,7 @@ Current version:
 
 ```shell
 $ byexample -V
-byexample 10.0.3 (Python <...>) - GNU GPLv3
+byexample 10.0.4 (Python <...>) - GNU GPLv3
 <...>
 Copyright (C) Di Paola Martin - https://byexamples.github.io
 <...>
