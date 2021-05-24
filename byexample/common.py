@@ -150,21 +150,29 @@ def tohuman(s):
     return s
 
 
-def constant(argumentless_method):
+def constant(method):
     ''' Cache the result of calling the method in the first call
         and save the result in <self>.
 
         The method must always return the same results and the result
         itself must be an immutable object so it is safe to cache the
         result and share it among different threads.
-        '''
-    placeholder = '_saved_constant_result_of_%s' % argumentless_method.__name__
 
-    def wrapped(self):
+        Further calls to the method will yield the same result even
+        if the arguments or <self> differ.
+
+        If you want to cache the different values returned under different
+        arguments, see functools.lru_cache. However, byexample may not be
+        able to preserve correctness and thread-safety for it. (consider
+        that as a "TODO").
+        '''
+    placeholder = '_saved_constant_result_of_%s' % method.__name__
+
+    def wrapped(self, *args, **kargs):
         try:
             return getattr(self, placeholder)
         except AttributeError:
-            val = argumentless_method(self)
+            val = method(self, *args, **kargs)
             setattr(self, placeholder, val)
             return val
 
@@ -249,7 +257,7 @@ except ImportError:
 class ShebangTemplate(string.Template):
     delimiter = '%'
 
-    def quote_and_substitute(self, tokens):
+    def quote_and_substitute(self, tokens, joined=True):
         '''
         Quote each token to be suitable for shell expansion and then
         perform a substitution in the template.
@@ -282,6 +290,16 @@ class ShebangTemplate(string.Template):
         >>> shebang = '/bin/sh -c \'%e %p %a >/dev/null\''
         >>> print(ShebangTemplate(shebang).quote_and_substitute(tokens))
         /bin/sh -c '/usr/bin/env '"'"'py'"'"'"'"'"'"'"'"'thon'"'"' -i -c '"'"'blue = '"'"'"'"'"'"'"'"'1'"'"'"'"'"'"'"'"''"'"' >/dev/null'
+
+        As seen, by default ShebangTemplate returns a string, a "joined"
+        version of all the elements expanded.
+
+        If you need it, you can skip that (suitable for calling
+        subprocess.call or similar without using a shell):
+        >>> shebang = '%e %p %a'
+        >>> l = ShebangTemplate(shebang).quote_and_substitute(tokens, joined=False)
+        >>> print(" --- ".join(l))
+        /usr/bin/env --- py'thon --- -i --- -c --- blue = '1'
         '''
 
         self._tokens = {}
@@ -307,7 +325,8 @@ class ShebangTemplate(string.Template):
 
             cmd.append(x)
 
-        return ' '.join(cmd)
+        cmd = ' '.join(cmd)
+        return cmd if joined else shlex.split(cmd)
 
 
 class Countdown:

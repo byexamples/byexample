@@ -150,6 +150,16 @@ class ExampleRunner(object):
         '''
         return False
 
+    def get_version(self, options):
+        '''
+        Return the version of the underlying interpreter or runner in form
+        of a tuple. Return None if no version was determined.
+
+        This method may be called several times: it may be beneficial to
+        cache the results.
+        '''
+        return None
+
 
 class PexpectMixin(object):
     def __init__(self, PS1_re, any_PS_re):

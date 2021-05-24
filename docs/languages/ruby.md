@@ -54,8 +54,15 @@ the option ``-ruby-pretty-print``
 ```
 
 > **Changed** in ``byexample 8.0.0``: make sure that a ``Hash``
-> is printted in a deterministic way with its keys sorted.
+> is printed in a deterministic way with its keys sorted.
 > Before ``byexample 8.0.0`` the order was undefined.
+
+> **Changed** in `byexample 10.0.4`: IRB `> 1.2.2` adds a newline
+> between the `=>` marker and the output if it spans more than one line.
+> To maintain backward compatibility `byexample` will suppress that
+> newline by default.
+> If you don't want that you can pass `+ruby-start-large-output-in-new-line`
+> flag in the [command line](/{{ site.uprefix }}/basic/options) with `-o`.
 
 ### The object returned
 
