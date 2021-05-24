@@ -124,6 +124,12 @@ class RubyParser(ExampleParser):
                             help='print the expression\'s value (true); ' +\
                                  'suppress it (false); or print it only ' +\
                                  'if the example has a => (auto, the default)')
+        parser.add_flag(
+            "ruby-start-large-output-in-new-line",
+            default=False,
+            help="add a newline after the => if the output that follows " +\
+                 "does not fit in a single line. (irb >= 1.2.2)"
+        )
         return parser
 
 
@@ -229,8 +235,11 @@ class RubyInterpreter(ExampleRunner, PexpectMixin):
     def initialize(self, options):
         ruby_pretty_print = options['ruby_pretty_print']
 
-        # always/yes; never/no; autoetect normalization
+        # always/yes; never/no; autodetect normalization
         self.expr_print_mode = options['ruby_expr_print']
+
+        newline_before_multiline_output = options[
+            'ruby_start_large_output_in_new_line']
 
         version = self.get_version(options)
         cmd = self.build_cmd(options, *self.get_default_cmd(version))
@@ -243,9 +252,13 @@ class RubyInterpreter(ExampleRunner, PexpectMixin):
         # In RVM contexts the IRB's prompt mode is changed even
         # if we force the mode from the command line (whe we spawn IRB)
         # Make sure that the first thing executed restores the default prompt.
+        #
+        # Also, set if IRB should print or not a newline between the => marker
+        # and the output if it is larger than a single line
+        nl = "true" if newline_before_multiline_output else "false"
         self._exec_and_wait(
             'IRB.CurrentContext.prompt_mode = :DEFAULT\n' +
-            'IRB.CurrentContext.newline_before_multiline_output = false\n',
+            'IRB.CurrentContext.newline_before_multiline_output = %s\n' % nl,
             options,
             timeout=dfl_timeout
         )
