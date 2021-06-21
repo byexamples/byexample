@@ -258,6 +258,18 @@ def parse_args(args=None):
         default=[],
         help='skip these files'
     )
+    g.add_argument(
+        "--capture-env-var",
+        "--capture-env-vars",
+        action=_CSV,
+        metavar='<var names>',
+        default=[],
+        dest='captured_env_vars',
+        help='capture some environment variables and put them in ' + \
+             'the clipboard so they can be pasted and used in ' + \
+             'conditional executions. ' + \
+             'Comma separated syntax is also accepted.'
+    )
 
     g = parser.add_argument_group("Diff Options")
     g.add_argument(
@@ -439,14 +451,14 @@ def parse_args(args=None):
     # Some extra checks
     # -----------------
 
-    # the languages must be uniq
-    copy = set(namespace.languages)  # copy of uniqs
+    # the languages must be unique
+    copy = set(namespace.languages)  # copy of unique languages
     for l in namespace.languages:
         if l not in copy:
             parser.error("argument --languages: '%s' is duplicated." % l)
         copy.remove(l)
 
-    # the shebangs must belong to a language and must be uniq
+    # the shebangs must belong to a language and must be unique
     copy = set(k for k, v in namespace.shebangs)
     for k in (k for k, v in namespace.shebangs):
         if k not in copy:
@@ -457,7 +469,7 @@ def parse_args(args=None):
 
     namespace.shebangs = dict(namespace.shebangs)
 
-    # the log masks must be uniq and the levels must be known
+    # the log masks must be unique and the levels must be known
     copy = set(k for k, v in namespace.log_masks)
     for k, v in namespace.log_masks:
         if k not in copy:
@@ -486,6 +498,15 @@ def parse_args(args=None):
     namespace.testfiles = list(
         sorted(f for f in namespace.files if f in allowed)
     )
+
+    # the captured environment variables must be unique
+    copy = set(namespace.captured_env_vars)
+    for k in namespace.captured_env_vars:
+        if k not in copy:
+            parser.error(
+                "argument --captured-env-vars: '%s' is duplicated." % k
+            )
+        copy.remove(k)
 
     # Do not spawn more jobs than testfiles
     namespace.jobs = min(namespace.jobs, len(namespace.testfiles))

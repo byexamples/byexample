@@ -91,11 +91,11 @@ capabilities
 ```
 $ byexample -h                                # byexample: +norm-ws -tags +rm=  +diff=ndiff
 usage: byexample -l <languages> [--ff] [--timeout <secs>] [-j <n>] [--dry]
-                 [--skip <file> [<file> ...]]
+                 [--skip <file> [<file> ...]] [--capture-env-var <var names>]
                  [-d {none,unified,ndiff,context,tool}] [--difftool <cmd>]
                  [--no-enhance-diff] [-o <options>] [--show-options]
-                 [-m <dir>] [--encoding <enc>] [--show-failures <n>] [--pretty {none,all}] [-V]
-                 [-v | -q] [-h | -xh]
+                 [-m <dir>] [--encoding <enc>] [--show-failures <n>]
+                 [--pretty {none,all}] [-V] [-v | -q] [-h | -xh]
  
 Write snippets of code in C++, Python, Ruby, and others as documentation and
 execute them as regression tests.
@@ -120,6 +120,11 @@ Execution Options:
   --dry                 do not run any example, only parse them.
   --skip <file> [<file> ...]
                         skip these files
+  --capture-env-var <var names>, --capture-env-vars <var names>
+                        capture some environment variables and put them in the
+                        clipboard so they can be pasted and used in
+                        conditional executions. Comma separated syntax is also
+                        accepted.
  
 Diff Options:
   -d {none,unified,ndiff,context,tool}, --diff {none,unified,ndiff,context,tool}
