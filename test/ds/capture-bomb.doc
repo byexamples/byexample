@@ -1,0 +1,2 @@
+$ echo "Booom!"    # byexample: +unless=bomb_disabled
+The bomb should not explode!

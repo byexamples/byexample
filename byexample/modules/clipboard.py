@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from byexample.concern import Concern
 import byexample.regex as re
 from functools import partial
+import os
 
 stability = 'provisional'
 
@@ -19,8 +20,19 @@ class PasteError(Exception):
 class Clipboard(Concern):
     target = 'clipboard'
 
-    def __init__(self, verbosity, encoding, **unused):
-        pass
+    def __init__(self, verbosity, encoding, sharer, options, **unused):
+        if sharer is None:
+            # we are in the worker thread, let's get a private copy of
+            # the environment variables captured (if any)
+            # this private copy will ensure that no other worker can
+            # change the values or the examples executed (which can
+            # change the environment but they will not change this copy)
+            # this is a way to make the workers more independent.
+            captured = options['captured_env_vars']
+            self.envs = {
+                name: os.getenv(name, default='')
+                for name in captured
+            }
 
     def extend_option_parser(self, parser):
         parser.add_flag(
@@ -31,7 +43,8 @@ class Clipboard(Concern):
         return parser
 
     def start(self, examples, runners, filepath, options):
-        self.clipboard = {}
+        # get a copy as the default state of the clipboard
+        self.clipboard = dict(self.envs)
         options['clipboard'] = self.clipboard
 
     @staticmethod

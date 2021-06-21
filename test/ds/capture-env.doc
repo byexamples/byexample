@@ -1,0 +1,2 @@
+>>> import os
+>>> assert '<PWD>' == os.getcwd()    # byexample: +paste

@@ -380,6 +380,7 @@ def get_options(args, cfg):
             'interact': False,
             'shebangs': args.shebangs,
             'difftool': args.difftool,
+            'captured_env_vars': args.captured_env_vars,
         }
     )
     clog().chat("Options (cmdline): %s", options)
