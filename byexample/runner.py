@@ -799,6 +799,7 @@ class PexpectMixin(object):
 
             This algorithm is not bug-free, just a best-effort one.
             '''
+        err_msg = "Interpreter closed unexpectedly during the recovering. May be it is timming issue. Try to increase the timeout for the example."
         try:
             # wait for the prompt, ignore any extra output
             self._expect_prompt(
@@ -810,6 +811,9 @@ class PexpectMixin(object):
             good = True
         except TimeoutException as ex:
             self._drop_output()
+            good = False
+        except InterpreterClosedUnexpectedly:
+            clog().warn(err_msg)
             good = False
 
         if good:
@@ -830,5 +834,8 @@ class PexpectMixin(object):
                 good = False  # we cannot ensure that we are in sync
             except TimeoutException as ex:
                 self._drop_output()
+            except InterpreterClosedUnexpectedly:
+                clog().warn(err_msg)
+                good = False
 
         return good
