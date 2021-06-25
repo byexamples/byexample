@@ -437,6 +437,7 @@ class PexpectMixin(object):
         self._expect_prompt_or_type(
             options, countdown, prompt_re=self._PS1_re, input_list=input_list
         )
+        self._expect_delayed_output(options)
 
         if input_list:
             s = short_string(input_list[0][-1])
@@ -450,6 +451,27 @@ class PexpectMixin(object):
             clog().warn(msg, *args)
 
         return self._get_output(options)
+
+    @profile
+    def _expect_delayed_output(self, options):
+        ''' Some interpreters may output text *after* printing the prompt.
+            This method is called to do a last output recollection before
+            processing the output and returning it to the user.
+            '''
+        timeout = options['x']['delayafterprompt']
+        if not timeout:
+            return
+
+        expect = [pexpect.TIMEOUT, pexpect.EOF]
+        Timeout, EOF = range(len(expect))
+
+        what = self._interpreter.expect(expect, timeout=timeout)
+
+        output = self._interpreter.before
+        self._add_output(output)
+
+        if what == EOF:
+            self._interpreter_closed_unexpectedly_error(options)
 
     def _create_terminal(self, options):
         rows, cols = options['geometry']
@@ -626,13 +648,13 @@ class PexpectMixin(object):
             return False
 
         elif what == EOF:
-            self._interpreter_closed_unexpectedly_error()
+            self._interpreter_closed_unexpectedly_error(options)
 
         assert what == PS_found
         self._last_output_may_be_incomplete = False
         return True
 
-    def _interpreter_closed_unexpectedly_error(self):
+    def _interpreter_closed_unexpectedly_error(self, options):
         msg = "Interpreter closed unexpectedly.\nThis could happen because the example triggered a close/shutdown/exit action,\nthe interpreter was killed by someone else or because the interpreter just crashed.\n\nLast 1000 bytes read:\n%s"
         msg = msg % ''.join(self._output_between_prompts)[-1000:]
         out = self._get_output(options)
