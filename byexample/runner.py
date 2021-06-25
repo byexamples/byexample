@@ -613,10 +613,7 @@ class PexpectMixin(object):
         what, output = self._expect_and_read(expect, timeout, expect_kinds)
         countdown.stop()
 
-        if self._last_output_may_be_incomplete:
-            self._output_between_prompts[-1] += output
-        else:
-            self._output_between_prompts.append(output)
+        self._add_output(output)
 
         if what == Timeout:
             msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\n\nLast 1000 bytes read:\n%s"
@@ -637,6 +634,20 @@ class PexpectMixin(object):
         assert what == PS_found
         self._last_output_may_be_incomplete = False
         return True
+
+    def _add_output(self, output):
+        ''' Add the given output to the output between prompts.
+
+            If _last_output_may_be_incomplete is set, assume that the lastest
+            output was incomplete and the given output is a continuation
+            of it (like part of the same line).
+
+            Otherwise assume that it is a new chunk/line.
+            '''
+        if self._last_output_may_be_incomplete:
+            self._output_between_prompts[-1] += output
+        else:
+            self._output_between_prompts.append(output)
 
     @profile
     def _expect_and_read(self, expect_list, timeout, expect_kinds):
