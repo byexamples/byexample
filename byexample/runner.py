@@ -626,14 +626,17 @@ class PexpectMixin(object):
             return False
 
         elif what == EOF:
-            msg = "Interpreter closed unexpectedly.\nThis could happen because the example triggered a close/shutdown/exit action,\nthe interpreter was killed by someone else or because the interpreter just crashed.\n\nLast 1000 bytes read:\n%s"
-            msg = msg % ''.join(self._output_between_prompts)[-1000:]
-            out = self._get_output(options)
-            raise InterpreterClosedUnexpectedly(msg, out)
+            self._interpreter_closed_unexpectedly_error()
 
         assert what == PS_found
         self._last_output_may_be_incomplete = False
         return True
+
+    def _interpreter_closed_unexpectedly_error(self):
+        msg = "Interpreter closed unexpectedly.\nThis could happen because the example triggered a close/shutdown/exit action,\nthe interpreter was killed by someone else or because the interpreter just crashed.\n\nLast 1000 bytes read:\n%s"
+        msg = msg % ''.join(self._output_between_prompts)[-1000:]
+        out = self._get_output(options)
+        raise InterpreterClosedUnexpectedly(msg, out)
 
     def _add_output(self, output):
         ''' Add the given output to the output between prompts.
