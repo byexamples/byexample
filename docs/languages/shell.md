@@ -278,6 +278,34 @@ to timeout and it will stop it later.
 > **Note:** ``+stop-on-timeout`` requires the job control and monitoring to be
 > enabled (``set -m``). This should be the default in your shell.
 
+### Stop signal
+
+`+stop-on-timeout` and `+stop-on-silence` *stop* the running process but
+what does it mean?
+
+By default `byexample` sends a `suspend` signal (`SIGTSTP` or `^Z` in
+Linux parlance) which stops the process and sends it to background.
+
+The signal used can be changed with `+stop-signal`.
+
+If you want to *interrupt* the process and very likely finish it, send
+an `interrupt` signal (`SIGINT` or `^C`):
+
+```shell
+$ sleep 300      # byexample: +stop-on-silence +stop-signal=interrupt
+```
+
+If the process is waiting for input perhaps *closing* the standard
+input is more adequate than interrupting the process.
+
+For that send an `eof` signal (`^D`):
+
+```shell
+$ cat -      # byexample: +stop-on-silence +stop-signal=eof
+```
+
+> *New* in ``byexample 10.1.0``.
+
 ## Using other shells
 
 ``byexample`` supports ``bash``, ``dash`` and ``ksh`` and the shell
