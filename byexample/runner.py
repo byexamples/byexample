@@ -507,12 +507,12 @@ class PexpectMixin(object):
         if earlier_re is None:
             del expect[-1]
 
+        expect_kinds = (PS_found, Timeout, EOF, Earlier)
+
         countdown.start()
-        with profile_ctx("expect"):
-            what = self._interpreter.expect(expect, timeout=timeout)
+        what, output = self._expect_and_read(expect, timeout, expect_kinds)
         countdown.stop()
 
-        output = self._interpreter.before
         if self._last_output_may_be_incomplete:
             self._output_between_prompts[-1] += output
         else:
@@ -537,6 +537,24 @@ class PexpectMixin(object):
         assert what == PS_found
         self._last_output_may_be_incomplete = False
         return True
+
+    @profile
+    def _expect_and_read(self, expect_list, timeout, expect_kinds):
+        ''' Interact with the Pexpect instance, expect one of the expect
+            list and return what kind of the expected was satisfied
+            having a limited in time.
+
+            Returns the kind and the interpreter's collected output
+            obtained so far.
+
+            This method and its arguments have a very tight dependency
+            with _expect_prompt so it is not 'stable'. Subclasses may override
+            this as the last resort if they have to.
+
+            This is a low-level hook with no backward-compatibility guarantees.
+            '''
+        what = self._interpreter.expect(expect_list, timeout=timeout)
+        return what, self._interpreter.before
 
     @profile
     def _get_output(self, options):
@@ -564,10 +582,10 @@ class PexpectMixin(object):
         return '\n'.join(lines)
 
     def _filter_echo(self, options, output_between_prompts):
-        # if the interpreter doesn't disable the TTY's echo,
+        # If the interpreter doesn't disable the TTY's echo,
         # everything we type in it will be reflected in the output.
         # so this breaks badly self._get_output
-        # experimental feature, use this instead of _get_output
+        # Experimental feature, use this instead of _get_output
 
         # self._output_between_prompts is a list of strings found by pexpect
         # after returning of each pexpect.expect

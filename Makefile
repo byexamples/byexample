@@ -142,6 +142,9 @@ lang-python-test: clean_test
 
 lang-shell-test: clean_test
 	@$(python_bin) test/r.py @test/lang-shell.env
+
+lang-iasm-test: clean_test
+	@$(python_bin) test/r.py @test/lang-iasm.env
 #
 ##
 

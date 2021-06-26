@@ -59,6 +59,19 @@ jobs:
       - run: make deps-dev
       - run: make lang-python-test
 
+  lang-iasm-test:
+    name: "Lang iasm test"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.6"
+      - run: make deps-dev
+      - run: pip install iasm
+      - run: make lang-iasm-test
+
   lang-ruby-test:
     name: "Lang Ruby test"
     runs-on: ubuntu-latest

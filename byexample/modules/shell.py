@@ -94,6 +94,13 @@ class ShellParser(ExampleParser):
             "stop the process if no output is read in the last <secs> seconds (0.2 secs by default)."
         )
         parser.add_argument(
+            "+stop-signal",
+            choices=['suspend', 'eof', 'interrupt'],
+            default='suspend',
+            help=
+            "signal to send when stop-on-timeout/stop-on-silence is used (suspend ^Z by default)."
+        )
+        parser.add_argument(
             "+shell",
             choices=['bash', 'dash', 'ksh', 'sh'],
             default='bash',
@@ -145,6 +152,7 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
     def _run_impl(self, example, options):
         stop_on_timeout = options['stop_on_timeout'] is not False
         stop_on_silence = options['stop_on_silence'] is not False
+        stop_signal = options['stop_signal']
         try:
             return self._exec_and_wait(
                 example.source, options, from_example=example
@@ -154,10 +162,19 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
                 # get the current output
                 out = ex.output
 
-                # stop the process to get back the control of the shell.
-                # this require that the job monitoring system of
-                # the shell is on (set -m)
-                self._sendcontrol('z')
+                if stop_signal == 'suspend':
+                    # stop the process to get back the control of the shell.
+                    # this require that the job monitoring system of
+                    # the shell is on (set -m)
+                    self._sendcontrol('z')
+                elif stop_signal == "eof":
+                    self._sendcontrol('d')
+                elif stop_signal == "interrupt":
+                    self._sendcontrol('c')
+                else:
+                    raise ValueError(
+                        "Unexpected stop-signal '%s'" % stop_signal
+                    )
 
                 # wait for the prompt, ignore any extra output
                 self._expect_prompt(
