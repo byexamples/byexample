@@ -86,6 +86,36 @@ class IAsmParser(ExampleParser):
         #   ; byexample:  +FOO -BAR +ZAZ=42
         return re.compile(r'[;#][ ]\s*byexample:\s*([^\n\'"]*)$', re.MULTILINE)
 
+    def extend_option_parser(self, parser):
+        parser.add_argument(
+            "+iasm-arch",
+            metavar='arch',
+            default='arm',
+            help=
+            "architecture name (arm, x86, sparc, ...); see iasm documentation."
+        )
+        parser.add_argument(
+            "+iasm-mode",
+            metavar='mode',
+            default='arm',
+            help="mode (arm, 32, 64, ...); see iasm documentation."
+        )
+        parser.add_argument(
+            "+iasm-code-size",
+            metavar='sz',
+            default=2 * 1024 * 1024,
+            type=int,
+            help="size of the code segment; see iasm documentation."
+        )
+        parser.add_argument(
+            "+iasm-pc",
+            metavar='addr',
+            default=0x1000000,
+            type=int,
+            help=
+            "starting address, value of the program counter; see iasm documentation."
+        )
+
 
 class IAsmInterpreter(ExampleRunner, PexpectMixin):
     language = 'iasm'
@@ -95,7 +125,7 @@ class IAsmInterpreter(ExampleRunner, PexpectMixin):
 
         PexpectMixin.__init__(self, PS1_re=r':>', any_PS_re=r'[:-]>')
 
-    def get_default_cmd(self, *args, **kargs):
+    def get_default_cmd(self, arch, mode, sz, pc, *args, **kargs):
         return "%e %p %a", {
             'e':
             "/usr/bin/env",
@@ -103,13 +133,13 @@ class IAsmInterpreter(ExampleRunner, PexpectMixin):
             "iasm",
             'a': [
                 "-a",
-                "arm",
+                arch,
                 "-m",
-                "arm",
+                mode,
                 "--code-size",
-                str(2 * 1024 * 1024),
+                str(sz),
                 "--program-counter",
-                str(0x1000000),
+                str(pc),
                 "--simple-prompt",
                 "--no-history",
                 "--reg-glob",
@@ -130,15 +160,20 @@ class IAsmInterpreter(ExampleRunner, PexpectMixin):
     def _run_impl(self, example, options):
         src = example.source
         src = src.rstrip('\n')
-        return self._exec_and_wait(
-            src, options, from_example=example
-        )
+        return self._exec_and_wait(src, options, from_example=example)
 
     def interact(self, example, options):
         PexpectMixin.interact(self)
 
     def initialize(self, options):
-        shebang, tokens = self.get_default_cmd()
+        arch = options['iasm_arch']
+        mode = options['iasm_mode']
+        sz = options['iasm_code_size']
+        pc = options['iasm_pc']
+
+        shebang, tokens = self.get_default_cmd(
+            arch=arch, mode=mode, sz=sz, pc=pc
+        )
         shebang = options['shebangs'].get(self.language, shebang)
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)

@@ -1,3 +1,13 @@
+<!--
+Check that we have byexample installed first
+$ hash byexample                                    # byexample: +fail-fast
+$ hash iasm                                         # byexample: +fail-fast
+
+$ alias byexample=byexample\ --pretty\ none
+
+--
+-->
+
 # iasm: the interactive assembler
 
 You will have to install `iasm` first:
@@ -11,6 +21,24 @@ Or you can download the code from
 
 > **Stability**: ``experimental`` - non backward compatibility changes are
 > possible or even removal between versions (even patch versions).
+
+> *New* in ``byexample 10.1.0``.
+
+## Set architecture and operation mode
+
+`iasm` is capable to emulate different architectures.
+
+The settings can be passed to `iasm` from the command line of
+`byexample`. Once set they cannot be changed at runtime.
+
+```shell
+$ byexample -l iasm -o '+iasm-arch=x86 +iasm-mode=64 +iasm-code-size=102400 +iasm-pc=0' test/ds/iasm.md
+<...>
+[PASS] Pass: 1 Fail: 0 Skip: 0
+```
+
+See the [`iasm` documentation](https://github.com/bad-address/iasm)
+for more information about those.
 
 ## Find interactive examples
 
