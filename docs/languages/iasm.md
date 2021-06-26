@@ -39,16 +39,34 @@ operate with the registers and with the memory `M`:
 pattern.
 
 ```python
-:> ;! show('r*')
+:> ;! show('r[0-9]', 'r1[0-9]')
 ------  -  ------  -  ------  -  ------  -----
-    r0  4  r1      8  r10     0  r11/fp  0
+    r0  4  r1      8  r2      0  r3      0
+    r4  0  r5      0  r6      0  r7      0
+    r8  0  r9/sb   0  r10     0  r11/fp  0
 r12/ip  0  r13/sp  0  r14/lr  0  r15/pc  100:4
-    r2  0  r3      0  r4      0  r5      0
-    r6  0  r7      0  r8      0  r9/sb   0
 ------  -  ------  -  ------  -  ------  -----
 ```
 
 Add `stick=True` to display those registers every time.
+
+```nasm
+:> ;! show('r[0-3]', stick=True)
+--  -  --  -  --  -  --  -
+r0  4  r1  8  r2  0  r3  0
+--  -  --  -  --  -  --  -
+
+:> mov r2, r1
+--  -  --  -  --  -  --  -
+r0  4  r1  8  r2  8  r3  0
+--  -  --  -  --  -  --  -
+```
+
+Call `show(stick=True)` to restore the defaults:
+
+```nasm
+:> ;! show(stick=True)
+```
 
 ## `byexample` options
 
