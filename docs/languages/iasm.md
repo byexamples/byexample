@@ -78,7 +78,7 @@ r12/ip  0  r13/sp  0  r14/lr  0  r15/pc  100:4
 
 Add `stick=True` to display those registers every time.
 
-```nasm
+```python
 :> ;! show('r[0-3]', stick=True)
 --  -  --  -  --  -  --  -
 r0  4  r1  8  r2  0  r3  0
@@ -92,7 +92,7 @@ r0  4  r1  8  r2  8  r3  0
 
 Call `show(stick=True)` to restore the defaults:
 
-```nasm
+```python
 :> ;! show(stick=True)
 ```
 
