@@ -264,7 +264,8 @@ class PexpectMixin(object):
         wait_first_prompt=True,
         first_prompt_timeout=None,
         initial_prompt=None,
-        subprocess=False
+        subprocess=False,
+        env_update=None
     ):
         self._cmd = None
 
@@ -275,6 +276,8 @@ class PexpectMixin(object):
         self._terminal_default_geometry = (rows, cols)
 
         env = os.environ.copy()
+        if env_update:
+            env.update(env_update)
         env.update({'LINES': str(rows), 'COLUMNS': str(cols)})
 
         self._drop_output()  # there shouldn't be any output yet but...
