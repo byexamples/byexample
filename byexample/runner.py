@@ -306,6 +306,8 @@ class PexpectMixin(object):
         self._interpreter.delaybeforesend = options['x']['delaybeforesend']
         self._interpreter.delayafterread = None
 
+        self._last_num_lines_sent = 0
+
         self._create_terminal(options)
 
         if wait_first_prompt:
@@ -316,6 +318,17 @@ class PexpectMixin(object):
                 prompt_re=prompt_re
             )
             self._drop_output()  # discard banner and things like that
+
+    @property
+    def last_num_lines_sent(self):
+        ''' Return the number of lines sent to the interpreter
+            in the last call to _exec_and_wait().
+
+            The counter is reset on each call to _exec_and_wait();
+            calls to self._sendline() outside of _exec_and_wait() are
+            not counted.
+        '''
+        return self._last_num_lines_sent
 
     def _interact(
         self,
@@ -405,15 +418,18 @@ class PexpectMixin(object):
         countdown = Countdown(timeout)
         lines = source.split('\n')
 
+        self._last_num_lines_sent = 0
         for line in lines[:-1]:
             with profile_ctx("sendline"):
                 self._sendline(line)
+                self._last_num_lines_sent += 1
             self._expect_prompt_or_type(
                 options, countdown, input_list=input_list
             )
 
         with profile_ctx("sendline"):
             self._sendline(lines[-1])
+            self._last_num_lines_sent += 1
 
         self._expect_prompt_or_type(
             options, countdown, prompt_re=self._PS1_re, input_list=input_list
@@ -531,7 +547,7 @@ class PexpectMixin(object):
             if prompt_found:
                 break
 
-            # Add the prefix (output comming from the interpreter) and
+            # Add the prefix (output coming from the interpreter) and
             # the [ <input> ] that we typed in. This is a sort of
             # echo-emulation (TODO: some interpreters have echo activated,
             # should this be necessary?)
@@ -540,6 +556,7 @@ class PexpectMixin(object):
             assert self._last_output_may_be_incomplete
 
             self._sendline(input)
+            self._last_num_lines_sent += 1
             i += 1
 
         # remove in-place the inputs that were typed
