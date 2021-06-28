@@ -110,9 +110,10 @@ $ byexample -l cpp,shell --dry -v --skip 'docs/languages/p*.md' -- 'docs/languag
 [i] File docs/languages/cpp.md, 29 examples.
 [i] File docs/languages/elixir.md, 0 examples.
 [i] File docs/languages/gdb.md, 5 examples.
+[i] File docs/languages/iasm.md, 5 examples.
 [i] File docs/languages/javascript.md, 0 examples.
 [i] File docs/languages/ruby.md, 0 examples.
-[i] File docs/languages/shell.md, 37 examples.
+[i] File docs/languages/shell.md, 39 examples.
 ```
 
 The glob expansion takes place also in the argument-file:
@@ -126,9 +127,10 @@ $ byexample -l cpp,shell --dry -v @test/ds/args --skip 'docs/languages/p*.md'
 [i] File docs/languages/cpp.md, 29 examples.
 [i] File docs/languages/elixir.md, 0 examples.
 [i] File docs/languages/gdb.md, 5 examples.
+[i] File docs/languages/iasm.md, 5 examples.
 [i] File docs/languages/javascript.md, 0 examples.
 [i] File docs/languages/ruby.md, 0 examples.
-[i] File docs/languages/shell.md, 37 examples.
+[i] File docs/languages/shell.md, 39 examples.
 ```
 
 <!--
@@ -139,14 +141,14 @@ $ rm -f test/ds/args    # byexample: -skip +pass
 
 ## Shutdown
 
-Run in three very slow tests and send `byexample` to the background
+Run three very slow tests and send `byexample` to the background
 as soon as possible.
 
 ```shell
 $ byexample -l python test/ds/sleepy/{s1,s2,s3}.md  # byexample: +stop-on-silence 7
 ```
 
-Now sent a Ctrl-C (SIGINT) to abort the execution. It is expected that
+Now send a Ctrl-C (SIGINT) to abort the execution. It is expected that
 the shutdown will take time to finish the current jobs (20 secs) but it
 will not take the full time to run (60 secs) because it was aborted.
 

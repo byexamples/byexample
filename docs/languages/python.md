@@ -353,8 +353,8 @@ NameError: name 'sys' is not defined
 
 ### Empty lines
 
-Consider the following function definition. It is obvious for a human beign
-that the ``return`` statetment belongs to the function definition.
+Consider the following function definition. It is obvious for a human being
+that the ``return`` statement belongs to the function definition.
 
 ```python
 >>> def foo():
