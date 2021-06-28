@@ -30,6 +30,23 @@ Example:
   > 42
   42
 
+  These requires to use +pass because the output from the interpreter
+  gets mixed with the string typed in.
+  *However* they never worked.
+  > const readline = require('readline');
+  > const rl = readline.createInterface({
+  .   input: process.stdin,
+  .   terminal: false
+  . });
+
+  > var num;
+  > rl.question('num: ', (n) => {             // byexample: +input +pass
+  .   num = n;
+  . });
+  num: [42]
+
+  > num
+  42
 """
 
 from __future__ import unicode_literals

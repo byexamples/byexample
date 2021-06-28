@@ -27,6 +27,21 @@ Example:
 
   ?: std::cout << "okay\n";
   okay
+
+  These requires to use +pass because the output from the interpreter
+  gets mixed with the string typed in.
+  ?: int n;
+  ?: std::cout << "num: " << std::flush; std::cin >> n;    // byexample: +type +pass
+  num: [42]
+  ?: n
+  (int) 42
+
+  TODO no newline is sent!
+  ?: std::string what;
+  ?: getline(std::cin, what);    // byexample: +type +pass
+  [it works!]
+  ?: what
+  (std::string &) "it works!"
 """
 
 from __future__ import unicode_literals

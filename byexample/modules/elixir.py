@@ -46,6 +46,15 @@ Example:
   iex> IO.puts("hello world")
   hello world
 
+  These requires to use +pass because the output from the interpreter
+  gets mixed with the string typed in.
+  *However* they never worked.
+  iex> num = IO.gets("num: ")         # byexample: +input +pass
+  num: [42]
+  iex> num
+  "42\n"
+
+
 """
 
 from __future__ import unicode_literals
