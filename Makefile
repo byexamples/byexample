@@ -145,6 +145,9 @@ lang-shell-test: clean_test
 
 lang-iasm-test: clean_test
 	@$(python_bin) test/r.py @test/lang-iasm.env
+
+lang-pwsh-test: clean_test
+	@$(python_bin) test/r.py @test/lang-powershell.env
 #
 ##
 
