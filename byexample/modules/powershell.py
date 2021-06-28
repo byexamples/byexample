@@ -38,6 +38,7 @@ Example:
 from __future__ import unicode_literals
 import sys, time
 import byexample.regex as re
+from byexample.log import clog
 from byexample.common import constant
 from byexample.parser import ExampleParser
 from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
@@ -108,6 +109,7 @@ class PowerShellParser(ExampleParser):
 
         return snippet, expected
 
+
 class PowerShellInterpreter(ExampleRunner, PexpectMixin):
     language = 'pwsh'
 
@@ -136,10 +138,17 @@ class PowerShellInterpreter(ExampleRunner, PexpectMixin):
     def run(self, example, options):
         options['geometry'] = self._terminal_default_geometry
         options['term'] = 'ansi'
+
+        if options['type'] and not options['pass']:
+            clog().warn(
+                "Typing is supported but the example's output will be unpredictable: add +pass to skip its check."
+            )
         return PexpectMixin._run(self, example, options)
 
     def _run_impl(self, example, options):
-        return self._exec_and_wait(example.source, options, from_example=example)
+        return self._exec_and_wait(
+            example.source, options, from_example=example
+        )
 
     def interact(self, example, options):
         PexpectMixin.interact(self)
@@ -151,9 +160,11 @@ class PowerShellInterpreter(ExampleRunner, PexpectMixin):
         # documented by PowerShell but completely ignored
         # https://no-color.org/
         # https://docs.microsoft.com/en-us/powershell/scripting/learn/experimental-features?view=powershell-7.1
-        env_update = {'NO_COLOR':'1'}
+        env_update = {'NO_COLOR': '1'}
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
-        self._spawn_interpreter(cmd, options, subprocess=True, env_update=env_update)
+        self._spawn_interpreter(
+            cmd, options, subprocess=True, env_update=env_update
+        )
 
     def shutdown(self):
         self._shutdown_interpreter()
@@ -209,7 +220,7 @@ class PowerShellInterpreter(ExampleRunner, PexpectMixin):
         #
         # We should get:
         #   ['A1\nA2\n', 'B1\n']  (two chunks)
-        self._output_between_prompts  = ''.join(lines).split(cookie)
+        self._output_between_prompts = ''.join(lines).split(cookie)
         assert len(self._output_between_prompts) <= before
 
         # Let the rest of the _get_output() pipeline proceed
