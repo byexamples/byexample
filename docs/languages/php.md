@@ -4,10 +4,12 @@ To support PHP, ``byexample`` relays in the interactive mode of the ``php``
 interpreter.
 
 From PHP 5.1.0 this is available as long as the interpreter is compiled with
-``readline`` suppport. See [interactive.php](https://www.php.net/manual/en/features.commandline.interactive.php).
+``readline`` support. See [interactive.php](https://www.php.net/manual/en/features.commandline.interactive.php).
 
-> **Stability**: ``experimental`` - non backward compatibility changes are
-> possible or even removal between versions (even patch versions).
+> **Stability**: ``unsupported`` - it may work but currently it is not
+> possible to offer *any* guarantees.
+> [Contributions from the community are needed!](https://github.com/byexamples/byexample/tree/master/CONTRIBUTING.md)
+
 
 ### Variable and function definitions
 
@@ -79,7 +81,7 @@ Array
 ```
 
 ``var_dump`` and ``print_r`` may add some extra spaces and
-new lines (espcially ``print_r``) that will interfer with the output.
+new lines (especially ``print_r``) that will interfere with the output.
 For complex structures using ``+norm-ws`` fixes the problem.
 
 ### Terminal support

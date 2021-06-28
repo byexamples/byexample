@@ -3,8 +3,9 @@
 You need the default interpreter ``iex`` installed first.
 Check its [download page](https://elixir-lang.org)
 
-> **Stability**: ``experimental`` - non backward compatibility changes are
-> possible or even removal between versions (even patch versions).
+> **Stability**: ``unsupported`` - it may work but currently it is not
+> possible to offer *any* guarantees.
+> [Contributions from the community are needed!](https://github.com/byexamples/byexample/tree/master/CONTRIBUTING.md)
 
 > **Note**: ``byexample`` will work with older version of the interpreter,
 ``IEx`` however it will do several *hacks*. The recommended version is

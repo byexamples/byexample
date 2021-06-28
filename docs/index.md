@@ -50,16 +50,6 @@ Currently ``byexample`` supports the following languages:
       <h3><a href="/{{ site.uprefix }}/languages/cpp">C/C++</a></h3>
     </div>
   </div>
-  <div class="row">
-    <div class="col-lg-6">
-      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/elixir_logo.png" alt="Elixir Logo" width="42" height="64" />
-      <h3><a href="/{{ site.uprefix }}/languages/elixir">Elixir</a></h3>
-    </div>
-    <div class="col-lg-6">
-      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/php_logo.png" alt="PHP Logo" width="92" height="64" />
-      <h3><a href="/{{ site.uprefix }}/languages/php">PHP</a></h3>
-    </div>
-  </div>
 </div>
 
 ## Usage
@@ -164,6 +154,8 @@ major versions.
  - ``stable``: non backward compatibility changes, if happen, they will
 between major versions.
  - ``deprecated``: it will disappear in a future version.
+ - ``unsupported``: it may work but currently it is not possible to offer
+*any* guarantees. [Contributions from the community are needed!](https://github.com/byexamples/byexample/tree/master/CONTRIBUTING.md)
 
 See the latest [releases and tags](https://github.com/byexamples/byexample/tags)
 and the

@@ -117,7 +117,8 @@ def load_modules(dirnames, cfg):
 
         stability = getattr(module, 'stability', 'undefined')
         if stability not in (
-            'experimental', 'provisional', 'unstable', 'stable', 'deprecated'
+            'experimental', 'provisional', 'unstable', 'stable', 'deprecated',
+            'unsupported'
         ):
             stability = 'experimental/%s?' % str(stability)
 
