@@ -83,10 +83,17 @@ Currently we support:
  - [Shell](https://byexamples.github.io/byexample/languages/shell)
  - [GDB](https://byexamples.github.io/byexample/languages/gdb)
  - [C/C++](https://byexamples.github.io/byexample/languages/cpp)
+ - [iasm](https://byexamples.github.io/byexample/languages/iasm)
+ - [PowerShell](https://byexamples.github.io/byexample/languages/powershell)
+
+More languages will be supported in the future. Stay tuned.
+
+Currently unsupported:
+
  - [Elixir](https://byexamples.github.io/byexample/languages/elixir)
  - [PHP](https://byexamples.github.io/byexample/languages/php)
 
-More languages will be supported in the future. Stay tuned.
+Help is needed!
 
 ## Platforms supported
 
