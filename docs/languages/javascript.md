@@ -1,8 +1,14 @@
 # Javascript
 
+Run the `Javascript` examples calling `byexample` as:
+
+```shell
+$ byexample -l javascript your-file-here                # byexample: +skip
+```
+
 ``byexample`` can execute ``Javascript`` code using ``nodejs``.
 
-You can get the interpreter from [here](https://nodejs.org/en/download/).
+You can get the `nodejs` interpreter from [here](https://nodejs.org/en/download/).
 
 > **Stability**: ``experimental`` - non backward compatibility changes are
 > possible or even removal between versions (even patch versions).
@@ -172,11 +178,11 @@ still there may be *spurious* outputs.
 
 ### Abort on a timeout
 
-If a Javascript example takes too long and
+If a `Javascript` example takes too long and
 [timeout](/{{ site.uprefix }}/basic/timeout), the whole execution
 timeout.
 
-### Input
+### Type text
 
-The [input](/{{ site.uprefix }}/basic/input)
-feature (`+input`) is not supported.
+The [type](/{{ site.uprefix }}/basic/input)
+feature (`+type`) is not supported.

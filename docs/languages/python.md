@@ -2,6 +2,13 @@
 
 ``byexample`` supports ``Python``.
 
+Run the `Python` examples calling `byexample` as:
+
+```shell
+$ byexample -l python your-file-here                # byexample: +skip
+$ byexample -l python3 your-file-here               # byexample: +skip
+```
+
 I'm assuming that you have ``Python`` installed in your system as ``byexample``
 needs it to run but just in case, this is the [download page](https://www.python.org/downloads/)
 for this interpreter.
@@ -43,7 +50,7 @@ In fact, ``byexample`` is inspired by the Python's ``doctest`` module.
 
 I borrowed a few ideas from it and I also tried to overcome its issues.
 
-This makes a Python example to look very similar to a doctest but it is not
+This makes a Python example to look very similar to a `doctest` but it is not
 fully compatible with it.
 
 To make it (almost) fully compatible, you need to pass the ``+py-doctest`` flag to
@@ -92,7 +99,7 @@ bar
 And also the report flags: ``REPORT_UDIFF``, ``REPORT_CDIFF`` and ``REPORT_NDIFF``
 
 As you may guess, the ``byexample``'s
-[cature tags](/{{ site.uprefix }}/basic/capture-and-paste) feature are disabled in this
+[capture tags](/{{ site.uprefix }}/basic/capture-and-paste) feature are disabled in this
 compatibility mode.
 
 But in the other hand, you can use the ``ELLIPSIS`` flag as usual.
@@ -158,7 +165,7 @@ SyntaxError: <...>
 ```
 
 If you enabled the compatibility mode, any output that it looks like an
-exception will be captured and mangled like doctest does: the traceback header
+exception will be captured and mangled like `doctest` does: the traceback header
 and the stacktrace are ignored.
 
 ```python
@@ -327,7 +334,7 @@ b'b'
 'u'
 ```
 
-The pretty print is disabled if you are in compatibility mode with doctest.
+The pretty print is disabled if you are in compatibility mode with `doctest`.
 If you find it useful but you cannot leave the compatibility mode, you can set
 the ``+py-pretty-print`` flag to enable it.
 

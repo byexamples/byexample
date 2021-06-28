@@ -1,13 +1,21 @@
 # PHP
 
+Run the `PHP` examples calling `byexample` as:
+
+```shell
+$ byexample -l php your-file-here                # byexample: +skip
+```
+
 To support PHP, ``byexample`` relays in the interactive mode of the ``php``
 interpreter.
 
 From PHP 5.1.0 this is available as long as the interpreter is compiled with
-``readline`` suppport. See [interactive.php](https://www.php.net/manual/en/features.commandline.interactive.php).
+``readline`` support. See [interactive.php](https://www.php.net/manual/en/features.commandline.interactive.php).
 
-> **Stability**: ``experimental`` - non backward compatibility changes are
-> possible or even removal between versions (even patch versions).
+> **Stability**: ``unsupported`` - it may work but currently it is not
+> possible to offer *any* guarantees.
+> [Contributions from the community are needed!](https://github.com/byexamples/byexample/tree/master/CONTRIBUTING.md)
+
 
 ### Variable and function definitions
 
@@ -79,7 +87,7 @@ Array
 ```
 
 ``var_dump`` and ``print_r`` may add some extra spaces and
-new lines (espcially ``print_r``) that will interfer with the output.
+new lines (especially ``print_r``) that will interfere with the output.
 For complex structures using ``+norm-ws`` fixes the problem.
 
 ### Terminal support
@@ -101,7 +109,7 @@ The same for the width of the terminal: minimum of 128 columns.
 
 ### Echoed input lines
 
-If the PHPsnippet has a very long line, greater than the terminal's width,
+If the PHP snippet has a very long line, greater than the terminal's width,
 the last part of the line that does not fit in the terminal will be *echoed*
 in the output of the example.
 
@@ -117,7 +125,7 @@ If a PHP example takes too long and
 [timeout](/{{ site.uprefix }}/basic/timeout), the whole execution
 timeout.
 
-### Input
+### Type text
 
-The [input](/{{ site.uprefix }}/basic/input)
-feature (`+input`) is not supported.
+The [type](/{{ site.uprefix }}/basic/input)
+feature (`+type`) is not supported.

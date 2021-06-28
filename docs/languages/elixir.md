@@ -1,10 +1,17 @@
 # Elixir
 
+Run the `Elixir` examples calling `byexample` as:
+
+```shell
+$ byexample -l elixir your-file-here                # byexample: +skip
+```
+
 You need the default interpreter ``iex`` installed first.
 Check its [download page](https://elixir-lang.org)
 
-> **Stability**: ``experimental`` - non backward compatibility changes are
-> possible or even removal between versions (even patch versions).
+> **Stability**: ``unsupported`` - it may work but currently it is not
+> possible to offer *any* guarantees.
+> [Contributions from the community are needed!](https://github.com/byexamples/byexample/tree/master/CONTRIBUTING.md)
 
 > **Note**: ``byexample`` will work with older version of the interpreter,
 ``IEx`` however it will do several *hacks*. The recommended version is
@@ -127,8 +134,8 @@ A simple workaround is to make the lines of the code in the snippet
 shorter or increase the
 [terminal width](/{{ site.uprefix }}/advanced/geometry).
 
-### Input
+### Type text
 
-The [input](/{{ site.uprefix }}/basic/input)
-feature (`+input`) is not supported.
+The [type](/{{ site.uprefix }}/basic/input)
+feature (`+type`) is not supported.
 

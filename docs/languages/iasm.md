@@ -10,6 +10,12 @@ $ alias byexample=byexample\ --pretty\ none
 
 # iasm: the interactive assembler
 
+Run the `iasm` examples calling `byexample` as:
+
+```shell
+$ byexample -l iasm your-file-here                # byexample: +skip
+```
+
 You will have to install `iasm` first:
 
 ```shell
@@ -111,10 +117,10 @@ and in the Python comments (`#`):
 
 ## Known limitations
 
-### Input
+### Type text
 
-The [input](/{{ site.uprefix }}/basic/input)
-feature (`+input`) is not supported.
+The [type](/{{ site.uprefix }}/basic/input)
+feature (`+type`) is not supported.
 
 ### Terminal support
 

@@ -18,6 +18,13 @@ $ alias byexample=byexample\ --pretty\ none
 to be POSIX-conformant
 but other shells are supported like ``dash`` and ``ksh``.
 
+Run the `Shell` examples calling `byexample` as:
+
+```shell
+$ byexample -l shell your-file-here                   # byexample: +skip
+$ byexample -l shell -o '+shell=dash' your-file-here  # byexample: +skip
+```
+
 > **Stability**: ``provisional`` - low impact non backward compatibility
 > changes may occur between versions; but in general a change like that
 > will happen only between major versions.

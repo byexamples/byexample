@@ -7,6 +7,12 @@ $ hash gcc                                          # byexample: +fail-fast
 
 ``byexample`` can interpret and run examples for a ``GDB`` session.
 
+Run `byexample` as:
+
+```shell
+$ byexample -l gdb your-file-here                # byexample: +skip
+```
+
 You need to have the debugger installed first on your system, check
 its [download page](https://www.gnu.org/software/gdb/download/).
 
