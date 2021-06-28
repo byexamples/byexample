@@ -111,10 +111,10 @@ and in the Python comments (`#`):
 
 ## Known limitations
 
-### Input
+### Type text
 
-The [input](/{{ site.uprefix }}/basic/input)
-feature (`+input`) is not supported.
+The [type](/{{ site.uprefix }}/basic/input)
+feature (`+type`) is not supported.
 
 ### Terminal support
 

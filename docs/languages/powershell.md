@@ -62,10 +62,10 @@ Line |
 
 ## Known limitations
 
-### Input
+### Type text
 
-The [input](/{{ site.uprefix }}/basic/input)
-feature (`+input`) is supported *but* you have to `+pass` the example.
+The [type](/{{ site.uprefix }}/basic/input)
+feature (`+type`) is supported *but* you have to `+pass` the example.
 
 In other words, you cannot check its output.
 

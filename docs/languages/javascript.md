@@ -176,7 +176,7 @@ If a Javascript example takes too long and
 [timeout](/{{ site.uprefix }}/basic/timeout), the whole execution
 timeout.
 
-### Input
+### Type text
 
-The [input](/{{ site.uprefix }}/basic/input)
-feature (`+input`) is not supported.
+The [type](/{{ site.uprefix }}/basic/input)
+feature (`+type`) is not supported.

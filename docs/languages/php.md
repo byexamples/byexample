@@ -101,7 +101,7 @@ The same for the width of the terminal: minimum of 128 columns.
 
 ### Echoed input lines
 
-If the PHPsnippet has a very long line, greater than the terminal's width,
+If the PHP snippet has a very long line, greater than the terminal's width,
 the last part of the line that does not fit in the terminal will be *echoed*
 in the output of the example.
 
@@ -117,7 +117,7 @@ If a PHP example takes too long and
 [timeout](/{{ site.uprefix }}/basic/timeout), the whole execution
 timeout.
 
-### Input
+### Type text
 
-The [input](/{{ site.uprefix }}/basic/input)
-feature (`+input`) is not supported.
+The [type](/{{ site.uprefix }}/basic/input)
+feature (`+type`) is not supported.
