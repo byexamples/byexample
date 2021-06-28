@@ -72,6 +72,18 @@ jobs:
       - run: pip install iasm
       - run: make lang-iasm-test
 
+  lang-pwsh-test:
+    name: "Lang PowerShell test"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.6"
+      - run: make deps-dev
+      - run: make lang-pwsh-test
+
   lang-ruby-test:
     name: "Lang Ruby test"
     runs-on: ubuntu-latest

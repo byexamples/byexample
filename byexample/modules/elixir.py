@@ -282,7 +282,7 @@ class ElixirInterpreter(ExampleRunner, PexpectMixin):
     def cancel(self, example, options):
         # the following lines tries to ensure that we write '#iex:break'
         # at the begin of a new line so IEx will interpret it
-        # unfortunatelly this also means that we will get spurious prompts
+        # unfortunately this also means that we will get spurious prompts
         # and ':nil' results.
         self._sendline("")
         self._sendline("")

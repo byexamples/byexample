@@ -32,7 +32,7 @@ The settings can be passed to `iasm` from the command line of
 `byexample`. Once set they cannot be changed at runtime.
 
 ```shell
-$ byexample -l iasm -o '+iasm-arch=x86 +iasm-mode=64 +iasm-code-size=102400 +iasm-pc=0' test/ds/iasm.md
+$ byexample -l iasm -o '+iasm-arch=x86 +iasm-mode=64 +iasm-code-size=102400 +iasm-pc=0' test/ds/iasm.md  # byexample: +timeout=8
 <...>
 [PASS] Pass: 1 Fail: 0 Skip: 0
 ```

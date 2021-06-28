@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
-import pexpect, time, operator, os, itertools, contextlib
+import pexpect, pexpect.popen_spawn, time, operator, os, itertools, contextlib
+import signal
 from . import regex as re
 from functools import reduce, partial
 from .executor import TimeoutException, InputPrefixNotFound, InterpreterClosedUnexpectedly, InterpreterNotFound
@@ -161,6 +162,79 @@ class ExampleRunner(object):
         return None
 
 
+class PopenSpawnExt(pexpect.popen_spawn.PopenSpawn):
+    ''' This is a compatibility layer that extends pexpect's PopenSpawn
+        to work more similar to pexpect's spawn class.
+    '''
+    def __init__(self, cmd, **kargs):
+        kargs.pop('echo')
+        kargs.pop('dimensions')
+
+        self.delayafterclose = 0.1
+        self.delayafterterminate = 0.1
+
+        super().__init__(cmd, **kargs)
+        self._closed = False
+
+    def isalive(self):
+        return bool(self.proc.poll())
+
+    def sendcontrol(self, control):
+        if control == 'c':
+            self.kill(signal.SIGINT)
+        elif control == 'd':
+            self.sendeof()
+        else:
+            raise NotImplementedError(
+                f"Runner popen/subprocess-based does not support sending a control character '{control}'."
+            )
+
+    def close(self, force=True):
+        if self._closed:
+            return
+
+        # Close the subprocess' stdin and wait.
+        # This is a delay used by PtyProcess so we have the same semantics
+        self.sendeof()
+        time.sleep(self.delayafterclose)
+
+        # It's ok to terminate the subprocess even if it is not alive:
+        # terminate() will take care of that.
+        if not self.terminate(force):
+            raise Exception(
+                'Could not close/terminate the popen/subprocess-based runner.'
+            )
+
+        self._closed = True
+
+    def terminate(self, force=False):
+        ''' Send to the subprocess a SIGHUP, SIGCONT and SIGINT to
+            stop terminate it and if force is True send also a SIGKILL.
+
+            Returns True if the process is dead, False otherwise.
+        '''
+        signals = [signal.SIGHUP, signal.SIGCONT, signal.SIGINT]
+        if force:
+            signals.append(signal.SIGKILL)
+
+        for sig in signals:
+            if not self.isalive():
+                return True
+
+            try:
+                self.kill(sig)
+            except:
+                time.sleep(self.delayafterterminate)
+                return not self.isalive()
+
+            time.sleep(self.delayafterterminate)
+
+        return not self.isalive()
+
+    def setwinsize(self, rows, cols):
+        pass
+
+
 class PexpectMixin(object):
     def __init__(self, PS1_re, any_PS_re):
         self._PS1_re = re.compile(PS1_re)
@@ -189,7 +263,9 @@ class PexpectMixin(object):
         options,
         wait_first_prompt=True,
         first_prompt_timeout=None,
-        initial_prompt=None
+        initial_prompt=None,
+        subprocess=False,
+        env_update=None
     ):
         self._cmd = None
 
@@ -200,13 +276,17 @@ class PexpectMixin(object):
         self._terminal_default_geometry = (rows, cols)
 
         env = os.environ.copy()
+        if env_update:
+            env.update(env_update)
         env.update({'LINES': str(rows), 'COLUMNS': str(cols)})
 
         self._drop_output()  # there shouldn't be any output yet but...
         self._cmd = cmd
+
         clog().info("Spawn command line: %s", cmd)
+        spawner = PopenSpawnExt if subprocess else pexpect.spawn
         try:
-            self._interpreter = pexpect.spawn(
+            self._interpreter = spawner(
                 cmd,
                 echo=False,
                 encoding=self.encoding,
@@ -229,6 +309,8 @@ class PexpectMixin(object):
         self._interpreter.delaybeforesend = options['x']['delaybeforesend']
         self._interpreter.delayafterread = None
 
+        self._last_num_lines_sent = 0
+
         self._create_terminal(options)
 
         if wait_first_prompt:
@@ -239,6 +321,17 @@ class PexpectMixin(object):
                 prompt_re=prompt_re
             )
             self._drop_output()  # discard banner and things like that
+
+    @property
+    def last_num_lines_sent(self):
+        ''' Return the number of lines sent to the interpreter
+            in the last call to _exec_and_wait().
+
+            The counter is reset on each call to _exec_and_wait();
+            calls to self._sendline() outside of _exec_and_wait() are
+            not counted.
+        '''
+        return self._last_num_lines_sent
 
     def _interact(
         self,
@@ -252,6 +345,9 @@ class PexpectMixin(object):
             if input_filter:
                 return input_filter(input_str)
             return input_str
+
+        if not self._interpreter.isatty():
+            return
 
         import termios
         attr = termios.tcgetattr(self._interpreter.child_fd)
@@ -325,15 +421,18 @@ class PexpectMixin(object):
         countdown = Countdown(timeout)
         lines = source.split('\n')
 
+        self._last_num_lines_sent = 0
         for line in lines[:-1]:
             with profile_ctx("sendline"):
                 self._sendline(line)
+                self._last_num_lines_sent += 1
             self._expect_prompt_or_type(
                 options, countdown, input_list=input_list
             )
 
         with profile_ctx("sendline"):
             self._sendline(lines[-1])
+            self._last_num_lines_sent += 1
 
         self._expect_prompt_or_type(
             options, countdown, prompt_re=self._PS1_re, input_list=input_list
@@ -451,7 +550,7 @@ class PexpectMixin(object):
             if prompt_found:
                 break
 
-            # Add the prefix (output comming from the interpreter) and
+            # Add the prefix (output coming from the interpreter) and
             # the [ <input> ] that we typed in. This is a sort of
             # echo-emulation (TODO: some interpreters have echo activated,
             # should this be necessary?)
@@ -460,6 +559,7 @@ class PexpectMixin(object):
             assert self._last_output_may_be_incomplete
 
             self._sendline(input)
+            self._last_num_lines_sent += 1
             i += 1
 
         # remove in-place the inputs that were typed

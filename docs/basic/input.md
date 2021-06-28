@@ -269,11 +269,16 @@ Ruby:
 [hi!]
 => "hi!\n"
 
+PowerShell:
+PS> $num = Read-Host num    # byexample: +input +pass
+num: [i love 42]
+PS> echo $num
+i love 42
 
 
 The problem when we cannot disabled the echo from the interpreter
 is that the algorithm that searches for the input's prefix matches
-the text echoed instead of the real outputed
+the text echoed instead of the real output
 This not only defeats the purpose of the input's prefix but also
 makes byexample to echo the input's prefix and the [input] in
 the wrong place
