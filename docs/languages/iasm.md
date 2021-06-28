@@ -10,6 +10,12 @@ $ alias byexample=byexample\ --pretty\ none
 
 # iasm: the interactive assembler
 
+Run the `iasm` examples calling `byexample` as:
+
+```shell
+$ byexample -l iasm your-file-here                # byexample: +skip
+```
+
 You will have to install `iasm` first:
 
 ```shell

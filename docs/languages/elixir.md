@@ -1,5 +1,11 @@
 # Elixir
 
+Run the `Elixir` examples calling `byexample` as:
+
+```shell
+$ byexample -l elixir your-file-here                # byexample: +skip
+```
+
 You need the default interpreter ``iex`` installed first.
 Check its [download page](https://elixir-lang.org)
 

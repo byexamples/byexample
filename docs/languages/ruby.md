@@ -1,6 +1,10 @@
 # Ruby
 
-``byexample`` can execute ``Ruby``
+Run the `Ruby` examples calling `byexample` as:
+
+```shell
+$ byexample -l ruby your-file-here                # byexample: +skip
+```
 
 You need the default interpreter ``irb`` installed first.
 Check its [download page](https://www.ruby-lang.org/en/downloads/)

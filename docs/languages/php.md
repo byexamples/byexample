@@ -1,5 +1,11 @@
 # PHP
 
+Run the `PHP` examples calling `byexample` as:
+
+```shell
+$ byexample -l php your-file-here                # byexample: +skip
+```
+
 To support PHP, ``byexample`` relays in the interactive mode of the ``php``
 interpreter.
 

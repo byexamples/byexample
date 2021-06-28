@@ -1,5 +1,11 @@
 # C/C++
 
+Run the `C/C++` examples calling `byexample` as:
+
+```shell
+$ byexample -l cpp your-file-here                # byexample: +skip
+```
+
 To support C/C++, ``byexample`` relays in the ``cling`` interpreter.
 
 You need to have [cling](https://github.com/root-project/cling) installed first.

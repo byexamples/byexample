@@ -12,6 +12,12 @@ $ alias byexample=byexample\ --pretty\ none
 
 ``byexample`` supports Microsoft's ``PowerShell``.
 
+Run the Microsoft's `PowerShell` examples calling `byexample` as:
+
+```shell
+$ byexample -l pwsh your-file-here                # byexample: +skip
+```
+
 Currently `byexample` only supports the version for Linux that
 you can install from the [official
 site](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-core-on-linux)).
