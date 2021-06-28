@@ -180,25 +180,25 @@ docker-test: docker-build
 #  ========
 
 coverage: clean_test
+	rm -f .coverage .coverage.work.*
 	@cp test/r.py .
 	@echo "Run the byexample's tests with the Python interpreter."
 	@echo "to start the coverage, use a hook in test/ to initialize the coverage"
 	@echo "engine at the begin of the execution (and to finalize it at the end)"
-	@$(python_bin) r.py @test/coverage.env --modules test/ -q byexample/*.py
+	$(python_bin) r.py @test/coverage.env --modules test/ -q byexample/*.py
 	@echo
 	@echo "Run the rest of the tests with an environment variable to make"
 	@echo "r.py to initialize the coverage too"
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py @test/coverage.env -q `find docs -name "*.md"`
-	@BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py @test/coverage.env -q *.md
+	BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py @test/coverage.env -q `find docs -name "*.md"`
+	BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py @test/coverage.env -q *.md
 	@echo
 	@echo "Run again, but with different flags to force the"
 	@echo "execution of different parts of byexample"
-	@PYTHONIOENCODING=utf-8 BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py @test/coverage.env -vvvvvvvvvvvv --no-enhance-diff README.md > /dev/null
-	@PYTHONIOENCODING=utf-8 BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py @test/coverage.env --pretty none -vvvvvvvvvvvv README.md > /dev/null
+	PYTHONIOENCODING=utf-8 BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py @test/coverage.env -vvvvvvvvvvvv --no-enhance-diff README.md > /dev/null
+	PYTHONIOENCODING=utf-8 BYEXAMPLE_COVERAGE_TEST=1 $(python_bin) r.py @test/coverage.env --pretty none -vvvvvvvvvvvv README.md > /dev/null
 	@echo
 	@echo "Results:"
-	@coverage report --include="byexample/*"
-	@make -s clean_test
+	coverage report --include="byexample/*"
 
 #
 ##
@@ -226,12 +226,12 @@ upload: dist
 	twine upload dist/*.tar.gz dist/*.whl
 
 clean_test:
-	@rm -f .coverage .coverage.work.*
 	@rm -f r.py
 	@rm -Rf w/
 	@mkdir -p w/
 
 clean: clean_test
+	rm -f .coverage .coverage.work.*
 	rm -Rf dist/ build/ *.egg-info
 	rm -Rf build/ *.egg-info
 	find . -name "*.pyc" -delete
