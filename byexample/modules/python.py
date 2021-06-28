@@ -20,6 +20,13 @@ Example:
   is a multiline
   string
 
+  >>> input("num: ")   # byexample: +type
+  num: [42]
+  '42'
+
+  >>> input()   # byexample: +type
+  [it works!]
+  'it works!'
 """
 
 from __future__ import unicode_literals

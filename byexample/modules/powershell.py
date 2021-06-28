@@ -31,6 +31,17 @@ Example:
   PS> echo "foo         bar"    # byexample: +norm-ws
   foo bar
 
+  These requires to use +pass because the output from the interpreter
+  gets mixed with the string typed in.
+  PS> $num = Read-Host num    # byexample: +input +pass
+  num: [42]
+  PS> echo $num
+  42
+
+  PS> $what = Read-Host    # byexample: +input +pass
+  [it works!]
+  PS> echo $what
+  it works!
 '''
 
 """

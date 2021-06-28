@@ -34,6 +34,20 @@ Example:
   php> echo "okay";
   okay
 
+  These requires to use +pass because the output from the interpreter
+  gets mixed with the string typed in.
+  *However* they never worked.
+  php> $f = fopen('php://stdin', 'r');
+  php> echo "num: "; $num = fgets($f);      // byexample: +input +pass
+  num: [42]
+  php> echo "$num";
+  42
+
+  php> $what = fgets($f);      // byexample: +input +pass
+  [it works!]
+  php> echo "$what";
+  it works!
+
 """
 
 from __future__ import unicode_literals

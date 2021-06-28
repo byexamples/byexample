@@ -50,6 +50,13 @@ Example:
   one
   two
 
+  >> print "num: "; gets     # byexample: +type  +skip
+  num: [42]
+  => "42\n"
+
+  >> gets        # byexample: +type
+  [it works!]
+  => "it works!\n"
 """
 
 from __future__ import unicode_literals

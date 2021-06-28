@@ -21,6 +21,14 @@ Example:
   this
   is a multiline
   string
+
+  $ read -p "num: " ; echo $REPLY    # byexample: +type
+  num: [42]
+  42
+
+  $ read ; echo $REPLY    # byexample: +type
+  [it works!]
+  it works!
 """
 
 from __future__ import unicode_literals
