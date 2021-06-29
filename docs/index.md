@@ -52,11 +52,11 @@ Currently ``byexample`` supports the following languages:
   </div>
   <div class="row">
     <div class="col-lg-6">
-      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/iasm_logo.png" alt="iasm Logo" width="42" height="64" />
+      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/iasm_logo.png" alt="iasm Logo" width="70" height="50" />
       <h3><a href="/{{ site.uprefix }}/languages/iasm">iasm</a></h3>
     </div>
     <div class="col-lg-6">
-      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/powershell_logo.png" alt="PowerShell Logo" width="92" height="64" />
+      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/powershell_logo.png" alt="PowerShell Logo" width="70" height="70" />
       <h3><a href="/{{ site.uprefix }}/languages/powershell">PowerShell</a></h3>
     </div>
   </div>
