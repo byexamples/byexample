@@ -1,6 +1,7 @@
 <!--
 Check that we have byexample installed first
 $ hash byexample                                    # byexample: +fail-fast
+
 -->
 
 # ``byexample``

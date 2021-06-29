@@ -40,12 +40,12 @@ Example:
   . });
 
   > var num;
-  > rl.question('num: ', (n) => {             // byexample: +input +pass
+  > rl.question('num: ', (n) => {             // byexample: +input +pass +skip
   .   num = n;
   . });
   num: [42]
 
-  > num
+  > num // byexample: +skip
   42
 """
 
