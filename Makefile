@@ -148,6 +148,23 @@ lang-iasm-test: clean_test
 
 lang-pwsh-test: clean_test
 	@$(python_bin) test/r.py @test/lang-powershell.env
+
+lang-cpp-test: clean_test
+	@$(python_bin) test/r.py @test/lang-cpp.env
+
+lang-gdb-test: clean_test
+	@$(python_bin) test/r.py @test/lang-gdb.env
+
+lang-javascript-test: clean_test
+	@$(python_bin) test/r.py @test/lang-javascript.env
+
+# not supported
+lang-elixir-test: clean_test
+	@$(python_bin) test/r.py @test/lang-elixir.env
+
+# not supported
+lang-php-test: clean_test
+	@$(python_bin) test/r.py @test/lang-php.env
 #
 ##
 
