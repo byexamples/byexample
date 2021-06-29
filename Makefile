@@ -24,7 +24,6 @@ all:
 	@echo " - lib-test: run the tests in the lib (unit test)."
 	@echo " - modules-test: run the tests of the modules (unit test)."
 	@echo " - docs-test: run the tests in the docs (except docs about languages)."
-	@echo " - lang-test: run the tests in the docs about languages."
 	@echo " - examples-test: run the examples."
 	@echo " - corner-test: run some tests that are corner cases."
 	@echo
@@ -94,10 +93,6 @@ docs-test: clean_test
 	@$(python_bin) test/r.py @test/minimum.env --skip docs/recipes/python-doctest.md -- `find docs \( -name languages -prune -o  -name "*.md" \) -type f`
 	@$(python_bin) test/r.py @test/minimum.env -o '+py-doctest' docs/recipes/python-doctest.md
 	@$(python_bin) -m doctest docs/recipes/python-doctest.md
-	@make -s clean_test
-
-lang-test: clean_test
-	@$(python_bin) test/r.py @test/minimum.env -- `find docs/languages -name "*.md"`
 	@make -s clean_test
 
 examples-test: clean_test

@@ -19,6 +19,7 @@ jobs:
       - run: make lib-test
       - run: make modules-test
       - run: make docs-test
+      - run: make examples-test
 
   source-code-test:
     name: "Source code"
@@ -114,3 +115,23 @@ jobs:
           python-version: "3.6"
       - run: make deps-dev
       - run: make lang-shell-test
+
+  lang-javascript-test:
+    name: "Lang Javascript test"
+    runs-on: ubuntu-latest
+    strategy:
+        matrix:
+            node-version: [10.x, 12.x, 14.x, 15.x, 16.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.6"
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: make deps-dev
+      - run: make lang-javascript-test
