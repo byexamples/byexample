@@ -19,11 +19,36 @@ Don't forget to send your feedback to the ``cling`` community.
 > possible or even removal between versions (even patch versions).
 
 Because installing and using `cling` may be a little difficult, we
-offer a simple
-[Dockerfile for cling](https://github.com/byexamples/byexample/tree/master/test/Dockerfile-cling)
+offer a [docker image](https://hub.docker.com/r/eldipa/cling) with `cling`
+pre-installed (the
+[dockerfile](https://github.com/byexamples/byexample/tree/master/test/Dockerfile-cling)
+is available too).
 
-See the comments inside of it to know how to build the image and how to
-use the docker container with `byexample`.
+### How to use the docker image
+
+Download the image:
+
+```shell
+$ sudo docker pull eldipa/cling              # byexample: +skip
+```
+
+Define a convenient variable; replace the `<dir>` with the **absolute
+path** where your documentation/tests are.
+
+```shell
+$ cmd="sudo docker run --rm -it -v <dir>:/mnt -w /mnt eldipa/cling cling %a"  # byexample: +skip
+```
+
+Inside the container, the `<dir>` content will be in `/mnt` which
+it will be the current directory for the `cling` command.
+
+Finally, run `byexample` with a custom
+[shebang](/{{ site.uprefix}}/advanced/shebang):
+
+```shell
+$ byexample -l cpp -x-shebang="cpp:$cmd" <files>    # byexample: +skip
+```
+
 
 ### Variable definition
 
