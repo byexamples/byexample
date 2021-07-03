@@ -259,3 +259,14 @@ feature (`+type`) is not supported.
 <!--
 $ rm -f test/ds/libmylib*.so  # byexample: -skip +pass
 -->
+
+## C/C++ specific options
+
+```shell
+$ byexample -l cpp --show-options       # byexample: +norm-ws
+<...>
+cpp's specific options
+----------------------
+  None.
+<...>
+```

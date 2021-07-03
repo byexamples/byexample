@@ -187,3 +187,18 @@ I don't know about type float64!
 
 The [type](/{{ site.uprefix }}/basic/input)
 feature (`+type`) is not supported.
+
+## Go specific options
+
+```shell
+$ byexample -l go --show-options       # byexample: +norm-ws
+<...>
+go's specific options
+---------------------
+optional arguments:
+  +go-expr-print {auto,true,false}
+                        print the expression's value (true); suppress it
+                        (false); or print it only if the example has a colon
+                        (auto, the default)
+<...>
+```

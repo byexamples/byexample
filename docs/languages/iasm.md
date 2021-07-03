@@ -139,3 +139,19 @@ to increase the geometry or the results may be undefined.
 
 The same for the width of the terminal: minimum of 128 columns.
 
+## iasm specific options
+
+```shell
+$ byexample -l iasm --show-options       # byexample: +norm-ws
+<...>
+iasm's specific options
+-----------------------
+optional arguments:
+  +iasm-arch <arch>     architecture name (arm, x86, sparc, ...); see iasm
+                        documentation.
+  +iasm-mode <mode>     mode (arm, 32, 64, ...); see iasm documentation.
+  +iasm-code-size <sz>  size of the code segment; see iasm documentation.
+  +iasm-pc <addr>       starting address, value of the program counter; see
+                        iasm documentation.
+<...>
+```

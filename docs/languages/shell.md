@@ -374,3 +374,23 @@ $ byexample -l shell -x-shebang 'shell:%e bash --norc --noprofile' test/ds/shell
 $ kill %% ; fg ; wait    # byexample: +pass -skip
 -->
 
+## Shell specific options
+
+```shell
+$ byexample -l shell --show-options       # byexample: +norm-ws
+<...>
+shell's specific options
+------------------------
+optional arguments:
+  +stop-on-timeout      stop the process if it timeout.
+  +stop-on-silence [secs]
+                        stop the process if no output is read in the last
+                        <secs> seconds (0.2 secs by default).
+  +stop-signal {suspend,eof,interrupt}
+                        signal to send when stop-on-timeout/stop-on-silence is
+                        used (suspend ^Z by default).
+  +shell {bash,dash,ksh,sh}
+                        shell to use with default settings ('bash' by
+                        default). For full control use -x-shebang)
+<...>
+```

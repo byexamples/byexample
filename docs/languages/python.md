@@ -464,3 +464,34 @@ bytes from the correct ones. In those cases, the example will fail.
 > **Changed** in ``byexample 9.0.0``: Python 2.x is not longer supported
 > and the limitation was removed.
 
+## Python specific options
+
+```shell
+$ byexample -l python --show-options       # byexample: +norm-ws
+<...>
+python's specific options
+-------------------------
+optional arguments:
+  +py-doctest           enable the compatibility with doctest.
+  +py-pretty-print      enable the pretty print enhancement.
+  +py-remove-empty-lines
+                        enable the deletion of empty lines (enabled by
+                        default).
+  +NORMALIZE_WHITESPACE
+                        [doctest] alias for +norm-ws.
+  +SKIP                 [doctest] alias for +skip.
+  +ELLIPSIS             [doctest] enables the ... wildcard.
+  +DONT_ACCEPT_BLANKLINE
+                        [doctest] take <BLANKLINE> as literal.
+  +DONT_ACCEPT_TRUE_FOR_1
+                        [doctest] ignored.
+  +IGNORE_EXCEPTION_DETAIL
+                        [doctest] ignore the exception details.
+  +REPORT_UDIFF         [doctest] alias for +diff unified.
+  +REPORT_CDIFF         [doctest] alias for +diff context.
+  +REPORT_NDIFF         [doctest] alias for +diff ndiff.
+  +FAIL_FAST            [doctest] alias for +fail-fast.
+  +REPORT_ONLY_FIRST_FAILURE
+                        [doctest] alias for +show-failures 1.
+<...>
+```

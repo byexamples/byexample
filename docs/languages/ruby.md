@@ -108,3 +108,21 @@ with ``+ruby-expr-print=false``.
 
 The default is ``+ruby-expr-print=auto``.
 
+## Ruby specific options
+
+```shell
+$ byexample -l ruby --show-options       # byexample: +norm-ws
+<...>
+ruby's specific options
+-----------------------
+optional arguments:
+  +ruby-pretty-print    enable the pretty print enhancement.
+  +ruby-expr-print {auto,true,false}
+                        print the expression's value (true); suppress it
+                        (false); or print it only if the example has a =>
+                        (auto, the default)
+  +ruby-start-large-output-in-new-line
+                        add a newline after the => if the output that follows
+                        does not fit in a single line. (irb >= 1.2.2)
+<...>
+```

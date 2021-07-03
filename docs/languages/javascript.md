@@ -186,3 +186,14 @@ timeout.
 
 The [type](/{{ site.uprefix }}/basic/input)
 feature (`+type`) is not supported.
+
+## Javascript specific options
+
+```shell
+$ byexample -l javascript --show-options       # byexample: +norm-ws
+<...>
+javascript's specific options
+-----------------------------
+  None.
+<...>
+```

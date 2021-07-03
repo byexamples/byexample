@@ -305,6 +305,14 @@ class OptionParser(argparse.ArgumentParser):
         argparse.ArgumentParser.__init__(self, **kw)
         self.__defaults = {}
 
+        # Track if the current OptionParser has at least one option/flag.
+        # If the OptionParser has no parents (empty list or None), then
+        # we can be sure that we start without any option/flag.
+        # However if we have a parent we may already have an option/flag
+        # inherit from it so let's assume that we start with some
+        # options/flags preloaded.
+        self._no_options_at_all = False if kw.get('parents') else True
+
     def add_flag(self, name, group_required=False, **kw):
         ''' Add '+foo' and '-foo' flags (where foo is taken from <name>).
 
@@ -315,6 +323,7 @@ class OptionParser(argparse.ArgumentParser):
             If <aliases> keyword is given, it must be a list of
             more names which are aliases of <name>.
         '''
+        self._no_options_at_all = False
         has_default = False
         if 'default' in kw:
             has_default = True
@@ -359,6 +368,7 @@ class OptionParser(argparse.ArgumentParser):
         return g
 
     def add_argument(self, name, *args, **kw):
+        self._no_options_at_all = False
         has_default = False
         if 'default' in kw:
             has_default = True
@@ -402,11 +412,17 @@ class OptionParser(argparse.ArgumentParser):
     def __repr__(self):
         return "OptionParser(...)"
 
+    def print_help(self):
+        if self._no_options_at_all:
+            print("  None.")
+        else:
+            super().print_help()
+
 
 class ExtendOptionParserMixin(object):
     def extend_option_parser(self, parser):
         '''
-        Extend the the instance of OptionParser that will be in
+        Extend the instance of OptionParser that will be in
         charge of parsing the options from the command line and
         from the examples.
 

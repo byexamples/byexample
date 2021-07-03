@@ -139,3 +139,19 @@ shorter or increase the
 The [type](/{{ site.uprefix }}/basic/input)
 feature (`+type`) is not supported.
 
+## Elixir specific options
+
+```shell
+$ byexample -l elixir --show-options       # byexample: +norm-ws
+<...>
+elixir's specific options
+-------------------------
+optional arguments:
+  +elixir-dont-display-hack
+                        required for IEx < 1.9.
+  +elixir-expr-print {auto,true,false}
+                        print the expression's value (true); suppress it
+                        (false); or print it only if the example has a =>
+                        (auto, the default)
+<...>
+```

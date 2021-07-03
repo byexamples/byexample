@@ -109,3 +109,14 @@ is really important: if your outputs have more than 128 lines you will need
 to increase the geometry or the results may be undefined.
 
 The same for the width of the terminal: minimum of 128 columns.
+
+## PowerShell specific options
+
+```shell
+$ byexample -l pwsh --show-options       # byexample: +norm-ws
+<...>
+pwsh's specific options
+-----------------------
+  None.
+<...>
+```
