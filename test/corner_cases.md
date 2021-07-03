@@ -107,13 +107,14 @@ The file names support *glob expansion* done by `byexample` itself.
 
 ```shell
 $ byexample -l cpp,shell --dry -v --skip 'docs/languages/p*.md' -- 'docs/languages/*.md'
-[i] File docs/languages/cpp.md, 29 examples.
-[i] File docs/languages/elixir.md, 0 examples.
-[i] File docs/languages/gdb.md, 5 examples.
-[i] File docs/languages/iasm.md, 5 examples.
-[i] File docs/languages/javascript.md, 0 examples.
-[i] File docs/languages/ruby.md, 0 examples.
-[i] File docs/languages/shell.md, 39 examples.
+[i] File docs/languages/cpp.md, 34 examples.
+[i] File docs/languages/elixir.md, 2 examples.
+[i] File docs/languages/gdb.md, 7 examples.
+[i] File docs/languages/go.md, 2 examples.
+[i] File docs/languages/iasm.md, 7 examples.
+[i] File docs/languages/javascript.md, 2 examples.
+[i] File docs/languages/ruby.md, 2 examples.
+[i] File docs/languages/shell.md, 42 examples.
 ```
 
 The glob expansion takes place also in the argument-file:
@@ -124,13 +125,14 @@ $ cat test/ds/args
 docs/languages/*.md
 
 $ byexample -l cpp,shell --dry -v @test/ds/args --skip 'docs/languages/p*.md'
-[i] File docs/languages/cpp.md, 29 examples.
-[i] File docs/languages/elixir.md, 0 examples.
-[i] File docs/languages/gdb.md, 5 examples.
-[i] File docs/languages/iasm.md, 5 examples.
-[i] File docs/languages/javascript.md, 0 examples.
-[i] File docs/languages/ruby.md, 0 examples.
-[i] File docs/languages/shell.md, 39 examples.
+[i] File docs/languages/cpp.md, 34 examples.
+[i] File docs/languages/elixir.md, 2 examples.
+[i] File docs/languages/gdb.md, 7 examples.
+[i] File docs/languages/go.md, 2 examples.
+[i] File docs/languages/iasm.md, 7 examples.
+[i] File docs/languages/javascript.md, 2 examples.
+[i] File docs/languages/ruby.md, 2 examples.
+[i] File docs/languages/shell.md, 42 examples.
 ```
 
 <!--

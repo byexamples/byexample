@@ -103,7 +103,7 @@ index-links-test: clean_test
 	@echo "Running index-links-test"
 	@./test/idx.sh
 
-test: lib-test modules-test docs-test lang-test examples-test index-links-test corner-test
+test: lib-test modules-test docs-test examples-test index-links-test corner-test
 
 #
 ##
