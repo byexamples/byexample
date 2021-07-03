@@ -153,6 +153,9 @@ lang-gdb-test: clean_test
 lang-javascript-test: clean_test
 	@$(python_bin) test/r.py @test/lang-javascript.env
 
+lang-go-test: clean_test
+	@$(python_bin) test/r.py @test/lang-go.env
+
 # not supported
 lang-elixir-test: clean_test
 	@$(python_bin) test/r.py @test/lang-elixir.env
