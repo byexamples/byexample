@@ -24,17 +24,19 @@ class Conditional(Concern):
         mutexg.add_argument(
             "+if",
             "+on",
+            metavar='<tag>',
             nargs=1,
             default=False,
             help=
-            "run the example only if the condition matches; skip the example otherwise."
+            "run the example only if the tag is non-empty; skip the example otherwise."
         )
         mutexg.add_argument(
             "+unless",
+            metavar='<tag>',
             nargs=1,
             default=True,
             help=
-            "run the example unless the condition matches; skip the example otherwise."
+            "run the example unless the tag is non-empty; skip the example otherwise."
         )
         return parser
 

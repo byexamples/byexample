@@ -89,27 +89,27 @@ class IAsmParser(ExampleParser):
     def extend_option_parser(self, parser):
         parser.add_argument(
             "+iasm-arch",
-            metavar='arch',
+            metavar='<arch>',
             default='arm',
             help=
             "architecture name (arm, x86, sparc, ...); see iasm documentation."
         )
         parser.add_argument(
             "+iasm-mode",
-            metavar='mode',
+            metavar='<mode>',
             default='arm',
             help="mode (arm, 32, 64, ...); see iasm documentation."
         )
         parser.add_argument(
             "+iasm-code-size",
-            metavar='sz',
+            metavar='<sz>',
             default=2 * 1024 * 1024,
             type=int,
             help="size of the code segment; see iasm documentation."
         )
         parser.add_argument(
             "+iasm-pc",
-            metavar='addr',
+            metavar='<addr>',
             default=0x1000000,
             type=int,
             help=

@@ -315,6 +315,7 @@ def get_default_options_parser(cmdline_args):
     )
     options_parser.add_argument(
         "+timeout",
+        metavar='<secs>',
         default=cmdline_args.timeout,
         type=float,
         help="timeout in seconds to complete the example."
@@ -327,6 +328,7 @@ def get_default_options_parser(cmdline_args):
     )
     options_parser.add_argument(
         "+geometry",
+        metavar='<lines>x<cols>',
         default=(24, 80),
         type=geometry,
         help=
@@ -349,6 +351,7 @@ def get_default_options_parser(cmdline_args):
 
     options_parser.add_argument(
         "+input-prefix-range",
+        metavar='<min>:<max>',
         default=(6, 12),
         type=_range,
         help=
@@ -364,6 +367,7 @@ def get_default_options_parser(cmdline_args):
 
     options_parser.add_argument(
         "+show-failures",
+        metavar='<n>',
         default=cmdline_args.show_failures,
         type=_show_failures_type,
         help="show up to <n> failures per file and suppress the rest"
