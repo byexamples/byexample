@@ -134,3 +134,23 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: make deps-dev
       - run: make lang-javascript-test
+
+  lang-go-test:
+    name: "Lang Go test"
+    runs-on: ubuntu-latest
+    strategy:
+        matrix:
+            go-version: ["1.14", "1.13"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.6"
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          ruby-version: ${{ matrix.go-version }}
+      - run: make deps-dev
+      - run: go get -u github.com/traefik/yaegi/cmd/yaegi
+      - run: PATH=$PATH:$(go env GOPATH)/bin  make lang-go-test
