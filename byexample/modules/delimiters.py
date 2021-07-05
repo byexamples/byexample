@@ -24,8 +24,8 @@ class NoDelimiter(ZoneDelimiter):
         return "No Zone Delimiter"
 
 
-class CppCommentDelimiter(ZoneDelimiter):
-    target = {'.cpp', '.c', '.h', '.hpp', '.js', '.php'}
+class CppBlockCommentDelimiter(ZoneDelimiter):
+    target = {'.cpp', '.c', '.h', '.hpp', '.js', '.php', '.go'}
 
     @constant
     def zone_regex(self):
@@ -56,7 +56,7 @@ class CppCommentDelimiter(ZoneDelimiter):
 
 
 class HashCommentDelimiter(ZoneDelimiter):
-    target = {'.rb', '.sh'}
+    target = {'.rb', '.sh', '.ps1'}
 
     @constant
     def zone_regex(self):
