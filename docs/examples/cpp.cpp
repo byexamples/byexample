@@ -5,10 +5,6 @@
  * >>> 1 + 2
  * 3
 
- And this is another example in Ruby
- >> 2 + 2
- => 4
-
  Of course, we support C/C++ examples as well!
  ?: int i = 0;
  ?: i + 2
@@ -29,8 +25,7 @@ int awesome() {
      * $ echo "C/C++ rocks!"
      * C/C++ rocks!
      * */
-    return 1 \
-        >> 2;           // this line will not be confused with a Ruby example
+    return 1;
 }
 
 /* */

@@ -7,11 +7,7 @@ This is an example in Python
     >>> 1 + 2
     3
 
-And this is another example in Ruby
-    >> 2 + 2
-    => 4
-
-Of course, we support Python examples as well!
+More examples:
 >>> i = 0
 >>> i + 2
 2
@@ -26,11 +22,10 @@ hello!
 def awesome():
     r"""
         Here is another example, Shell this time:
-        $ echo "Ruby rocks!"
-        Ruby rocks!
+        $ echo "Python rocks!"
+        Python rocks!
     """
-    return 1 \
-        >> 2;          ## this line will not be confused with a Ruby example
+    return 1
 
 ''' '''
 # >>> 1 + 2

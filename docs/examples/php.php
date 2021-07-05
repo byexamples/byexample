@@ -5,10 +5,6 @@
  * >>> 1 + 2
  * 3
 
- And this is another example in Ruby
- >> 2 + 2
- => 4
-
  Of course, we support PHP examples as well!
  php> $i = 0;
  php> print_r($i + 2);
@@ -28,8 +24,7 @@ int awesome() {
      * $ echo "PHP rocks!"
      * PHP rocks!
      * */
-    return 1 \
-        >> 2;           // this line will not be confused with a Ruby example
+    return 1
 }
 
 /* */
