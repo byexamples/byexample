@@ -13,3 +13,4 @@ The ByExample logo created by R.V. Facultad de Ingeniería Equipo de Quimera Tal
 The Microsoft's PowerShell logo. [13](https://en.wikipedia.org/wiki/PowerShell)
 The iasm logo. [14](https://github.com/bad-address/iasm)
 The Go logo. [15](https://golang.org/)
+The Rust logo. [16](https://www.rust-lang.org/)
