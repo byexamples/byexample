@@ -128,7 +128,7 @@ class CPPInterpreter(ExampleRunner, PexpectMixin):
         # so we disable this:
         options['geometry'] = self._terminal_default_geometry
 
-        # cling's output requeries to be emulated by an ANSI Terminal
+        # cling's output requires to be emulated by an ANSI Terminal
         # so we force this (see _get_output())
         options['term'] = 'ansi'
 

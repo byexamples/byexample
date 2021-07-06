@@ -423,6 +423,14 @@ def parse_args(args=None):
         "delay in seconds before sending a line to an runner/interpreter; 0 disable this (default)."
     )
     g.add_argument(
+        "-x-delayafterprompt",
+        metavar="<secs>",
+        default=None,
+        type=lambda n: None if n == 0 else float(n),
+        help=
+        "delay in seconds after the prompt to capture more output; 0 disable this (default)."
+    )
+    g.add_argument(
         "-x-min-rcount",
         metavar="<n>",
         default=16,

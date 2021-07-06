@@ -87,6 +87,7 @@ Currently we support:
  - [iasm](https://byexamples.github.io/byexample/languages/iasm)
  - [PowerShell](https://byexamples.github.io/byexample/languages/powershell)
  - [Go](https://byexamples.github.io/byexample/languages/go)
+ - [Rust](https://byexamples.github.io/byexample/languages/rust)
 
 More languages will be supported in the future. Stay tuned.
 

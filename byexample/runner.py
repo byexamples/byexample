@@ -437,6 +437,7 @@ class PexpectMixin(object):
         self._expect_prompt_or_type(
             options, countdown, prompt_re=self._PS1_re, input_list=input_list
         )
+        self._expect_delayed_output(options)
 
         if input_list:
             s = short_string(input_list[0][-1])
@@ -450,6 +451,27 @@ class PexpectMixin(object):
             clog().warn(msg, *args)
 
         return self._get_output(options)
+
+    @profile
+    def _expect_delayed_output(self, options):
+        ''' Some interpreters may output text *after* printing the prompt.
+            This method is called to do a last output recollection before
+            processing the output and returning it to the user.
+            '''
+        timeout = options['x']['delayafterprompt']
+        if not timeout:
+            return
+
+        expect = [pexpect.TIMEOUT, pexpect.EOF]
+        Timeout, EOF = range(len(expect))
+
+        what = self._interpreter.expect(expect, timeout=timeout)
+
+        output = self._interpreter.before
+        self._add_output(output)
+
+        if what == EOF:
+            self._interpreter_closed_unexpectedly_error(options)
 
     def _create_terminal(self, options):
         rows, cols = options['geometry']
@@ -613,10 +635,7 @@ class PexpectMixin(object):
         what, output = self._expect_and_read(expect, timeout, expect_kinds)
         countdown.stop()
 
-        if self._last_output_may_be_incomplete:
-            self._output_between_prompts[-1] += output
-        else:
-            self._output_between_prompts.append(output)
+        self._add_output(output)
 
         if what == Timeout:
             msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\n\nLast 1000 bytes read:\n%s"
@@ -629,14 +648,31 @@ class PexpectMixin(object):
             return False
 
         elif what == EOF:
-            msg = "Interpreter closed unexpectedly.\nThis could happen because the example triggered a close/shutdown/exit action,\nthe interpreter was killed by someone else or because the interpreter just crashed.\n\nLast 1000 bytes read:\n%s"
-            msg = msg % ''.join(self._output_between_prompts)[-1000:]
-            out = self._get_output(options)
-            raise InterpreterClosedUnexpectedly(msg, out)
+            self._interpreter_closed_unexpectedly_error(options)
 
         assert what == PS_found
         self._last_output_may_be_incomplete = False
         return True
+
+    def _interpreter_closed_unexpectedly_error(self, options):
+        msg = "Interpreter closed unexpectedly.\nThis could happen because the example triggered a close/shutdown/exit action,\nthe interpreter was killed by someone else or because the interpreter just crashed.\n\nLast 1000 bytes read:\n%s"
+        msg = msg % ''.join(self._output_between_prompts)[-1000:]
+        out = self._get_output(options)
+        raise InterpreterClosedUnexpectedly(msg, out)
+
+    def _add_output(self, output):
+        ''' Add the given output to the output between prompts.
+
+            If _last_output_may_be_incomplete is set, assume that the lastest
+            output was incomplete and the given output is a continuation
+            of it (like part of the same line).
+
+            Otherwise assume that it is a new chunk/line.
+            '''
+        if self._last_output_may_be_incomplete:
+            self._output_between_prompts[-1] += output
+        else:
+            self._output_between_prompts.append(output)
 
     @profile
     def _expect_and_read(self, expect_list, timeout, expect_kinds):
@@ -799,6 +835,7 @@ class PexpectMixin(object):
 
             This algorithm is not bug-free, just a best-effort one.
             '''
+        err_msg = "Interpreter closed unexpectedly during the recovering. May be it is timming issue. Try to increase the timeout for the example."
         try:
             # wait for the prompt, ignore any extra output
             self._expect_prompt(
@@ -810,6 +847,9 @@ class PexpectMixin(object):
             good = True
         except TimeoutException as ex:
             self._drop_output()
+            good = False
+        except InterpreterClosedUnexpectedly:
+            clog().warn(err_msg)
             good = False
 
         if good:
@@ -830,5 +870,8 @@ class PexpectMixin(object):
                 good = False  # we cannot ensure that we are in sync
             except TimeoutException as ex:
                 self._drop_output()
+            except InterpreterClosedUnexpectedly:
+                clog().warn(err_msg)
+                good = False
 
         return good
