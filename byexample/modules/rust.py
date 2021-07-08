@@ -249,7 +249,7 @@ class RustInterpreter(ExampleRunner, PexpectMixin):
 
     def _strip_and_join_lines_into_one(self, src, strip):
         # evcxr doesn't support multiline code if the readline is disabled
-        # so the simplest thing to do is to collaps all the lines into one
+        # so the simplest thing to do is to collapse all the lines into one
         # Rust is a language which syntax should not be affected by this
         # in contrast to Python **except** when a single-line comment "//"
         # is used.
