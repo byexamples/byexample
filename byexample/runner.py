@@ -237,12 +237,15 @@ class PopenSpawnExt(pexpect.popen_spawn.PopenSpawn):
 
 class PexpectMixin(object):
     def __init__(self, PS1_re, any_PS_re):
-        self._PS1_re = re.compile(PS1_re)
-        self._any_PS_re = re.compile(any_PS_re)
+        self._set_prompts(PS1_re, any_PS_re)
 
         self._output_between_prompts = []
         self._last_output_may_be_incomplete = False
         self._cmd = None
+
+    def _set_prompts(self, PS1_re, any_PS_re):
+        self._PS1_re = re.compile(PS1_re)
+        self._any_PS_re = re.compile(any_PS_re)
 
     def _send(self, s):
         self._interpreter.send(s)

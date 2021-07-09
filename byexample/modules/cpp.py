@@ -148,6 +148,8 @@ class CPPInterpreter(ExampleRunner, PexpectMixin):
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
+        # setting the geometry here will also set
+        # the _terminal_default_geometry variable for later
         options.up()
         options['geometry'] = (
             max(options['geometry'][0], 128), max(options['geometry'][1], 128)
