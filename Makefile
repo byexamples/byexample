@@ -159,6 +159,9 @@ lang-go-test: clean_test
 lang-rust-test: clean_test
 	@$(python_bin) test/r.py @test/lang-rust.env
 
+lang-java-test: clean_test
+	@$(python_bin) test/r.py @test/lang-java.env
+
 # not supported
 lang-elixir-test: clean_test
 	@$(python_bin) test/r.py @test/lang-elixir.env
