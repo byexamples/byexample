@@ -53,8 +53,8 @@ Currently ``byexample`` supports the following languages:
     <!-- <div class="col-lg-6"> -->
   <div class="row">
     <div class="col-lg-6">
-      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/iasm_logo.png" alt="iasm Logo" width="90" height="64" />
-      <h3><a href="/{{ site.uprefix }}/languages/iasm">iasm</a></h3>
+      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/java_logo.png" alt="Java Logo" width="64" height="72" />
+      <h3><a href="/{{ site.uprefix }}/languages/java">Java</a></h3>
     </div>
     <div class="col-lg-6">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/powershell_logo.png" alt="PowerShell Logo" width="70" height="70" />
@@ -62,11 +62,15 @@ Currently ``byexample`` supports the following languages:
     </div>
   </div>
   <div class="row">
-    <div class="col-lg-6">
+    <div class="col-lg-4">
+      <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/iasm_logo.png" alt="iasm Logo" width="90" height="64" />
+      <h3><a href="/{{ site.uprefix }}/languages/iasm">iasm</a></h3>
+    </div>
+    <div class="col-lg-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/go_logo.png" alt="Go Logo" width="90" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/go">Go</a></h3>
     </div>
-    <div class="col-lg-6">
+    <div class="col-lg-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/rust_logo.png" alt="Rust Logo" width="64" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/rust">Rust</a></h3>
     </div>

@@ -88,6 +88,7 @@ Currently we support:
  - [PowerShell](https://byexamples.github.io/byexample/languages/powershell)
  - [Go](https://byexamples.github.io/byexample/languages/go)
  - [Rust](https://byexamples.github.io/byexample/languages/rust)
+ - [Java](https://byexamples.github.io/byexample/languages/java)
 
 More languages will be supported in the future. Stay tuned.
 
