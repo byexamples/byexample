@@ -73,7 +73,7 @@ $2 = "foo"
 
 ## GDB specific options
 
-```shell
+```
 $ byexample -l gdb --show-options       # byexample: +norm-ws
 <...>
 gdb's specific options

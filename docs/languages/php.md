@@ -132,7 +132,7 @@ feature (`+type`) is not supported.
 
 ## PHP specific options
 
-```shell
+```
 $ byexample -l php --show-options       # byexample: +norm-ws
 <...>
 php's specific options

@@ -141,7 +141,7 @@ feature (`+type`) is not supported.
 
 ## Elixir specific options
 
-```shell
+```
 $ byexample -l elixir --show-options       # byexample: +norm-ws
 <...>
 elixir's specific options

@@ -141,7 +141,7 @@ The same for the width of the terminal: minimum of 128 columns.
 
 ## iasm specific options
 
-```shell
+```
 $ byexample -l iasm --show-options       # byexample: +norm-ws
 <...>
 iasm's specific options
