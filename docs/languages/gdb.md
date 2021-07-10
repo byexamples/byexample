@@ -24,7 +24,7 @@ its [download page](https://www.gnu.org/software/gdb/download/).
 To show you this, let's first create a program to debug:
 
 ```cpp
-$ cat test/ds/param-echo.c                      # byexample: -tags
+$ cat test/ds/param-echo.c                      # byexample: -capture
 #include <stdio.h>
 int main(int argc, char* argv[]) {
     for (; argc > 0; --argc)

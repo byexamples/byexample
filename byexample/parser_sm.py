@@ -176,7 +176,7 @@ class SM(object):
             '+paste' or their were not captured in a previous
             example. Or perhaps you do not want capture/paste
             anything: you want to treat the tags as literals
-            and you forgot '-tags'.
+            and you forgot '-tags' or '-capture'.
 
             The regexs are non-greedy by default with one exception: if
             the tag is unamed and it its at the end of a line
@@ -199,7 +199,7 @@ class SM(object):
                   "'+paste' or their were not captured in a previous\n"+\
                   "example. Or perhaps you do not want capture/paste\n"+\
                   "anything: you want to treat the tags as literals\n"+\
-                  "and you forgot '-tags'."
+                  "and you forgot '-tags' or '-capture'."
 
             raise ValueError(msg % (name, charno))
 
@@ -1084,7 +1084,7 @@ class SM_NotNormWS(SM):
             drop(last=True)  # don't care what we read next
             drop(last=True)  # don't care the second tag
             charno, _ = self.pull()
-            msg = "Two consecutive capture tags were found at %ith character. " +\
+            msg = "Two consecutive tags were found at %ith character. " +\
                   "This is ambiguous."
             raise ValueError(msg % charno)
         elif self.state in (EXHAUSTED, ERROR):
