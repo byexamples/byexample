@@ -107,6 +107,23 @@ hello world
 > Currently the flags/options can only be set in the single-line
 > comments (`//`); block comments are not supported (`/* .. */`).
 
+### Class-path and module-path
+
+`byexample` allows you to change the *class path* and *module path*
+from the command line with `+java-class-path` and `+java-module-path`.
+
+*Modules* and *exports* can be added with `+java-add-modules` and
+`+java-add-exports`.
+
+```shell
+$ byexample -l java -o '+java-class-path=test/ds/' somefiles        # byexample: +skip
+```
+
+Run `byexample -l java --show-options` for more information about those
+options and their syntax. Refer to the official Java and `jshell`
+documentation to what they do exactly.
+
+
 ## Known limitations
 
 ### Type text
@@ -134,7 +151,7 @@ The same for the width of the terminal: minimum of 128 columns.
 ## Java specific options
 
 ```
-$ byexample -l java --show-options       # byexample: +norm-ws
+$ byexample -l java --show-options       # byexample: +norm-ws -capture
 <...>
 java's specific options
 -----------------------
@@ -143,5 +160,23 @@ optional arguments:
                         print the expression's value (true); suppress it
                         (false); or print it only if the example has a =>
                         (auto, the default)
+  +java-class-path <path>
+                        List of directories, JAR archives, and ZIP archives to
+                        search for class files separated by a colon (:). On
+                        Windows use a semicolon (;).
+  +java-module-path <path>
+                        List of directories, JAR archives, and ZIP archives to
+                        search for modules separated by a colon (:). On
+                        Windows use a semicolon (;).
+  +java-add-modules <name>[,<name>...]
+                        Root modules to resolve in addition to the initial
+                        module. <name> can also be ALL-DEFAULT, ALL-SYSTEM,
+                        ALL-MODULE-PATH.
+  +java-add-exports <module>/<package>=<target>[,<target>...]
+                        Updates <module> to export <package> to <target-
+                        module>, regardless of module declaration. <target-
+                        module> can be ALL-UNNAMED to export to all unnamed
+                        modules. In jshell, if the <target-module> is not
+                        specified then ALL-UNNAMED is used.
 <...>
 ```
