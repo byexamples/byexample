@@ -7,6 +7,14 @@ You can visit the
 [changelog](https://github.com/byexamples/byexample/releases)
 for a more complete overview.
 
+## 10.1.0 - 10.3.0
+
+Four new languages were added to `byexample`: PowerShell, Go, Rust and
+Java, and as an extra, `iasm` an interpreter for assembler code.
+
+On the other hand two languages are not currently supported due lack of
+contributions: PHP and Elixir.
+
 ## 10.0.0
 
 This is another major upgrade which brings some improvements,
