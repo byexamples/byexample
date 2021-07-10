@@ -23,54 +23,54 @@ Currently ``byexample`` supports the following languages:
 
 <div class="logos">
   <div class="row">
-    <div class="col-lg-4">
+    <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/python_logo.png" alt="Python Logo" width="64" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/python">Python</a></h3>
     </div>
-    <div class="col-lg-4">
+    <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/ruby_logo.png" alt="Ruby Logo" width="64" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/ruby">Ruby</a></h3>
     </div>
-    <div class="col-lg-4">
+    <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/bash_logo.png" alt="Bash Logo" width="64" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/shell">Shell</a></h3>
     </div>
   </div>
   <div class="row">
-    <div class="col-lg-4">
+    <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/gdb_logo.png" alt="GDB Logo" width="64" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/gdb">GDB</a></h3>
     </div>
-    <div class="col-lg-4">
+    <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/javascript_logo.png" alt="Javascript Logo" width="64" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/javascript">Javascript</a></h3>
     </div>
-    <div class="col-lg-4">
+    <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/cpp_logo.png" alt="C++ Logo" width="64" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/cpp">C/C++</a></h3>
     </div>
   </div>
-    <!-- <div class="col-lg-6"> -->
+    <!-- <div class="col-6"> -->
   <div class="row">
-    <div class="col-lg-6">
+    <div class="col-6">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/java_logo.png" alt="Java Logo" width="64" height="72" />
       <h3><a href="/{{ site.uprefix }}/languages/java">Java</a></h3>
     </div>
-    <div class="col-lg-6">
+    <div class="col-6">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/powershell_logo.png" alt="PowerShell Logo" width="70" height="70" />
       <h3><a href="/{{ site.uprefix }}/languages/powershell">PowerShell</a></h3>
     </div>
   </div>
   <div class="row">
-    <div class="col-lg-4">
+    <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/iasm_logo.png" alt="iasm Logo" width="90" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/iasm">iasm</a></h3>
     </div>
-    <div class="col-lg-4">
+    <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/go_logo.png" alt="Go Logo" width="90" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/go">Go</a></h3>
     </div>
-    <div class="col-lg-4">
+    <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/rust_logo.png" alt="Rust Logo" width="64" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/rust">Rust</a></h3>
     </div>
@@ -138,15 +138,15 @@ supported.
 
 <div class="logos">
   <div class="row">
-    <div class="col-lg-4">
+    <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/linux_logo.png" alt="Linux Logo" width="64" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/python">Linux</a></h3>
     </div>
-    <div class="col-lg-4">
+    <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/macos_logo.png" alt="MacOS Logo" width="64" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/ruby">MacOS*</a></h3>
     </div>
-    <div class="col-lg-4">
+    <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/windows_logo.png" alt="Windows Logo" width="64" height="64" />
       <h3><a href="/{{ site.uprefix }}/languages/shell">Windows**</a></h3>
     </div>
