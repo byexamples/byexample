@@ -300,7 +300,14 @@ def get_default_options_parser(cmdline_args):
         "skip", default=False, help="do not run the example."
     )
     options_parser.add_flag(
-        "tags", default=True, help="enable the tags <...>."
+        "tags",
+        default=True,
+        help="enable the capturing and non-capturing tags (<name> and <...>)."
+    )
+    options_parser.add_flag(
+        "capture",
+        default=True,
+        help="enable the capturing tags (<name>); requires +tags be enabled."
     )
     options_parser.add_flag(
         "enhance-diff",
