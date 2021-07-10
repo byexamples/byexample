@@ -121,7 +121,7 @@ $ byexample -l java -o '+java-class-path=test/ds/' somefiles        # byexample:
 
 Run `byexample -l java --show-options` for more information about those
 options and their syntax. Refer to the official Java and `jshell`
-documentation to what they do exactly.
+documentation to know what they do exactly.
 
 
 ## Known limitations
