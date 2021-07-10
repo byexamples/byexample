@@ -165,11 +165,50 @@ class JavaParser(ExampleParser):
         return re.compile(r'//\s*byexample:\s*([^\n\'"]*)$', re.MULTILINE)
 
     def extend_option_parser(self, parser):
-        parser.add_argument("+java-expr-print", choices=['auto', 'true', 'false'],
-                            default='auto',
-                            help='print the expression\'s value (true); ' +\
-                                 'suppress it (false); or print it only ' +\
-                                 'if the example has a => (auto, the default)')
+        parser.add_argument(
+                "+java-expr-print",
+                choices=['auto', 'true', 'false'],
+                default='auto',
+                help='print the expression\'s value (true); ' +\
+                     'suppress it (false); or print it only ' +\
+                     'if the example has a => (auto, the default)')
+
+        parser.add_argument(
+                "+java-class-path",
+                metavar='<path>',
+                default=None,
+                help='List of directories, JAR archives, ' +\
+                     'and ZIP archives to search for class files ' +\
+                     'separated by a colon (:). On Windows use a ' +\
+                     'semicolon (;).'
+                     )
+        parser.add_argument(
+                "+java-module-path",
+                metavar='<path>',
+                default=None,
+                help='List of directories, JAR archives, ' +\
+                     'and ZIP archives to search for modules ' +\
+                     'separated by a colon (:). On Windows use a ' +\
+                     'semicolon (;).'
+                     )
+        parser.add_argument(
+                "+java-add-modules",
+                metavar='<name>[,<name>...]',
+                default=None,
+                help='Root modules to resolve in addition to the ' +\
+                     'initial module. <name> can also be ALL-DEFAULT, ' +\
+                     'ALL-SYSTEM, ALL-MODULE-PATH.'
+                     )
+        parser.add_argument(
+                "+java-add-exports",
+                metavar='<module>/<package>=<target>[,<target>...]',
+                default=None,
+                help='Updates <module> to export <package> to ' +\
+                     '<target-module>, regardless of module declaration. ' +\
+                     '<target-module> can be ALL-UNNAMED to export to all ' +\
+                     'unnamed modules. In jshell, if the <target-module> ' +\
+                     'is not specified then ALL-UNNAMED is used.'
+                     )
         return parser
 
 
@@ -277,8 +316,19 @@ class JavaInterpreter(ExampleRunner, PexpectMixin):
     def interact(self, example, options):
         PexpectMixin.interact(self)
 
-    def get_default_cmd(self, *a, **kargs):
+    def get_default_cmd(
+        self, class_path, module_path, add_modules, add_exports, *a, **kargs
+    ):
         args = ['--no-startup']
+        if class_path:
+            args.extend(['--class-path', class_path])
+        if module_path:
+            args.extend(['--module-path', module_path])
+        if add_modules:
+            args.extend(['--add-modules', add_modules])
+        if add_exports:
+            args.extend(['--add-exports', add_exports])
+
         return "%e %p %a", {'e': '/usr/bin/env', 'p': 'jshell', 'a': args}
 
     def initialize(self, options):
@@ -295,7 +345,12 @@ class JavaInterpreter(ExampleRunner, PexpectMixin):
         # always/yes; never/no; autodetect normalization
         self.expr_print_mode = options['java_expr_print']
 
-        shebang, tokens = self.get_default_cmd()
+        shebang, tokens = self.get_default_cmd(
+            class_path=options['java_class_path'],
+            module_path=options['java_module_path'],
+            add_modules=options['java_add_modules'],
+            add_exports=options['java_add_exports']
+        )
         shebang = options['shebangs'].get(self.language, shebang)
 
         cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
