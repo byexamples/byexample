@@ -31,7 +31,7 @@ class _LinearExpected(Expected):
         >>> from byexample.options import Options
         >>> from byexample.finder import _build_fake_example as build_example
 
-        >>> opts = {'norm_ws': False, 'tags': True, 'rm': [], 'type': False, 'input_prefix_range': (6,12)}
+        >>> opts = {'norm_ws': False, 'tags': True, 'capture': True, 'rm': [], 'type': False, 'input_prefix_range': (6,12)}
 
         Consider the following example with a named capture in the expected:
 
@@ -144,7 +144,7 @@ class _LinearExpected(Expected):
 
         (See byexample.parser docs)
 
-        >>> opts = {'norm_ws': True, 'tags': True, 'rm': [], 'type': False, 'input_prefix_range': (6, 12)}
+        >>> opts = {'norm_ws': True, 'tags': True, 'capture': True, 'rm': [], 'type': False, 'input_prefix_range': (6, 12)}
         >>> ex = build_example('f()', '\n  <a>A \n\nB <bc> C\n<c>', opts=opts)
         >>> exp = ex.expected
 

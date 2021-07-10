@@ -376,7 +376,7 @@ $ kill %% ; fg ; wait    # byexample: +pass -skip
 
 ## Shell specific options
 
-```shell
+```
 $ byexample -l shell --show-options       # byexample: +norm-ws
 <...>
 shell's specific options

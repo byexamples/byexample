@@ -72,20 +72,44 @@ class ExampleParser(ExtendOptionParserMixin):
         return parser
 
     @constant
-    def capture_tag_regexs(self):
+    def tag_regexs(self):
         '''
-        Return a set of regular expressions to match a 'capture tag'.
+        Return a set of regular expressions to match a 'capture tag'
+        (<foo>) and a 'non-capturing tag' (<...>), known as named
+        and unnamed tags too.
 
         Due implementation details the underscore character '_'
         *cannot* be used as a valid character in the name.
         Instead you should use minus '-'.
 
         The returned regex can be used for splitting a string
-        or for capturing.
+        or for capturing the name or the ellipsis.
         '''
         open, close = map(re.escape, '<>')
 
         name_re = r'[A-Za-z.][A-Za-z0-9:.-]*'
+        return TagRegexs(
+            for_split=re.compile(r"(%s%s%s)" % (open, name_re, close)),
+            for_capture=re.compile(
+                r"%s(?P<name>%s)%s" % (open, name_re, close)
+            )
+        )
+
+    @constant
+    def non_capturing_tag_regexs(self):
+        '''
+        Return a set of regular expressions to match a
+        'non-capturing tag' (<...>), known as unnamed tags.
+
+        In contrast with tag_regexs() method, this one ignores
+        the capture tags (named tags).
+
+        The returned regex can be used for splitting a string
+        or for capturing the name or the ellipsis.
+        '''
+        open, close = map(re.escape, '<>')
+
+        name_re = re.escape(self.ellipsis_marker())
         return TagRegexs(
             for_split=re.compile(r"(%s%s%s)" % (open, name_re, close)),
             for_capture=re.compile(
@@ -167,8 +191,8 @@ class ExampleParser(ExtendOptionParserMixin):
 
         input_prefix_len_range = options['input_prefix_range']
         expected_regexs, charnos, rcounts, tags_by_idx, input_list = self.expected_as_regexs(
-            example.expected_str, options['tags'], options['type'],
-            options['norm_ws'], input_prefix_len_range
+            example.expected_str, options['tags'], options['capture'],
+            options['type'], options['norm_ws'], input_prefix_len_range
         )
 
         ExpectedClass = _LinearExpected
@@ -205,8 +229,8 @@ class ExampleParser(ExtendOptionParserMixin):
 
     @profile
     def expected_as_regexs(
-        self, expected, tags_enabled, input_enabled, normalize_whitespace,
-        input_prefix_len_range
+        self, expected, tags_enabled, capture_enabled, input_enabled,
+        normalize_whitespace, input_prefix_len_range
     ):
         '''
         From the expected string create a list of regular expressions that
@@ -230,7 +254,7 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> import byexample.regex as re
 
             >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
-            >>> _as_regexs = partial(parser.expected_as_regexs, tags_enabled=True, input_enabled=True, normalize_whitespace=False, input_prefix_len_range=(6,12))
+            >>> _as_regexs = partial(parser.expected_as_regexs, tags_enabled=True, capture_enabled=True, input_enabled=True, normalize_whitespace=False, input_prefix_len_range=(6,12))
 
             >>> expected = 'a<foo>b<bar>c'
             >>> regexs, charnos, rcounts, tags_by_idx, input_list = _as_regexs(expected)
@@ -279,16 +303,46 @@ class ExampleParser(ExtendOptionParserMixin):
 
             >>> tags_by_idx
             {2: None, 4: 'foo-bar'}
+
+        When capture_enabled is False but tags_enabled is True, the capture tags
+        (the ones that have a name) are considered literals but
+        the non-capturing tags (the ellipsis) will still be tags.
+
+            >>> _as_regexs = partial(parser.expected_as_regexs, tags_enabled=True, capture_enabled=False, input_enabled=True, normalize_whitespace=False, input_prefix_len_range=(6,12))
+
+            >>> expected = 'a<foo>b<bar>c'
+            >>> regexs, _, _, tags_by_idx, _ = _as_regexs(expected)
+
+            >>> regexs
+            ('\\A', 'a<foo>b<bar>c', '\\n*\\Z')
+
+            >>> tags_by_idx
+            {}
+
+            >>> expected = 'a<...>b<bar>c'
+            >>> regexs, _, _, tags_by_idx, _ = _as_regexs(expected)
+
+            >>> regexs
+            ('\\A', 'a', '(?:.*?)', 'b<bar>c', '\\n*\\Z')
+
+            >>> tags_by_idx
+            {2: None}
+
         '''
+        if capture_enabled:
+            tag_regexs = self.tag_regexs()
+        else:
+            tag_regexs = self.non_capturing_tag_regexs()
+
         if normalize_whitespace:
             sm = SM_NormWS(
-                self.capture_tag_regexs(), self.input_regexs(),
-                self.ellipsis_marker(), input_prefix_len_range
+                tag_regexs, self.input_regexs(), self.ellipsis_marker(),
+                input_prefix_len_range
             )
         else:
             sm = SM_NotNormWS(
-                self.capture_tag_regexs(), self.input_regexs(),
-                self.ellipsis_marker(), input_prefix_len_range
+                tag_regexs, self.input_regexs(), self.ellipsis_marker(),
+                input_prefix_len_range
             )
 
         return sm.parse(expected, tags_enabled, input_enabled)
@@ -371,6 +425,8 @@ class ExampleParser(ExtendOptionParserMixin):
 
 # Extra tests
 '''
+>>> _as_regexs = partial(parser.expected_as_regexs, tags_enabled=True, capture_enabled=True, input_enabled=True, normalize_whitespace=False, input_prefix_len_range=(6,12))
+
 >>> expected = 'ex <...>\nu<...>'
 >>> regexs, _, _, _, _ = _as_regexs(expected, normalize_whitespace=True)
 

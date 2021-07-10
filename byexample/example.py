@@ -81,7 +81,8 @@ class Example(object):
     '42'
 
     >>> example.options
-    {'input_prefix_range': (6, 12),
+    {'capture': True,
+     'input_prefix_range': (6, 12),
      'norm_ws': False,
      'rm': [],
      'tags': True,

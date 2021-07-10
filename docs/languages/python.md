@@ -466,7 +466,7 @@ bytes from the correct ones. In those cases, the example will fail.
 
 ## Python specific options
 
-```shell
+```
 $ byexample -l python --show-options       # byexample: +norm-ws
 <...>
 python's specific options

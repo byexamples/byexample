@@ -37,27 +37,24 @@ Line1
 Line3
 ```
 
-### How to ignore the capture tag ``<xxx>``?
+### How to ignore the tag ``<xxx>``?
 
 If the output of your example has the literal ``<xxx>`` and you want
 to take it *literally*, you could disable the
-[capture tags](basic/capture-and-paste)
+[tags](basic/capture-and-paste)
 
 ```python
->>> print("<a>, <b>, and <tag>")        # byexample: -tags
-<a>, <b>, and <tag>
+>>> print("<a>, <a>, and <tag>")        # byexample: -tags
+<a>, <a>, and <tag>
+
+>>> print("<a>, <a>, and <tag>")        # byexample: -capture
+<a>, <a>, and <tag>
 ```
 
-### And if I want to ignore one but not all the tags ``<xxx>``?
+The difference between `-tags` and `-capture` is that the former
+takes the named `<foo>` and the unnamed `<...>` tags as literal
+while the latter only takes the named tags as literal.
 
-You can add an invalid character in the tag that you want to ignore (the
-one that you want to take it *literally*) and remove the character
-before the comparison with `+rm`
-
-```python
->>> print("<a>, <b>, and random string to capture")     # byexample: +rm=~
-<~a>, <~b>, and <tag>
-```
 
 ### How to escape a prompt inside of another example?
 

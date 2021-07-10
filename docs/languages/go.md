@@ -190,7 +190,7 @@ feature (`+type`) is not supported.
 
 ## Go specific options
 
-```shell
+```
 $ byexample -l go --show-options       # byexample: +norm-ws
 <...>
 go's specific options

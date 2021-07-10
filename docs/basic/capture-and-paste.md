@@ -26,12 +26,12 @@ You can even paste it in the ``expected`` of the examples that follows:
 >>> a                 # byexample: +paste
 <random-number>
 
->>> a                 # byexample: +paste -tags
+>>> a                 # byexample: +paste -capture
 <random-number>
 ```
 
-> Disabling the capture with  ``-tags`` you can be sure that the tags come
-> from a previous example
+> Disabling the capture with `-tags` or `-capture` you can be sure that
+> the tags come from a previous example
 > and they are not captured from the current example but it is not mandatory.
 
 Pasting works across languages: this is a very convenient way to copy and
@@ -68,6 +68,25 @@ This restricted set prevents unwanted false positives:
 >>> fib
 <function fib at <address>>
 ```
+
+## Disable the tags
+
+With `-tags` all the tags are taken as literal: the capture tags
+(`<foo>`) and the unnamed tags (`<...>`).
+
+```python
+>>> print("hey <a><...><...><a>")   # byexample: -tags
+hey <a><...><...><a>
+```
+
+With `-capture` only the capture tags are taken as literal.
+
+```python
+>>> print("hey <a><...> <...><a>")   # byexample: -capture
+hey <a><...> <...><a>
+```
+
+> *New* in `byexample 10.3.0`: the `-capture` flag was added.
 
 ## Limitation
 

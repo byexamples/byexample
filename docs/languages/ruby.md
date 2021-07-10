@@ -110,7 +110,7 @@ The default is ``+ruby-expr-print=auto``.
 
 ## Ruby specific options
 
-```shell
+```
 $ byexample -l ruby --show-options       # byexample: +norm-ws
 <...>
 ruby's specific options
