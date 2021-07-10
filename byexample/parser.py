@@ -72,16 +72,18 @@ class ExampleParser(ExtendOptionParserMixin):
         return parser
 
     @constant
-    def capture_tag_regexs(self):
+    def tag_regexs(self):
         '''
-        Return a set of regular expressions to match a 'capture tag'.
+        Return a set of regular expressions to match a 'capture tag'
+        (<foo>) and a 'non-capturing tag' (<...>), known as named
+        and unnamed tags too.
 
         Due implementation details the underscore character '_'
         *cannot* be used as a valid character in the name.
         Instead you should use minus '-'.
 
         The returned regex can be used for splitting a string
-        or for capturing.
+        or for capturing the name or the ellipsis.
         '''
         open, close = map(re.escape, '<>')
 
@@ -282,12 +284,12 @@ class ExampleParser(ExtendOptionParserMixin):
         '''
         if normalize_whitespace:
             sm = SM_NormWS(
-                self.capture_tag_regexs(), self.input_regexs(),
+                self.tag_regexs(), self.input_regexs(),
                 self.ellipsis_marker(), input_prefix_len_range
             )
         else:
             sm = SM_NotNormWS(
-                self.capture_tag_regexs(), self.input_regexs(),
+                self.tag_regexs(), self.input_regexs(),
                 self.ellipsis_marker(), input_prefix_len_range
             )
 

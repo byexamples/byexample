@@ -17,16 +17,16 @@ tLIT = ('wspaces', 'newlines', 'literals')
 
 >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
 
->>> cap_regexs = parser.capture_tag_regexs()
+>>> tag_regexs = parser.tag_regexs()
 >>> inp_regexs = parser.input_regexs()
 
 >>> ellipsis_marker = parser.ellipsis_marker()
 
 >>> input_prefix_len_range = (6, 12)
 
->>> sm = SM(cap_regexs, inp_regexs, ellipsis_marker, input_prefix_len_range)
->>> sm_norm_ws = SM_NormWS(cap_regexs, inp_regexs, ellipsis_marker, input_prefix_len_range)
->>> sm_lit = SM_NotNormWS(cap_regexs, inp_regexs, ellipsis_marker, input_prefix_len_range)
+>>> sm = SM(tag_regexs, inp_regexs, ellipsis_marker, input_prefix_len_range)
+>>> sm_norm_ws = SM_NormWS(tag_regexs, inp_regexs, ellipsis_marker, input_prefix_len_range)
+>>> sm_lit = SM_NotNormWS(tag_regexs, inp_regexs, ellipsis_marker, input_prefix_len_range)
 
 >>> def match(regexs, string):
 ...     r = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
@@ -36,11 +36,10 @@ tLIT = ('wspaces', 'newlines', 'literals')
 
 class SM(object):
     def __init__(
-        self, capture_tag_regexs, input_regexs, ellipsis_marker,
-        input_prefix_len_range
+        self, tag_regexs, input_regexs, ellipsis_marker, input_prefix_len_range
     ):
-        self.capture_tag_regex = capture_tag_regexs.for_capture
-        self.capture_tag_split_regex = capture_tag_regexs.for_split
+        self.tag_regex = tag_regexs.for_capture
+        self.tag_split_regex = tag_regexs.for_split
         self.ellipsis_marker = ellipsis_marker
 
         self.input_capture_regex = input_regexs.for_capture
@@ -114,7 +113,7 @@ class SM(object):
         return self.emit(charno, rx, rc)
 
     def name_of_tag_or_None(self, tag):
-        name = self.capture_tag_regex.match(tag).group('name')
+        name = self.tag_regex.match(tag).group('name')
         if name == self.ellipsis_marker:
             name = None
 
@@ -372,7 +371,7 @@ class SM(object):
 
         nl_splitter = self.one_or_more_nl_capture_regex()
         ws_splitter = self.one_or_more_ws_capture_regex()
-        tag_splitter = self.capture_tag_split_regex
+        tag_splitter = self.tag_split_regex
         input_capture_regex = self.input_capture_regex
         input_check_regex = self.input_check_regex
 
@@ -660,11 +659,10 @@ class SM(object):
 
 class SM_NormWS(SM):
     def __init__(
-        self, capture_tag_regexs, input_regexs, ellipsis_marker,
-        input_prefix_len_range
+        self, tag_regexs, input_regexs, ellipsis_marker, input_prefix_len_range
     ):
         SM.__init__(
-            self, capture_tag_regexs, input_regexs, ellipsis_marker,
+            self, tag_regexs, input_regexs, ellipsis_marker,
             input_prefix_len_range
         )
 
@@ -1011,11 +1009,10 @@ class SM_NormWS(SM):
 
 class SM_NotNormWS(SM):
     def __init__(
-        self, capture_tag_regexs, input_regexs, ellipsis_marker,
-        input_prefix_len_range
+        self, tag_regexs, input_regexs, ellipsis_marker, input_prefix_len_range
     ):
         SM.__init__(
-            self, capture_tag_regexs, input_regexs, ellipsis_marker,
+            self, tag_regexs, input_regexs, ellipsis_marker,
             input_prefix_len_range
         )
 
