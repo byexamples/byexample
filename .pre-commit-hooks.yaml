@@ -3,3 +3,4 @@
     description: avoids writing errorneous code snippets.
     entry: byexample
     language: python
+    require_serial: true
