@@ -1,0 +1,5 @@
+-   id: byexample
+    name: run code snippets in docstrings to validate them
+    description: avoids writing errorneous code snippets.
+    entry: byexample
+    language: python
