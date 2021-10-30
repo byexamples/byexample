@@ -1,0 +1,17 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: trailing-whitespace
+        # the following files requires to have a trailing space/tab
+        # to test how byexample handle those cases
+        exclude: |
+            (?x)^(
+                byexample/modules/java.py|
+                byexample/modules/ruby.py|
+                docs/advanced/terminal-emulation.md
+            )$
+
+    -   id: check-added-large-files

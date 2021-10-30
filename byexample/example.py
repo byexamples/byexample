@@ -93,7 +93,7 @@ class Example(object):
     command line and the example's option.
 
     This is set only during the execution (see FileExecutor) so
-    it is undefined even after "parsing yourself" and because it is 
+    it is undefined even after "parsing yourself" and because it is
     a temporal setting, it will be undefined after the execution
     (the example should not have a reference for too much time)
 
