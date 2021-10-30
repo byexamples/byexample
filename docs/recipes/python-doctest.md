@@ -19,10 +19,14 @@ it has `doctest` examples that can be executed with both `doctest` and
 Execute it with `doctest`:
 
 ```shell
-$ python -m doctest docs/recipes/python-doctest.md
+$ python -m doctest -v docs/recipes/python-doctest.md   # byexample: +skip
 ```
 
 Execute it with `byexample`, with the compatibility mode enabled:
+
+```shell
+$ byexample -l python -o '+py-doctest' docs/recipes/python-doctest.md   # byexample: +skip
+```
 
 ## Brief introduction
 
