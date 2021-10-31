@@ -563,7 +563,8 @@ def init_byexample(args, sharer):
 
     verify_encodings(args.encoding, args.verbosity)
     cfg = {
-        'use_progress_bar': args.pretty == 'all',
+        'use_progress_bar': args.pretty == 'all' and \
+                            not args.no_progress_bar,
         'use_colors': args.pretty == 'all',
         'quiet': args.quiet,
         'verbosity': args.verbosity,

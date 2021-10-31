@@ -95,7 +95,8 @@ usage: byexample -l <languages> [--ff] [--timeout <secs>] [-j <n>] [--dry]
                  [-d {none,unified,ndiff,context,tool}] [--difftool <cmd>]
                  [--no-enhance-diff] [-o <options>] [--show-options]
                  [-m <dir>] [--encoding <enc>] [--show-failures <n>]
-                 [--pretty {none,all}] [-V] [-v | -q] [-h | -xh]
+                 [--pretty {none,all}] [--no-progress-bar] [-V] [-v | -q]
+                 [-h | -xh]
  
 Write snippets of code in C++, Python, Ruby, and others as documentation and
 execute them as regression tests.
@@ -151,6 +152,7 @@ Miscellaneous Options:
                         suppress the rest (the execution of the examples is
                         not stopped, only the failures are not shown)
   --pretty {none,all}   control how to pretty print the output.
+  --no-progress-bar     do not show the progress bar.
   -V, --version         show byexample's version and license, then exit
  
 Logging:
