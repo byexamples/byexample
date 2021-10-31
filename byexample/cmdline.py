@@ -342,6 +342,11 @@ def parse_args(args=None):
         help="control how to pretty print the output."
     )
     g.add_argument(
+        "--no-progress-bar",
+        action='store_true',
+        help="do not show the progress bar."
+    )
+    g.add_argument(
         '-V',
         '--version',
         nargs=0,
