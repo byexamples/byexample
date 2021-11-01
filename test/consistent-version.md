@@ -6,12 +6,12 @@ documentation.
 $ git describe --abbrev=0
 <current-tag>
 
-$ grep -c "<current-tag>" README.md
+$ grep -c "<current-tag>" README.md    # byexample: +paste
 1
 
-$ grep -c "<current-tag>" byexample/__init__.py
+$ grep -c "<current-tag>" byexample/__init__.py   # byexample: +paste
 1
 
-$ grep -c "rev: <current-tag>" docs/recipes/pre-commit.md
+$ grep -c "rev: <current-tag>" docs/recipes/pre-commit.md   # byexample: +paste
 2
 ```
