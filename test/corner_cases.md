@@ -190,8 +190,8 @@ byexample --pretty none -l python test/ds/sleepy/{s1,s2,s3}.md
 Pressing more times Ctrl-C will force an immediate shutdown
 but it will leave resources uncleaned (dangerous/unsafe).
 
-$ sleep 0.5 ; kill -2 %%    # byexample: +pass
+$ sleep 1 ; kill -2 %%    # byexample: +pass +timeout=3
 $ fg            # byexample: +timeout 3 +rm=~
 <...>
-KeyboardInterrupt
+KeyboardInterrupt<...>
 ```
