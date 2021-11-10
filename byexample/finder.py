@@ -67,7 +67,7 @@ def _build_fake_example(
 
 
 class ExampleHarvest(object):
-    '''
+    r'''
                   Finding process             Parsing process
     ----------\                      example                 example (parsed)
     | foo     |      a match       (not parsed)         ............ . . .
