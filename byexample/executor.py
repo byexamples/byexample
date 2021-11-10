@@ -32,7 +32,7 @@ class InterpreterNotFound(Exception):
         self.runner_cmd = runner_cmd
 
 
-'''
+r'''
 >>> from byexample.runner import ExampleRunner
 >>> from byexample.executor import FileExecutor
 

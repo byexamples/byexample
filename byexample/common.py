@@ -258,7 +258,7 @@ class ShebangTemplate(string.Template):
     delimiter = '%'
 
     def quote_and_substitute(self, tokens, joined=True):
-        '''
+        r'''
         Quote each token to be suitable for shell expansion and then
         perform a substitution in the template.
 

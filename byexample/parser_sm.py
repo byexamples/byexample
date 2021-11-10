@@ -6,7 +6,7 @@ import pprint
 INIT, WS, LIT, TAG, END, TWOTAGS, EXHAUSTED, ERROR = range(8)
 tWS = ('wspaces', 'newlines')
 tLIT = ('wspaces', 'newlines', 'literals')
-'''
+r'''
 >>> from byexample.log import init_log_system
 >>> init_log_system()
 
@@ -95,7 +95,7 @@ class SM(object):
         return item
 
     def emit_literals(self):
-        '''
+        r'''
             The literals are escaped to be valid regexs without
             any special meaning.
 
@@ -120,7 +120,7 @@ class SM(object):
         return name
 
     def emit_tag(self, ctx, endline):
-        '''
+        r'''
             Emit the regex of a capture tag given a context,
             always with a rcount of zero.
 
@@ -231,7 +231,7 @@ class SM(object):
         return self.emit(charno, rx, rc)
 
     def emit_eof(self, ws):
-        '''
+        r'''
             >>> sm.push(0, None)
             >>> sm.emit_eof(ws='s')
             (0, '\\s*\\Z', 0)
@@ -247,7 +247,7 @@ class SM(object):
         return self.emit(charno, rx, rc)
 
     def expected_tokenizer(self, expected_str, tags_enabled, input_enabled):
-        ''' Iterate over the interesting tokens of the expected string:
+        r''' Iterate over the interesting tokens of the expected string:
              - newlines   - wspaces   - literals   - tag   - input   - warn
 
             >>> _tokenizer = partial(sm.expected_tokenizer, tags_enabled=True, input_enabled=True)
@@ -523,7 +523,7 @@ class SM(object):
             assert False
 
     def build_input_list(self):
-        '''
+        r'''
             Build a list of (<prefix>, <prefix regex>, <input>) tuples.
 
             The <input> part is a piece of text in the expected string that
@@ -801,7 +801,7 @@ class SM_NormWS(SM):
             assert False
 
     def parse(self, expected, tags_enabled, input_enabled):
-        '''
+        r'''
             >>> _as_regexs = partial(sm_norm_ws.parse, tags_enabled=True, input_enabled=True)
 
             Parse a given <expected> string and return a list
@@ -1093,7 +1093,7 @@ class SM_NotNormWS(SM):
             assert False
 
     def parse(self, expected, tags_enabled, input_enabled):
-        '''
+        r'''
             >>> _as_regexs = partial(sm_lit.parse, tags_enabled=True, input_enabled=True)
 
             Parse a given <expected> string and return a list

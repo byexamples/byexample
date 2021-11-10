@@ -38,7 +38,7 @@ class ExampleParser(ExtendOptionParserMixin):
         return '%s Parser' % tohuman(self.language if self.language else self)
 
     def example_options_string_regex(self):
-        '''
+        r'''
         Return a regular expressions to extract a string that contains all
         the options of the example.
 
@@ -54,7 +54,7 @@ class ExampleParser(ExtendOptionParserMixin):
         raise NotImplementedError()  # pragma: no cover
 
     def example_options_as_list(self, string):
-        '''
+        r'''
         Return a list of tokens from the string that was captured by
         the regex of example_options_string_regex.
 
@@ -64,7 +64,7 @@ class ExampleParser(ExtendOptionParserMixin):
         return shlex.split(string)
 
     def extend_option_parser(self, parser):
-        '''
+        r'''
         See options.ExtendOptionParserMixin.
 
         By default do not add any new flag.
@@ -73,7 +73,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
     @constant
     def tag_regexs(self):
-        '''
+        r'''
         Return a set of regular expressions to match a 'capture tag'
         (<foo>) and a 'non-capturing tag' (<...>), known as named
         and unnamed tags too.
@@ -97,7 +97,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
     @constant
     def non_capturing_tag_regexs(self):
-        '''
+        r'''
         Return a set of regular expressions to match a
         'non-capturing tag' (<...>), known as unnamed tags.
 
@@ -232,7 +232,7 @@ class ExampleParser(ExtendOptionParserMixin):
         self, expected, tags_enabled, capture_enabled, input_enabled,
         normalize_whitespace, input_prefix_len_range
     ):
-        '''
+        r'''
         From the expected string create a list of regular expressions that
         joined with the flags re.MULTILINE | re.DOTALL, matches
         that string.
@@ -396,7 +396,8 @@ class ExampleParser(ExtendOptionParserMixin):
         return opts
 
     def _extend_parser_and_parse_options_strictly_and_cache(self, optlist):
-        ''' This is a thin wrapper around _extend_parser_and_parse_options_strictly
+        r'''
+            This is a thin wrapper around _extend_parser_and_parse_options_strictly
             to cache its results based on the optlist.
 
             Note that two different lists may represent the same options set
@@ -424,7 +425,7 @@ class ExampleParser(ExtendOptionParserMixin):
 
 
 # Extra tests
-'''
+r'''
 >>> _as_regexs = partial(parser.expected_as_regexs, tags_enabled=True, capture_enabled=True, input_enabled=True, normalize_whitespace=False, input_prefix_len_range=(6,12))
 
 >>> expected = 'ex <...>\nu<...>'

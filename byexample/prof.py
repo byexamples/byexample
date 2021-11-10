@@ -1,7 +1,7 @@
 from time import perf_counter as mark
 import contextlib, functools, inspect
 import os.path, os, sys, atexit
-'''
+r'''
 This module implements a "deterministic profiler".
 
 To use it, you need to enable the engine first (it should
@@ -132,7 +132,7 @@ out_file = sys.stdout
 
 @contextlib.contextmanager
 def profile_ctx(name=None, _func=None):
-    ''' Profile the given code and emit a call trace of
+    r''' Profile the given code and emit a call trace of
         the ancestors calling callers that are being profiled
         too.
 
@@ -248,7 +248,7 @@ def profile_ctx(name=None, _func=None):
 
 @atexit.register
 def _flush_traces():
-    ''' Ensure that all the traces that may had been put on hold
+    r''' Ensure that all the traces that may had been put on hold
         are written to disk.
         '''
     global _out_q
