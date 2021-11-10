@@ -117,7 +117,7 @@ class ExampleHarvest(object):
 
     @log_context('byexample.find')
     def get_examples_from_file(self, filepath):
-        f = open(filepath, 'rtU', encoding=self.encoding)
+        f = open(filepath, 'rt', encoding=self.encoding)
 
         with f as f:
             try:
