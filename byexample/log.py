@@ -6,7 +6,7 @@ from .common import colored, highlight_syntax, indent
 from .log_level import TRACE, DEBUG, CHAT, INFO, NOTE, WARNING, ERROR, CRITICAL
 import functools, threading
 from .prof import profile
-'''
+r'''
 
 Byexample's logging system:
 

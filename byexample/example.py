@@ -36,7 +36,7 @@ class Zone(object):
 
 
 class Example(object):
-    '''
+    r'''
     The unit work of byexample: the example.
 
     It represents a example found in <where> by the <finder> that should be

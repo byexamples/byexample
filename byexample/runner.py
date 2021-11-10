@@ -24,7 +24,7 @@ class ExampleRunner(object):
         return '%s Runner' % tohuman(self.language if self.language else self)
 
     def run(self, example, options):
-        '''
+        r'''
         Run the example and return the output of the execution.
 
         The source code is in example.source.
@@ -53,14 +53,14 @@ class ExampleRunner(object):
         raise NotImplementedError()  # pragma: no cover
 
     def interact(self, example, options):
-        '''
+        r'''
         Connect the current runner/interpreter session to the byexample's console
         allowing the user to manually interact with the interpreter.
         '''
         raise NotImplementedError()  # pragma: no cover
 
     def initialize(self, options):
-        '''
+        r'''
         Hook to initialize the runner. This method will be called
         before running any example.
 
@@ -94,7 +94,7 @@ class ExampleRunner(object):
         raise NotImplementedError()  # pragma: no cover
 
     def shutdown(self):
-        '''
+        r'''
         Hook to shutdown the runner. This method will be called
         after running all the examples.
 
@@ -120,7 +120,7 @@ class ExampleRunner(object):
         raise NotImplementedError()  # pragma: no cover
 
     def reset(self, options):
-        '''
+        r'''
         Hook to reset the runner. This method *may* be called
         after running all the examples of the current processed file.
 
@@ -142,7 +142,7 @@ class ExampleRunner(object):
         return False
 
     def cancel(self, example, options):
-        '''
+        r'''
         Abort the execution of the current example. This method will typically
         be called after the example timeout.
 
@@ -152,7 +152,7 @@ class ExampleRunner(object):
         return False
 
     def get_version(self, options):
-        '''
+        r'''
         Return the version of the underlying interpreter or runner in form
         of a tuple. Return None if no version was determined.
 

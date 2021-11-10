@@ -23,7 +23,8 @@ class Expected(object):
 
 
 class _LinearExpected(Expected):
-    ''' Assume that all the example's tags are of the form .*
+    r'''
+        Assume that all the example's tags are of the form .*
         Then we can just apply a quicker and more efficient algorithm
         to detect if example's expected matches or not the got string.
 
@@ -212,7 +213,8 @@ class _LinearExpected(Expected):
     def _linear_matching(
         self, regexs, tags_by_idx, charnos, expected_str, got
     ):
-        ''' Assume that all (if any) example's capture tags are regex
+        r'''
+            Assume that all (if any) example's capture tags are regex
             of the form '.*'.
             If that's true, then the example will pass if all the literal
             regexs of the example's expected match the got strings.

@@ -71,32 +71,32 @@ deps-dev: deps
 	$(pip_bin) install -r requirements-dev.txt
 
 private-all-test: clean_test
-	@$(python_bin) test/r.py --timeout 90 --pretty $(pretty) --ff -l shell test/test.md
+	@$(python_bin) -W error test/r.py --timeout 90 --pretty $(pretty) --ff -l shell test/test.md
 	@make -s clean_test
 
 ## Python + Shell tests only
 #  =========================
 lib-test: clean_test
-	@$(python_bin) test/r.py @test/minimum.env -- byexample/*.py
+	@$(python_bin) -W error  test/r.py @test/minimum.env -- byexample/*.py
 	@make -s clean_test
 
 corner-test: clean_test
-	@$(python_bin) test/r.py @test/corner.env -- test/corner_cases.md
+	@$(python_bin) -W error  test/r.py @test/corner.env -- test/corner_cases.md
 	@make -s clean_test
 
 modules-test: clean_test
-	@$(python_bin) test/r.py @test/minimum.env -- byexample/modules/*.py
+	@$(python_bin) -W error  test/r.py @test/minimum.env -- byexample/modules/*.py
 	@make -s clean_test
 
 docs-test: clean_test
-	@$(python_bin) test/r.py @test/minimum.env -- *.md
-	@$(python_bin) test/r.py @test/minimum.env --skip docs/recipes/python-doctest.md -- `find docs \( -name languages -prune -o  -name "*.md" \) -type f`
-	@$(python_bin) test/r.py @test/minimum.env -o '+py-doctest' docs/recipes/python-doctest.md
+	@$(python_bin) -W error  test/r.py @test/minimum.env -- *.md
+	@$(python_bin) -W error  test/r.py @test/minimum.env --skip docs/recipes/python-doctest.md -- `find docs \( -name languages -prune -o  -name "*.md" \) -type f`
+	@$(python_bin) -W error  test/r.py @test/minimum.env -o '+py-doctest' docs/recipes/python-doctest.md
 	@$(python_bin) -m doctest docs/recipes/python-doctest.md
 	@make -s clean_test
 
 examples-test: clean_test
-	@$(python_bin) test/r.py @test/minimum.env -- docs/examples/*
+	@$(python_bin) -W error  test/r.py @test/minimum.env -- docs/examples/*
 	@make -s clean_test
 
 index-links-test: clean_test
@@ -130,45 +130,45 @@ lib-profiler-4: clean_test
 ## Tests for specific interpreters to be used in CI
 #  ================================================
 lang-ruby-test: clean_test
-	@$(python_bin) test/r.py @test/lang-ruby.env
+	@$(python_bin) -W error  test/r.py @test/lang-ruby.env
 
 lang-python-test: clean_test
-	@$(python_bin) test/r.py @test/lang-python.env
+	@$(python_bin) -W error  test/r.py @test/lang-python.env
 
 lang-shell-test: clean_test
-	@$(python_bin) test/r.py @test/lang-shell.env
+	@$(python_bin) -W error  test/r.py @test/lang-shell.env
 
 lang-iasm-test: clean_test
-	@$(python_bin) test/r.py @test/lang-iasm.env
+	@$(python_bin) -W error  test/r.py @test/lang-iasm.env
 
 lang-pwsh-test: clean_test
-	@$(python_bin) test/r.py @test/lang-powershell.env
+	@$(python_bin) -W error  test/r.py @test/lang-powershell.env
 
 lang-cpp-test: clean_test
-	@$(python_bin) test/r.py @test/lang-cpp.env
+	@$(python_bin) -W error  test/r.py @test/lang-cpp.env
 
 lang-gdb-test: clean_test
-	@$(python_bin) test/r.py @test/lang-gdb.env
+	@$(python_bin) -W error  test/r.py @test/lang-gdb.env
 
 lang-javascript-test: clean_test
-	@$(python_bin) test/r.py @test/lang-javascript.env
+	@$(python_bin) -W error  test/r.py @test/lang-javascript.env
 
 lang-go-test: clean_test
-	@$(python_bin) test/r.py @test/lang-go.env
+	@$(python_bin) -W error  test/r.py @test/lang-go.env
 
 lang-rust-test: clean_test
-	@$(python_bin) test/r.py @test/lang-rust.env
+	@$(python_bin) -W error  test/r.py @test/lang-rust.env
 
 lang-java-test: clean_test
-	@$(python_bin) test/r.py @test/lang-java.env
+	@$(python_bin) -W error  test/r.py @test/lang-java.env
 
 # not supported
 lang-elixir-test: clean_test
-	@$(python_bin) test/r.py @test/lang-elixir.env
+	@$(python_bin) -W error  test/r.py @test/lang-elixir.env
 
 # not supported
 lang-php-test: clean_test
-	@$(python_bin) test/r.py @test/lang-php.env
+	@$(python_bin) -W error  test/r.py @test/lang-php.env
 #
 ##
 
@@ -244,7 +244,7 @@ dist:
 	rm -Rf build/ *.egg-info
 
 upload: dist
-	@$(python_bin) test/r.py @test/minimum.env test/consistent-version.md
+	@$(python_bin) -W error  test/r.py @test/minimum.env test/consistent-version.md
 	twine upload dist/*.tar.gz dist/*.whl
 
 clean_test:
