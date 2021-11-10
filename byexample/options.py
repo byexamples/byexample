@@ -1,8 +1,8 @@
 from __future__ import unicode_literals
-import collections, argparse, shlex, pprint, sys
+import collections.abc, argparse, shlex, pprint, sys
 
 
-class Options(collections.MutableMapping):
+class Options(collections.abc.MutableMapping):
     r'''
     The execution of the examples can be modified by configuring different options.
 

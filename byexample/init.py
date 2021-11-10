@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import sys, pkgutil, inspect, pprint, os, collections, operator
+import sys, pkgutil, inspect, pprint, os, operator
 
 from itertools import chain as chain_iters
 

@@ -1,9 +1,10 @@
 from __future__ import unicode_literals
 from .common import transfer_constants
 import collections
+import collections.abc
 
 
-class Config(collections.Mapping):
+class Config(collections.abc.Mapping):
     ''' An immutable configuration object.
 
         Once the configuration was loaded, this object should be
