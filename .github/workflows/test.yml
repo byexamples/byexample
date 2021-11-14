@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
         matrix:
-            go-version: ["1.14", "1.13"]
+            go-version: ["1.17", "1.16"]
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -149,8 +149,9 @@ jobs:
           python-version: "3.6"
       - name: Setup go
         uses: actions/setup-go@v2
-        #with:
-        #  go-version: ${{ matrix.go-version }}
+        with:
+          go-version: ${{ matrix.go-version }}
+      - run: go version
       - run: make deps-dev
       - run: go get -u github.com/traefik/yaegi/cmd/yaegi
       - run: PATH=$PATH:$(go env GOPATH)/bin  make lang-go-test
