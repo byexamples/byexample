@@ -149,8 +149,8 @@ jobs:
           python-version: "3.6"
       - name: Setup go
         uses: actions/setup-go@v2
-        #with:
-        #  go-version: ${{ matrix.go-version }}
+        with:
+          go-version: ${{ matrix.go-version }}
       - run: make deps-dev
       - run: go get -u github.com/traefik/yaegi/cmd/yaegi
       - run: PATH=$PATH:$(go env GOPATH)/bin  make lang-go-test
