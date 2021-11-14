@@ -103,6 +103,9 @@ index-links-test: clean_test
 	@echo "Running index-links-test"
 	@./test/idx.sh
 
+version-test:
+	@$(python_bin) -W error  test/r.py @test/minimum.env test/consistent-version.md
+
 test: lib-test modules-test docs-test examples-test index-links-test corner-test
 
 #
@@ -243,8 +246,7 @@ dist:
 	$(python_bin) setup.py sdist bdist_wheel
 	rm -Rf build/ *.egg-info
 
-upload: dist
-	@$(python_bin) -W error  test/r.py @test/minimum.env test/consistent-version.md
+upload: dist version-test
 	twine upload dist/*.tar.gz dist/*.whl
 
 clean_test:
