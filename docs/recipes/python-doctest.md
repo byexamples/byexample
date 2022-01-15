@@ -10,7 +10,7 @@ $ alias byexample=byexample\ --pretty\ none
 # Compatibility with Python Doctest
 
 `byexample` is fully compatible with
-[doctest](https://docs.python.org/3/library/doctest.html)
+[doctest](https://docs.python.org/3/library/doctest.html).
 
 Take for the example this same document that you are reading:
 it has `doctest` examples that can be executed with both `doctest` and
@@ -28,7 +28,11 @@ Execute it with `byexample`, with the compatibility mode enabled:
 $ byexample -l python -o '+py-doctest' docs/recipes/python-doctest.md   # byexample: +skip
 ```
 
-## Brief introduction
+This document goes through the different features of `doctest`
+that are supported by `byexample`.
+
+
+## Examples Location
 
 Like `doctest`, `byexample` uses `>>>` to detect the examples to execute
 and test:
@@ -42,27 +46,6 @@ and test:
 >>> factorial(5)
 120
 
-```
-
-`doctest` is designed to find the examples in the `docstrings` of Python
-code or text files. `byexample` goes a little beyond and can find the
-examples in the `code-fenced` blocks of Markdown, HTML and others.
-
-This is very important. If you see the original markdown of this file,
-you will see in the examples inside of `code-fenced` blocks.
-
-`doctest` has no notion of this and it will not distinguish where an
-example ends and it will confuse the ending part of the `code-fenced`
-block with the expected output of the example.
-
-The solution? Add a new line at end of the example.
-
-`byexample` since `8.0.0` has not this limitation.
-
-Output is captured as well; `byexample` also captures the standard
-error.
-
-```python
 >>> def knights(n):
 ...     print('\n\n'.join("Ni!\nNi! Ni!" for i in range(n)))
 
@@ -71,6 +54,27 @@ Ni!
 Ni! Ni!
 
 ```
+
+`doctest` is designed to find the examples in the `docstrings` of Python
+code or text files.
+
+`byexample` finds the examples in the `docstrings` as well but it
+goes a beyond: it can find examples in the `code-fenced` blocks
+of Markdown, HTML and others files.
+
+If you have your examples in the `docstrings` of Python files you will
+be fine.
+
+But if you have examples in a plain text file, then will find
+the examples only if they are
+inside `code-fenced` blocks or HTML comments.
+
+Feel free to [open an issue](https://github.com/byexamples/byexample/issues)
+talking about your use case if this does not fit you.
+
+> *Note:* besides text formats, `byexample` is also capable of find examples in
+> Ruby files, C++ files, shell scripts and more. So don't restrict
+> yourself!
 
 ## Tracebacks
 
@@ -90,8 +94,9 @@ ValueError: list.remove(x): x not in list
 
 ```
 
-The call stack is ignored by `doctest`. Most of the time you want to
-omit it or replace it by `...` or something else:
+The call stack is ignored by `doctest`.
+
+Most of the time you want to omit it or replace it by `...` or something else:
 
 ```python
 >>> [1, 2, 3].remove(42)
@@ -119,6 +124,9 @@ Traceback (most recent call last):
 ValueError: element not found
 
 ```
+
+`byexample` supports all of these when the compatibility mode is
+enabled.
 
 Under the hood `byexample` treats all these special cases as the same
 and uses [capture tags](/{{ site.uprefix }}/basic/capture-and-paste).
@@ -148,11 +156,14 @@ same across all the platforms.
 
 ```
 
+`byexample` supports this as well but it also tries to make your life a
+little easier.
+
 One of the drawback of `doctest` is that if an example fails, the diff
 generated may be hard to debug if the expected output is large and it
-has some ellipsis:
+has some ellipsis.
 
-This is one example. Can you spot where is the difference?
+The following is what `doctest` outputs. Can you spot where is the difference?
 
 ```shell
 $ python -m doctest -o REPORT_NDIFF  test/ds/doctest-hard-diff.md	# byexample: +tags
@@ -195,7 +206,7 @@ they don't just ignore part
 of the outputs but they capture them and when a diff is calculated they
 are used to reduce the differences.
 
-This is the same run but with `byexample` with the compatibility mode
+This is the same test run but with `byexample` with the compatibility mode
 enabled:
 
 ```shell
