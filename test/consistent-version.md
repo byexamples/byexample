@@ -3,7 +3,7 @@ correctly in different parts of the project, source code and
 documentation.
 
 ```shell
-$ git describe --abbrev=0
+$ echo ${BYEXAMPLE_NEXT_VERSION:-$(git describe --abbrev=0)}
 <current-tag>
 
 $ grep -c "<current-tag>" README.md    # byexample: +paste
