@@ -1,6 +1,6 @@
 -   id: byexample
     name: Run code snippets to validate them
-    description: byexample is a literate programming engine where you mix ordinary text and snippets of code in the same file and then you execute them as regression tests. You can always be sure that the examples are correct and your documentation is up to date!
+    description: Execute code snippets in your documentation and validate them as regression tests. Your docs will never be outdated again. See https://byexamples.github.io/byexample/recipes/pre-commit
     entry: byexample
     language: python
     require_serial: true
