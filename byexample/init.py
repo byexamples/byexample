@@ -581,6 +581,7 @@ def init_byexample(args, sharer):
         'sharer': sharer,
     }
 
+    clog().chat("sys.argv: %s", sys.argv)
     testfiles = args.testfiles
 
     # ensure consistency: we cannot spawn more jobs than testfiles
