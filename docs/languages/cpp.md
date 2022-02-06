@@ -143,6 +143,14 @@ lib3, four times better
 >
 > Best way to troubleshoot is to use explicit paths to distinguish one
 > error from the other.
+>
+> If `cling` tries to load you shared library but it complains that it is not
+> an UTF-8 valid file it means that `cling` is trying to see the
+> library as source code. I found that this happen if the library is not
+> compiled as a shared library.
+>
+> Double check with `file libmylib2.so`, you should see something like
+> `libmylib2.so: ELF 64-bit LSB pie executable, ..., dynamically linked, ...`
 
 ### Running C code (and not C++)
 
