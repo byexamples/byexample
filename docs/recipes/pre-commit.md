@@ -58,3 +58,47 @@ This is perhaps a little cleaner that writing the arguments in
 
 
 > *New* in ``byexample 10.4.0``.
+
+## Gotchas when using `pre-commit` for Python
+
+`pre-commit` runs `byexample` in its own *private* environment. If your
+examples requires Python non-standard libraries, these libraries
+will not be in the private environment and your examples will fail.
+
+This is a design decision of `pre-commit`, however it is possible
+to workaround this and escape from the  *private* environment and enter
+in the environment of *your* preference.
+
+`byexample` allows you to [change](/{{ site.uprefix }}/advanced/shebang)
+how the interpreter is executed so you
+can call *explicitly* the `python` binary of *your* environment.
+
+Here we added `-x-shebang` and `"python:%e ./your-env/bin/python %a"`. You
+must change the path to your `python` binary in your environment.
+
+```yaml
+  hooks:
+  -   id: byexample
+      types_or: [markdown, python]
+      args: [--no-progress-bar, -l=python, -x-shebang, "python:%e ./your-env/bin/python %a"]
+```
+
+Another way to workaround this is to do a helper script `envpy.sh` that activates
+and deactivates your environment:
+
+```shell
+#!/bin/bash
+source your-env/bin/activate
+python $@
+deactivate
+```
+
+Then, call that script as the `python` binary in the
+[shebang](/{{site.uprefix }}/advanced/shebang):
+
+```yaml
+  hooks:
+  -   id: byexample
+      types_or: [markdown, python]
+      args: [--no-progress-bar, -l=python, -x-shebang, "python:%e ./envpy %a"]
+```
