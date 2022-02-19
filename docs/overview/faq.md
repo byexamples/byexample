@@ -226,3 +226,29 @@ If you still have troubles then it may be a real problem. It will be
 super helpful if you
 [open an issue](https://github.com/byexamples/byexample/issues) with a
 minimal code to exemplify the issue.
+
+### The executed code is *echoed* in the output
+
+`byexample` tries hard to force the interpreters to not echo the code
+but sometimes is not possible.
+
+This is particular true in MacOS.
+
+In the following example, part of the code executed is *echoed* and
+appears in the output of the example, something that it is unwanted of
+course.
+
+```python
+Failed example:
+    print("foo")
+Expected:
+foo
+Got:
+print("foo")
+foo
+```
+
+In this case you can run `byexample` with `-o +force-echo-filtering` to
+filter the unwanted strings.
+
+See [echo-filtering](/{{ site.uprefix }}/advanced/echo-filtering) for more information.
