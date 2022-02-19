@@ -127,8 +127,9 @@ $ byexample -l python,ruby,shell README.md      # run it    # byexample: +skip
 
 Linux is the preferable choice as it is very well tested.
 
-Since `9.2.1` MacOS is also supported`*` for the testing is more limited
-and it is expected to have little variations from Linux.
+Since `byexample 9.2.1` MacOS is also supported`*` but the testing is more limited
+so it may not work in all the cases. Check [this
+FAQ](https://byexamples.github.io/byexample/overview/faq#the-executed-code-is-echoed-in-the-output).
 
 You can even run `byexample` in Windows`**` using
 [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
@@ -140,15 +141,15 @@ supported.
   <div class="row">
     <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/linux_logo.png" alt="Linux Logo" width="64" height="64" />
-      <h3><a href="/{{ site.uprefix }}/languages/python">Linux</a></h3>
+      <h3><a href="#">Linux</a></h3>
     </div>
     <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/macos_logo.png" alt="MacOS Logo" width="64" height="64" />
-      <h3><a href="/{{ site.uprefix }}/languages/ruby">MacOS*</a></h3>
+      <h3><a href="#">MacOS*</a></h3>
     </div>
     <div class="col-4">
       <img src="https://raw.githubusercontent.com/byexamples/byexample/master/media/logos/windows_logo.png" alt="Windows Logo" width="64" height="64" />
-      <h3><a href="/{{ site.uprefix }}/languages/shell">Windows**</a></h3>
+      <h3><a href="#">Windows**</a></h3>
     </div>
   </div>
 </div>
