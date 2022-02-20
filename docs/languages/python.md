@@ -471,7 +471,7 @@ $ byexample -l python --show-options       # byexample: +norm-ws
 <...>
 python's specific options
 -------------------------
-optional arguments:
+<...>:
   +py-doctest           enable the compatibility with doctest.
   +py-pretty-print      enable the pretty print enhancement.
   +py-remove-empty-lines

@@ -146,7 +146,7 @@ $ byexample -l iasm --show-options       # byexample: +norm-ws
 <...>
 iasm's specific options
 -----------------------
-optional arguments:
+<...>:
   +iasm-arch <arch>     architecture name (arm, x86, sparc, ...); see iasm
                         documentation.
   +iasm-mode <mode>     mode (arm, 32, 64, ...); see iasm documentation.

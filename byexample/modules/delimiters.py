@@ -204,7 +204,7 @@ class DocStringDelimiter(ZoneDelimiter):
             [w] A syntax error was found parsing "foo.py": we may not found all the examples in the docstrings correctly.
             [w] <...>File "foo.py", line 1
                 invalid syntax
-            <...>       ^
+            <...>       ^<...>
             SyntaxError: invalid syntax
             >>> offsets is None
             True
