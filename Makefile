@@ -249,6 +249,14 @@ dist:
 upload: dist version-test
 	twine upload dist/*.tar.gz dist/*.whl
 
+# Describe the HEAD and if it is not a tag, fail; othewise get
+# the annotation of the tag and ensure that the indentation is removed
+# from it (tail + sed) and then create a Github release with that.
+release:
+	gh auth status
+	@X=`git describe --exact-match HEAD` && ( git tag -n1000 "$$X" | tail -n +3 | sed 's/^[[:blank:]]\{,4\}\(.*\)$$/\1/' | tee .release-notes | gh release create --generate-notes "$$X" --notes-files - )
+	@cat .release-notes
+
 clean_test:
 	@rm -f r.py
 	@rm -Rf w/
