@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 import sys, pkgutil, inspect, pprint, os, operator
+import importlib.util
 
 from itertools import chain as chain_iters
 
@@ -108,7 +109,9 @@ def load_modules(dirnames, cfg):
         clog().debug("From '%s' loading '%s'...", path, name)
 
         try:
-            module = importer.find_module(name).load_module(name)
+            spec = importer.find_spec(name)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
         except Exception as e:
             clog().info(
                 "From '%s' loading '%s'...failed: %s", path, name, str(e)
