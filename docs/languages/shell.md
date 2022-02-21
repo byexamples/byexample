@@ -381,7 +381,7 @@ $ byexample -l shell --show-options       # byexample: +norm-ws
 <...>
 shell's specific options
 ------------------------
-optional arguments:
+<...>:
   +stop-on-timeout      stop the process if it timeout.
   +stop-on-silence [secs]
                         stop the process if no output is read in the last

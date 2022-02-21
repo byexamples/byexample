@@ -115,7 +115,7 @@ $ byexample -l ruby --show-options       # byexample: +norm-ws
 <...>
 ruby's specific options
 -----------------------
-optional arguments:
+<...>:
   +ruby-pretty-print    enable the pretty print enhancement.
   +ruby-expr-print {auto,true,false}
                         print the expression's value (true); suppress it

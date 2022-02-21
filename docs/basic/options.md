@@ -42,13 +42,13 @@ For ``Python`` you could do:
 $ byexample -l python --show-options
 byexample's options
 -------------------
-optional arguments:
+<...>:
   +fail-fast            if an example fails, fail and stop all the execution.
   +norm-ws              ignore the amount of whitespaces.
   <...>
 python's specific options
 -------------------------
-optional arguments:
+<...>
   +py-doctest           enable the compatibility with doctest.
   +py-pretty-print      enable the pretty print enhancement.
   <...>

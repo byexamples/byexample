@@ -155,7 +155,7 @@ $ byexample -l java --show-options       # byexample: +norm-ws -capture
 <...>
 java's specific options
 -----------------------
-optional arguments:
+<...>:
   +java-expr-print {auto,true,false}
                         print the expression's value (true); suppress it
                         (false); or print it only if the example has a =>

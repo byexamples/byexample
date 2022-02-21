@@ -146,7 +146,7 @@ $ byexample -l elixir --show-options       # byexample: +norm-ws
 <...>
 elixir's specific options
 -------------------------
-optional arguments:
+<...>:
   +elixir-dont-display-hack
                         required for IEx < 1.9.
   +elixir-expr-print {auto,true,false}

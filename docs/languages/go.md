@@ -195,7 +195,7 @@ $ byexample -l go --show-options       # byexample: +norm-ws
 <...>
 go's specific options
 ---------------------
-optional arguments:
+<...>:
   +go-expr-print {auto,true,false}
                         print the expression's value (true); suppress it
                         (false); or print it only if the example has a colon
