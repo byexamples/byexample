@@ -565,10 +565,7 @@ if True:
         pretty_print = (py_doctest and py_pretty_print) \
                         or not py_doctest
 
-        shebang, tokens = self.get_default_cmd()
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        cmd = self.build_cmd(options, *self.get_default_cmd())
 
         # run!
         self._spawn_interpreter(cmd, options, initial_prompt=r'>>> ')

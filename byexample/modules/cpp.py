@@ -143,10 +143,7 @@ class CPPInterpreter(ExampleRunner, PexpectMixin):
         PexpectMixin.interact(self)
 
     def initialize(self, options):
-        shebang, tokens = self.get_default_cmd()
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        cmd = self.build_cmd(options, *self.get_default_cmd())
 
         # setting the geometry here will also set
         # the _terminal_default_geometry variable for later

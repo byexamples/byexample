@@ -246,10 +246,7 @@ class ElixirInterpreter(ExampleRunner, PexpectMixin):
         }
 
     def initialize(self, options):
-        shebang, tokens = self.get_default_cmd()
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        cmd = self.build_cmd(options, *self.get_default_cmd())
 
         self._print_expre_activated = True  # IEx default
         self._elixir_dont_display_hack = options['elixir_dont_display_hack']

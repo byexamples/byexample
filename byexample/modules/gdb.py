@@ -120,10 +120,7 @@ class GDBInterpreter(ExampleRunner, PexpectMixin):
         PexpectMixin.interact(self)
 
     def initialize(self, options):
-        shebang, tokens = self.get_default_cmd()
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        cmd = self.build_cmd(options, *self.get_default_cmd())
         self._spawn_interpreter(cmd, options)
 
         dfl_timeout = options['x']['dfl_timeout']

@@ -325,6 +325,22 @@ class PexpectMixin(object):
             )
             self._drop_output()  # discard banner and things like that
 
+    def build_cmd(self, options, default_shebang, default_tokens, joined=True):
+        ''' Return a string or a list suitable to be passed to
+            subprocess.check_output, pexpect.spawn and similar.
+
+            If the returned value is a single string or a list of strings
+            will depend of <joined>.
+
+            In any case the returned value represents the command to be executed
+            honoring the shebang for the given language and with all the
+            substitutions and quoting in place (see ShebangTemplate).
+            '''
+        shebang, tokens = default_shebang, default_tokens
+        shebang = options['shebangs'].get(self.language, shebang)
+
+        return ShebangTemplate(shebang).quote_and_substitute(tokens, joined)
+
     @property
     def last_num_lines_sent(self):
         ''' Return the number of lines sent to the interpreter

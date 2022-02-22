@@ -233,10 +233,9 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
         PexpectMixin.interact(self)
 
     def initialize(self, options):
-        shebang, tokens = self.get_default_cmd(shell=options['shell'])
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        cmd = self.build_cmd(
+            options, *self.get_default_cmd(shell=options['shell'])
+        )
         self._spawn_interpreter(cmd, options, wait_first_prompt=False)
 
         self._exec_and_wait(

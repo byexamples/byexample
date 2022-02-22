@@ -345,15 +345,15 @@ class JavaInterpreter(ExampleRunner, PexpectMixin):
         # always/yes; never/no; autodetect normalization
         self.expr_print_mode = options['java_expr_print']
 
-        shebang, tokens = self.get_default_cmd(
-            class_path=options['java_class_path'],
-            module_path=options['java_module_path'],
-            add_modules=options['java_add_modules'],
-            add_exports=options['java_add_exports']
+        cmd = self.build_cmd(
+            options,
+            *self.get_default_cmd(
+                class_path=options['java_class_path'],
+                module_path=options['java_module_path'],
+                add_modules=options['java_add_modules'],
+                add_exports=options['java_add_exports']
+            )
         )
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
         dfl_timeout = options['x']['dfl_timeout']
 

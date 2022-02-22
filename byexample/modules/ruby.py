@@ -197,12 +197,6 @@ class RubyInterpreter(ExampleRunner, PexpectMixin):
             'a': ['--version']
         }
 
-    def build_cmd(self, options, default_shebang, default_tokens, joined=True):
-        shebang, tokens = default_shebang, default_tokens
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        return ShebangTemplate(shebang).quote_and_substitute(tokens, joined)
-
     @constant
     def version_regex(self):
         return re.compile(

@@ -403,10 +403,7 @@ class GoInterpreter(ExampleRunner, PexpectMixin):
         # always/yes; never/no; autodetect normalization
         self.expr_print_mode = options['go_expr_print']
 
-        shebang, tokens = self.get_default_cmd()
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        cmd = self.build_cmd(options, *self.get_default_cmd())
 
         dfl_timeout = options['x']['dfl_timeout']
 

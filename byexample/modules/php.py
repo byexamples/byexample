@@ -149,10 +149,7 @@ class PHPInterpreter(ExampleRunner, PexpectMixin):
         return self._get_output_echo_filtered(options)
 
     def initialize(self, options):
-        shebang, tokens = self.get_default_cmd()
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        cmd = self.build_cmd(options, *self.get_default_cmd())
 
         # run!
         options.up()

@@ -274,10 +274,7 @@ class RustInterpreter(ExampleRunner, PexpectMixin):
         PexpectMixin.interact(self)
 
     def initialize(self, options):
-        shebang, tokens = self.get_default_cmd()
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        cmd = self.build_cmd(options, *self.get_default_cmd())
 
         options.up()
         # evcxr can be quite slow so we increase the timeout by default

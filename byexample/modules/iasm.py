@@ -171,12 +171,9 @@ class IAsmInterpreter(ExampleRunner, PexpectMixin):
         sz = options['iasm_code_size']
         pc = options['iasm_pc']
 
-        shebang, tokens = self.get_default_cmd(
-            arch=arch, mode=mode, sz=sz, pc=pc
+        cmd = self.build_cmd(
+            options, *self.get_default_cmd(arch=arch, mode=mode, sz=sz, pc=pc)
         )
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
         options.up()
         options['geometry'] = (
