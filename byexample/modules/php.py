@@ -145,6 +145,13 @@ class PHPInterpreter(ExampleRunner, PexpectMixin):
     def get_default_cmd(self, *args, **kargs):
         return "%e %p %a", {'e': '/usr/bin/env', 'p': 'php', 'a': ['-a']}
 
+    def get_default_version_cmd(self, *args, **kargs):
+        return "%e %p %a", {'e': '/usr/bin/env', 'p': 'php', 'a': ['-v']}
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def _get_output(self, options):
         return self._get_output_echo_filtered(options)
 

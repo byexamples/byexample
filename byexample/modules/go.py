@@ -399,6 +399,17 @@ class GoInterpreter(ExampleRunner, PexpectMixin):
         args = ['run', '-i', '-unsafe', '-unrestricted', '-syscall']
         return "%e %p %a", {'e': '/usr/bin/env', 'p': 'yaegi', 'a': args}
 
+    def get_default_version_cmd(self, *args, **kargs):
+        return "%e %p %a", {
+            'e': '/usr/bin/env',
+            'p': 'yaegi',
+            'a': ["version"]
+        }
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def initialize(self, options):
         # always/yes; never/no; autodetect normalization
         self.expr_print_mode = options['go_expr_print']

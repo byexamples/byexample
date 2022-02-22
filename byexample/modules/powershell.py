@@ -146,6 +146,17 @@ class PowerShellInterpreter(ExampleRunner, PexpectMixin):
             ]
         }
 
+    def get_default_version_cmd(self, *args, **kargs):
+        return "%e %p %a", {
+            'e': "/usr/bin/env",
+            'p': "pwsh",
+            'a': ["--version"]
+        }
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def run(self, example, options):
         options['geometry'] = self._terminal_default_geometry
         options['term'] = 'ansi'

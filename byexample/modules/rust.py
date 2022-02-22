@@ -233,6 +233,17 @@ class RustInterpreter(ExampleRunner, PexpectMixin):
             ]
         }
 
+    def get_default_version_cmd(self, *args, **kargs):
+        return "%e %p %a", {
+            'e': "/usr/bin/env",
+            'p': "evcxr",
+            'a': ["--version"]
+        }
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def run(self, example, options):
         # evcxr's output requeries to be emulated by an ANSI Terminal
         # so we force this (see _get_output())

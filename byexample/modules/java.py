@@ -331,6 +331,17 @@ class JavaInterpreter(ExampleRunner, PexpectMixin):
 
         return "%e %p %a", {'e': '/usr/bin/env', 'p': 'jshell', 'a': args}
 
+    def get_default_version_cmd(self, *args, **kargs):
+        return "%e %p %a", {
+            'e': '/usr/bin/env',
+            'p': 'jshell',
+            'a': ['--version']
+        }
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def initialize(self, options):
         # Set the prompts to the defaults of jshell. Once we had
         # configured jshell to work nice with byexample we can change

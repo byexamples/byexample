@@ -122,6 +122,19 @@ class CPPInterpreter(ExampleRunner, PexpectMixin):
             ]
         }
 
+    def get_default_version_cmd(self, *args, **kargs):
+        return "%e %p %a", {
+            'e': "/usr/bin/env",
+            'p': "cling",
+            'a': [
+                "--version",
+            ]
+        }
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def run(self, example, options):
         # the algorithm to filter the echos from the cling's output
         # (see _get_output()) doesn't work if the terminal is resized

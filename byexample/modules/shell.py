@@ -154,6 +154,28 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
             },
         }[shell]
 
+    def get_default_version_cmd(self, *args, **kargs):
+        shell = kargs.pop('shell', 'bash')
+        if shell in ('dash', 'sh'):
+            return None
+
+        return "%e %p %a", {
+            'bash': {
+                'e': '/usr/bin/env',
+                'p': 'bash',
+                'a': ['--version'],
+            },
+            'ksh': {
+                'e': '/usr/bin/env',
+                'p': 'ksh',
+                'a': ['--version'],
+            },
+        }[shell]
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def run(self, example, options):
         return PexpectMixin._run(self, example, options)
 

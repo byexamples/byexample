@@ -245,6 +245,19 @@ class ElixirInterpreter(ExampleRunner, PexpectMixin):
             ]
         }
 
+    def get_default_version_cmd(self, *args, **kargs):
+        return "%e %p %a", {
+            'e': '/usr/bin/env',
+            'p': 'iex',
+            'a': [
+                '--version',
+            ]
+        }
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def initialize(self, options):
         cmd = self.build_cmd(options, *self.get_default_cmd())
 
