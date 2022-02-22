@@ -959,6 +959,9 @@ class PexpectMixin(object):
         cmd = self.build_cmd(
             options, *self.get_default_version_cmd(), joined=False
         )
+        if not cmd:
+            return None
+
         try:
             out = subprocess.check_output(cmd).decode(self.encoding)
             version = self._parse_version(out)
