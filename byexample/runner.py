@@ -7,7 +7,7 @@ from functools import reduce, partial
 from .executor import TimeoutException, InputPrefixNotFound, InterpreterClosedUnexpectedly, InterpreterNotFound
 from .common import tohuman, ShebangTemplate, Countdown, short_string, constant
 from .example import Example
-from .log import clog
+from .log import clog, INFO
 from .prof import profile, profile_ctx
 
 from pyte import Stream, Screen
@@ -288,6 +288,11 @@ class PexpectMixin(object):
         self._cmd = cmd
 
         clog().info("Spawn command line: %s", cmd)
+        if clog().isEnabledFor(INFO):
+            v = self.get_version(options)
+            if v:
+                clog().info("Interpreter version: %s", v)
+
         spawner = PopenSpawnExt if subprocess else pexpect.spawn
         try:
             self._interpreter = spawner(
@@ -967,9 +972,9 @@ class PexpectMixin(object):
             version = self._parse_version(out)
 
         except Exception as err:
-            clog().info(
-                "Could not detect interpreter version: %s\nExecuted command: %s",
-                str(err), cmd
+            clog().warn(
+                "Failed to obtain runner version (%s).\nExecuted command: %s",
+                str(err), ' '.join(cmd)
             )
             return None
 
