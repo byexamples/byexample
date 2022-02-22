@@ -512,6 +512,20 @@ class PythonInterpreter(ExampleRunner, PexpectMixin):
             ]
         }
 
+    def get_default_version_cmd(self, *args, **kargs):
+        p = self._python_flavor
+        return "%e %p %a", {
+            'e': "/usr/bin/env",
+            'p': p,
+            'a': [
+                "--version",
+            ]
+        }
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def conf_pretty_print(self, columns, options):
         # Important: do not use a single quote ' in the following python code
         # it will break it in real hard ways to debug.

@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 import pexpect, pexpect.popen_spawn, time, operator, os, itertools, contextlib
 import signal
+import subprocess
 from . import regex as re
 from functools import reduce, partial
 from .executor import TimeoutException, InputPrefixNotFound, InterpreterClosedUnexpectedly, InterpreterNotFound
