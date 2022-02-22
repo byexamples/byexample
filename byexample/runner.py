@@ -4,7 +4,7 @@ import signal
 from . import regex as re
 from functools import reduce, partial
 from .executor import TimeoutException, InputPrefixNotFound, InterpreterClosedUnexpectedly, InterpreterNotFound
-from .common import tohuman, ShebangTemplate, Countdown, short_string
+from .common import tohuman, ShebangTemplate, Countdown, short_string, constant
 from .example import Example
 from .log import clog
 from .prof import profile, profile_ctx
@@ -894,3 +894,79 @@ class PexpectMixin(object):
                 good = False
 
         return good
+
+    @constant
+    def _version_regex(self):
+        ''' Return a regex to parse and extract the version of
+            the interpreter.
+
+            The default implementation for this method is a regex
+            to match the pattern major.minor.patch, where the
+            three components are integers.
+
+            Subclassess can override this.
+        '''
+        return re.compile(
+            r'''
+                ([^\d]|^)
+                (?P<major>\d+)
+                \.
+                (?P<minor>\d+)
+                (\. (?P<patch>\d+))?
+                ([^\d]|$)
+                ''', re.VERBOSE
+        )
+
+    @constant
+    def _parse_version(self, out):
+        ''' Parse and recover from <out> the version as a tuple
+            relaying on _version_regex().
+
+            Subclassess can override _version_regex() to change
+            the regex to match the version or they can change
+            this _parse_version() method to do the parsing
+            in a totally different way.
+        '''
+        version_regex = re.compile(
+            r'''
+                ([^\d]|^)
+                (?P<major>\d+)
+                \.
+                (?P<minor>\d+)
+                (\. (?P<patch>\d+))?
+                ([^\d]|$)
+                ''', re.VERBOSE
+        )
+
+        m = version_regex.search(out)
+
+        version = (int(m.group(k) or 0) for k in ("major", "minor", "patch"))
+        return tuple(version)
+
+    def get_default_version_cmd(self):
+        raise NotImplementedError()
+
+    @constant
+    def _get_version(self, options):
+        ''' Run the interpreter to get its version. It is expected
+            that the interpreter will print it and then exit.
+
+            This implementation requires the implementation of
+            get_default_version_cmd by a subclass which should return
+            a suitable value for build_cmd().
+        '''
+        cmd = self.build_cmd(
+            options, *self.get_default_version_cmd(), joined=False
+        )
+        try:
+            out = subprocess.check_output(cmd).decode(self.encoding)
+            version = self._parse_version(out)
+
+        except Exception as err:
+            clog().info(
+                "Could not detect interpreter version: %s\nExecuted command: %s",
+                str(err), cmd
+            )
+            return None
+
+        return version

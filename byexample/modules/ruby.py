@@ -198,40 +198,8 @@ class RubyInterpreter(ExampleRunner, PexpectMixin):
         }
 
     @constant
-    def version_regex(self):
-        return re.compile(
-            r'''
-                ([^\d]|^)
-                (?P<major>\d+)
-                \.
-                (?P<minor>\d+)
-                (\. (?P<patch>\d+))?
-                ([^\d]|$)
-                ''', re.VERBOSE
-        )
-
-    @constant
     def get_version(self, options):
-        cmd = self.build_cmd(
-            options, *self.get_default_version_cmd(), joined=False
-        )
-        try:
-            out = subprocess.check_output(cmd).decode(self.encoding)
-            m = self.version_regex().search(out)
-
-            version = (
-                int(m.group(k) or 0) for k in ("major", "minor", "patch")
-            )
-            version = tuple(version)
-
-        except Exception as err:
-            clog().info(
-                "Could not detect interpreter version: %s\nExecuted command: %s",
-                str(err), cmd
-            )
-            return None
-
-        return version
+        return self._get_version(options)
 
     def initialize(self, options):
         ruby_pretty_print = options['ruby_pretty_print']
