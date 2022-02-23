@@ -233,6 +233,17 @@ class RustInterpreter(ExampleRunner, PexpectMixin):
             ]
         }
 
+    def get_default_version_cmd(self, *args, **kargs):
+        return "%e %p %a", {
+            'e': "/usr/bin/env",
+            'p': "evcxr",
+            'a': ["--version"]
+        }
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def run(self, example, options):
         # evcxr's output requeries to be emulated by an ANSI Terminal
         # so we force this (see _get_output())
@@ -274,10 +285,7 @@ class RustInterpreter(ExampleRunner, PexpectMixin):
         PexpectMixin.interact(self)
 
     def initialize(self, options):
-        shebang, tokens = self.get_default_cmd()
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        cmd = self.build_cmd(options, *self.get_default_cmd())
 
         options.up()
         # evcxr can be quite slow so we increase the timeout by default

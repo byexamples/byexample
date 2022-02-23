@@ -154,6 +154,28 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
             },
         }[shell]
 
+    def get_default_version_cmd(self, *args, **kargs):
+        shell = kargs.pop('shell', 'bash')
+        if shell in ('dash', 'sh'):
+            return None
+
+        return "%e %p %a", {
+            'bash': {
+                'e': '/usr/bin/env',
+                'p': 'bash',
+                'a': ['--version'],
+            },
+            'ksh': {
+                'e': '/usr/bin/env',
+                'p': 'ksh',
+                'a': ['--version'],
+            },
+        }[shell]
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def run(self, example, options):
         return PexpectMixin._run(self, example, options)
 
@@ -233,10 +255,9 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
         PexpectMixin.interact(self)
 
     def initialize(self, options):
-        shebang, tokens = self.get_default_cmd(shell=options['shell'])
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        cmd = self.build_cmd(
+            options, *self.get_default_cmd(shell=options['shell'])
+        )
         self._spawn_interpreter(cmd, options, wait_first_prompt=False)
 
         self._exec_and_wait(

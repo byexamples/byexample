@@ -1,12 +1,13 @@
 from __future__ import unicode_literals
 import pexpect, pexpect.popen_spawn, time, operator, os, itertools, contextlib
 import signal
+import subprocess
 from . import regex as re
 from functools import reduce, partial
 from .executor import TimeoutException, InputPrefixNotFound, InterpreterClosedUnexpectedly, InterpreterNotFound
-from .common import tohuman, ShebangTemplate, Countdown, short_string
+from .common import tohuman, ShebangTemplate, Countdown, short_string, constant
 from .example import Example
-from .log import clog
+from .log import clog, INFO
 from .prof import profile, profile_ctx
 
 from pyte import Stream, Screen
@@ -287,6 +288,11 @@ class PexpectMixin(object):
         self._cmd = cmd
 
         clog().info("Spawn command line: %s", cmd)
+        if clog().isEnabledFor(INFO):
+            v = self.get_version(options)
+            if v:
+                clog().info("Interpreter version: %s", v)
+
         spawner = PopenSpawnExt if subprocess else pexpect.spawn
         try:
             self._interpreter = spawner(
@@ -324,6 +330,22 @@ class PexpectMixin(object):
                 prompt_re=prompt_re
             )
             self._drop_output()  # discard banner and things like that
+
+    def build_cmd(self, options, default_shebang, default_tokens, joined=True):
+        ''' Return a string or a list suitable to be passed to
+            subprocess.check_output, pexpect.spawn and similar.
+
+            If the returned value is a single string or a list of strings
+            will depend of <joined>.
+
+            In any case the returned value represents the command to be executed
+            honoring the shebang for the given language and with all the
+            substitutions and quoting in place (see ShebangTemplate).
+            '''
+        shebang, tokens = default_shebang, default_tokens
+        shebang = options['shebangs'].get(self.language, shebang)
+
+        return ShebangTemplate(shebang).quote_and_substitute(tokens, joined)
 
     @property
     def last_num_lines_sent(self):
@@ -878,3 +900,82 @@ class PexpectMixin(object):
                 good = False
 
         return good
+
+    @constant
+    def _version_regex(self):
+        ''' Return a regex to parse and extract the version of
+            the interpreter.
+
+            The default implementation for this method is a regex
+            to match the pattern major.minor.patch, where the
+            three components are integers.
+
+            Subclassess can override this.
+        '''
+        return re.compile(
+            r'''
+                ([^\d]|^)
+                (?P<major>\d+)
+                \.
+                (?P<minor>\d+)
+                (\. (?P<patch>\d+))?
+                ([^\d]|$)
+                ''', re.VERBOSE
+        )
+
+    @constant
+    def _parse_version(self, out):
+        ''' Parse and recover from <out> the version as a tuple
+            relaying on _version_regex().
+
+            Subclassess can override _version_regex() to change
+            the regex to match the version or they can change
+            this _parse_version() method to do the parsing
+            in a totally different way.
+        '''
+        version_regex = re.compile(
+            r'''
+                ([^\d]|^)
+                (?P<major>\d+)
+                \.
+                (?P<minor>\d+)
+                (\. (?P<patch>\d+))?
+                ([^\d]|$)
+                ''', re.VERBOSE
+        )
+
+        m = version_regex.search(out)
+
+        version = (int(m.group(k) or 0) for k in ("major", "minor", "patch"))
+        return tuple(version)
+
+    def get_default_version_cmd(self):
+        raise NotImplementedError()
+
+    @constant
+    def _get_version(self, options):
+        ''' Run the interpreter to get its version. It is expected
+            that the interpreter will print it and then exit.
+
+            This implementation requires the implementation of
+            get_default_version_cmd by a subclass which should return
+            a suitable value for build_cmd().
+        '''
+        cmd = self.build_cmd(
+            options, *self.get_default_version_cmd(), joined=False
+        )
+        if not cmd:
+            return None
+
+        try:
+            out = subprocess.check_output(cmd).decode(self.encoding)
+            version = self._parse_version(out)
+
+        except Exception as err:
+            clog().warn(
+                "Failed to obtain runner version (%s).\nExecuted command: %s",
+                str(err), ' '.join(cmd)
+            )
+            return None
+
+        return version

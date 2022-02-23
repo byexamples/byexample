@@ -149,6 +149,17 @@ class IAsmInterpreter(ExampleRunner, PexpectMixin):
             ]
         }
 
+    def get_default_version_cmd(self, *args, **kargs):
+        return "%e %p %a", {
+            'e': "/usr/bin/env",
+            'p': "iasm",
+            'a': ["--version"]
+        }
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def run(self, example, options):
         # iasm's output requeries to be emulated by an ANSI Terminal
         # so we force this (see _get_output())
@@ -171,12 +182,9 @@ class IAsmInterpreter(ExampleRunner, PexpectMixin):
         sz = options['iasm_code_size']
         pc = options['iasm_pc']
 
-        shebang, tokens = self.get_default_cmd(
-            arch=arch, mode=mode, sz=sz, pc=pc
+        cmd = self.build_cmd(
+            options, *self.get_default_cmd(arch=arch, mode=mode, sz=sz, pc=pc)
         )
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
         options.up()
         options['geometry'] = (

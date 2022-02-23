@@ -122,6 +122,19 @@ class CPPInterpreter(ExampleRunner, PexpectMixin):
             ]
         }
 
+    def get_default_version_cmd(self, *args, **kargs):
+        return "%e %p %a", {
+            'e': "/usr/bin/env",
+            'p': "cling",
+            'a': [
+                "--version",
+            ]
+        }
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def run(self, example, options):
         # the algorithm to filter the echos from the cling's output
         # (see _get_output()) doesn't work if the terminal is resized
@@ -143,10 +156,7 @@ class CPPInterpreter(ExampleRunner, PexpectMixin):
         PexpectMixin.interact(self)
 
     def initialize(self, options):
-        shebang, tokens = self.get_default_cmd()
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        cmd = self.build_cmd(options, *self.get_default_cmd())
 
         # setting the geometry here will also set
         # the _terminal_default_geometry variable for later

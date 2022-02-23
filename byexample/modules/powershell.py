@@ -146,6 +146,17 @@ class PowerShellInterpreter(ExampleRunner, PexpectMixin):
             ]
         }
 
+    def get_default_version_cmd(self, *args, **kargs):
+        return "%e %p %a", {
+            'e': "/usr/bin/env",
+            'p': "pwsh",
+            'a': ["--version"]
+        }
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def run(self, example, options):
         options['geometry'] = self._terminal_default_geometry
         options['term'] = 'ansi'
@@ -165,14 +176,12 @@ class PowerShellInterpreter(ExampleRunner, PexpectMixin):
         PexpectMixin.interact(self)
 
     def initialize(self, options):
-        shebang, tokens = self.get_default_cmd()
-        shebang = options['shebangs'].get(self.language, shebang)
+        cmd = self.build_cmd(options, *self.get_default_cmd())
 
         # documented by PowerShell but completely ignored
         # https://no-color.org/
         # https://docs.microsoft.com/en-us/powershell/scripting/learn/experimental-features?view=powershell-7.1
         env_update = {'NO_COLOR': '1'}
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
         self._spawn_interpreter(
             cmd, options, subprocess=True, env_update=env_update
         )

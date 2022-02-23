@@ -145,14 +145,18 @@ class PHPInterpreter(ExampleRunner, PexpectMixin):
     def get_default_cmd(self, *args, **kargs):
         return "%e %p %a", {'e': '/usr/bin/env', 'p': 'php', 'a': ['-a']}
 
+    def get_default_version_cmd(self, *args, **kargs):
+        return "%e %p %a", {'e': '/usr/bin/env', 'p': 'php', 'a': ['-v']}
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def _get_output(self, options):
         return self._get_output_echo_filtered(options)
 
     def initialize(self, options):
-        shebang, tokens = self.get_default_cmd()
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
+        cmd = self.build_cmd(options, *self.get_default_cmd())
 
         # run!
         options.up()

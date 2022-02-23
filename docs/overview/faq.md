@@ -124,6 +124,7 @@ of Python examples you can do:
 $ byexample -x-log-mask byexample.exec.python:chat -l python test/ds/db-stock-model
 [i:exec.python] Initializing Python Runner
 [i:exec.python] Spawn command line: /usr/bin/env python -i
+[i:exec.python] Interpreter version: <...>
 ex:
     import sqlite3
 ex:
@@ -218,6 +219,8 @@ find it adding more verbosity:
 $ byexample -l python -x-shebang 'python:env python99' -v test/ds/db-stock-model   # byexample: +norm-ws
 [i] Initializing Python Runner
 [i] Spawn command line: env python99
+<...>
+[w] Failed to obtain runner version <...>
 [w] Initialization of Python Runner failed.
 <...>
 ```

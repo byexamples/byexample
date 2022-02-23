@@ -331,6 +331,17 @@ class JavaInterpreter(ExampleRunner, PexpectMixin):
 
         return "%e %p %a", {'e': '/usr/bin/env', 'p': 'jshell', 'a': args}
 
+    def get_default_version_cmd(self, *args, **kargs):
+        return "%e %p %a", {
+            'e': '/usr/bin/env',
+            'p': 'jshell',
+            'a': ['--version']
+        }
+
+    @constant
+    def get_version(self, options):
+        return self._get_version(options)
+
     def initialize(self, options):
         # Set the prompts to the defaults of jshell. Once we had
         # configured jshell to work nice with byexample we can change
@@ -345,15 +356,15 @@ class JavaInterpreter(ExampleRunner, PexpectMixin):
         # always/yes; never/no; autodetect normalization
         self.expr_print_mode = options['java_expr_print']
 
-        shebang, tokens = self.get_default_cmd(
-            class_path=options['java_class_path'],
-            module_path=options['java_module_path'],
-            add_modules=options['java_add_modules'],
-            add_exports=options['java_add_exports']
+        cmd = self.build_cmd(
+            options,
+            *self.get_default_cmd(
+                class_path=options['java_class_path'],
+                module_path=options['java_module_path'],
+                add_modules=options['java_add_modules'],
+                add_exports=options['java_add_exports']
+            )
         )
-        shebang = options['shebangs'].get(self.language, shebang)
-
-        cmd = ShebangTemplate(shebang).quote_and_substitute(tokens)
 
         dfl_timeout = options['x']['dfl_timeout']
 
