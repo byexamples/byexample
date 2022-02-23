@@ -291,7 +291,7 @@ class PexpectMixin(object):
         if clog().isEnabledFor(INFO):
             v = self.get_version(options)
             if v:
-                clog().info("Interpreter version: %s", v)
+                clog().info("%s's version: %s", repr(self), v)
 
         spawner = PopenSpawnExt if subprocess else pexpect.spawn
         try:
@@ -973,8 +973,8 @@ class PexpectMixin(object):
 
         except Exception as err:
             clog().warn(
-                "Failed to obtain runner version (%s).\nExecuted command: %s",
-                str(err), ' '.join(cmd)
+                "Failed to obtain %s's version (%s).\nExecuted command: %s",
+                repr(self), str(err), ' '.join(cmd)
             )
             return None
 
