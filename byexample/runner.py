@@ -291,7 +291,8 @@ class PexpectMixin(object):
         if clog().isEnabledFor(INFO):
             v = self.get_version(options)
             if v:
-                clog().info("%s's version: %s", repr(self), v)
+                v = '.'.join(map(str, v))
+                clog().info("%s's version: (%s)", repr(self), v)
 
         spawner = PopenSpawnExt if subprocess else pexpect.spawn
         try:
