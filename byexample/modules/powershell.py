@@ -131,6 +131,9 @@ class PowerShellInterpreter(ExampleRunner, PexpectMixin):
             self, PS1_re=r'byexample-ps1>', any_PS_re=r'(byexample-ps1>)|(>>)'
         )
 
+    def __repr__(self):
+        return 'PowerShell Runner'
+
     def get_default_cmd(self, *args, **kargs):
         return "%e %p %a", {
             'e':
