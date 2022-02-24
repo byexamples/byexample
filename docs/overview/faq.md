@@ -124,7 +124,7 @@ of Python examples you can do:
 $ byexample -x-log-mask byexample.exec.python:chat -l python test/ds/db-stock-model
 [i:exec.python] Initializing Python Runner
 [i:exec.python] Spawn command line: /usr/bin/env python -i
-[i:exec.python] Interpreter version: <...>
+[i:exec.python] Python Runner's version: <...>
 ex:
     import sqlite3
 ex:
@@ -216,11 +216,10 @@ If you want to know the exact command line used by `byexample`, you can
 find it adding more verbosity:
 
 ```shell
-$ byexample -l python -x-shebang 'python:env python99' -v test/ds/db-stock-model   # byexample: +norm-ws
+$ byexample -l python -x-shebang 'python:env python99' -v test/ds/db-stock-model   # byexample: +norm-ws +diff=ndiff
 [i] Initializing Python Runner
 [i] Spawn command line: env python99
-<...>
-[w] Failed to obtain runner version <...>
+[w] Failed to obtain Python Runner's version <...>
 [w] Initialization of Python Runner failed.
 <...>
 ```

@@ -125,6 +125,9 @@ class IAsmInterpreter(ExampleRunner, PexpectMixin):
 
         PexpectMixin.__init__(self, PS1_re=r':>', any_PS_re=r'[:-]>')
 
+    def __repr__(self):
+        return '%s Runner' % self.language
+
     def get_default_cmd(self, arch, mode, sz, pc, *args, **kargs):
         return "%e %p %a", {
             'e':

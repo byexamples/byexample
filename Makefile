@@ -257,13 +257,18 @@ release:
 	@X=`git describe --exact-match HEAD` && ( git tag -n1000 "$$X" | tail -n +3 | sed 's/^[[:blank:]]\{,4\}\(.*\)$$/\1/' | tee .release-notes | gh release create --generate-notes "$$X" --notes-files - )
 	@cat .release-notes
 
+runner-version-matrix:
+	gh auth status
+	@X=`gh run list --repo byexamples/byexample --workflow test --limit 1 | awk '{print $$(NF-2)}'` && gh run view --repo byexamples/byexample --log "$$X" > .workflow-log
+	@python test/runner_version_matrix.py .workflow-log
+
 clean_test:
 	@rm -f r.py
 	@rm -Rf w/
 	@mkdir -p w/
 
 clean: clean_test
-	rm -f .coverage .coverage.work.*
+	rm -f .coverage .coverage.work.* .release-notes .workflow-log
 	rm -Rf dist/ build/ *.egg-info
 	rm -Rf build/ *.egg-info
 	find . -name "*.pyc" -delete

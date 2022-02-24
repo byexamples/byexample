@@ -14,3 +14,4 @@ test/ds/django.conf
 test/ds/args
 prof-traces
 .release-notes
+.workflow-log
