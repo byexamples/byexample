@@ -216,10 +216,9 @@ If you want to know the exact command line used by `byexample`, you can
 find it adding more verbosity:
 
 ```shell
-$ byexample -l python -x-shebang 'python:env python99' -v test/ds/db-stock-model   # byexample: +norm-ws
+$ byexample -l python -x-shebang 'python:env python99' -v test/ds/db-stock-model   # byexample: +norm-ws +diff=ndiff
 [i] Initializing Python Runner
 [i] Spawn command line: env python99
-<...>
 [w] Failed to obtain Python Runner's version <...>
 [w] Initialization of Python Runner failed.
 <...>

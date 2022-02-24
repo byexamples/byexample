@@ -969,7 +969,10 @@ class PexpectMixin(object):
             return None
 
         try:
-            out = subprocess.check_output(cmd).decode(self.encoding)
+            out = subprocess.check_output(cmd,
+                                          stderr=subprocess.STDOUT).decode(
+                                              self.encoding
+                                          )
             version = self._parse_version(out)
 
         except Exception as err:
