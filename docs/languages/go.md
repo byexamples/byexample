@@ -16,6 +16,9 @@ Check its [download page](https://github.com/traefik/yaegi)
 
 > *New* in ``byexample 10.2.0``.
 
+<!-- matrix CI begin -->
+<!-- matrix CI end -->
+
 ## Find interactive examples
 
 For ``Go``, ``byexample`` uses the ``>`` string as the primary prompt

@@ -19,6 +19,9 @@ its [download page](https://www.gnu.org/software/gdb/download/).
 > **Stability**: ``experimental`` - non backward compatibility changes are
 > possible or even removal between versions (even patch versions).
 
+<!-- matrix CI begin -->
+<!-- matrix CI end -->
+
 ## Quick example
 
 To show you this, let's first create a program to debug:

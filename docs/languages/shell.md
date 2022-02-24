@@ -29,6 +29,14 @@ $ byexample -l shell -o '+shell=dash' your-file-here  # byexample: +skip
 > changes may occur between versions; but in general a change like that
 > will happen only between major versions.
 
+<!-- matrix CI begin -->
+
+| Language   | Runner/Interpreter   |
+|------------|----------------------|
+| latest     | 5.0.17               |
+
+<!-- matrix CI end -->
+
 ## POSIX-conformant
 
 `byexample` configures ``bash`` to run in POSIX-conformant by default.

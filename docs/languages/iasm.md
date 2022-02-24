@@ -30,6 +30,14 @@ Or you can download the code from
 
 > *New* in ``byexample 10.1.0``.
 
+<!-- matrix CI begin -->
+
+| Language   | Runner/Interpreter   |
+|------------|----------------------|
+| latest     | (in review)          |
+
+<!-- matrix CI end -->
+
 ## Set architecture and operation mode
 
 `iasm` is capable to emulate different architectures.

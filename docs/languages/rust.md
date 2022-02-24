@@ -21,6 +21,9 @@ Check its [download page](https://github.com/google/evcxr)
 
 > *New* in ``byexample 10.2.0``.
 
+<!-- matrix CI begin -->
+<!-- matrix CI end -->
+
 ## Find interactive examples
 
 For ``Rust``, ``byexample`` uses the ``>>`` string as the primary prompt

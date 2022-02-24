@@ -23,6 +23,18 @@ If `-l python` is used in the command line, `byexample` will use the
 binary named `python` while if you use `-l python3` it will be the
 binary named `python3`.
 
+<!-- matrix CI begin -->
+
+| Language   | Runner/Interpreter   |
+|------------|----------------------|
+| 3.6        | 3.6.15               |
+| 3.7        | 3.7.12               |
+| 3.8        | 3.8.12               |
+| 3.9        | 3.9.10               |
+| 3.10       | 3.10.2               |
+
+<!-- matrix CI end -->
+
 ## Find interactive examples
 
 For ``Python``, ``byexample`` uses the ``>>>`` string as the primary and ``...``

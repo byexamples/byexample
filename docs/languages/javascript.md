@@ -13,6 +13,18 @@ You can get the `nodejs` interpreter from [here](https://nodejs.org/en/download/
 > **Stability**: ``experimental`` - non backward compatibility changes are
 > possible or even removal between versions (even patch versions).
 
+<!-- matrix CI begin -->
+
+| Language   | Runner/Interpreter   |
+|------------|----------------------|
+| 10.x       | 10.24.1              |
+| 12.x       | 12.22.10             |
+| 14.x       | 14.19.0              |
+| 15.x       | 15.14.0              |
+| 16.x       | 16.14.0              |
+
+<!-- matrix CI end -->
+
 ## Find interactive examples
 
 For ``Javascript``, ``byexample`` uses the ``>`` string as the primary prompt

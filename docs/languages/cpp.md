@@ -24,6 +24,9 @@ pre-installed (the
 [dockerfile](https://github.com/byexamples/byexample/tree/master/test/Dockerfile-cling)
 is available too).
 
+<!-- matrix CI begin -->
+<!-- matrix CI end -->
+
 ### How to use the docker image
 
 Download the image:

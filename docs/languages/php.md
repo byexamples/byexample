@@ -16,6 +16,9 @@ From PHP 5.1.0 this is available as long as the interpreter is compiled with
 > possible to offer *any* guarantees.
 > [Contributions from the community are needed!](https://github.com/byexamples/byexample/tree/master/CONTRIBUTING.md)
 
+<!-- matrix CI begin -->
+<!-- matrix CI end -->
+
 
 ### Variable and function definitions
 

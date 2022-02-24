@@ -17,6 +17,9 @@ Check its [download page](https://elixir-lang.org)
 ``IEx`` however it will do several *hacks*. The recommended version is
 1.9.0 or superior.
 
+<!-- matrix CI begin -->
+<!-- matrix CI end -->
+
 ## Pretty print
 
 ``byexample`` changes the default IEx's ``width`` to a smaller

@@ -36,6 +36,14 @@ $ byexample -l pwsh docs/languages/powershell.md    # byexample: +timeout=8
 
 > *New* in ``byexample 10.1.0``.
 
+<!-- matrix CI begin -->
+
+| Language   | Runner/Interpreter   |
+|------------|----------------------|
+| latest     | 7.2.1                |
+
+<!-- matrix CI end -->
+
 ## Find interactive examples
 
 For ``PowerShell``, ``byexample`` uses the ``PS>`` string as the primary prompt

@@ -15,6 +15,16 @@ for `Java`. It is installed by default as part of the
 
 > *New* in ``byexample 10.3.0``.
 
+<!-- matrix CI begin -->
+
+| Language   | Runner/Interpreter   |
+|------------|----------------------|
+| 11         | 11.0.14              |
+| 13         | 13.0.10              |
+| 15         | 15.0.6               |
+
+<!-- matrix CI end -->
+
 ## Find interactive examples
 
 For ``Java``, ``byexample`` uses the ``j>`` string as the primary prompt

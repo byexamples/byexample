@@ -13,6 +13,19 @@ Check its [download page](https://www.ruby-lang.org/en/downloads/)
 > changes may occur between versions; but in general a change like that
 > will happen only between major versions.
 
+<!-- matrix CI begin -->
+
+| Language   | Runner/Interpreter   |
+|------------|----------------------|
+| 2.4        | 0.9.6                |
+| 2.5        | 0.9.6                |
+| 2.6        | 1.0.0                |
+| 2.7        | 1.2.6                |
+| 3.0        | 1.3.5                |
+| 3.1        | 1.4.1                |
+
+<!-- matrix CI end -->
+
 ## Find interactive examples
 
 For ``Ruby``, ``byexample`` uses the ``>>`` string as the primary prompt
