@@ -15,6 +15,11 @@ for `Java`. It is installed by default as part of the
 
 > *New* in ``byexample 10.3.0``.
 
+### Versions tested
+
+We tested `byexample` with the following versions of the language
+and the underlying runner or interpreter:
+
 <!-- matrix CI begin -->
 
 | Language   | Runner/Interpreter   |

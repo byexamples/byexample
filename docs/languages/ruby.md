@@ -13,6 +13,11 @@ Check its [download page](https://www.ruby-lang.org/en/downloads/)
 > changes may occur between versions; but in general a change like that
 > will happen only between major versions.
 
+### Versions tested
+
+We tested `byexample` with the following versions of the language
+and the underlying runner or interpreter:
+
 <!-- matrix CI begin -->
 
 | Language   | Runner/Interpreter   |

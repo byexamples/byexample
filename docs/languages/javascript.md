@@ -13,6 +13,11 @@ You can get the `nodejs` interpreter from [here](https://nodejs.org/en/download/
 > **Stability**: ``experimental`` - non backward compatibility changes are
 > possible or even removal between versions (even patch versions).
 
+### Versions tested
+
+We tested `byexample` with the following versions of the language
+and the underlying runner or interpreter:
+
 <!-- matrix CI begin -->
 
 | Language   | Runner/Interpreter   |

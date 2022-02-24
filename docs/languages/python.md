@@ -23,6 +23,11 @@ If `-l python` is used in the command line, `byexample` will use the
 binary named `python` while if you use `-l python3` it will be the
 binary named `python3`.
 
+### Versions tested
+
+We tested `byexample` with the following versions of the language
+and the underlying runner or interpreter:
+
 <!-- matrix CI begin -->
 
 | Language   | Runner/Interpreter   |

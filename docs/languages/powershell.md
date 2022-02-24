@@ -36,6 +36,11 @@ $ byexample -l pwsh docs/languages/powershell.md    # byexample: +timeout=8
 
 > *New* in ``byexample 10.1.0``.
 
+### Versions tested
+
+We tested `byexample` with the following versions of the language
+and the underlying runner or interpreter:
+
 <!-- matrix CI begin -->
 
 | Language   | Runner/Interpreter   |

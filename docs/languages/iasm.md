@@ -30,6 +30,11 @@ Or you can download the code from
 
 > *New* in ``byexample 10.1.0``.
 
+### Versions tested
+
+We tested `byexample` with the following versions of the language
+and the underlying runner or interpreter:
+
 <!-- matrix CI begin -->
 
 | Language   | Runner/Interpreter   |
