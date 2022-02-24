@@ -16,7 +16,7 @@ Check its [download page](https://www.ruby-lang.org/en/downloads/)
 <!-- matrix CI begin -->
 
 | Language   | Runner/Interpreter   |
-|------------|----------------------|
+|:----------:|:--------------------:|
 | 2.4        | 0.9.6                |
 | 2.5        | 0.9.6                |
 | 2.6        | 1.0.0                |
