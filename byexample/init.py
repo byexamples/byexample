@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import sys, pkgutil, inspect, pprint, os, operator
+import sys, pkgutil, inspect, pprint, os, operator, traceback
 import importlib.util
 
 from itertools import chain as chain_iters
@@ -91,6 +91,38 @@ class NS:
         return not bool(self._attribute_names())
 
 
+def import_and_register_modules_iter(dirnames):
+    ''' Import and register the (python) modules located in the given
+        directories.
+
+        The loaded modules will be registered and accessible
+        from sys.modules as any imported python module.
+
+        This function will not try to instantiate any
+        object from the loaded modules.
+
+        Moreover, this function will not assume that it is running
+        in the main process of byexample so it will not use anything
+        from byexample's runtime like clog() as this function may
+        be called by a child process.
+    '''
+    for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
+        path = importer.path
+        err = None
+
+        try:
+            spec = importer.find_spec(name)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+            sys.modules[name] = module
+
+        except Exception as e:
+            err = e
+
+        yield (path, name, module, err)
+
+
 @log_context('byexample.load')
 @profile
 def load_modules(dirnames, cfg):
@@ -103,20 +135,13 @@ def load_modules(dirnames, cfg):
         'zdelimiters': {},
     }
     namespaces_by_class = {}
-    for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
-        path = importer.path
-
-        clog().debug("From '%s' loading '%s'...", path, name)
-
-        try:
-            spec = importer.find_spec(name)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-
-            sys.modules[name] = module
-        except Exception as e:
-            clog().info(
-                "From '%s' loading '%s'...failed: %s", path, name, str(e)
+    for path, name, module, err in import_and_register_modules_iter(dirnames):
+        if err:
+            clog().exception(
+                "From '%s' loading module '%s' failed. Skipping.",
+                path,
+                name,
+                exc_info=err
             )
             continue
 
@@ -127,7 +152,11 @@ def load_modules(dirnames, cfg):
         ):
             stability = 'experimental/%s?' % str(stability)
 
-        clog().chat("From '%s' loaded '%s' (%s)", path, name, stability)
+        clog().chat(
+            "From '%s' loaded module '%s' (%s). Searching for extensions...",
+            path, name, stability
+        )
+
         for klass, key, is_multikey, what in [
             (ExampleRunner, 'language', False, 'runners'),
             (ExampleParser, 'language', False, 'parsers'),
