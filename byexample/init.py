@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import sys, pkgutil, inspect, pprint, os, operator, traceback
+import sys, pkgutil, inspect, pprint, os, operator, traceback, functools
 import importlib.util
 
 from itertools import chain as chain_iters
@@ -627,6 +627,21 @@ def init_byexample(args, sharer):
     cfg['use_colors'] &= are_tty_colors_supported(cfg['output'])
     cfg['selected_languages'] = frozenset(args.languages)
 
+    # Make a partial application of _prepare_subprocess_call(), binding
+    # all the necessary parameters to import and register the byexample
+    # modules (again) in a subprocess.
+    #
+    # The bound parameters are constant so the function, despite having
+    # state, it is actually stateless (its state is constant, immutable)
+    # Moreover, _prepare_subprocess_call() is thread-safe so the resulting
+    # partial-bound function is thread-safe too.
+    #
+    # See _prepare_subprocess_call().
+    prepare_subprocess_call = functools.partial(
+        _prepare_subprocess_call, dirnames=tuple(args.modules_dirs)
+    )
+    cfg['prepare_subprocess_call'] = prepare_subprocess_call
+
     registry, namespaces_by_class = load_modules(args.modules_dirs, cfg)
 
     allowed_languages = get_allowed_languages(registry, args.languages)
@@ -690,6 +705,70 @@ def init_byexample(args, sharer):
     assert 'ns' not in cfg
 
     return testfiles, Config(cfg)
+
+
+def _subprocess_trampoline(
+    dirnames, serialized_func, serialized_args, serialized_kwargs
+):
+    # All of this happens in the *child* process
+    # We reload the modules if they weren't loaded yet
+    # and only then we deserialize the target function and we
+    # call it.
+    #
+    # If _subprocess_trampoline is called in a fresh subprocess,
+    # we are sure that no module was loaded yet however, it is
+    # possible that the user runs a subprocess using forking
+    # which makes a copy of the python process (parent) and therefore
+    # it will have the modules loaded already.
+    #
+    # By the moment it is unclear if in addition to the loading we want
+    # to do more like the instantiation of the plugins.
+    from .init import import_and_register_modules_iter
+    _ = list(import_and_register_modules_iter(dirnames))
+
+    import multiprocessing.reduction
+    fpickler = multiprocessing.reduction.ForkingPickler
+    target = fpickler.loads(serialized_func)
+    args = fpickler.loads(serialized_args)
+    kwargs = fpickler.loads(serialized_kwargs)
+
+    return target(*args, **kwargs)
+
+
+def _prepare_subprocess_call(target, dirnames, *, args=(), kwargs={}):
+    ''' Prepare the given target function to be executable in a separated
+        process (child process).
+
+        The preparation includes the (re)import and (re)registration of
+        the modules found in <dirnames>, once loaded by byexample in the parent
+        process.
+
+        This re-import and re-registration within the child process
+        is needed because the child may be an independent fresh Python
+        process without any idea of how to load byexample modules.
+
+        _prepare_subprocess_call returns a dictionary with keys 'target'
+        and 'args' suitable to call multiprocessing.Process.
+
+        Note: no user code should call _prepare_subprocess_call directly.
+        Instead, call a partial bound function from the Config cfg object
+        given to each extension (ExampleFinder, ExampleParser, Concern, ...).
+        This partial function will not require the <dirnames> argument.
+    '''
+    # Implementation note: this function must be thread-safe because it
+    # may be called from different threads.
+    import multiprocessing.reduction
+    fpickler = multiprocessing.reduction.ForkingPickler
+
+    serialized_func = bytes(fpickler.dumps(target))
+    serialized_args = bytes(fpickler.dumps(args))
+    serialized_kwargs = bytes(fpickler.dumps(kwargs))
+
+    trampoline_args = (
+        dirnames, serialized_func, serialized_args, serialized_kwargs
+    )
+
+    return {'target': _subprocess_trampoline, 'args': trampoline_args}
 
 
 @profile
