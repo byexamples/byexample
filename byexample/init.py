@@ -708,10 +708,15 @@ def init_worker(cfg, job_num):
         If the recreation process is thread safe (depends of the objects'
         implementations), then init_worker is thread safe.
     '''
-    # let the rest of byexample for this worker to know
+    patch = {}
+    # Patch the job_number: let the rest of byexample for this worker to know
     # in which worker is on
     assert cfg['job_number'] == '__main__'
-    cfg = cfg.copy(patch={'job_number': int(job_num)})
+    patch['job_number'] = int(job_num)
+
+    # Get an independent copy of cfg (and therefore, thread-safe)
+    # with some keys patched
+    cfg = cfg.copy(patch=patch)
 
     concerns = ConcernComposite(**cfg)
 
