@@ -112,6 +112,8 @@ def load_modules(dirnames, cfg):
             spec = importer.find_spec(name)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
+
+            sys.modules[name] = module
         except Exception as e:
             clog().info(
                 "From '%s' loading '%s'...failed: %s", path, name, str(e)
