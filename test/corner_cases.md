@@ -146,6 +146,32 @@ $ rm -f test/ds/args    # byexample: -skip +pass
 
 -->
 
+## Error on module load
+
+Any error loading the module (at the import level) will be shown as any
+other error:
+
+```shell
+$ byexample -m test/ds/badmod/ -l python --dry docs/languages/python.md
+[!] From '/home/user/proj/byexample/test/ds/badmod' loading module 'bogus' failed. Skipping.
+invalid syntax (bogus.py, line 1)
+<...>
+Rerun with -vvv to get a full stack trace.
+```
+
+With `-vvv`, the full stack is shown too:
+
+```shell
+$ byexample -m test/ds/badmod/ -l python --dry -vvv docs/languages/python.md
+[!] From '/home/user/proj/byexample/test/ds/badmod' loading module 'bogus' failed. Skipping.
+Traceback (most recent call last):
+<...>
+  File "/home/user/proj/byexample/test/ds/badmod/bogus.py", line 1
+<...>
+SyntaxError: <...>
+<...>
+```
+
 ## Shutdown
 
 Run three very slow tests and send `byexample` to the background
