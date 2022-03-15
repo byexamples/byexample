@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import sys, pkgutil, inspect, pprint, os, operator
+import sys, pkgutil, inspect, pprint, os, operator, traceback, functools
 import importlib.util
 
 from itertools import chain as chain_iters
@@ -91,6 +91,38 @@ class NS:
         return not bool(self._attribute_names())
 
 
+def import_and_register_modules_iter(dirnames):
+    ''' Import and register the (python) modules located in the given
+        directories.
+
+        The loaded modules will be registered and accessible
+        from sys.modules as any imported python module.
+
+        This function will not try to instantiate any
+        object from the loaded modules.
+
+        Moreover, this function will not assume that it is running
+        in the main process of byexample so it will not use anything
+        from byexample's runtime like clog() as this function may
+        be called by a child process.
+    '''
+    for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
+        path = importer.path
+        err = None
+
+        try:
+            spec = importer.find_spec(name)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+            sys.modules[name] = module
+
+        except Exception as e:
+            err = e
+
+        yield (path, name, module, err)
+
+
 @log_context('byexample.load')
 @profile
 def load_modules(dirnames, cfg):
@@ -103,18 +135,13 @@ def load_modules(dirnames, cfg):
         'zdelimiters': {},
     }
     namespaces_by_class = {}
-    for importer, name, is_pkg in pkgutil.iter_modules(dirnames):
-        path = importer.path
-
-        clog().debug("From '%s' loading '%s'...", path, name)
-
-        try:
-            spec = importer.find_spec(name)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-        except Exception as e:
-            clog().info(
-                "From '%s' loading '%s'...failed: %s", path, name, str(e)
+    for path, name, module, err in import_and_register_modules_iter(dirnames):
+        if err:
+            clog().exception(
+                "From '%s' loading module '%s' failed. Skipping.",
+                path,
+                name,
+                exc_info=err
             )
             continue
 
@@ -125,7 +152,11 @@ def load_modules(dirnames, cfg):
         ):
             stability = 'experimental/%s?' % str(stability)
 
-        clog().chat("From '%s' loaded '%s' (%s)", path, name, stability)
+        clog().chat(
+            "From '%s' loaded module '%s' (%s). Searching for extensions...",
+            path, name, stability
+        )
+
         for klass, key, is_multikey, what in [
             (ExampleRunner, 'language', False, 'runners'),
             (ExampleParser, 'language', False, 'parsers'),
@@ -596,6 +627,21 @@ def init_byexample(args, sharer):
     cfg['use_colors'] &= are_tty_colors_supported(cfg['output'])
     cfg['selected_languages'] = frozenset(args.languages)
 
+    # Make a partial application of _prepare_subprocess_call(), binding
+    # all the necessary parameters to import and register the byexample
+    # modules (again) in a subprocess.
+    #
+    # The bound parameters are constant so the function, despite having
+    # state, it is actually stateless (its state is constant, immutable)
+    # Moreover, _prepare_subprocess_call() is thread-safe so the resulting
+    # partial-bound function is thread-safe too.
+    #
+    # See _prepare_subprocess_call().
+    prepare_subprocess_call = functools.partial(
+        _prepare_subprocess_call, dirnames=tuple(args.modules_dirs)
+    )
+    cfg['prepare_subprocess_call'] = prepare_subprocess_call
+
     registry, namespaces_by_class = load_modules(args.modules_dirs, cfg)
 
     allowed_languages = get_allowed_languages(registry, args.languages)
@@ -661,6 +707,70 @@ def init_byexample(args, sharer):
     return testfiles, Config(cfg)
 
 
+def _subprocess_trampoline(
+    dirnames, serialized_func, serialized_args, serialized_kwargs
+):
+    # All of this happens in the *child* process
+    # We reload the modules if they weren't loaded yet
+    # and only then we deserialize the target function and we
+    # call it.
+    #
+    # If _subprocess_trampoline is called in a fresh subprocess,
+    # we are sure that no module was loaded yet however, it is
+    # possible that the user runs a subprocess using forking
+    # which makes a copy of the python process (parent) and therefore
+    # it will have the modules loaded already.
+    #
+    # By the moment it is unclear if in addition to the loading we want
+    # to do more like the instantiation of the plugins.
+    from .init import import_and_register_modules_iter
+    _ = list(import_and_register_modules_iter(dirnames))
+
+    import multiprocessing.reduction
+    fpickler = multiprocessing.reduction.ForkingPickler
+    target = fpickler.loads(serialized_func)
+    args = fpickler.loads(serialized_args)
+    kwargs = fpickler.loads(serialized_kwargs)
+
+    return target(*args, **kwargs)
+
+
+def _prepare_subprocess_call(target, dirnames, *, args=(), kwargs={}):
+    ''' Prepare the given target function to be executable in a separated
+        process (child process).
+
+        The preparation includes the (re)import and (re)registration of
+        the modules found in <dirnames>, once loaded by byexample in the parent
+        process.
+
+        This re-import and re-registration within the child process
+        is needed because the child may be an independent fresh Python
+        process without any idea of how to load byexample modules.
+
+        _prepare_subprocess_call returns a dictionary with keys 'target'
+        and 'args' suitable to call multiprocessing.Process.
+
+        Note: no user code should call _prepare_subprocess_call directly.
+        Instead, call a partial bound function from the Config cfg object
+        given to each extension (ExampleFinder, ExampleParser, Concern, ...).
+        This partial function will not require the <dirnames> argument.
+    '''
+    # Implementation note: this function must be thread-safe because it
+    # may be called from different threads.
+    import multiprocessing.reduction
+    fpickler = multiprocessing.reduction.ForkingPickler
+
+    serialized_func = bytes(fpickler.dumps(target))
+    serialized_args = bytes(fpickler.dumps(args))
+    serialized_kwargs = bytes(fpickler.dumps(kwargs))
+
+    trampoline_args = (
+        dirnames, serialized_func, serialized_args, serialized_kwargs
+    )
+
+    return {'target': _subprocess_trampoline, 'args': trampoline_args}
+
+
 @profile
 def init_worker(cfg, job_num):
     ''' Initialize a worker with worker/job number is passed
@@ -677,10 +787,15 @@ def init_worker(cfg, job_num):
         If the recreation process is thread safe (depends of the objects'
         implementations), then init_worker is thread safe.
     '''
-    # let the rest of byexample for this worker to know
+    patch = {}
+    # Patch the job_number: let the rest of byexample for this worker to know
     # in which worker is on
     assert cfg['job_number'] == '__main__'
-    cfg = cfg.copy(patch={'job_number': int(job_num)})
+    patch['job_number'] = int(job_num)
+
+    # Get an independent copy of cfg (and therefore, thread-safe)
+    # with some keys patched
+    cfg = cfg.copy(patch=patch)
 
     concerns = ConcernComposite(**cfg)
 

@@ -197,7 +197,11 @@ class XLogger(Logger):
             message, augmented by kwargs['where'] and exception.where
             attributes (contextual messages).
 
-            If <msg> is not None, run as usual (logging.Logger.exception)
+            If exc_info is given and it is an exception object, use
+            that instead of the current caught exception.
+
+            If <msg> is not None nor empty,
+            run as usual (logging.Logger.exception)
             '''
         exc_info = kwargs.pop('exc_info', True)
         where_default = kwargs.pop('where', None)
@@ -207,7 +211,11 @@ class XLogger(Logger):
             if where_default:
                 msg += ' {where_default}'
 
-            ex = sys.exc_info()[1]
+            if isinstance(exc_info, BaseException):
+                ex = exc_info
+            else:
+                ex = sys.exc_info()[1]
+
             where = getattr(ex, 'where', None)
             if where:
                 msg += ', {where}'
@@ -215,7 +223,7 @@ class XLogger(Logger):
             msg += ':'
             msg = msg.format(where_default=where_default, where=where)
 
-            return self.error(msg, exc_info=True, **kwargs)
+            return self.error(msg, exc_info=exc_info, **kwargs)
         else:
             return Logger.exception(
                 self, msg, *args, exc_info=exc_info, **kwargs

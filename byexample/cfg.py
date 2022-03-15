@@ -19,6 +19,9 @@ class Config(collections.abc.Mapping):
 
         The rest of the keys-values must be of immutable types.
 
+        A special key 'prepare_subprocess_call' is expected to be a partial
+        function, which it is assumed to have immutable bound parameters.
+
         To use Config in a multithread/multiprocess environment,
         you need to call copy() to get an independent copy to work with.
 
@@ -39,7 +42,10 @@ class Config(collections.abc.Mapping):
 
     def _ensure_cfg_is_constant(self):
         const_types = (int, frozenset, str, bool, bytes, type(None))
-        exception_keys = ('options', 'output', 'registry', 'namespaces')
+        exception_keys = (
+            'options', 'output', 'registry', 'namespaces',
+            'prepare_subprocess_call'
+        )
         for k, v in self._d.items():
             if k in exception_keys:
                 continue
@@ -57,6 +63,9 @@ class Config(collections.abc.Mapping):
 
             Assuming that all the values are constant (immutable),
             the copy does not incur in the costs of a real copy.
+
+            This includes 'prepare_subprocess_call' for which only
+            a reference is copied and not a full copy.
 
             Exceptions to this are:
              - options: which a real copy is made (see Options.copy)
