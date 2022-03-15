@@ -183,7 +183,7 @@ def _expand_glob_patterns(gpatterns):
 
 @profile
 def parse_args(args=None):
-    '''Parse the arguments args and return the them.
+    '''Parse the arguments args and return them.
        If args is None, parse the sys.argv[1:].
        '''
 
@@ -523,4 +523,8 @@ def parse_args(args=None):
 
     # Do not spawn more jobs than testfiles
     namespace.jobs = min(namespace.jobs, len(namespace.testfiles))
+
+    ext = os.environ.get('BYEXAMPLE_APPEND_OPTIONS')
+    if ext:
+        namespace.options_str += ' ' + ext
     return namespace
