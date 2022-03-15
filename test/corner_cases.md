@@ -172,6 +172,16 @@ SyntaxError: <...>
 <...>
 ```
 
+## Subprocess within a module
+
+The following print comes from a subprocess spawned by a module/plugin
+proving that calling code in background is possible.
+
+```shell
+$ byexample -m test/ds/submod -l python -q test/ds/one.md
+---> 42 bg
+```
+
 ## Shutdown
 
 Run three very slow tests and send `byexample` to the background

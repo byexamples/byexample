@@ -3,11 +3,13 @@
 `byexample` can execute the examples of the given file in parallel (or
 concurrently to be more precise).
 
-By default only one files is processed each time but more can be added
+By default only one file is processed each time but more can be added
 with the `--jobs` command line option.
 
 But exactly how this is done was never officially documented.
 
+This documents describes how `byexample` implements `--jobs` and how
+that could affect the implementation of the modules/plugins.
 
 ## Some history
 
@@ -24,7 +26,8 @@ they were created using
 The copies were done using a `fork` method. This was a very simple
 method supported by Linux and MacOS.
 
-But `fork` didn't work well in every case in MacOS in `byexample 10.0.0`
+But `fork` didn't work well in every case (specially under MacOS)
+and in `byexample 10.0.0`
 we decided to change the concurrency model from `multiprocessing` to
 `multithreading`.
 
@@ -40,7 +43,7 @@ memory.
 On the other hand, due how Python works, you may loose a little of
 parallelism.
 
-The good news is that this method is will supported in Linux, MacOS and
+The good news is that this method is well supported in Linux, MacOS and
 even in Windows.
 
 ## The N+1 creation rule
@@ -125,17 +128,19 @@ Something like this:
 ...         self.longest = max(self.longest, elapsed)
 ```
 
-Ended, `self.longest` will have the elapsed time of the slowest example
-*for each worker*.
+Because `MeasureTime` is instantiated *once per worker*, `self.longest`
+will have the elapsed time of the slowest example *of that particular worker*.
 
-But if you want to have a global view and see the slowest example of
+But if you want to have a *global* view and see the slowest example of
 *all the workers* ?
 
 You need to *share* information among the workers so we need to modify
 the `MeasureTime` a little.
 
-First we need a *shared dictionary* to store per worker, a *lock* to
-synchronize the access and `job_number` will represent each worker.
+First we need a *shared dictionary* to store the slowest example per worker,
+a *lock* to synchronize the access and `job_number` will represent each worker.
+
+This is the modified `__init__` of `MeasureTime`:
 
 ```python
 >>> def __init__(self, sharer, ns, job_number, **kargs):
@@ -143,20 +148,26 @@ synchronize the access and `job_number` will represent each worker.
 ...
 ...     if sharer is not None:
 ...         # we are in the main thread, we can use the sharer
-...         # and we can store things in the namespace
+...         # and we can **store** things in the namespace
 ...         ns.elapsed_times_by_worker = sharer.dict()
 ...         ns.lock = sharer.RLock()
 ...
 ...     else:
 ...         # we are in the worker thread, save the job/worker number
-...         # and keep a private reference to the dictionary and lock
-...         # note that the namespace is read-only here
 ...         self.my_number = job_number
+...
+...         # keep a private reference to the dictionary and lock
+...         # created above
+...         # these are *shared* among other instances of MeasureTime
+...         # so we must use it with care.
+...         #
+...         # note that the namespace is **read-only** here
 ...         self.elapsed_times_by_worker = ns.elapsed_times_by_worker
 ...         self.lock = ns.lock
 ```
 
-Now, on the `end_example` we need to store the longest elapsed time:
+Now, on the `end_example` we need to store the longest elapsed time
+*among* all the workers (among all the instances of `MeasureTime`):
 
 ```python
 >>> def end_example(self, *args):
@@ -166,6 +177,9 @@ Now, on the `end_example` we need to store the longest elapsed time:
 ...         my_longest = max(my_longest, elapsed)
 ...         self.elapsed_times_by_worker[self.my_number] = my_longest
 ```
+
+Because `elapsed_times_by_worker` is a *shared* we need to access it
+atomically. For this we take the `lock` first.
 
 The standard [byexample/modules/progress.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/progress.py)
 is also an example of this: there the `Concern` uses a `RLock` to
@@ -181,3 +195,115 @@ In a future `multiprocessing` may be re-enabled again.
 That's the main reason of using `sharer` and `namespace`: if you use
 them in your classes your code will support any concurrency model out of
 the box.
+
+## Caveats on using `multiprocessing` **within** a module/plugin
+
+`byexample` does not impose any restriction on how *your* module/plugin
+may use or not `multithreading` and/or `multiprocessing` **internally**.
+
+How `--jobs` works is **independent** of it.
+
+However, using `multiprocessing` **within** a module/plugin has some
+caveats.
+
+When `multiprocessing.Process` (or similar) is used, the main Python
+process (`byexample`) spawns a fresh Python process to run whatever you
+wanted in parallel.
+
+Take the following `Concern` that runs a class' method in background
+while `byexample` is executing an example:
+
+```python
+>>> from byexample.concern import Concern
+>>> import multiprocessing
+
+>>> class Some(Concern):
+...     target = 'some'
+...
+...     @classmethod
+...     def watch_in_bg(cls, num):
+...         # this will be executed in background, in parallel
+...         pass
+...
+...     def start_example(self, *args):
+...         self.child = multiprocessing.Process(
+...                         target=Some.watch_in_bg,
+...                         args=(42,)
+...                     )
+...         self.child.start() # This will fail!!
+...
+...     def end_example(self, *args):
+...         self.child.join()
+```
+
+Why it will fail?
+
+This child fresh process will not have the modules/plugins that
+`byexample` loaded dynamically so it will likely fail even before
+executing the class' method `watch_in_bg` because the module where
+`Some.watch_in_bg` lives is not loaded.
+
+You may see an error like this:
+
+```python
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "<...>/multiprocessing/spawn.py", line 116, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "<...>/multiprocessing/spawn.py", line 126, in _main
+    self = reduction.pickle.load(from_parent)
+ModuleNotFoundError: No module named '<...>'
+```
+
+> Note: calling `multiprocessing.Process` will not fail if you are in
+> Linux, however you should not develop your plugin under that
+> assumption. Keep reading!
+
+Since `10.5.1`, `byexample` offers you a mechanism to call
+`multiprocessing.Process` safely.
+
+You need to wrap the function with `prepare_subprocess_call`:
+
+```python
+>>> from byexample.concern import Concern
+>>> import multiprocessing
+
+>>> class Some(Concern):
+...     target = 'some'
+...
+...     def __init__(self, prepare_subprocess_call, **kargs):
+...         # keep a reference to this function helper
+...         self.prepare_subprocess_call = prepare_subprocess_call
+...
+...     @classmethod
+...     def watch_in_bg(cls, num):
+...         # this will be executed in background, in parallel
+...         pass
+...
+...     def start_example(self, *args):
+...         # prepare_subprocess_call takes the 'target' function
+...         # and an optional 'args' and 'kwargs' arguments
+...         # like multiprocessing.Process does.
+...         #
+...         # it will return a dictionary that be unpacked
+...         # with the double '**' directly into multiprocessing.Process
+...         # call
+...         self.child = multiprocessing.Process(
+...                     **self.prepare_subprocess_call(
+...                             target=Some.watch_in_bg,
+...                             args=(42,)
+...                         )
+...                     )
+...         self.child.start() # Start the child process as usual
+...
+...     def end_example(self, *args):
+...         self.child.join()
+```
+
+I wrote a
+[blog post](https://book-of-gehn.github.io/articles/2022/03/06/Multiprocessing-Spawn-of-Dynamically-Imported-Code.html)
+about the issues using `multiprocessing` with dynamically imported code.
+If you want to see the dirty details behind `prepare_subprocess_call`,
+you can check the [commit b263ba76](
+https://github.com/byexamples/byexample/commit/b263ba76271e447a2faed6f0517f71b74d96ab81
+).
