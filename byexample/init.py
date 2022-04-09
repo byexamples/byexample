@@ -139,7 +139,7 @@ def load_modules(dirnames, cfg):
         if err:
             clog().exception(
                 "From '%s' loading module '%s' failed. Skipping.",
-                path,
+                os.path.abspath(path),
                 name,
                 exc_info=err
             )
