@@ -17,7 +17,7 @@ Only then you can start doing the instrumentation.
 >>> from byexample.prof import profile
 >>> @profile
 ... def foo():
-...     time.sleep(0.1)
+...     time.sleep(1)
 
 On a call, the wrapped function will print an one-line stack trace
 with the elapsed time in nanoseconds:
@@ -32,7 +32,7 @@ Nested profiled functions will print a larger stack trace:
 
 >>> @profile
 ... def gus():
-...     time.sleep(0.2)
+...     time.sleep(2)
 ...     foo()
 
 >>> gus()           # byexample: +timeout=8 +paste

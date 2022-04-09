@@ -166,7 +166,7 @@ $ byexample -m test/ds/badmod/ -l python --dry -vvv docs/languages/python.md
 [!] From '/home/user/proj/byexample/test/ds/badmod' loading module 'bogus' failed. Skipping.
 Traceback (most recent call last):
 <...>
-  File "/home/user/proj/byexample/test/ds/badmod/bogus.py", line 1
+  File "<...>test/ds/badmod/bogus.py", line 1
 <...>
 SyntaxError: <...>
 <...>
