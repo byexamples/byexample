@@ -66,7 +66,7 @@ so the variable is available in the example and be pasted into.
 Something like this:
 
 ```shell
-$ PASS=johnpasswordhere byexample -l shell -capture-env-var PASS test/ds/doc-with-sudo.md      # byexample: +skip
+$ PASS=johnpasswordhere byexample -l shell --capture-env-var PASS test/ds/doc-with-sudo.md      # byexample: +skip
 [PASS] Pass: 1 Fail: 0 Skip: 0
 ```
 
