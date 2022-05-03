@@ -83,3 +83,39 @@ File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
 ```
 
+## Glob or file pattern expansions
+
+Consider the following:
+
+```shell
+$ byexample -l python test/ds/pkg/*.py | grep pkg | sort    # byexample: +timeout=8
+File test/ds/pkg/bar1.py, 1/1 test ran in <...> seconds
+File test/ds/pkg/foo1.py, 1/1 test ran in <...> seconds
+File test/ds/pkg/foo2.py, 1/1 test ran in <...> seconds
+```
+
+Your *shell* usually expands `test/ds/pkg/*.py` into a list of files:
+`test/ds/pkg/bar1.py`, `test/ds/pkg/foo1.py` and `test/ds/pkg/foo2.py`
+
+The same happens with the argument list for `--skip`, it is expanded by
+your *shell*.
+
+```shell
+$ byexample -l python --skip test/ds/pkg/foo* -- test/ds/pkg/*.py | grep pkg | sort    # byexample: +timeout=8
+File test/ds/pkg/bar1.py, 1/1 test ran in <...> seconds
+```
+
+Since `10.0.3`, `byexample` does the same expansion even if you shell does not.
+This is in particular useful if the list of files is in a file (where your shell
+never ever see).
+
+```shell
+$ cat test/ds/pkg/bopts
+--skip=test/ds/pkg/foo*.py
+--
+test/ds/pkg/*.py
+
+$ byexample -l python @test/ds/pkg/bopts | grep pkg | sort    # byexample: +timeout=8
+File test/ds/pkg/bar1.py, 1/1 test ran in <...> seconds
+```
+
