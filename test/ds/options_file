@@ -1,2 +1,2 @@
--l=python
---options="+norm-ws"
+-l python
+--options "+norm-ws"

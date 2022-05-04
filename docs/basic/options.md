@@ -64,13 +64,13 @@ Other languages and concerns may add their owns.
 If the amount of options is a little overwhelming for you, you can
 write them down to a file and let ``byexample`` load them for you.
 
-The only convention that you need to follow is to write one option
-per line and use ``=`` for the arguments.
+The only convention that you need to follow is to write **one** option
+per line.
 
 ```shell
 $ cat test/ds/options_file
--l=python
---options="+norm-ws"
+-l python
+--options "+norm-ws"
 ```
 
 Then load it with ``@`` and the file; you can use multiple files
@@ -83,7 +83,24 @@ File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
 ```
 
-## Glob or file pattern expansions
+> **Note:** before `10.5.2` the options in the file required to be followed by an
+> `=` like `-l=python`; spaces were not allowed.
+
+Currently if the option receives more than one argument, you will still
+have to list *all* the arguments one per line.
+
+```shell
+$ cat test/ds/pkg/bopts2
+--skip
+test/ds/pkg/foo1.py
+test/ds/pkg/foo2.py
+--
+test/ds/pkg/foo1.py
+test/ds/pkg/foo2.py
+test/ds/pkg/bar1.py
+```
+
+## File pattern expansions
 
 Consider the following:
 
@@ -119,3 +136,30 @@ $ byexample -l python @test/ds/pkg/bopts | grep pkg | sort    # byexample: +time
 File test/ds/pkg/bar1.py, 1/1 test ran in <...> seconds
 ```
 
+<!--
+
+Extra test checking that options in a file with multiple spaces are
+interpreted correctly now that we support separate the flag from its
+value with a space (before an '=' was always required)
+
+So the following lines are equivalent
+    -skip=foo bar
+    -skip foo bar
+
+$ cat test/ds/pkg/bopts2
+<...>skip
+test/ds/pkg/foo1.py
+test/ds/pkg/foo2.py
+<...>
+
+$ byexample -l python @test/ds/pkg/bopts2 | grep pkg | sort    # byexample: +timeout=8
+File test/ds/pkg/bar1.py, 1/1 test ran in <...> seconds
+
+$ cat test/ds/pkg/bopts3
+<...>skip=test/ds/pkg/foo1.py test/ds/pkg/foo2.py
+<...>
+
+$ byexample -l python @test/ds/pkg/bopts2 | grep pkg | sort    # byexample: +timeout=8
+File test/ds/pkg/bar1.py, 1/1 test ran in <...> seconds
+
+-->
