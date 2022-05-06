@@ -184,6 +184,14 @@ $ byexample -m test/ds/submod -l python -q test/ds/one.md
 
 ## Shutdown
 
+Ensure that if the program is slow and takes some reasonable time to
+shutdown, don't raise a Timeout after stopping it
+
+```shell
+$ test/ds/sleepy/c.sh          # byexample: +timeout=10 +stop-on-silence +stop-signal=interrupt
+Start
+```
+
 Run three very slow tests and send `byexample` to the background
 as soon as possible.
 
