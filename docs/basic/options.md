@@ -65,19 +65,32 @@ If the amount of options is a little overwhelming for you, you can
 write them down to a file and let ``byexample`` load them for you.
 
 The only convention that you need to follow is to write **one** option
-per line.
+per line. If the option receives one argument you can separate them by
+`=` or by a space but if there is more than one argument you will have
+to write the option and the arguments one by one in its own line.
 
 ```shell
 $ cat test/ds/options_file
+# Options and their arguments are separated by a = or by a space
 -l python
---options "+norm-ws"
+--options=+norm-ws
+<...>
+# But if the option receives more than one argument, all of them
+# must be in its own line
+--skip
+test/ds/pkg/foo1.py
+test/ds/pkg/foo2.py
+<...>
+# This wouldn't work:
+#--skip test/ds/pkg/foo1.py test/ds/pkg/foo2.py
+<...>
 ```
 
 Then load it with ``@`` and the file; you can use multiple files
 and combine them with more options from the command line:
 
 ```shell
-$ byexample @test/ds/options_file test/ds/python-tutorial.v2.md
+$ byexample @test/ds/options_file -- test/ds/python-tutorial.v2.md
 <...>
 File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
@@ -85,20 +98,6 @@ File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 
 > **Note:** before `10.5.2` the options in the file required to be followed by an
 > `=` like `-l=python`; spaces were not allowed.
-
-Currently if the option receives more than one argument, you will still
-have to list *all* the arguments one per line.
-
-```shell
-$ cat test/ds/pkg/bopts2
---skip
-test/ds/pkg/foo1.py
-test/ds/pkg/foo2.py
---
-test/ds/pkg/foo1.py
-test/ds/pkg/foo2.py
-test/ds/pkg/bar1.py
-```
 
 ## File pattern expansions
 
@@ -152,14 +151,17 @@ test/ds/pkg/foo1.py
 test/ds/pkg/foo2.py
 <...>
 
-$ byexample -l python @test/ds/pkg/bopts2 | grep pkg | sort    # byexample: +timeout=8
-File test/ds/pkg/bar1.py, 1/1 test ran in <...> seconds
+$ byexample -l python @test/ds/pkg/bopts2 | grep pkg | wc -l    # byexample: +timeout=8
+1
 
 $ cat test/ds/pkg/bopts3
 <...>skip=test/ds/pkg/foo1.py test/ds/pkg/foo2.py
 <...>
 
-$ byexample -l python @test/ds/pkg/bopts2 | grep pkg | sort    # byexample: +timeout=8
-File test/ds/pkg/bar1.py, 1/1 test ran in <...> seconds
+$ byexample -l python @test/ds/pkg/bopts2 | grep pkg | wc -l    # byexample: +timeout=8
+1
+
+$ byexample -l python @test/ds/pkg/bopts | grep pkg | wc -l     # byexample: +timeout=8
+1
 
 -->
