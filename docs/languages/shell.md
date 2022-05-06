@@ -418,7 +418,7 @@ Or you could run ``bash`` without the constraint to be POSIX-conformant
 by default (but see `set +o posix` as mentioned above before trying to do this):
 
 ```shell
-$ byexample -l shell -x-shebang 'shell:%e bash --norc --noprofile' test/ds/shell-example
+$ byexample -l shell -x-shebang 'shell:%e bash --norc --noprofile --noediting' test/ds/shell-example
 <...>
 [PASS] Pass: 14 Fail: 0 Skip: 0
 ```
