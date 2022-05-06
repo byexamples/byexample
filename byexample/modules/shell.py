@@ -206,12 +206,19 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
                         "Unexpected stop-signal '%s'" % stop_signal
                     )
 
+                if stop_on_silence:
+                    options.up({'stop_on_silence': False})
+
                 # wait for the prompt, ignore any extra output
-                self._expect_prompt(
-                    options,
-                    countdown=Countdown(options['x']['dfl_timeout']),
-                    prompt_re=self._PS1_re
-                )
+                try:
+                    self._expect_prompt(
+                        options,
+                        countdown=Countdown(options['x']['dfl_timeout']),
+                        prompt_re=self._PS1_re
+                    )
+                finally:
+                    if stop_on_silence:
+                        options.down()
 
                 self._drop_output()
                 return out
