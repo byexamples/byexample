@@ -269,6 +269,9 @@ $ (sleep 0.4 ; echo "a slow line" >> w/msg.log) &
 $ fg %1                           # byexample: +stop-on-silence=0.5
 tail -f w/msg.log
 a slow line
+
+$ jobs
+[1]<...>Stopped<...>
 ```
 
 > **Note:** ``+stop-on-silence`` requires the job control and monitoring to be
@@ -278,6 +281,10 @@ a slow line
 > same behaviour than ``+stop-on-timeout`` stopping the process always on
 > timeout. But in ``8.0.0`` this option was fixed and the old behaviour can
 > be achieved using ``+stop-on-timeout``.
+
+<!--
+$ kill -9 $(jobs -p) && wait        # byexample: -skip +pass
+-->
 
 ### Stopping on timeout
 
@@ -325,6 +332,39 @@ $ cat -      # byexample: +stop-on-silence +stop-signal=eof
 ```
 
 > *New* in ``byexample 10.1.0``.
+
+Signals like `SIGTERM` and `SIGKILL` cannot be used from
+`+stop-signal`; the closest thing is the `quit` signal (`SIGQUIT` or `^\`):
+
+```shell
+$ cat -      # byexample: +stop-on-silence +stop-signal=quit
+```
+
+> *New* in ``byexample 10.5.2``.
+
+### Arbitrary signals on stop
+
+If you want to *kill* a process with `SIGKILL` or `SIGTERM`
+you will have to stop the process first with a `suspend` signal (the
+default for `+stop-signal`), capture the process' id or job's id and
+kill it calling `kill`:
+
+```shell
+$ cat -      # byexample: +stop-on-silence
+
+$ # The following sends a SIGTERM. Replace the -15 by -9 to send
+$ # a SIGKILL. See signal(7).
+$ kill -15 %%
+<...>
+```
+
+In fact, you can use this trick to send any signal like `SIGUSR1`.
+In some cases you will have to bring the process to foreground (with
+`fg` to give it a chance to receive the signal).
+
+```shell
+$ fg         # byexample: +pass
+```
 
 ## Using other shells
 
@@ -378,7 +418,7 @@ Or you could run ``bash`` without the constraint to be POSIX-conformant
 by default (but see `set +o posix` as mentioned above before trying to do this):
 
 ```shell
-$ byexample -l shell -x-shebang 'shell:%e bash --norc --noprofile' test/ds/shell-example
+$ byexample -l shell -x-shebang 'shell:%e bash --norc --noprofile --noediting' test/ds/shell-example
 <...>
 [PASS] Pass: 14 Fail: 0 Skip: 0
 ```
@@ -399,7 +439,7 @@ shell's specific options
   +stop-on-silence [secs]
                         stop the process if no output is read in the last
                         <secs> seconds (0.2 secs by default).
-  +stop-signal {suspend,eof,interrupt}
+  +stop-signal {suspend,eof,interrupt,quit}
                         signal to send when stop-on-timeout/stop-on-silence is
                         used (suspend ^Z by default).
   +shell {bash,dash,ksh,sh}

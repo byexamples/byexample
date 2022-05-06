@@ -103,7 +103,7 @@ class ShellParser(ExampleParser):
         )
         parser.add_argument(
             "+stop-signal",
-            choices=['suspend', 'eof', 'interrupt'],
+            choices=['suspend', 'eof', 'interrupt', 'quit'],
             default='suspend',
             help=
             "signal to send when stop-on-timeout/stop-on-silence is used (suspend ^Z by default)."
@@ -201,7 +201,19 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
                     self._sendcontrol('d')
                 elif stop_signal == "interrupt":
                     self._sendcontrol('c')
+                elif stop_signal == "quit":
+                    self._sendcontrol('\\')
                 else:
+                    # Note: we could send any signal but experiment shows that
+                    # some of the signals are catched by the shell. SIGKILL for
+                    # example kills the interpreter.
+                    # Other control sequences can break the flow of the terminal
+                    # like ^Q and ^S which start and stop the flow. These are
+                    # too risky to use.
+                    # For these reasons we don't support arbitrary signals
+                    # If the user want to send an arbitrary signal, it should
+                    # use ^Z (suspend) and then run
+                    # kill -NN and send the signal that the user wants.
                     raise ValueError(
                         "Unexpected stop-signal '%s'" % stop_signal
                     )
