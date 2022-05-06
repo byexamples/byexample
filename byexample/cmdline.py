@@ -222,6 +222,14 @@ class ByexampleArgumentParser(argparse.ArgumentParser):
 
             >>> parser.convert_arg_line_to_args('foo bar')
             ['foo bar']
+
+            Empty lines or lines that starts with a # are ignored.
+
+            >>> parser.convert_arg_line_to_args('  ')
+            []
+
+            >>> parser.convert_arg_line_to_args(' # foo ')
+            []
         '''
         arg_line = arg_line.lstrip()
         if arg_line and arg_line[0] in self.prefix_chars:
@@ -248,6 +256,12 @@ class ByexampleArgumentParser(argparse.ArgumentParser):
 
                 # Paste the flag with its value (or values) with a '='
                 return [flag + '=' + value]
+
+        if arg_line and arg_line[0] == '#':
+            return []
+
+        if not arg_line:
+            return []
 
         return [arg_line]
 
