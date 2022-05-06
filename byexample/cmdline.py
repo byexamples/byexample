@@ -4,6 +4,9 @@ from . import __version__, __doc__, _author, _license, _url, _license_disclaimer
 
 from .log_level import str_to_level
 from .prof import profile
+'''
+>>> from byexample.cmdline import ByexampleArgumentParser
+'''
 
 
 class _CSV(argparse.Action):
@@ -181,6 +184,88 @@ def _expand_glob_patterns(gpatterns):
     return list(set(fnames))
 
 
+class ByexampleArgumentParser(argparse.ArgumentParser):
+    def convert_arg_line_to_args(self, arg_line):
+        ''' Return a list with the arguments read from a line.
+
+            If in the line there is a flag/argument with one or more
+            values the flag may be separated from its value(s) with
+            a space and this method will replace it with an '='.
+
+            This is in order to produce a single argument for each
+            line as it is expected by argparse.ArgumentParser.
+
+            >>> parser = ByexampleArgumentParser()
+            >>> parser.convert_arg_line_to_args('--skip=foo')
+            ['--skip=foo']
+
+            >>> parser.convert_arg_line_to_args('--skip foo')
+            ['--skip=foo']
+
+            >>> parser.convert_arg_line_to_args('--skip=foo bar')
+            ['--skip=foo bar']
+
+            >>> parser.convert_arg_line_to_args('--skip foo bar')
+            ['--skip=foo bar']
+
+            >>> parser.convert_arg_line_to_args('--skip=')
+            ['--skip=']
+
+            >>> parser.convert_arg_line_to_args('--skip ')
+            ['--skip ']
+
+            >>> parser.convert_arg_line_to_args('--skip')
+            ['--skip']
+
+            >>> parser.convert_arg_line_to_args('foo')
+            ['foo']
+
+            >>> parser.convert_arg_line_to_args('foo bar')
+            ['foo bar']
+
+            Empty lines or lines that starts with a # are ignored.
+
+            >>> parser.convert_arg_line_to_args('  ')
+            []
+
+            >>> parser.convert_arg_line_to_args(' # foo ')
+            []
+        '''
+        arg_line = arg_line.lstrip()
+        if arg_line and arg_line[0] in self.prefix_chars:
+            flag, _, value = arg_line.partition(' ')
+            value = value.lstrip()
+            if not value:
+                # the flag is argumentless or it is using '='
+                # to paste the flag with its argument,
+                # return the whole line then
+                #
+                # Ex:
+                #   -foo
+                #   -bar=32
+                #   -zaz=
+                return [arg_line]
+            else:
+                if '=' in flag:
+                    # the line already has the '=' to paste the
+                    # flag with the argument, leave them as they are
+                    #
+                    # Ex:
+                    #   -bar=32 42
+                    return [arg_line]
+
+                # Paste the flag with its value (or values) with a '='
+                return [flag + '=' + value]
+
+        if arg_line and arg_line[0] == '#':
+            return []
+
+        if not arg_line:
+            return []
+
+        return [arg_line]
+
+
 @profile
 def parse_args(args=None):
     '''Parse the arguments args and return the them.
@@ -192,7 +277,7 @@ def parse_args(args=None):
     )
 
     python_version = sys.version.split(' ', 1)[0]
-    parser = argparse.ArgumentParser(
+    parser = ByexampleArgumentParser(
         fromfile_prefix_chars='@',
         add_help=False,
         formatter_class=HelpExtraFormatter,

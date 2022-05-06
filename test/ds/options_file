@@ -1,2 +1,12 @@
--l=python
---options="+norm-ws"
+# Options and their arguments are separated by a = or by a space
+-l python
+--options=+norm-ws
+
+# But if the option receives more than one argument, all of them
+# must be in its own line
+--skip
+test/ds/pkg/foo1.py
+test/ds/pkg/foo2.py
+
+# This wouldn't work:
+#--skip test/ds/pkg/foo1.py test/ds/pkg/foo2.py

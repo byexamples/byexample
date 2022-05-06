@@ -1,0 +1,7 @@
+--skip
+test/ds/pkg/foo1.py
+test/ds/pkg/foo2.py
+--
+test/ds/pkg/foo1.py
+test/ds/pkg/foo2.py
+test/ds/pkg/bar1.py
