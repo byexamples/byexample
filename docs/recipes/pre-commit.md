@@ -12,7 +12,7 @@ The proposed configuration that you need to write in
 ```yaml
 repos:
 -   repo: https://github.com/byexamples/byexample
-    rev: 10.5.1
+    rev: 10.5.2
     hooks:
     -   id: byexample
         types_or: [markdown, python]
@@ -46,7 +46,7 @@ let's name it `boptions`, and load it as follows:
 ```yaml
 repos:
 -   repo: https://github.com/byexamples/byexample
-    rev: 10.5.1
+    rev: 10.5.2
     hooks:
     -   id: byexample
         types_or: [markdown, python]
