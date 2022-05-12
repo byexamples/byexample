@@ -172,6 +172,15 @@ SyntaxError: <...>
 <...>
 ```
 
+```shell
+$ byexample -m test/ds/badmod4/ -l python --dry docs/languages/python.md
+[!] Something went wrong initializing byexample:
+From '/home/user/proj/byexample/test/ds/badmod4' module 'badmod'
+Instantiation of BogusModule failed: 'BogusModule' object has no attribute 'noattr'
+<...>
+```
+
+
 ## Subprocess within a module
 
 The following print comes from a subprocess spawned by a module/plugin

@@ -123,6 +123,12 @@ def import_and_register_modules_iter(dirnames):
         yield (path, name, module, err)
 
 
+class InvalidExtension(Exception):
+    def __init__(self, path, name, msg):
+        super(
+        ).__init__(f"From '{os.path.abspath(path)}' module '{name}'\n{msg}")
+
+
 @log_context('byexample.load')
 @profile
 def load_modules(dirnames, cfg):
@@ -186,7 +192,15 @@ def load_modules(dirnames, cfg):
             objs = []
             for klass in klasses_found:
                 ns = NS()  # a private namespace for each object
-                objs.append(klass(ns=ns, **cfg))
+                try:
+                    obj = klass(ns=ns, **cfg)
+                except Exception as err:
+                    raise InvalidExtension(
+                        path, name,
+                        f"Instantiation of {klass.__name__} failed: {str(err)}"
+                    ) from err
+
+                objs.append(obj)
                 if not ns._is_empty():
                     # keep a reference of the namespace only if
                     # it is not empty (because they are immutable from now on,
