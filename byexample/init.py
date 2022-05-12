@@ -291,7 +291,7 @@ def get_allowed_languages(registry, flavors):
                           "You need to choose one.") %
                                (prev_flavor, bad_flavor, prev_lang))
 
-    return languages
+    return frozenset(languages)
 
 
 def verify_encodings(input_encoding, verbosity):
@@ -462,6 +462,15 @@ def get_options(args, cfg):
     # possible that the string contains language-specific flags
     options.up(optparser.parse(args.options_str, strict=False))
 
+    clog().chat(
+        "Options (cmdline + byexample's defaults + --options): %s", options
+    )
+
+    options['x'] = {}
+    for k, v in vars(args).items():
+        if k.startswith('x_'):
+            options['x'][k[2:]] = v
+
     # In order words, the order of preference for a given option is:
     #
     #  scope | preference | source
@@ -472,17 +481,6 @@ def get_options(args, cfg):
     #
     # Because this, we pass these to the rest of the system to be used and
     # completed later
-    cfg['options'] = options
-
-    clog().chat(
-        "Options (cmdline + byexample's defaults + --options): %s", options
-    )
-
-    options['x'] = {}
-    for k, v in vars(args).items():
-        if k.startswith('x_'):
-            options['x'][k[2:]] = v
-
     return options
 
 
@@ -520,7 +518,8 @@ def show_options(cfg):
 
 
 @profile
-def extend_option_parser_with_concerns(cfg, registry):
+def extend_option_parser_with_concerns(cfg):
+    registry = cfg['registry']
     concerns = [c for c in registry['concerns'].values()]
 
     # join the concerns' option parser into one single parser
@@ -546,7 +545,10 @@ def extend_option_parser_with_concerns(cfg, registry):
 
 @log_context('byexample.options')
 @profile
-def extend_options_with_language_specific(cfg, registry, allowed_languages):
+def extend_options_with_language_specific(cfg):
+    registry = cfg['registry']
+    allowed_languages = cfg['allowed_languages']
+
     parsers = [
         p for p in registry['parsers'].values()
         if p.language in allowed_languages
@@ -639,7 +641,7 @@ def init_byexample(args, sharer):
     # ensure consistency: we cannot spawn more jobs than testfiles
     assert cfg['jobs'] <= len(testfiles)
 
-    options = get_options(args, cfg)
+    cfg['options'] = get_options(args, cfg)
 
     # if the output has not color support, disable the color anyways
     cfg['use_colors'] &= are_tty_colors_supported(cfg['output'])
@@ -659,6 +661,7 @@ def init_byexample(args, sharer):
         _prepare_subprocess_call, dirnames=tuple(args.modules_dirs)
     )
     cfg['prepare_subprocess_call'] = prepare_subprocess_call
+    del prepare_subprocess_call
 
     # Loade the modules. This requires the prepare_subprocess_call set
     # in case they want to spawn processes later.
@@ -666,11 +669,11 @@ def init_byexample(args, sharer):
 
     # With the modules loaded, now we can know which languages are allowed
     # to run
-    allowed_languages = get_allowed_languages(registry, args.languages)
-    cfg['allowed_languages'] = frozenset(allowed_languages)
+    cfg['allowed_languages'] = get_allowed_languages(registry, args.languages)
 
     # Keep a reference to the registry too.
     cfg['registry'] = registry
+    del registry
 
     # not longer needed: all the runner, parsers, concerns objects
     # were created and if they wanted to setup a shared object that was
@@ -686,6 +689,7 @@ def init_byexample(args, sharer):
         namespaces[klass] = shared_ns
 
     cfg['namespaces'] = namespaces
+    del namespaces
 
     # 'ns' was a temporal setting. In theory, it was never added to cfg
     # but this is just to ensure that.
@@ -713,20 +717,19 @@ def init_byexample(args, sharer):
     # extend the option parser with all the parsers of the concerns.
     # do this *after* showing the options so we can show each parser's opt
     # separately
-    extend_option_parser_with_concerns(cfg, registry)
+    extend_option_parser_with_concerns(cfg)
 
     # now that we know what languages are allowed, extend the options
     # for them
-    extend_options_with_language_specific(cfg, registry, allowed_languages)
+    extend_options_with_language_specific(cfg)
 
     if cfg['quiet']:
-        registry['concerns'].pop('progress', None)
+        cfg['registry']['concerns'].pop('progress', None)
 
     if not clog().isEnabledFor(CHAT):
         clog().chat("Options:\n%s.", pprint.pformat(cfg['options']))
 
     clog().chat("Configuration:\n%s.", pprint.pformat(cfg))
-    clog().chat("Registry:\n%s.", pprint.pformat(registry))
 
     concerns = ConcernComposite(**cfg)
     configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
