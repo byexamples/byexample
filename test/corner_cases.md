@@ -181,6 +181,14 @@ Instantiation of BogusModule failed: 'BogusModule' object has no attribute 'noat
 ```
 
 
+```shell
+$ byexample -m test/ds/badmod5/ -l python --dry docs/languages/python.md
+[!] Something went wrong initializing byexample:
+From '/home/user/proj/byexample/test/ds/badmod5' module 'badmod'
+The attribute 'target' of BogusModule must be a single string-like value but it is of type <class 'list'>.
+<...>
+```
+
 ## Subprocess within a module
 
 The following print comes from a subprocess spawned by a module/plugin

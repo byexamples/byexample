@@ -223,8 +223,9 @@ def load_modules(dirnames, cfg):
                             # but a string-like (we accept a
                             # single-valued key)
                             if isinstance(key_value, (list, tuple, set)):
-                                raise ValueError(
-                                    "The attribute '%s' of %s must be a string-like but it is of type '%s'."
+                                raise InvalidExtension(
+                                    path, name,
+                                    "The attribute '%s' of %s must be a single string-like value but it is of type %s."
                                     % (
                                         key, obj.__class__.__name__,
                                         type(key_value)
