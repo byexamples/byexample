@@ -49,7 +49,7 @@ class Config(collections.abc.Mapping):
             ) from None
 
     def _ensure_cfg_is_constant(self):
-        const_types = (int, frozenset, str, bool, bytes, type(None))
+        const_types = (int, frozenset, str, bool, bytes, type(None), tuple)
         exception_keys = (
             'options', 'output', 'registry', 'namespaces',
             'prepare_subprocess_call'
