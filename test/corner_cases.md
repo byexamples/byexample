@@ -116,7 +116,7 @@ $ byexample -l cpp,shell --dry -v --skip 'docs/languages/p*.md' -- 'docs/languag
 [i] File docs/languages/javascript.md, 2 examples.
 [i] File docs/languages/ruby.md, 2 examples.
 [i] File docs/languages/rust.md, 2 examples.
-[i] File docs/languages/shell.md, 42 examples.
+[i] File docs/languages/shell.md, 50 examples.
 ```
 
 The glob expansion takes place also in the argument-file:
@@ -137,7 +137,7 @@ $ byexample -l cpp,shell --dry -v @test/ds/args --skip 'docs/languages/p*.md'
 [i] File docs/languages/javascript.md, 2 examples.
 [i] File docs/languages/ruby.md, 2 examples.
 [i] File docs/languages/rust.md, 2 examples.
-[i] File docs/languages/shell.md, 42 examples.
+[i] File docs/languages/shell.md, 50 examples.
 ```
 
 <!--
