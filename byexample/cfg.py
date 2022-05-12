@@ -40,6 +40,14 @@ class Config(collections.abc.Mapping):
     def __len__(self):
         return len(self._d)
 
+    def __getattr__(self, name):
+        try:
+            return self._d[name]
+        except KeyError:
+            raise AttributeError(
+                f"The setting '{name}' is not in the configuration."
+            ) from None
+
     def _ensure_cfg_is_constant(self):
         const_types = (int, frozenset, str, bool, bytes, type(None))
         exception_keys = (
