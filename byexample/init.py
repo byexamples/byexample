@@ -486,7 +486,10 @@ def get_options(args, cfg):
     return options
 
 
-def show_options(cfg, registry, allowed_languages):
+def show_options(cfg):
+    registry = cfg['registry']
+    allowed_languages = cfg['allowed_languages']
+
     parsers = [
         p for p in registry['parsers'].values()
         if p.language in allowed_languages
@@ -657,12 +660,39 @@ def init_byexample(args, sharer):
     )
     cfg['prepare_subprocess_call'] = prepare_subprocess_call
 
+    # Loade the modules. This requires the prepare_subprocess_call set
+    # in case they want to spawn processes later.
     registry, namespaces_by_class = load_modules(args.modules_dirs, cfg)
 
+    # With the modules loaded, now we can know which languages are allowed
+    # to run
     allowed_languages = get_allowed_languages(registry, args.languages)
+    cfg['allowed_languages'] = frozenset(allowed_languages)
+
+    # Keep a reference to the registry too.
+    cfg['registry'] = registry
+
+    # not longer needed: all the runner, parsers, concerns objects
+    # were created and if they wanted to setup a shared object that was
+    # their opportunity.
+    cfg['sharer'] = None
+
+    # Create a namespace for each class. A namespace is where
+    # all the *shared objects* live.
+    namespaces = {}
+    for klass, ns in namespaces_by_class.items():
+        shared_ns = sharer.Namespace(**ns._as_dict())
+        shared_ns._attribute_names = ns._attribute_names()
+        namespaces[klass] = shared_ns
+
+    cfg['namespaces'] = namespaces
+
+    # 'ns' was a temporal setting. In theory, it was never added to cfg
+    # but this is just to ensure that.
+    assert 'ns' not in cfg
 
     if args.show_options:
-        show_options(cfg, registry, allowed_languages)
+        show_options(cfg)
         sys.exit(0)
 
     if not testfiles:
@@ -698,26 +728,8 @@ def init_byexample(args, sharer):
     clog().chat("Configuration:\n%s.", pprint.pformat(cfg))
     clog().chat("Registry:\n%s.", pprint.pformat(registry))
 
-    cfg['allowed_languages'] = frozenset(allowed_languages)
-    cfg['registry'] = registry
-
     concerns = ConcernComposite(**cfg)
     configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
-
-    # not longer needed: all the runner, parsers, concerns objects
-    # were created and if they wanted to setup a shared object that was
-    # their opportunity.
-    cfg['sharer'] = None
-
-    # The namespace where all the shared objects lives.
-    namespaces = {}
-    for klass, ns in namespaces_by_class.items():
-        shared_ns = sharer.Namespace(**ns._as_dict())
-        shared_ns._attribute_names = ns._attribute_names()
-        namespaces[klass] = shared_ns
-
-    cfg['namespaces'] = namespaces
-    assert 'ns' not in cfg
 
     return testfiles, Config(cfg)
 
