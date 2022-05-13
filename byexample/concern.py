@@ -262,8 +262,8 @@ class Concern(ExtendOptionParserMixin):
 
 
 class ConcernComposite(Concern):
-    def __init__(self, registry, **unused):
-        self.concerns = registry['concerns'].values()
+    def __init__(self, cfg):
+        self.concerns = cfg.registry['concerns'].values()
 
 
 # Patch ConcernComposite overriding all its methods

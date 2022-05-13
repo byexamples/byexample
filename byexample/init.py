@@ -746,7 +746,7 @@ def _extend_opts_and_config_log_system(cfg):
 
     clog().chat("Configuration:\n%s.", pprint.pformat(cfg))
 
-    concerns = ConcernComposite(**cfg)
+    concerns = ConcernComposite(cfg)
     configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
 
 
@@ -840,7 +840,7 @@ def init_worker(cfg, job_num):
     # with some keys patched
     cfg = cfg.copy(patch=patch)
 
-    concerns = ConcernComposite(**cfg)
+    concerns = ConcernComposite(cfg)
 
     init_thread_specific_log_system(concerns)
 
