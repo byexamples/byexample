@@ -848,6 +848,6 @@ def init_worker(cfg, job_num):
         differ = Differ(cfg)
 
         harvester = ExampleHarvest(cfg)
-        executor = FileExecutor(concerns, differ, **cfg)
+        executor = FileExecutor(concerns, differ, cfg)
 
         return harvester, executor
