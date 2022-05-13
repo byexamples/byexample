@@ -847,7 +847,7 @@ def init_worker(cfg, job_num):
     with log_with('byexample.init') as log:
         differ = Differ(**cfg)
 
-        harvester = ExampleHarvest(**cfg)
+        harvester = ExampleHarvest(cfg)
         executor = FileExecutor(concerns, differ, **cfg)
 
         return harvester, executor

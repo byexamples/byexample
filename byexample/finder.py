@@ -9,9 +9,11 @@ from .options import Options
 from .log import clog, log_context, DEBUG, CHAT, log_with
 
 from .prof import profile
+from .cfg import Config
 
 from .example import Where, Zone, Example
 '''
+>>> from byexample.cfg import _dummy_cfg
 >>> from byexample.log import init_log_system
 >>> init_log_system()
 '''
@@ -92,21 +94,18 @@ class ExampleHarvest(object):
                                       \       reporter
                                        \         .
     '''
-    def __init__(
-        self, registry, allowed_languages, verbosity, options, use_colors,
-        encoding, **unused
-    ):
-        self.allowed_languages = allowed_languages
-        self.verbosity = verbosity
-        self.use_colors = use_colors
-        self.available_finders = registry['finders'].values()
-        self.encoding = encoding
+    def __init__(self, cfg):
+        self.allowed_languages = cfg.allowed_languages
+        self.verbosity = cfg.verbosity
+        self.use_colors = cfg.use_colors
+        self.available_finders = cfg.registry['finders'].values()
+        self.encoding = cfg.encoding
 
-        self.parser_by_language = registry['parsers']
-        self.runner_by_language = registry['runners']
-        self.zdelimiter_by_file_extension = registry['zdelimiters']
+        self.parser_by_language = cfg.registry['parsers']
+        self.runner_by_language = cfg.registry['runners']
+        self.zdelimiter_by_file_extension = cfg.registry['zdelimiters']
 
-        self.options = options
+        self.options = cfg.options
 
     @log_context('byexample.close')
     def close(self):
@@ -208,9 +207,7 @@ class ExampleHarvest(object):
         And create a harvester to play with it:
 
             >>> from byexample.finder import ExampleHarvest
-            >>> f = ExampleHarvest(dict((k, {}) for k in \
-            ...                   ('parsers', 'finders', 'runners', 'zdelimiters')),
-            ...                    [], 0, 0, None, 'utf-8')
+            >>> f = ExampleHarvest(_dummy_cfg())
 
         Okay, back to the check_example_overlap documentation,
         given the examples sorted in that way, a collision is detected if

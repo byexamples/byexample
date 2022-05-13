@@ -175,3 +175,17 @@ class Config(collections.abc.Mapping):
                 new[what][k] = obj2
 
         return new
+
+
+def _dummy_cfg():
+    return Config(
+        allowed_languages=frozenset(),
+        verbosity=0,
+        use_colors=0,
+        encoding='utf-8',
+        options={},
+        registry={
+            k: {}
+            for k in 'parsers finders runners zdelimiters'.split()
+        }
+    )
