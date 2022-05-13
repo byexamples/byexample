@@ -131,7 +131,7 @@ class InvalidExtension(Exception):
 
 @log_context('byexample.load')
 @profile
-def load_modules(dirnames, cfg):
+def load_modules(dirnames, cfg, sharer):
     verbosity = cfg['verbosity']
     registry = {
         'runners': {},
@@ -193,7 +193,7 @@ def load_modules(dirnames, cfg):
             for klass in klasses_found:
                 ns = NS()  # a private namespace for each object
                 try:
-                    obj = klass(ns=ns, **cfg)
+                    obj = klass(ns=ns, sharer=sharer, **cfg)
                 except Exception as err:
                     raise InvalidExtension(
                         path, name,
@@ -631,8 +631,6 @@ def _load_modules_and_init_cfg(args, sharer):
         # special value to denote that we are not in a worker/job yet
         # but in the main thread.
         'job_number': '__main__',
-        # sharer is temporal, see the end of this function
-        'sharer': sharer,
     }
 
     clog().chat("sys.argv: %s", sys.argv)
@@ -665,7 +663,12 @@ def _load_modules_and_init_cfg(args, sharer):
 
     # Loade the modules. This requires the prepare_subprocess_call set
     # in case they want to spawn processes later.
-    registry, namespaces_by_class = load_modules(args.modules_dirs, cfg)
+    # While the config is not finally complete, we still pass a Config object
+    # to load_modules to ensure that it is not going to be modified
+    # (it is not bullet proof, just a best effort)
+    registry, namespaces_by_class = load_modules(
+        args.modules_dirs, Config(cfg), sharer
+    )
 
     # With the modules loaded, now we can know which languages are allowed
     # to run
@@ -674,11 +677,6 @@ def _load_modules_and_init_cfg(args, sharer):
     # Keep a reference to the registry too.
     cfg['registry'] = registry
     del registry
-
-    # not longer needed: all the runner, parsers, concerns objects
-    # were created and if they wanted to setup a shared object that was
-    # their opportunity.
-    cfg['sharer'] = None
 
     # Create a namespace for each class. A namespace is where
     # all the *shared objects* live.
@@ -690,6 +688,14 @@ def _load_modules_and_init_cfg(args, sharer):
 
     cfg['namespaces'] = namespaces
     del namespaces
+
+    # not longer needed: all the runner, parsers, concerns objects
+    # were created and if they wanted to setup a shared object that was
+    # their opportunity.
+    del sharer
+
+    # We set this to None because in the workers, the sharer must be None.
+    cfg['sharer'] = None
 
     # 'ns' was a temporal setting. In theory, it was never added to cfg
     # but this is just to ensure that.
