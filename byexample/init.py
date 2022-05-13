@@ -610,7 +610,7 @@ def verbosity_to_log_levels(verbosity, quiet):
 
 @log_context('byexample.init')
 @profile
-def init_byexample(args, sharer):
+def _load_modules_and_init_cfg(args, sharer):
     lvl = verbosity_to_log_levels(args.verbosity, args.quiet)
     lvl.update(args.log_masks)
     setLogLevels(lvl)
@@ -695,6 +695,14 @@ def init_byexample(args, sharer):
     # but this is just to ensure that.
     assert 'ns' not in cfg
 
+    return testfiles, Config(cfg)
+
+
+@log_context('byexample.init')
+@profile
+def init_byexample(args, sharer):
+    testfiles, cfg = _load_modules_and_init_cfg(args, sharer)
+
     if args.show_options:
         show_options(cfg)
         sys.exit(0)
@@ -714,6 +722,13 @@ def init_byexample(args, sharer):
                 )
         sys.exit(1)
 
+    _extend_opts_and_config_log_system(cfg)
+    return testfiles, cfg
+
+
+@log_context('byexample.init')
+@profile
+def _extend_opts_and_config_log_system(cfg):
     # extend the option parser with all the parsers of the concerns.
     # do this *after* showing the options so we can show each parser's opt
     # separately
@@ -733,8 +748,6 @@ def init_byexample(args, sharer):
 
     concerns = ConcernComposite(**cfg)
     configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
-
-    return testfiles, Config(cfg)
 
 
 def _subprocess_trampoline(
