@@ -171,7 +171,13 @@ def load_modules(dirnames, cfg, sharer):
                 klasses_found = list(zip(*klasses_found))[1]
 
                 # remove already loaded
-                klasses_found = set(klasses_found) - set(container.values())
+                not_loaded_yet = set(klasses_found) - set(container.values())
+
+                # preserve class order based on where they were found
+                # by inspect.getmembers
+                klasses_found = [
+                    cls for cls in klasses_found if cls in not_loaded_yet
+                ]
 
             if klasses_found:
                 clog().debug(
