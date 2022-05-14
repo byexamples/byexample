@@ -447,7 +447,7 @@ you can see a concrete example.
 > `sharer` and `namespace` are objects that hide the details while
 > allowing you to have the same power.
 
-### `ExampleFinder`, `ExampleParser` and `ExampleRunner` initialization
+## `ExampleFinder`, `ExampleParser` and `ExampleRunner` initialization
 
 If you decide to implement your own `__init__`,
 you must ensure that you call parent class' `__init__` method
