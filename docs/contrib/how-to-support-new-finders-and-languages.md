@@ -6,11 +6,11 @@ There are three different ways in which ``byexample`` can be extended:
  - support new languages: how to find them and how to run them
  - perform arbitrary actions during the execution
 
-``byexample`` uses the concept of modules: a python file with some classes
-defined there and it can be loaded using ``--modules <dir>`` from the command
-line.
+``byexample`` uses the concept of modules: a python file with some extension
+classes defined there. Modules can be loaded using ``--modules <dir>``
+from the command line.
 
-What classes will depend of what you want to extend or customize.
+What extension classes will depend of what you want to extend or customize.
 
 In this ``how-to`` we will see how to add a new language.
 
@@ -54,7 +54,7 @@ The code below should produce the famous 'Hello World!' output
 Notice how below the code there is a ``out:`` tag. We will use this to
 separate the code from the expected output.
 
-### Find by snippet
+### Find the snippet of code
 
 To accomplish this we need to create a regular expression to find the
 ``~~~``, where the snippet of code is and where the expected output is.
@@ -146,12 +146,12 @@ define a ``target`` attribute and implement a few methods:
 The ``target`` attribute may need a little explanation. All the
 Finders must declare which type of examples they are targeting.
 
-If two Finders try to find the same target, one will override the other.
+If two finders try to find the same target, one will override the other.
 
-This is useful if you want to use a different Finder in replacement for
+This is useful if you want to use a different `Finder` in replacement for
 an already created one: just create a class with the same ``target``.
 
-Let's see if our finder can find the ArnoldC snippet above.
+Let's see if our finder can find the `ArnoldC` snippet above.
 
 ```python
 >>> from byexample.cfg import Config
@@ -446,3 +446,26 @@ you can see a concrete example.
 > may not use processes at all!
 > `sharer` and `namespace` are objects that hide the details while
 > allowing you to have the same power.
+
+### `ExampleFinder`, `ExampleParser` and `ExampleRunner` initialization
+
+If you decide to implement your own `__init__`,
+you must ensure that you call parent class' `__init__` method
+passing to it all the keyword-only arguments that you received.
+
+Once done that, you can use the `self.cfg` property to access any
+configuration set in `byexample` including the flags/options set
+(`self.cfg.options`).
+
+In the `__init__` you can also change the value of `target` (for the
+`ExampleFinder`) and the value of language (for `ExampleParser` and
+`ExampleRunner`) based on the configuration.
+
+You can use it for example to disable the finder/parser/runner setting
+`target` / `language` to `None` dynamically.
+
+See
+[Extension initialization](/{{ site.uprefix }}/contrib/extension-initialization)
+for more about this and some troubleshooting.
+
+> *New* in ``byexample 11.0.0``: `self.cfg` was introduced.
