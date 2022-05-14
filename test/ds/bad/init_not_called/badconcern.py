@@ -6,8 +6,8 @@ import os
 
 stability = 'provisional'
 
-class BogusOldStyleModule(Concern):
-    target = 'bogusoldstylemodule'
+class BadConcern(Concern):
+    target = 'badconcern'
 
     def __init__(self, verbosity, encoding, **kargs):
         # Not calling Concern.__init__ is an error

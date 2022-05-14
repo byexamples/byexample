@@ -3,8 +3,8 @@ from byexample.concern import Concern
 
 stability = 'experimental'
 
-class BogusOldStyleModule(Concern, PexpectMixin):
-    target = 'bogusoldstylemodule'
+class BadNonRunner(Concern, PexpectMixin):
+    target = 'bad_not_runner'
 
     def __init__(self, **kargs):
         Concern.__init__(self, **kargs)

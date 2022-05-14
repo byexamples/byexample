@@ -152,9 +152,9 @@ Any error loading the module (at the import level) will be shown as any
 other error:
 
 ```shell
-$ byexample -m test/ds/badmod/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
-[!] From '/home/user/proj/byexample/test/ds/badmod' loading module 'bogus' failed. Skipping.
-invalid syntax (bogus.py, line 1)
+$ byexample -m test/ds/bad/syntax/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
+[!] From '/home/user/proj/byexample/test/ds/bad/syntax' loading module 'm' failed. Skipping.
+invalid syntax (m.py, line 2)
 <...>
 Rerun with -vvv to get a full stack trace.
 ```
@@ -162,56 +162,56 @@ Rerun with -vvv to get a full stack trace.
 With `-vvv`, the full stack is shown too:
 
 ```shell
-$ byexample -m test/ds/badmod/ -l python --dry -vvv docs/languages/python.md   # byexample: +norm-ws
-[!] From '/home/user/proj/byexample/test/ds/badmod' loading module 'bogus' failed. Skipping.
+$ byexample -m test/ds/bad/syntax/ -l python --dry -vvv docs/languages/python.md   # byexample: +norm-ws
+[!] From '/home/user/proj/byexample/test/ds/bad/syntax' loading module 'm' failed. Skipping.
 Traceback (most recent call last):
 <...>
-  File "<...>test/ds/badmod/bogus.py", line 1
+  File "<...>test/ds/bad/syntax/m.py", line 2
 <...>
 SyntaxError: <...>
 <...>
 ```
 
 ```shell
-$ byexample -m test/ds/badmod2/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
+$ byexample -m test/ds/bad/init_not_called/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
 [!] Something went wrong initializing byexample:
-From '/home/user/proj/byexample/test/ds/badmod2' module 'oldstyle'
-The object of class BogusOldStyleModule did not call the constructor of Concern.
+From '/home/user/proj/byexample/test/ds/bad/init_not_called' module 'badconcern'
+The object of class BadConcern did not call the constructor of Concern.
 <...>
 ```
 
 ```shell
-$ byexample -m test/ds/badmod3/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
+$ byexample -m test/ds/bad/pexpect_init/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
 [!] Something went wrong initializing byexample:
-From '/home/user/proj/byexample/test/ds/badmod3' module 'oldstyle'
-Instantiation of BogusOldStyleModule failed: You need to call
-ExampleRunner.__init__ (or its subclass) before calling PexpectMixin.__init__ in BogusOldStyleModule.
+From '/home/user/proj/byexample/test/ds/bad/pexpect_init' module 'badrunner'
+Instantiation of BadRunner failed: You need to call
+ExampleRunner.__init__ (or its subclass) before calling PexpectMixin.__init__ in BadRunner.
 <...>
 ```
 
 ```shell
-$ byexample -m test/ds/badmod3.1/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
+$ byexample -m test/ds/bad/pexpect_not_runner/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
 [!] Something went wrong initializing byexample:
-From '/home/user/proj/byexample/test/ds/badmod3.1' module 'oldstyle'
-Instantiation of BogusOldStyleModule failed: The class
-BogusOldStyleModule that inherits from PexpectMixin must also inherit from ExampleRunner.
+From '/home/user/proj/byexample/test/ds/bad/pexpect_not_runner' module 'non_runner'
+Instantiation of BadNonRunner failed: The class
+BadNonRunner that inherits from PexpectMixin must also inherit from ExampleRunner.
 <...>
 ```
 
 ```shell
-$ byexample -m test/ds/badmod4/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
+$ byexample -m test/ds/bad/init/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
 [!] Something went wrong initializing byexample:
-From '/home/user/proj/byexample/test/ds/badmod4' module 'badmod'
-Instantiation of BogusModule failed: 'BogusModule' object has no attribute 'noattr'
+From '/home/user/proj/byexample/test/ds/bad/init' module 'init_failed'
+Instantiation of BadInit failed: 'BadInit' object has no attribute 'noattr'
 <...>
 ```
 
 
 ```shell
-$ byexample -m test/ds/badmod5/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
+$ byexample -m test/ds/bad/target/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
 [!] Something went wrong initializing byexample:
-From '/home/user/proj/byexample/test/ds/badmod5' module 'badmod'
-The attribute 'target' of BogusModule must be a single string-like value but it is of type <class 'list'>.
+From '/home/user/proj/byexample/test/ds/bad/target' module 'invalid_target'
+The attribute 'target' of BadTarget must be a single string-like value but it is of type <class 'list'>.
 <...>
 ```
 

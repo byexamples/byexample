@@ -3,8 +3,8 @@ from byexample.concern import Concern
 
 stability = 'experimental'
 
-class BogusOldStyleModule(ExampleRunner, PexpectMixin):
-    language = 'bogusoldstylemodule'
+class BadRunner(ExampleRunner, PexpectMixin):
+    language = 'badrunner'
 
     def __init__(self, **kargs):
         # Calling PexpectMixin before ExampleRunner.__init__ is an error
