@@ -6,7 +6,9 @@ from .options import OptionParser, UnrecognizedOption, ExtendOptionParserMixin
 from .expected import _LinearExpected, _RegexExpected
 from .parser_sm import SM_NormWS, SM_NotNormWS
 from .prof import profile, profile_ctx
+from .extension import Extension
 '''
+>>> from byexample.cfg import _dummy_cfg
 >>> from byexample.log import init_log_system
 >>> init_log_system()
 '''
@@ -22,14 +24,15 @@ InputRegexs = collections.namedtuple(
 )
 
 
-class ExampleParser(ExtendOptionParserMixin):
+class ExampleParser(Extension, ExtendOptionParserMixin):
     flavors = set()
 
-    def __init__(self, verbosity, encoding, options, **unused):
+    def __init__(self, **kargs):
+        Extension.__init__(self, **kargs)
         ExtendOptionParserMixin.__init__(self)
-        self.verbosity = verbosity
-        self.encoding = encoding
-        self.options = options
+        self.verbosity = self.cfg.verbosity
+        self.encoding = self.cfg.encoding
+        self.options = self.cfg.options
 
         self._optparser_extended_cache = None
         self._opts_cache = {}
@@ -253,7 +256,7 @@ class ExampleParser(ExtendOptionParserMixin):
             >>> from functools import partial
             >>> import byexample.regex as re
 
-            >>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
+            >>> parser = ExampleParser(cfg=_dummy_cfg()); parser.language = 'python'
             >>> _as_regexs = partial(parser.expected_as_regexs, tags_enabled=True, capture_enabled=True, input_enabled=True, normalize_whitespace=False, input_prefix_len_range=(6,12))
 
             >>> expected = 'a<foo>b<bar>c'

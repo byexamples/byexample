@@ -10,6 +10,7 @@ from .log import clog, log_context, DEBUG, CHAT, log_with
 
 from .prof import profile
 from .cfg import Config
+from .extension import Extension
 
 from .example import Where, Zone, Example
 '''
@@ -27,6 +28,8 @@ def _build_fake_example(
     fully_parsed=True,
     opts=None
 ):
+    from .cfg import _dummy_cfg
+
     class R:
         pass  # <- fake runner instance
 
@@ -36,7 +39,7 @@ def _build_fake_example(
         pass  # <- fake finder instance
 
     # fake a parser
-    parser = ExampleParser(0, 'utf8', Options())
+    parser = ExampleParser(cfg=_dummy_cfg())
     parser.language = language
 
     # fake the options parsed by the parser
@@ -423,10 +426,11 @@ class ExampleHarvest(object):
         return items
 
 
-class ExampleFinder(object):
-    def __init__(self, verbosity, encoding, **unused):
-        self.verbosity = verbosity
-        self.encoding = encoding
+class ExampleFinder(Extension):
+    def __init__(self, **kargs):
+        super().__init__(**kargs)
+        self.verbosity = self.cfg.verbosity
+        self.encoding = self.cfg.encoding
 
     def example_regex(self):
         raise NotImplementedError()  # pragma: no cover
@@ -445,7 +449,7 @@ class ExampleFinder(object):
         Given an example string, remove its indentation
 
             >>> from byexample.finder import ExampleFinder, Where
-            >>> mfinder = ExampleFinder(0, 'utf8'); mfinder.target = 'python-prompt'
+            >>> mfinder = ExampleFinder(cfg=_dummy_cfg()); mfinder.target = 'python-prompt'
             >>> check_and_remove_indent = mfinder.check_and_remove_indent
 
             >>> where = Where(1, 2, 'foo.rst', None)
@@ -497,7 +501,7 @@ class ExampleFinder(object):
             >>> from byexample.finder import ExampleFinder
             >>> import byexample.regex as re
 
-            >>> mfinder = ExampleFinder(0, 'utf8'); mfinder.target = 'python-prompt'
+            >>> mfinder = ExampleFinder(cfg=_dummy_cfg()); mfinder.target = 'python-prompt'
             >>> check_and_remove_indent = mfinder.check_and_remove_indent
             >>> check_keep_matching     = mfinder.check_keep_matching
 
@@ -574,10 +578,11 @@ class ExampleFinder(object):
         return match.group('snippet'), match.group('expected')
 
 
-class ZoneDelimiter(object):
-    def __init__(self, verbosity, encoding, **unused):
-        self.verbosity = verbosity
-        self.encoding = encoding
+class ZoneDelimiter(Extension):
+    def __init__(self, **kargs):
+        super().__init__(**kargs)
+        self.verbosity = self.cfg.verbosity
+        self.encoding = self.cfg.encoding
 
     def zone_regex(self):
         raise NotImplementedError()  # pragma: no cover

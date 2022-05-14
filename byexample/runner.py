@@ -9,17 +9,19 @@ from .common import tohuman, ShebangTemplate, Countdown, short_string, constant
 from .example import Example
 from .log import clog, INFO
 from .prof import profile, profile_ctx
+from .extension import Extension
 
 from pyte import Stream, Screen
 import sys
 
 
-class ExampleRunner(object):
+class ExampleRunner(Extension):
     flavors = set()
 
-    def __init__(self, verbosity, encoding, **unused):
-        self.verbosity = verbosity
-        self.encoding = encoding
+    def __init__(self, **kargs):
+        super().__init__(**kargs)
+        self.verbosity = self.cfg.verbosity
+        self.encoding = self.cfg.encoding
 
     def __repr__(self):
         return '%s Runner' % tohuman(self.language if self.language else self)

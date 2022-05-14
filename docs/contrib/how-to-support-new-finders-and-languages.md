@@ -154,7 +154,8 @@ an already created one: just create a class with the same ``target``.
 Let's see if our finder can find the ArnoldC snippet above.
 
 ```python
->>> finder = ArnoldCFinder(0, 'utf-8')
+>>> from byexample.cfg import Config
+>>> finder = ArnoldCFinder(cfg=Config(verbosity=0, encoding='utf-8'))
 
 >>> filepath = 'docs/contrib/how-to-support-new-finders-and-languages.md'
 >>> where = (0,1,filepath,None)
@@ -280,7 +281,7 @@ the scenes so you do not to be worry about the details):
 
 ```python
 >>> from byexample.options import Options, OptionParser
->>> parser = ArnoldCParser(0, 'utf-8', Options(rm=[], norm_ws=False, tags=True, capture=True, type=False, input_prefix_range=(6,12), optparser=OptionParser(add_help=False)))
+>>> parser = ArnoldCParser(cfg=Config(verbosity=0, encoding='utf-8', options=Options(rm=[], norm_ws=False, tags=True, capture=True, type=False, input_prefix_range=(6,12), optparser=OptionParser(add_help=False))))
 
 >>> from byexample.finder import Example
 >>> runner = None # not yet
@@ -406,7 +407,7 @@ Its task is to execute the given source and to return the output, if any.
 What to do with them is up to you.
 
 ```python
->>> runner = ArnoldCRunner(0, 'utf-8')
+>>> runner = ArnoldCRunner(cfg=Config(verbosity=0, encoding='utf-8'))
 >>> found = runner.run(example, example.options)
 
 >>> found

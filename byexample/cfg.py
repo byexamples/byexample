@@ -134,7 +134,7 @@ class Config(collections.abc.Mapping):
         # namespace (if any)
         namespaces = new.pop('namespaces')
         new['registry'] = self._recreate_registry(
-            self['registry'], new, namespaces
+            self['registry'], Config(new), namespaces
         )
         new['namespaces'] = namespaces
         return Config(new)
@@ -169,7 +169,7 @@ class Config(collections.abc.Mapping):
 
             for k, obj in container.items():
                 ns = namespaces_by_class.get(obj.__class__, empty_ns)
-                obj2 = obj.__class__(ns=ns, **cfg)
+                obj2 = obj.__class__(ns=ns, cfg=cfg, **cfg)
                 transfer_constants(obj, obj2)
 
                 new[what][k] = obj2
@@ -178,12 +178,13 @@ class Config(collections.abc.Mapping):
 
 
 def _dummy_cfg():
+    from .options import Options
     return Config(
         allowed_languages=frozenset(),
         verbosity=0,
         use_colors=0,
         encoding='utf-8',
-        options={},
+        options=Options(),
         registry={
             k: {}
             for k in 'parsers finders runners zdelimiters'.split()

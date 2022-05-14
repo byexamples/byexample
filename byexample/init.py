@@ -193,7 +193,7 @@ def load_modules(dirnames, cfg, sharer):
             for klass in klasses_found:
                 ns = NS()  # a private namespace for each object
                 try:
-                    obj = klass(ns=ns, sharer=sharer, **cfg)
+                    obj = klass(ns=ns, sharer=sharer, cfg=cfg, **cfg)
                 except Exception as err:
                     raise InvalidExtension(
                         path, name,
