@@ -1,5 +1,4 @@
 from byexample.runner import ExampleRunner, PexpectMixin
-from byexample.concern import Concern
 
 stability = 'experimental'
 

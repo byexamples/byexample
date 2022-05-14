@@ -6,10 +6,10 @@ import os
 
 stability = 'provisional'
 
-class BadConcern(Concern):
-    target = 'badconcern'
+class BadConcernNewStyle(Concern):
+    target = 'badconcernnewstyle'
 
-    def __init__(self, verbosity, encoding, **kargs):
+    def __init__(self, **kargs):
         # Not calling Concern.__init__ is an error
-        self.verbosity = verbosity
-        self.encoding = encoding
+        self.verbosity = self.cfg.verbosity
+        self.encoding = self.cfg.encoding
