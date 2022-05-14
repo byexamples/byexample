@@ -84,6 +84,10 @@ corner-test: clean_test
 	@$(python_bin) -W error  test/r.py @test/corner.env -- test/corner_cases.md
 	@make -s clean_test
 
+timming-corner-test: clean_test
+	@$(python_bin) -W error  test/r.py @test/corner.env -- test/timming_corner_cases.md
+	@make -s clean_test
+
 modules-test: clean_test
 	@$(python_bin) -W error  test/r.py @test/minimum.env -- byexample/modules/*.py
 	@make -s clean_test
@@ -106,7 +110,7 @@ index-links-test: clean_test
 version-test:
 	@$(python_bin) -W error  test/r.py @test/minimum.env test/consistent-version.md
 
-test: lib-test modules-test docs-test examples-test index-links-test corner-test
+test: lib-test modules-test docs-test examples-test index-links-test corner-test timming-corner-test
 
 #
 ##
