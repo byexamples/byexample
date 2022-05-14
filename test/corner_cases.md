@@ -152,7 +152,7 @@ Any error loading the module (at the import level) will be shown as any
 other error:
 
 ```shell
-$ byexample -m test/ds/badmod/ -l python --dry docs/languages/python.md
+$ byexample -m test/ds/badmod/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
 [!] From '/home/user/proj/byexample/test/ds/badmod' loading module 'bogus' failed. Skipping.
 invalid syntax (bogus.py, line 1)
 <...>
@@ -162,7 +162,7 @@ Rerun with -vvv to get a full stack trace.
 With `-vvv`, the full stack is shown too:
 
 ```shell
-$ byexample -m test/ds/badmod/ -l python --dry -vvv docs/languages/python.md
+$ byexample -m test/ds/badmod/ -l python --dry -vvv docs/languages/python.md   # byexample: +norm-ws
 [!] From '/home/user/proj/byexample/test/ds/badmod' loading module 'bogus' failed. Skipping.
 Traceback (most recent call last):
 <...>
@@ -173,14 +173,33 @@ SyntaxError: <...>
 ```
 
 ```shell
-$ byexample -m test/ds/badmod2/ -l python --dry docs/languages/python.md
+$ byexample -m test/ds/badmod2/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
 [!] Something went wrong initializing byexample:
+From '/home/user/proj/byexample/test/ds/badmod2' module 'oldstyle'
 The object of class BogusOldStyleModule did not call the constructor of Concern.
 <...>
 ```
 
 ```shell
-$ byexample -m test/ds/badmod4/ -l python --dry docs/languages/python.md
+$ byexample -m test/ds/badmod3/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
+[!] Something went wrong initializing byexample:
+From '/home/user/proj/byexample/test/ds/badmod3' module 'oldstyle'
+Instantiation of BogusOldStyleModule failed: You need to call
+ExampleRunner.__init__ (or its subclass) before calling PexpectMixin.__init__ in BogusOldStyleModule.
+<...>
+```
+
+```shell
+$ byexample -m test/ds/badmod3.1/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
+[!] Something went wrong initializing byexample:
+From '/home/user/proj/byexample/test/ds/badmod3.1' module 'oldstyle'
+Instantiation of BogusOldStyleModule failed: The class
+BogusOldStyleModule that inherits from PexpectMixin must also inherit from ExampleRunner.
+<...>
+```
+
+```shell
+$ byexample -m test/ds/badmod4/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
 [!] Something went wrong initializing byexample:
 From '/home/user/proj/byexample/test/ds/badmod4' module 'badmod'
 Instantiation of BogusModule failed: 'BogusModule' object has no attribute 'noattr'
@@ -189,7 +208,7 @@ Instantiation of BogusModule failed: 'BogusModule' object has no attribute 'noat
 
 
 ```shell
-$ byexample -m test/ds/badmod5/ -l python --dry docs/languages/python.md
+$ byexample -m test/ds/badmod5/ -l python --dry docs/languages/python.md   # byexample: +norm-ws
 [!] Something went wrong initializing byexample:
 From '/home/user/proj/byexample/test/ds/badmod5' module 'badmod'
 The attribute 'target' of BogusModule must be a single string-like value but it is of type <class 'list'>.

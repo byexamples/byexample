@@ -239,6 +239,16 @@ class PopenSpawnExt(pexpect.popen_spawn.PopenSpawn):
 
 class PexpectMixin(object):
     def __init__(self, PS1_re, any_PS_re):
+        if not isinstance(self, ExampleRunner):
+            raise TypeError(
+                f'The class {self.__class__.__name__} that inherits from PexpectMixin must also inherit from ExampleRunner.'
+            )
+
+        if not self._was_extension_init_called():
+            raise ValueError(
+                f'You need to call ExampleRunner.__init__ (or its subclass) before calling PexpectMixin.__init__ in {self.__class__.__name__}.'
+            )
+
         self._set_prompts(PS1_re, any_PS_re)
 
         self._output_between_prompts = []
