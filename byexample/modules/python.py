@@ -488,13 +488,13 @@ class PythonInterpreter(ExampleRunner, PexpectMixin):
     language = 'python'
     flavors = {'python3', 'python'}
 
-    def __init__(self, verbosity, encoding, selected_languages, **unused):
-        self.encoding = encoding
+    def __init__(self, **kargs):
+        ExampleRunner.__init__(self, **kargs)
 
         self._PS1 = r'/byexample/py/ps1> '
         self._PS2 = r'/byexample/py/ps2> '
 
-        supported_by_us = (self.flavors & selected_languages)
+        supported_by_us = (self.flavors & self.cfg.selected_languages)
         self._python_flavor = self.language if not supported_by_us else supported_by_us.pop(
         )
 

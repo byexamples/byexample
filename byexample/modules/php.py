@@ -109,7 +109,8 @@ class PHPParser(ExampleParser):
 class PHPInterpreter(ExampleRunner, PexpectMixin):
     language = 'php'
 
-    def __init__(self, verbosity, encoding, **unused):
+    def __init__(self, **kargs):
+        ExampleRunner.__init__(self, **kargs)
         PexpectMixin.__init__(
             self,
             # the format is '/byexample/php/ blk chr >'
@@ -119,8 +120,6 @@ class PHPInterpreter(ExampleRunner, PexpectMixin):
             PS1_re=r'/byexample/php/\s+php\s+>\s+> ',
             any_PS_re=r'/byexample/php/\s+[^ ]+\s+[^ ]+\s+> '
         )
-
-        self.encoding = encoding
 
     def run(self, example, options):
         # the algorithm to filter the echos from the php's output

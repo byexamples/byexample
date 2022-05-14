@@ -124,8 +124,8 @@ class PowerShellParser(ExampleParser):
 class PowerShellInterpreter(ExampleRunner, PexpectMixin):
     language = 'pwsh'
 
-    def __init__(self, verbosity, encoding, **unused):
-        self.encoding = encoding
+    def __init__(self, **kargs):
+        ExampleRunner.__init__(self, **kargs)
 
         PexpectMixin.__init__(
             self, PS1_re=r'byexample-ps1>', any_PS_re=r'(byexample-ps1>)|(>>)'

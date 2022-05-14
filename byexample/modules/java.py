@@ -215,12 +215,12 @@ class JavaParser(ExampleParser):
 class JavaInterpreter(ExampleRunner, PexpectMixin):
     language = 'java'
 
-    def __init__(self, verbosity, encoding, **unused):
+    def __init__(self, **kargs):
+        ExampleRunner.__init__(self, **kargs)
         PexpectMixin.__init__(
             self, PS1_re=r'jshell> ', any_PS_re=r'((jshell)|(\.\.\.))> '
         )
 
-        self.encoding = encoding
         self.is_print_expr_set = None
 
     def run(self, example, options):

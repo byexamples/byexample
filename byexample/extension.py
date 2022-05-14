@@ -13,7 +13,7 @@ class Extension:
         '''
         return self.__cfg
 
-    def _was_constructor_called(self):
+    def _was_extension_init_called(self):
         ''' Return if the constructor (__init__) was called or not '''
         try:
             _ = self.__cfg

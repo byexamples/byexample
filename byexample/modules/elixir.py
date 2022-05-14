@@ -177,14 +177,13 @@ class ElixirParser(ExampleParser):
 class ElixirInterpreter(ExampleRunner, PexpectMixin):
     language = 'elixir'
 
-    def __init__(self, verbosity, encoding, **unused):
+    def __init__(self, **kargs):
+        ExampleRunner.__init__(self, **kargs)
         PexpectMixin.__init__(
             self,
             PS1_re=r'_byexample iex _byexample/iex> ',
             any_PS_re=r'_byexample (iex|\.\.\.) _byexample/iex> '
         )
-
-        self.encoding = encoding
 
     def run(self, example, options):
         # the algorithm to filter the echos from the interpreter's output

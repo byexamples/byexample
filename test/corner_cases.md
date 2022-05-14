@@ -173,6 +173,13 @@ SyntaxError: <...>
 ```
 
 ```shell
+$ byexample -m test/ds/badmod2/ -l python --dry docs/languages/python.md
+[!] Something went wrong initializing byexample:
+The object of class BogusOldStyleModule did not call the constructor of Concern.
+<...>
+```
+
+```shell
 $ byexample -m test/ds/badmod4/ -l python --dry docs/languages/python.md
 [!] Something went wrong initializing byexample:
 From '/home/user/proj/byexample/test/ds/badmod4' module 'badmod'

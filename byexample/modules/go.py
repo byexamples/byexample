@@ -342,7 +342,8 @@ class GoParser(ExampleParser):
 class GoInterpreter(ExampleRunner, PexpectMixin):
     language = 'go'
 
-    def __init__(self, verbosity, encoding, **unused):
+    def __init__(self, **kargs):
+        ExampleRunner.__init__(self, **kargs)
         PexpectMixin.__init__(
             self,
             # yaegi uses a very short PS1 prompt and nothing
@@ -352,8 +353,6 @@ class GoInterpreter(ExampleRunner, PexpectMixin):
             PS1_re=re.compile(r'(^|\n)> ', re.MULTILINE),
             any_PS_re=re.compile(r'(^|\n)(> )?', re.MULTILINE)
         )
-
-        self.encoding = encoding
 
     def run(self, example, options):
         return PexpectMixin._run(self, example, options)

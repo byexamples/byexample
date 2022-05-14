@@ -163,7 +163,7 @@ def load_modules(dirnames, cfg, sharer):
             path, name, stability
         )
 
-        for klass, key, is_multikey, what in [
+        for extension_class, key, is_multikey, what in [
             (ExampleRunner, 'language', False, 'runners'),
             (ExampleParser, 'language', False, 'parsers'),
             (ExampleFinder, 'target', False, 'finders'),
@@ -171,9 +171,9 @@ def load_modules(dirnames, cfg, sharer):
             (Concern, 'target', False, 'concerns')
         ]:
 
-            # we are interested in any class that is a subclass of 'klass'
+            # we are interested in any class that is a subclass of 'extension_class'
             # and it has an attribute 'key'
-            predicate = is_a(klass, key, verbosity - 2)
+            predicate = is_a(extension_class, key, verbosity - 2)
 
             container = registry[what]
             klasses_found = inspect.getmembers(module, predicate)
@@ -199,6 +199,12 @@ def load_modules(dirnames, cfg, sharer):
                         path, name,
                         f"Instantiation of {klass.__name__} failed: {str(err)}"
                     ) from err
+
+                if not obj._was_extension_init_called():
+                    raise InvalidExtension(
+                        path, name,
+                        f"The object of class {klass.__name__} did not call the constructor of {extension_class.__name__}."
+                    )
 
                 objs.append(obj)
                 if not ns._is_empty():

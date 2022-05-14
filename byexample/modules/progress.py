@@ -16,25 +16,24 @@ stability = 'provisional'
 class SimpleReporter(Concern):
     target = None  # progress
 
-    def __init__(
-        self, verbosity, encoding, jobs, job_number, ns, sharer, **unused
-    ):
-        if 'use_progress_bar' in unused and unused['use_progress_bar'] \
+    def __init__(self, *, ns, sharer, **kargs):
+        super().__init__(**kargs)
+        if 'use_progress_bar' in self.cfg and self.cfg.use_progress_bar \
                 and progress_bar_available:
             self.target = None  # disable ourselves
         else:
             self.target = 'progress'
 
-        self.output = unused['output']
-        self.use_colors = unused['use_colors']
-        self.verbosity = verbosity
+        self.output = self.cfg.output
+        self.use_colors = self.cfg.use_colors
+        self.verbosity = self.cfg.verbosity
 
-        self.jobs = jobs
+        self.jobs = self.cfg.jobs
 
         # Initialize once the write_lock the first time that
         # a SimpleReporter is created. Next SimpleReporter instances
         # will use the same write_lock
-        if job_number == '__main__':
+        if self.cfg.job_number == '__main__':
             ns.write_lock = sharer.RLock()
 
         self.write_lock = ns.write_lock
@@ -295,23 +294,19 @@ class SimpleReporter(Concern):
 class ProgressBarReporter(SimpleReporter):
     target = None  # progress
 
-    def __init__(
-        self, verbosity, encoding, jobs, job_number, ns, sharer, **unused
-    ):
-        SimpleReporter.__init__(
-            self, verbosity, encoding, jobs, job_number, ns, sharer, **unused
-        )
-        if ('use_progress_bar' in unused and not unused['use_progress_bar']) \
+    def __init__(self, **kargs):
+        super().__init__(**kargs)
+        if ('use_progress_bar' in self.cfg and not self.cfg.use_progress_bar) \
                 or not progress_bar_available:
             self.target = None  # disable ourselves
         else:
             self.target = 'progress'
 
-        if job_number == '__main__':
+        if self.cfg.job_number == '__main__':
             # this write lock is shared among all the instances of tqdm
             tqdm.set_lock(self.write_lock)
         else:
-            self.job_number = job_number
+            self.job_number = self.cfg.job_number
 
         # the tqdm bar will be created at the start of the examples
         self.bar = None
