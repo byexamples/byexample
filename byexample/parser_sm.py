@@ -7,6 +7,7 @@ INIT, WS, LIT, TAG, END, TWOTAGS, EXHAUSTED, ERROR = range(8)
 tWS = ('wspaces', 'newlines')
 tLIT = ('wspaces', 'newlines', 'literals')
 r'''
+>>> from byexample.cfg import _dummy_cfg
 >>> from byexample.log import init_log_system
 >>> init_log_system()
 
@@ -15,7 +16,7 @@ r'''
 >>> import byexample.regex as re
 >>> from functools import partial
 
->>> parser = ExampleParser(0, 'utf8', None); parser.language = 'python'
+>>> parser = ExampleParser(cfg=_dummy_cfg()); parser.language = 'python'
 
 >>> tag_regexs = parser.tag_regexs()
 >>> inp_regexs = parser.input_regexs()

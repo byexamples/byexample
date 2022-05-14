@@ -20,7 +20,8 @@ class PasteError(Exception):
 class Clipboard(Concern):
     target = 'clipboard'
 
-    def __init__(self, verbosity, encoding, sharer, options, **unused):
+    def __init__(self, *, sharer, **kargs):
+        super().__init__(sharer=sharer, **kargs)
         if sharer is None:
             # we are in the worker thread, let's get a private copy of
             # the environment variables captured (if any)
@@ -28,7 +29,7 @@ class Clipboard(Concern):
             # change the values or the examples executed (which can
             # change the environment but they will not change this copy)
             # this is a way to make the workers more independent.
-            captured = options['captured_env_vars']
+            captured = self.cfg.options['captured_env_vars']
             self.envs = {
                 name: os.getenv(name, default='')
                 for name in captured

@@ -40,8 +40,16 @@ class Config(collections.abc.Mapping):
     def __len__(self):
         return len(self._d)
 
+    def __getattr__(self, name):
+        try:
+            return self._d[name]
+        except KeyError:
+            raise AttributeError(
+                f"The setting '{name}' is not in the configuration."
+            ) from None
+
     def _ensure_cfg_is_constant(self):
-        const_types = (int, frozenset, str, bool, bytes, type(None))
+        const_types = (int, frozenset, str, bool, bytes, type(None), tuple)
         exception_keys = (
             'options', 'output', 'registry', 'namespaces',
             'prepare_subprocess_call'
@@ -126,7 +134,7 @@ class Config(collections.abc.Mapping):
         # namespace (if any)
         namespaces = new.pop('namespaces')
         new['registry'] = self._recreate_registry(
-            self['registry'], new, namespaces
+            self['registry'], Config(new), namespaces
         )
         new['namespaces'] = namespaces
         return Config(new)
@@ -161,9 +169,27 @@ class Config(collections.abc.Mapping):
 
             for k, obj in container.items():
                 ns = namespaces_by_class.get(obj.__class__, empty_ns)
-                obj2 = obj.__class__(ns=ns, **cfg)
+
+                # a sharer=None is enforced as the only who can have (and pass)
+                # a real sharer is init_byexample (see byexample.init)
+                obj2 = obj.__class__(ns=ns, sharer=None, cfg=cfg, **cfg)
                 transfer_constants(obj, obj2)
 
                 new[what][k] = obj2
 
         return new
+
+
+def _dummy_cfg():
+    from .options import Options
+    return Config(
+        allowed_languages=frozenset(),
+        verbosity=0,
+        use_colors=0,
+        encoding='utf-8',
+        options=Options(),
+        registry={
+            k: {}
+            for k in 'parsers finders runners zdelimiters'.split()
+        }
+    )

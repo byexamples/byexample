@@ -108,12 +108,11 @@ class JavascriptParser(ExampleParser):
 class JavascriptInterpreter(ExampleRunner, PexpectMixin):
     language = 'javascript'
 
-    def __init__(self, verbosity, encoding, **unused):
+    def __init__(self, **kargs):
+        ExampleRunner.__init__(self, **kargs)
         PexpectMixin.__init__(
             self, PS1_re=r'node > ', any_PS_re=r'(?:node > )|(?:\.\.\. )'
         )
-
-        self.encoding = encoding
 
     def run(self, example, options):
         return PexpectMixin._run(self, example, options)

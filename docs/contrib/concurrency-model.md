@@ -1,6 +1,6 @@
 # Concurrency Model
 
-`byexample` can execute the examples of the given file in parallel (or
+`byexample` can execute the examples of multiple files in parallel (or
 concurrently to be more precise).
 
 By default only one file is processed each time but more can be added
@@ -9,7 +9,7 @@ with the `--jobs` command line option.
 But exactly how this is done was never officially documented.
 
 This documents describes how `byexample` implements `--jobs` and how
-that could affect the implementation of the modules/plugins.
+that could affect the implementation of the modules/extensions/plugins.
 
 ## Some history
 
@@ -54,7 +54,7 @@ developer of modules.
 If you are developing an `ExampleParser`, `ExampleRunner`, `ExampleFinder`,
 `ZoneDelimiter` or a `Concern`, you should not have to worry about this.
 
-The only thing that you need to know is that the class you are
+The only thing that you need to know is that the extension class you are
 developing (let's say an `ExampleRunner`) will be instantiated
 *once* in the main program and then *once* in each worker.
 
@@ -118,6 +118,7 @@ Something like this:
 ...     target = 'measure-time'
 ...
 ...     def __init__(self, **kargs):
+...         super().__init__(**kargs)
 ...         self.begin = self.longest = 0
 ...
 ...     def start_example(self, *args):
@@ -144,6 +145,7 @@ This is the modified `__init__` of `MeasureTime`:
 
 ```python
 >>> def __init__(self, sharer, ns, job_number, **kargs):
+...     super().__init__(sharer=sharer, ns=ns, job_number=job_number, **kargs)
 ...     self.begin = 0
 ...
 ...     if sharer is not None:
@@ -178,8 +180,8 @@ Now, on the `end_example` we need to store the longest elapsed time
 ...         self.elapsed_times_by_worker[self.my_number] = my_longest
 ```
 
-Because `elapsed_times_by_worker` is a *shared* we need to access it
-atomically. For this we take the `lock` first.
+Because `elapsed_times_by_worker` is a *shared dictionary* we need to access it
+atomically to avoid race conditions. For this we take the `lock` first.
 
 The standard [byexample/modules/progress.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/progress.py)
 is also an example of this: there the `Concern` uses a `RLock` to
@@ -196,14 +198,14 @@ That's the main reason of using `sharer` and `namespace`: if you use
 them in your classes your code will support any concurrency model out of
 the box.
 
-## Caveats on using `multiprocessing` **within** a module/plugin
+## Caveats on using `multiprocessing` **within** an extension/plugin
 
-`byexample` does not impose any restriction on how *your* module/plugin
+`byexample` does not impose any restriction on how *your* extension/plugin
 may use or not `multithreading` and/or `multiprocessing` **internally**.
 
 How `--jobs` works is **independent** of it.
 
-However, using `multiprocessing` **within** a module/plugin has some
+However, using `multiprocessing` **within** an extension has some
 caveats.
 
 When `multiprocessing.Process` (or similar) is used, the main Python
@@ -236,9 +238,9 @@ while `byexample` is executing an example:
 ...         self.child.join()
 ```
 
-Why it will fail?
+Why would it fail?
 
-This child fresh process will not have the modules/plugins that
+This child fresh process will not have the modules that
 `byexample` loaded dynamically so it will likely fail even before
 executing the class' method `watch_in_bg` because the module where
 `Some.watch_in_bg` lives is not loaded.
@@ -271,17 +273,13 @@ You need to wrap the function with `prepare_subprocess_call`:
 >>> class Some(Concern):
 ...     target = 'some'
 ...
-...     def __init__(self, prepare_subprocess_call, **kargs):
-...         # keep a reference to this function helper
-...         self.prepare_subprocess_call = prepare_subprocess_call
-...
 ...     @classmethod
 ...     def watch_in_bg(cls, num):
 ...         # this will be executed in background, in parallel
 ...         pass
 ...
 ...     def start_example(self, *args):
-...         # prepare_subprocess_call takes the 'target' function
+...         # self.cfg.prepare_subprocess_call takes the 'target' function
 ...         # and an optional 'args' and 'kwargs' arguments
 ...         # like multiprocessing.Process does.
 ...         #
@@ -289,7 +287,7 @@ You need to wrap the function with `prepare_subprocess_call`:
 ...         # with the double '**' directly into multiprocessing.Process
 ...         # call
 ...         self.child = multiprocessing.Process(
-...                     **self.prepare_subprocess_call(
+...                     **self.cfg.prepare_subprocess_call(
 ...                             target=Some.watch_in_bg,
 ...                             args=(42,)
 ...                         )
@@ -307,3 +305,12 @@ If you want to see the dirty details behind `prepare_subprocess_call`,
 you can check the [commit b263ba76](
 https://github.com/byexamples/byexample/commit/b263ba76271e447a2faed6f0517f71b74d96ab81
 ).
+
+> *New* in ``byexample 10.5.1``: `prepare_subprocess_call` is a special
+> function that is passed to the `__init__` method and can be used to wrap
+> code and arguments to be executed in a separated process.
+
+> *New* in ``byexample 11.0.0``: `prepare_subprocess_call` can be
+> retrieved from `self.cfg` directly so it is not needed to capture it
+> from the `__init__`'s `kargs`
+

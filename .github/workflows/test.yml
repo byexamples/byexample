@@ -20,6 +20,7 @@ jobs:
       - run: make modules-test
       - run: make docs-test
       - run: make examples-test
+      - run: make corner-test
 
   source-code-test:
     name: "Source code"

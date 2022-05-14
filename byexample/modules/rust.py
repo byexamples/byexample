@@ -215,9 +215,8 @@ class RustParser(ExampleParser):
 class RustInterpreter(ExampleRunner, PexpectMixin):
     language = 'rust'
 
-    def __init__(self, verbosity, encoding, **unused):
-        self.encoding = encoding
-
+    def __init__(self, **kargs):
+        ExampleRunner.__init__(self, **kargs)
         PexpectMixin.__init__(self, PS1_re=r'>> ', any_PS_re=r'>> ')
 
     def get_default_cmd(self, *args, **kargs):

@@ -120,8 +120,8 @@ class IAsmParser(ExampleParser):
 class IAsmInterpreter(ExampleRunner, PexpectMixin):
     language = 'iasm'
 
-    def __init__(self, verbosity, encoding, **unused):
-        self.encoding = encoding
+    def __init__(self, **kargs):
+        ExampleRunner.__init__(self, **kargs)
 
         PexpectMixin.__init__(self, PS1_re=r':>', any_PS_re=r'[:-]>')
 

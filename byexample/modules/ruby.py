@@ -143,14 +143,13 @@ class RubyParser(ExampleParser):
 class RubyInterpreter(ExampleRunner, PexpectMixin):
     language = 'ruby'
 
-    def __init__(self, verbosity, encoding, **unused):
+    def __init__(self, **kargs):
+        ExampleRunner.__init__(self, **kargs)
         PexpectMixin.__init__(
             self,
             PS1_re=r'irb[^:]*:\d+:0(>|\*) ',
             any_PS_re=r'irb[^:]*:\d+:\d+(>|\*|") '
         )
-
-        self.encoding = encoding
 
     def run(self, example, options):
         return PexpectMixin._run(self, example, options)

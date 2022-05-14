@@ -7,6 +7,7 @@ from byexample.log import clog
 
 stability = 'provisional'
 '''
+>>> from byexample.cfg import _dummy_cfg
 >>> from byexample.modules.delimiters import DocStringDelimiter
 >>> from byexample.log import init_log_system
 >>> init_log_system()
@@ -130,7 +131,7 @@ class DocStringDelimiter(ZoneDelimiter):
             will be None (for padding)
 
             >>> source = 'hello\nworld\n\n!!'
-            >>> offsets = DocStringDelimiter(0,0).get_offset_by_lineno(source)
+            >>> offsets = DocStringDelimiter(cfg=_dummy_cfg()).get_offset_by_lineno(source)
             >>> offsets
             [None, 0, 6, 12, 13]
 
@@ -188,7 +189,7 @@ class DocStringDelimiter(ZoneDelimiter):
             number less or equal to the correct offset.
 
             >>> source = '"""module docstring"""\ndef f():\n  """func docstring"""\n  pass'
-            >>> offsets = DocStringDelimiter(0,0).near_offsets_of_docstrings(source)
+            >>> offsets = DocStringDelimiter(cfg=_dummy_cfg()).near_offsets_of_docstrings(source)
             >>> offsets
             [32]
 
@@ -200,7 +201,7 @@ class DocStringDelimiter(ZoneDelimiter):
 
             >>> source = 'invalid syntax'
             >>> filepath = 'foo.py'
-            >>> offsets = DocStringDelimiter(0,0).near_offsets_of_docstrings(source, filepath)  # byexample: +norm-ws
+            >>> offsets = DocStringDelimiter(cfg=_dummy_cfg()).near_offsets_of_docstrings(source, filepath)  # byexample: +norm-ws
             [w] A syntax error was found parsing "foo.py": we may not found all the examples in the docstrings correctly.
             [w] <...>File "foo.py", line 1
                 invalid syntax

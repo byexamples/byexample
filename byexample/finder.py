@@ -9,9 +9,12 @@ from .options import Options
 from .log import clog, log_context, DEBUG, CHAT, log_with
 
 from .prof import profile
+from .cfg import Config
+from .extension import Extension
 
 from .example import Where, Zone, Example
 '''
+>>> from byexample.cfg import _dummy_cfg
 >>> from byexample.log import init_log_system
 >>> init_log_system()
 '''
@@ -25,6 +28,8 @@ def _build_fake_example(
     fully_parsed=True,
     opts=None
 ):
+    from .cfg import _dummy_cfg
+
     class R:
         pass  # <- fake runner instance
 
@@ -34,7 +39,7 @@ def _build_fake_example(
         pass  # <- fake finder instance
 
     # fake a parser
-    parser = ExampleParser(0, 'utf8', Options())
+    parser = ExampleParser(cfg=_dummy_cfg())
     parser.language = language
 
     # fake the options parsed by the parser
@@ -92,21 +97,17 @@ class ExampleHarvest(object):
                                       \       reporter
                                        \         .
     '''
-    def __init__(
-        self, registry, allowed_languages, verbosity, options, use_colors,
-        encoding, **unused
-    ):
-        self.allowed_languages = allowed_languages
-        self.verbosity = verbosity
-        self.use_colors = use_colors
-        self.available_finders = registry['finders'].values()
-        self.encoding = encoding
+    def __init__(self, cfg):
+        self.allowed_languages = cfg.allowed_languages
+        self.use_colors = cfg.use_colors
+        self.available_finders = cfg.registry['finders'].values()
+        self.encoding = cfg.encoding
 
-        self.parser_by_language = registry['parsers']
-        self.runner_by_language = registry['runners']
-        self.zdelimiter_by_file_extension = registry['zdelimiters']
+        self.parser_by_language = cfg.registry['parsers']
+        self.runner_by_language = cfg.registry['runners']
+        self.zdelimiter_by_file_extension = cfg.registry['zdelimiters']
 
-        self.options = options
+        self.options = cfg.options
 
     @log_context('byexample.close')
     def close(self):
@@ -208,9 +209,7 @@ class ExampleHarvest(object):
         And create a harvester to play with it:
 
             >>> from byexample.finder import ExampleHarvest
-            >>> f = ExampleHarvest(dict((k, {}) for k in \
-            ...                   ('parsers', 'finders', 'runners', 'zdelimiters')),
-            ...                    [], 0, 0, None, 'utf-8')
+            >>> f = ExampleHarvest(_dummy_cfg())
 
         Okay, back to the check_example_overlap documentation,
         given the examples sorted in that way, a collision is detected if
@@ -426,11 +425,7 @@ class ExampleHarvest(object):
         return items
 
 
-class ExampleFinder(object):
-    def __init__(self, verbosity, encoding, **unused):
-        self.verbosity = verbosity
-        self.encoding = encoding
-
+class ExampleFinder(Extension):
     def example_regex(self):
         raise NotImplementedError()  # pragma: no cover
 
@@ -448,7 +443,7 @@ class ExampleFinder(object):
         Given an example string, remove its indentation
 
             >>> from byexample.finder import ExampleFinder, Where
-            >>> mfinder = ExampleFinder(0, 'utf8'); mfinder.target = 'python-prompt'
+            >>> mfinder = ExampleFinder(cfg=_dummy_cfg()); mfinder.target = 'python-prompt'
             >>> check_and_remove_indent = mfinder.check_and_remove_indent
 
             >>> where = Where(1, 2, 'foo.rst', None)
@@ -500,7 +495,7 @@ class ExampleFinder(object):
             >>> from byexample.finder import ExampleFinder
             >>> import byexample.regex as re
 
-            >>> mfinder = ExampleFinder(0, 'utf8'); mfinder.target = 'python-prompt'
+            >>> mfinder = ExampleFinder(cfg=_dummy_cfg()); mfinder.target = 'python-prompt'
             >>> check_and_remove_indent = mfinder.check_and_remove_indent
             >>> check_keep_matching     = mfinder.check_keep_matching
 
@@ -577,11 +572,7 @@ class ExampleFinder(object):
         return match.group('snippet'), match.group('expected')
 
 
-class ZoneDelimiter(object):
-    def __init__(self, verbosity, encoding, **unused):
-        self.verbosity = verbosity
-        self.encoding = encoding
-
+class ZoneDelimiter(Extension):
     def zone_regex(self):
         raise NotImplementedError()  # pragma: no cover
 

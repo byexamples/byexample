@@ -19,10 +19,10 @@ ctrl_tr = {
 
 
 class Differ(object):
-    def __init__(self, verbosity, encoding, **unused):
+    def __init__(self, cfg):
         self._diff = []
-        self.verbosity = verbosity
-        self.encoding = encoding
+        self.verbosity = cfg.verbosity
+        self.encoding = cfg.encoding
 
     def output_difference(self, example, got, flags, use_colors):
         r'''
@@ -31,8 +31,9 @@ class Differ(object):
 
         Depending of the flags the diff can be returned differently.
             >>> from __future__ import unicode_literals
+            >>> from byexample.cfg import Config
             >>> from byexample.differ import Differ
-            >>> output_difference = Differ(verbosity=0, encoding='utf8').output_difference
+            >>> output_difference = Differ(Config(verbosity=0, encoding='utf8')).output_difference
 
             >>> expected = 'one\ntwo\nthree\nfour'
             >>> got      = 'zero\none\ntree\nfour'

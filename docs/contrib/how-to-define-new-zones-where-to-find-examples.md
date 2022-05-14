@@ -6,11 +6,11 @@ There are three different ways in which ``byexample`` can be extended:
  - support new languages: how to find them and how to run them
  - perform arbitrary actions during the execution
 
-``byexample`` uses the concept of modules: a python file with some classes
-defined there and it can be loaded using ``--modules <dir>`` from the command
-line.
+``byexample`` uses the concept of modules: a python file with some extension
+classes defined there. Modules can be loaded using ``--modules <dir>``
+from the command line.
 
-What classes will depend of what you want to extend or customize.
+What extension classes will depend of what you want to extend or customize.
 
 In this ``how-to`` we will see how to define new zones where to
 find examples.
@@ -58,8 +58,8 @@ This is what you need to write:
 That's it.
 
 The ``target`` indicates the file extension of the files
-that will be delimited by this code. It can be a single extension or a list
-or set of several extensions.
+that will be delimited by this code. It can be a string with a single extension
+file or a list or set of several extensions.
 
 The ``zone_regex`` method should return a regular expression to find and capture
 the zones.
@@ -98,3 +98,24 @@ you can see a concrete example.
 > may not use processes at all!
 > `sharer` and `namespace` are objects that hide the details while
 > allowing you to have the same power.
+
+## `ZoneDelimiter` initialization
+
+If you extend `ZoneDelimiter` and decide to implement your own `__init__`,
+you must ensure that you call `ZoneDelimiter`'s `__init__` method
+passing to it all the keyword-only arguments that you received.
+
+Once done that, you can use the `self.cfg` property to access any
+configuration set in `byexample` including the flags/options set
+(`self.cfg.options`).
+
+In the `__init__` you can also change the value of `target` to something
+different. This allows you to change what type of files you are going to
+processes based on the configuration or you can disable the zone finder
+entirely setting `self.target = None`.
+
+See
+[Extension initialization](/{{ site.uprefix }}/contrib/extension-initialization)
+for more about this and some troubleshooting.
+
+> *New* in ``byexample 11.0.0``: `self.cfg` was introduced.

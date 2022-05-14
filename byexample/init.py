@@ -44,14 +44,10 @@ def are_tty_colors_supported(output):
            get_colors() >= 8
 
 
-def is_a(target_class, key_attr, warn_missing_key_attr):
+def is_a(target_class):
     '''
     Returns a function that will return True if its argument
-    is a subclass of target_class and it has the attribute key_attr
-
-    If warn_missing_key_attr is True, log a warning if the "the argument"
-    is a subclass of target_class but it has not the attribute
-    key_attr.
+    is a subclass of target_class.
     '''
     def _is_X(obj):
         if not inspect.isclass(obj):
@@ -60,14 +56,7 @@ def is_a(target_class, key_attr, warn_missing_key_attr):
         class_ok = issubclass(obj, target_class) and \
                obj is not target_class
 
-        attr_ok = hasattr(obj, key_attr)
-
-        if class_ok and not attr_ok:
-            clog().warn(
-                "Class '%s' has not attribute '%s'.", obj.__name__, key_attr
-            )
-
-        return class_ok and attr_ok
+        return class_ok
 
     return _is_X
 
@@ -123,9 +112,15 @@ def import_and_register_modules_iter(dirnames):
         yield (path, name, module, err)
 
 
+class InvalidExtension(Exception):
+    def __init__(self, path, name, msg):
+        super(
+        ).__init__(f"From '{os.path.abspath(path)}' module '{name}'\n{msg}")
+
+
 @log_context('byexample.load')
 @profile
-def load_modules(dirnames, cfg):
+def load_modules(dirnames, cfg, sharer):
     verbosity = cfg['verbosity']
     registry = {
         'runners': {},
@@ -134,6 +129,8 @@ def load_modules(dirnames, cfg):
         'concerns': {},
         'zdelimiters': {},
     }
+
+    MULTI_VALUED_KEY_ATTR_TYPES = (list, tuple, set)
     namespaces_by_class = {}
     for path, name, module, err in import_and_register_modules_iter(dirnames):
         if err:
@@ -157,7 +154,7 @@ def load_modules(dirnames, cfg):
             path, name, stability
         )
 
-        for klass, key, is_multikey, what in [
+        for extension_class, attr_key, is_multikey, what in [
             (ExampleRunner, 'language', False, 'runners'),
             (ExampleParser, 'language', False, 'parsers'),
             (ExampleFinder, 'target', False, 'finders'),
@@ -165,9 +162,8 @@ def load_modules(dirnames, cfg):
             (Concern, 'target', False, 'concerns')
         ]:
 
-            # we are interested in any class that is a subclass of 'klass'
-            # and it has an attribute 'key'
-            predicate = is_a(klass, key, verbosity - 2)
+            # we are interested in any class that is a subclass of 'extension_class'
+            predicate = is_a(extension_class)
 
             container = registry[what]
             klasses_found = inspect.getmembers(module, predicate)
@@ -175,7 +171,13 @@ def load_modules(dirnames, cfg):
                 klasses_found = list(zip(*klasses_found))[1]
 
                 # remove already loaded
-                klasses_found = set(klasses_found) - set(container.values())
+                not_loaded_yet = set(klasses_found) - set(container.values())
+
+                # preserve class order based on where they were found
+                # by inspect.getmembers
+                klasses_found = [
+                    cls for cls in klasses_found if cls in not_loaded_yet
+                ]
 
             if klasses_found:
                 clog().debug(
@@ -186,7 +188,58 @@ def load_modules(dirnames, cfg):
             objs = []
             for klass in klasses_found:
                 ns = NS()  # a private namespace for each object
-                objs.append(klass(ns=ns, **cfg))
+                try:
+                    obj = klass(ns=ns, sharer=sharer, cfg=cfg, **cfg)
+                except Exception as err:
+                    raise InvalidExtension(
+                        path, name,
+                        f"Instantiation of {klass.__name__} failed: {str(err)}"
+                    ) from err
+
+                # If the extension class forgot to call super().__init__, we raise
+                # an exception here.
+                if not obj._was_extension_init_called():
+                    raise InvalidExtension(
+                        path, name,
+                        f"The object of class {klass.__name__} did not call the constructor of {extension_class.__name__}."
+                    )
+
+                # We allow for a class to not define its attr_key attribute (target/language) but
+                # it must be defined after the instantiation and initialization of the
+                # extension object. No excuses.
+                if not hasattr(obj, attr_key):
+                    raise InvalidExtension(
+                        path, name,
+                        f"The object of class {klass.__name__} did not define a '{attr_key}' attribute."
+                    )
+
+                # Check for attr_key's value type if it is not None.
+                attr_key_value = getattr(obj, attr_key)
+                if attr_key_value is not None:
+                    if is_multikey and not isinstance(
+                        attr_key_value, (str, ) + MULTI_VALUED_KEY_ATTR_TYPES
+                    ):
+                        raise InvalidExtension(
+                            path, name,
+                            "The attribute '%s' of %s must be a string-like value or a list of strings but it is of type %s."
+                            % (
+                                attr_key, obj.__class__.__name__,
+                                type(attr_key_value)
+                            )
+                        )
+                    elif not is_multikey and not isinstance(
+                        attr_key_value, str
+                    ):
+                        raise InvalidExtension(
+                            path, name,
+                            "The attribute '%s' of %s must be a single string-like value but it is of type %s."
+                            % (
+                                attr_key, obj.__class__.__name__,
+                                type(attr_key_value)
+                            )
+                        )
+
+                objs.append(obj)
                 if not ns._is_empty():
                     # keep a reference of the namespace only if
                     # it is not empty (because they are immutable from now on,
@@ -197,29 +250,36 @@ def load_modules(dirnames, cfg):
             if objs:
                 loaded_objs = []
                 for obj in objs:
-                    key_value = getattr(obj, key)
-                    if key_value:
+                    key_value = getattr(obj, attr_key)
+                    if key_value is not None:
                         if is_multikey:
-                            # ensure that the key is list-like iterable
-                            # (we accept a multi-valued key)
+                            # ensure that the attr_key is list-like iterable
+                            # (we accept a multi-valued attr_key)
                             if not isinstance(key_value, (list, tuple, set)):
-                                key_value = [key_value]
-                        else:
-                            # ensure that the keys is *not* a list-like
-                            # but a string-like (we accept a
-                            # single-valued key)
-                            if isinstance(key_value, (list, tuple, set)):
-                                raise ValueError(
-                                    "The attribute '%s' of %s must be a string-like but it is of type '%s'."
-                                    % (
-                                        key, obj.__class__.__name__,
-                                        type(key_value)
+                                assert isinstance(key_value, str)
+                                key_value = {key_value}
+                            else:
+                                tmp = set(key_value)
+                                if len(tmp) < len(key_value):
+                                    clog().warn(
+                                        f"Extension {obj.__class__.__name__} has duplicated entries in its '{attr_key}' attribute."
                                     )
-                                )
-                            # for simplicity we see this single-valued a
-                            # a singleton list
-                            key_value = [key_value]
+                                elif not tmp:
+                                    clog().warn(
+                                        f"Extension {obj.__class__.__name__} has no entries in its '{attr_key}' attribute. If is intentional, prefer to set None instead."
+                                    )
+                                    # Stop this iteration and continue with the for-loop in this case
+                                    continue
+                                key_value = tmp
+                        else:
+                            assert isinstance(key_value, str)
+                            # for simplicity we see this single-valued string
+                            # as a singleton set
+                            key_value = {key_value}
 
+                        assert isinstance(key_value, set)
+                        assert (is_multikey and len(key_value) >= 1
+                                ) or (not is_multikey and len(key_value) == 1)
                         for k in key_value:
                             container[k] = obj
                         loaded_objs.append(obj)
@@ -276,7 +336,7 @@ def get_allowed_languages(registry, flavors):
                           "You need to choose one.") %
                                (prev_flavor, bad_flavor, prev_lang))
 
-    return languages
+    return frozenset(languages)
 
 
 def verify_encodings(input_encoding, verbosity):
@@ -447,6 +507,15 @@ def get_options(args, cfg):
     # possible that the string contains language-specific flags
     options.up(optparser.parse(args.options_str, strict=False))
 
+    clog().chat(
+        "Options (cmdline + byexample's defaults + --options): %s", options
+    )
+
+    options['x'] = {}
+    for k, v in vars(args).items():
+        if k.startswith('x_'):
+            options['x'][k[2:]] = v
+
     # In order words, the order of preference for a given option is:
     #
     #  scope | preference | source
@@ -457,21 +526,13 @@ def get_options(args, cfg):
     #
     # Because this, we pass these to the rest of the system to be used and
     # completed later
-    cfg['options'] = options
-
-    clog().chat(
-        "Options (cmdline + byexample's defaults + --options): %s", options
-    )
-
-    options['x'] = {}
-    for k, v in vars(args).items():
-        if k.startswith('x_'):
-            options['x'][k[2:]] = v
-
     return options
 
 
-def show_options(cfg, registry, allowed_languages):
+def show_options(cfg):
+    registry = cfg['registry']
+    allowed_languages = cfg['allowed_languages']
+
     parsers = [
         p for p in registry['parsers'].values()
         if p.language in allowed_languages
@@ -502,7 +563,8 @@ def show_options(cfg, registry, allowed_languages):
 
 
 @profile
-def extend_option_parser_with_concerns(cfg, registry):
+def extend_option_parser_with_concerns(cfg):
+    registry = cfg['registry']
     concerns = [c for c in registry['concerns'].values()]
 
     # join the concerns' option parser into one single parser
@@ -528,7 +590,10 @@ def extend_option_parser_with_concerns(cfg, registry):
 
 @log_context('byexample.options')
 @profile
-def extend_options_with_language_specific(cfg, registry, allowed_languages):
+def extend_options_with_language_specific(cfg):
+    registry = cfg['registry']
+    allowed_languages = cfg['allowed_languages']
+
     parsers = [
         p for p in registry['parsers'].values()
         if p.language in allowed_languages
@@ -590,7 +655,7 @@ def verbosity_to_log_levels(verbosity, quiet):
 
 @log_context('byexample.init')
 @profile
-def init_byexample(args, sharer):
+def _load_modules_and_init_cfg(args, sharer):
     lvl = verbosity_to_log_levels(args.verbosity, args.quiet)
     lvl.update(args.log_masks)
     setLogLevels(lvl)
@@ -611,8 +676,6 @@ def init_byexample(args, sharer):
         # special value to denote that we are not in a worker/job yet
         # but in the main thread.
         'job_number': '__main__',
-        # sharer is temporal, see the end of this function
-        'sharer': sharer,
     }
 
     clog().chat("sys.argv: %s", sys.argv)
@@ -621,7 +684,7 @@ def init_byexample(args, sharer):
     # ensure consistency: we cannot spawn more jobs than testfiles
     assert cfg['jobs'] <= len(testfiles)
 
-    options = get_options(args, cfg)
+    cfg['options'] = get_options(args, cfg)
 
     # if the output has not color support, disable the color anyways
     cfg['use_colors'] &= are_tty_colors_supported(cfg['output'])
@@ -641,13 +704,55 @@ def init_byexample(args, sharer):
         _prepare_subprocess_call, dirnames=tuple(args.modules_dirs)
     )
     cfg['prepare_subprocess_call'] = prepare_subprocess_call
+    del prepare_subprocess_call
 
-    registry, namespaces_by_class = load_modules(args.modules_dirs, cfg)
+    # Loade the modules. This requires the prepare_subprocess_call set
+    # in case they want to spawn processes later.
+    # While the config is not finally complete, we still pass a Config object
+    # to load_modules to ensure that it is not going to be modified
+    # (it is not bullet proof, just a best effort)
+    registry, namespaces_by_class = load_modules(
+        args.modules_dirs, Config(cfg), sharer
+    )
 
-    allowed_languages = get_allowed_languages(registry, args.languages)
+    # With the modules loaded, now we can know which languages are allowed
+    # to run
+    cfg['allowed_languages'] = get_allowed_languages(registry, args.languages)
+
+    # Keep a reference to the registry too.
+    cfg['registry'] = registry
+    del registry
+
+    # Create a namespace for each class. A namespace is where
+    # all the *shared objects* live.
+    namespaces = {}
+    for klass, ns in namespaces_by_class.items():
+        shared_ns = sharer.Namespace(**ns._as_dict())
+        shared_ns._attribute_names = ns._attribute_names()
+        namespaces[klass] = shared_ns
+
+    cfg['namespaces'] = namespaces
+    del namespaces
+
+    # not longer needed: all the runner, parsers, concerns objects
+    # were created and if they wanted to setup a shared object that was
+    # their opportunity.
+    del sharer
+
+    # 'ns' was a temporal setting. In theory, it was never added to cfg
+    # but this is just to ensure that.
+    assert 'ns' not in cfg
+
+    return testfiles, Config(cfg)
+
+
+@log_context('byexample.init')
+@profile
+def init_byexample(args, sharer):
+    testfiles, cfg = _load_modules_and_init_cfg(args, sharer)
 
     if args.show_options:
-        show_options(cfg, registry, allowed_languages)
+        show_options(cfg)
         sys.exit(0)
 
     if not testfiles:
@@ -665,46 +770,32 @@ def init_byexample(args, sharer):
                 )
         sys.exit(1)
 
+    _extend_opts_and_config_log_system(cfg)
+    return testfiles, cfg
+
+
+@log_context('byexample.init')
+@profile
+def _extend_opts_and_config_log_system(cfg):
     # extend the option parser with all the parsers of the concerns.
     # do this *after* showing the options so we can show each parser's opt
     # separately
-    extend_option_parser_with_concerns(cfg, registry)
+    extend_option_parser_with_concerns(cfg)
 
     # now that we know what languages are allowed, extend the options
     # for them
-    extend_options_with_language_specific(cfg, registry, allowed_languages)
+    extend_options_with_language_specific(cfg)
 
     if cfg['quiet']:
-        registry['concerns'].pop('progress', None)
+        cfg['registry']['concerns'].pop('progress', None)
 
     if not clog().isEnabledFor(CHAT):
         clog().chat("Options:\n%s.", pprint.pformat(cfg['options']))
 
     clog().chat("Configuration:\n%s.", pprint.pformat(cfg))
-    clog().chat("Registry:\n%s.", pprint.pformat(registry))
 
-    cfg['allowed_languages'] = frozenset(allowed_languages)
-    cfg['registry'] = registry
-
-    concerns = ConcernComposite(**cfg)
+    concerns = ConcernComposite(cfg)
     configure_log_system(use_colors=cfg['use_colors'], concerns=concerns)
-
-    # not longer needed: all the runner, parsers, concerns objects
-    # were created and if they wanted to setup a shared object that was
-    # their opportunity.
-    cfg['sharer'] = None
-
-    # The namespace where all the shared objects lives.
-    namespaces = {}
-    for klass, ns in namespaces_by_class.items():
-        shared_ns = sharer.Namespace(**ns._as_dict())
-        shared_ns._attribute_names = ns._attribute_names()
-        namespaces[klass] = shared_ns
-
-    cfg['namespaces'] = namespaces
-    assert 'ns' not in cfg
-
-    return testfiles, Config(cfg)
 
 
 def _subprocess_trampoline(
@@ -797,14 +888,14 @@ def init_worker(cfg, job_num):
     # with some keys patched
     cfg = cfg.copy(patch=patch)
 
-    concerns = ConcernComposite(**cfg)
+    concerns = ConcernComposite(cfg)
 
     init_thread_specific_log_system(concerns)
 
     with log_with('byexample.init') as log:
-        differ = Differ(**cfg)
+        differ = Differ(cfg)
 
-        harvester = ExampleHarvest(**cfg)
-        executor = FileExecutor(concerns, differ, **cfg)
+        harvester = ExampleHarvest(cfg)
+        executor = FileExecutor(concerns, differ, cfg)
 
         return harvester, executor

@@ -35,6 +35,7 @@ class InterpreterNotFound(Exception):
 r'''
 >>> from byexample.runner import ExampleRunner
 >>> from byexample.executor import FileExecutor
+>>> from byexample.cfg import _dummy_cfg
 
 >>> from byexample.log import init_log_system
 >>> init_log_system()
@@ -60,7 +61,7 @@ r'''
 ...         if self.bug_in == 'reset':
 ...             raise Exception("Faked on %s of %s" % (self.bug_in, self.name))
 
->>> fexec = FileExecutor(None, None, None, None, None)
+>>> fexec = FileExecutor(None, None, _dummy_cfg())
 
 FileExecutor will initialize the runners in order, stopping on the
 first failure and shutting down any previous initialized runner (if any).
@@ -137,15 +138,13 @@ Note: no tests nor documentation about 'reset' is done yet.
 
 
 class FileExecutor(object):
-    def __init__(
-        self, concerns, differ, verbosity, use_colors, options, **unused
-    ):
+    def __init__(self, concerns, differ, cfg):
         self.concerns = concerns
         self.differ = differ
-        self.use_colors = use_colors
-        self.verbosity = verbosity
+        self.use_colors = cfg.use_colors
+        self.verbosity = cfg.verbosity
 
-        self.options = options
+        self.options = cfg.options
         self.still_alive_runners = set()
 
     @contextlib.contextmanager

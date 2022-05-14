@@ -6,11 +6,11 @@ There are three different ways in which ``byexample`` can be extended:
  - support new languages: how to find them and how to run them
  - perform arbitrary actions during the execution
 
-``byexample`` uses the concept of modules: a python file with some classes
-defined there and it can be loaded using ``--modules <dir>`` from the command
-line.
+``byexample`` uses the concept of modules: a python file with some extension
+classes defined there. Modules can be loaded using ``--modules <dir>``
+from the command line.
 
-What classes will depend of what you want to extend or customize.
+What extension classes will depend of what you want to extend or customize.
 
 In this ``how-to`` we will see how to hook to events and perform arbitrary
 actions during the execution.
@@ -90,3 +90,25 @@ you can see a concrete example.
 > may not use processes at all!
 > `sharer` and `namespace` are objects that hide the details while
 > allowing you to have the same power.
+
+## `Concern` initialization
+
+If you extend `Concern` and decide to implement your own `__init__`,
+you must ensure that you call `Concern`'s `__init__` method
+passing to it all the keyword-only arguments that you received.
+
+Once done that, you can use the `self.cfg` property to access any
+configuration set in `byexample` including the flags/options set
+(`self.cfg.options`).
+
+In the `__init__` you can also change the value of `target` to something
+different. For a `Concern` this is typically used to enable/disable
+the concern object based on the configuration by just setting
+`self.target = "some string"` (enable) or `self.target = None`
+(disable).
+
+See
+[Extension initialization](/{{ site.uprefix }}/contrib/extension-initialization)
+for more about this and some troubleshooting.
+
+> *New* in ``byexample 11.0.0``: `self.cfg` was introduced.

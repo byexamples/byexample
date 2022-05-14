@@ -120,9 +120,8 @@ class ShellParser(ExampleParser):
 class ShellInterpreter(ExampleRunner, PexpectMixin):
     language = 'shell'
 
-    def __init__(self, verbosity, encoding, **unused):
-        self.encoding = encoding
-
+    def __init__(self, **kargs):
+        ExampleRunner.__init__(self, **kargs)
         PexpectMixin.__init__(
             self,
             PS1_re=r"/byexample/sh/ps1> ",

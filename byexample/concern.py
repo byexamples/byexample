@@ -1,9 +1,10 @@
 from __future__ import unicode_literals
 from .common import tohuman
 from .options import ExtendOptionParserMixin
+from .extension import Extension
 
 
-class Concern(ExtendOptionParserMixin):
+class Concern(Extension, ExtendOptionParserMixin):
     '''
     Cross-cutting Concern interface.
 
@@ -50,7 +51,7 @@ class Concern(ExtendOptionParserMixin):
         '''
         Called once when the concern is loaded.
         '''
-        pass
+        Extension.__init__(self, **kargs)
 
     def __repr__(self):
         return '%s Concern' % tohuman(self.target if self.target else self)
@@ -262,8 +263,9 @@ class Concern(ExtendOptionParserMixin):
 
 
 class ConcernComposite(Concern):
-    def __init__(self, registry, **unused):
-        self.concerns = registry['concerns'].values()
+    def __init__(self, cfg):
+        super().__init__(cfg=cfg)
+        self.concerns = cfg.registry['concerns'].values()
 
 
 # Patch ConcernComposite overriding all its methods

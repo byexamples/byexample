@@ -103,8 +103,8 @@ class CPPParser(ExampleParser):
 class CPPInterpreter(ExampleRunner, PexpectMixin):
     language = 'cpp'
 
-    def __init__(self, verbosity, encoding, **unused):
-        self.encoding = encoding
+    def __init__(self, **kargs):
+        ExampleRunner.__init__(self, **kargs)
 
         PexpectMixin.__init__(
             self,

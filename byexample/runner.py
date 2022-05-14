@@ -9,17 +9,14 @@ from .common import tohuman, ShebangTemplate, Countdown, short_string, constant
 from .example import Example
 from .log import clog, INFO
 from .prof import profile, profile_ctx
+from .extension import Extension
 
 from pyte import Stream, Screen
 import sys
 
 
-class ExampleRunner(object):
+class ExampleRunner(Extension):
     flavors = set()
-
-    def __init__(self, verbosity, encoding, **unused):
-        self.verbosity = verbosity
-        self.encoding = encoding
 
     def __repr__(self):
         return '%s Runner' % tohuman(self.language if self.language else self)
@@ -238,6 +235,16 @@ class PopenSpawnExt(pexpect.popen_spawn.PopenSpawn):
 
 class PexpectMixin(object):
     def __init__(self, PS1_re, any_PS_re):
+        if not isinstance(self, ExampleRunner):
+            raise TypeError(
+                f'The class {self.__class__.__name__} that inherits from PexpectMixin must also inherit from ExampleRunner.'
+            )
+
+        if not self._was_extension_init_called():
+            raise ValueError(
+                f'You need to call ExampleRunner.__init__ (or its subclass) before calling PexpectMixin.__init__ in {self.__class__.__name__}.'
+            )
+
         self._set_prompts(PS1_re, any_PS_re)
 
         self._output_between_prompts = []
@@ -299,7 +306,7 @@ class PexpectMixin(object):
             self._interpreter = spawner(
                 cmd,
                 echo=False,
-                encoding=self.encoding,
+                encoding=self.cfg.encoding,
                 dimensions=(rows, cols),
                 env=env
             )
@@ -971,7 +978,7 @@ class PexpectMixin(object):
         try:
             out = subprocess.check_output(cmd,
                                           stderr=subprocess.STDOUT).decode(
-                                              self.encoding
+                                              self.cfg.encoding
                                           )
             version = self._parse_version(out)
 
