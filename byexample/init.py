@@ -694,9 +694,6 @@ def _load_modules_and_init_cfg(args, sharer):
     # their opportunity.
     del sharer
 
-    # We set this to None because in the workers, the sharer must be None.
-    cfg['sharer'] = None
-
     # 'ns' was a temporal setting. In theory, it was never added to cfg
     # but this is just to ensure that.
     assert 'ns' not in cfg

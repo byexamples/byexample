@@ -169,7 +169,10 @@ class Config(collections.abc.Mapping):
 
             for k, obj in container.items():
                 ns = namespaces_by_class.get(obj.__class__, empty_ns)
-                obj2 = obj.__class__(ns=ns, cfg=cfg, **cfg)
+
+                # a sharer=None is enforced as the only who can have (and pass)
+                # a real sharer is init_byexample (see byexample.init)
+                obj2 = obj.__class__(ns=ns, sharer=None, cfg=cfg, **cfg)
                 transfer_constants(obj, obj2)
 
                 new[what][k] = obj2
