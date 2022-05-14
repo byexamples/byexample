@@ -14,8 +14,6 @@ stability = 'provisional'
 
 
 class SimpleReporter(Concern):
-    target = None  # progress
-
     def __init__(self, *, ns, sharer, **kargs):
         super().__init__(**kargs)
         if 'use_progress_bar' in self.cfg and self.cfg.use_progress_bar \
@@ -292,8 +290,6 @@ class SimpleReporter(Concern):
 
 
 class ProgressBarReporter(SimpleReporter):
-    target = None  # progress
-
     def __init__(self, **kargs):
         super().__init__(**kargs)
         if ('use_progress_bar' in self.cfg and not self.cfg.use_progress_bar) \

@@ -44,14 +44,10 @@ def are_tty_colors_supported(output):
            get_colors() >= 8
 
 
-def is_a(target_class, key_attr, warn_missing_key_attr):
+def is_a(target_class):
     '''
     Returns a function that will return True if its argument
-    is a subclass of target_class and it has the attribute key_attr
-
-    If warn_missing_key_attr is True, log a warning if the "the argument"
-    is a subclass of target_class but it has not the attribute
-    key_attr.
+    is a subclass of target_class.
     '''
     def _is_X(obj):
         if not inspect.isclass(obj):
@@ -60,14 +56,7 @@ def is_a(target_class, key_attr, warn_missing_key_attr):
         class_ok = issubclass(obj, target_class) and \
                obj is not target_class
 
-        attr_ok = hasattr(obj, key_attr)
-
-        if class_ok and not attr_ok:
-            clog().warn(
-                "Class '%s' has not attribute '%s'.", obj.__name__, key_attr
-            )
-
-        return class_ok and attr_ok
+        return class_ok
 
     return _is_X
 
@@ -140,6 +129,8 @@ def load_modules(dirnames, cfg, sharer):
         'concerns': {},
         'zdelimiters': {},
     }
+
+    MULTI_VALUED_KEY_ATTR_TYPES = (list, tuple, set)
     namespaces_by_class = {}
     for path, name, module, err in import_and_register_modules_iter(dirnames):
         if err:
@@ -172,8 +163,7 @@ def load_modules(dirnames, cfg, sharer):
         ]:
 
             # we are interested in any class that is a subclass of 'extension_class'
-            # and it has an attribute 'key'
-            predicate = is_a(extension_class, key, verbosity - 2)
+            predicate = is_a(extension_class)
 
             container = registry[what]
             klasses_found = inspect.getmembers(module, predicate)
@@ -200,11 +190,48 @@ def load_modules(dirnames, cfg, sharer):
                         f"Instantiation of {klass.__name__} failed: {str(err)}"
                     ) from err
 
+                # If the extension class forgot to call super().__init__, we raise
+                # an exception here.
                 if not obj._was_extension_init_called():
                     raise InvalidExtension(
                         path, name,
                         f"The object of class {klass.__name__} did not call the constructor of {extension_class.__name__}."
                     )
+
+                # We allow for a class to not define its key attribute (target/language) but
+                # it must be defined after the instantiation and initialization of the
+                # extension object. No excuses.
+                if not hasattr(obj, key):
+                    raise InvalidExtension(
+                        path, name,
+                        f"The object of class {klass.__name__} did not define a '{key}' attribute."
+                    )
+
+                # Check for key's value type if it is not None.
+                attr_key_value = getattr(obj, key)
+                if attr_key_value is not None:
+                    if is_multikey and not isinstance(
+                        attr_key_value, (str, ) + MULTI_VALUED_KEY_ATTR_TYPES
+                    ):
+                        raise InvalidExtension(
+                            path, name,
+                            "The attribute '%s' of %s must be a string-like value or a list of strings but it is of type %s."
+                            % (
+                                key, obj.__class__.__name__,
+                                type(attr_key_value)
+                            )
+                        )
+                    elif not is_multikey and not isinstance(
+                        attr_key_value, str
+                    ):
+                        raise InvalidExtension(
+                            path, name,
+                            "The attribute '%s' of %s must be a single string-like value but it is of type %s."
+                            % (
+                                key, obj.__class__.__name__,
+                                type(attr_key_value)
+                            )
+                        )
 
                 objs.append(obj)
                 if not ns._is_empty():
@@ -218,29 +245,35 @@ def load_modules(dirnames, cfg, sharer):
                 loaded_objs = []
                 for obj in objs:
                     key_value = getattr(obj, key)
-                    if key_value:
+                    if key_value is not None:
                         if is_multikey:
                             # ensure that the key is list-like iterable
                             # (we accept a multi-valued key)
                             if not isinstance(key_value, (list, tuple, set)):
-                                key_value = [key_value]
-                        else:
-                            # ensure that the keys is *not* a list-like
-                            # but a string-like (we accept a
-                            # single-valued key)
-                            if isinstance(key_value, (list, tuple, set)):
-                                raise InvalidExtension(
-                                    path, name,
-                                    "The attribute '%s' of %s must be a single string-like value but it is of type %s."
-                                    % (
-                                        key, obj.__class__.__name__,
-                                        type(key_value)
+                                assert isinstance(key_value, str)
+                                key_value = {key_value}
+                            else:
+                                tmp = set(key_value)
+                                if len(tmp) < len(key_value):
+                                    clog().warn(
+                                        f"Extension {obj.__class__.__name__} has duplicated entries in its '{key}' attribute."
                                     )
-                                )
-                            # for simplicity we see this single-valued a
-                            # a singleton list
-                            key_value = [key_value]
+                                elif not tmp:
+                                    clog().warn(
+                                        f"Extension {obj.__class__.__name__} has no entries in its '{key}' attribute. If is intentional, prefer to set None instead."
+                                    )
+                                    # Stop this iteration and continue with the for-loop in this case
+                                    continue
+                                key_value = tmp
+                        else:
+                            assert isinstance(key_value, str)
+                            # for simplicity we see this single-valued string
+                            # as a singleton set
+                            key_value = {key_value}
 
+                        assert isinstance(key_value, set)
+                        assert (is_multikey and len(key_value) >= 1
+                                ) or (not is_multikey and len(key_value) == 1)
                         for k in key_value:
                             container[k] = obj
                         loaded_objs.append(obj)
