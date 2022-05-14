@@ -11,7 +11,12 @@ class Extension:
 
             Consider it as read-only.
         '''
-        return self.__cfg
+        try:
+            return self.__cfg
+        except AttributeError:
+            raise AttributeError(
+                "The cfg property is not set.\nDid you forget to call __init__ on an extension parent class?"
+            ) from None
 
     def _was_extension_init_called(self):
         ''' Return if the constructor (__init__) was called or not '''
