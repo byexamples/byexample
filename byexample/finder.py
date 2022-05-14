@@ -426,9 +426,6 @@ class ExampleHarvest(object):
 
 
 class ExampleFinder(Extension):
-    def __init__(self, **kargs):
-        super().__init__(**kargs)
-
     def example_regex(self):
         raise NotImplementedError()  # pragma: no cover
 
@@ -576,9 +573,6 @@ class ExampleFinder(Extension):
 
 
 class ZoneDelimiter(Extension):
-    def __init__(self, **kargs):
-        super().__init__(**kargs)
-
     def zone_regex(self):
         raise NotImplementedError()  # pragma: no cover
 

@@ -18,10 +18,6 @@ import sys
 class ExampleRunner(Extension):
     flavors = set()
 
-    def __init__(self, **kargs):
-        super().__init__(**kargs)
-        self.encoding = self.cfg.encoding
-
     def __repr__(self):
         return '%s Runner' % tohuman(self.language if self.language else self)
 
@@ -310,7 +306,7 @@ class PexpectMixin(object):
             self._interpreter = spawner(
                 cmd,
                 echo=False,
-                encoding=self.encoding,
+                encoding=self.cfg.encoding,
                 dimensions=(rows, cols),
                 env=env
             )
@@ -982,7 +978,7 @@ class PexpectMixin(object):
         try:
             out = subprocess.check_output(cmd,
                                           stderr=subprocess.STDOUT).decode(
-                                              self.encoding
+                                              self.cfg.encoding
                                           )
             version = self._parse_version(out)
 
