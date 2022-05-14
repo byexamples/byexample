@@ -154,7 +154,7 @@ def load_modules(dirnames, cfg, sharer):
             path, name, stability
         )
 
-        for extension_class, key, is_multikey, what in [
+        for extension_class, attr_key, is_multikey, what in [
             (ExampleRunner, 'language', False, 'runners'),
             (ExampleParser, 'language', False, 'parsers'),
             (ExampleFinder, 'target', False, 'finders'),
@@ -204,17 +204,17 @@ def load_modules(dirnames, cfg, sharer):
                         f"The object of class {klass.__name__} did not call the constructor of {extension_class.__name__}."
                     )
 
-                # We allow for a class to not define its key attribute (target/language) but
+                # We allow for a class to not define its attr_key attribute (target/language) but
                 # it must be defined after the instantiation and initialization of the
                 # extension object. No excuses.
-                if not hasattr(obj, key):
+                if not hasattr(obj, attr_key):
                     raise InvalidExtension(
                         path, name,
-                        f"The object of class {klass.__name__} did not define a '{key}' attribute."
+                        f"The object of class {klass.__name__} did not define a '{attr_key}' attribute."
                     )
 
-                # Check for key's value type if it is not None.
-                attr_key_value = getattr(obj, key)
+                # Check for attr_key's value type if it is not None.
+                attr_key_value = getattr(obj, attr_key)
                 if attr_key_value is not None:
                     if is_multikey and not isinstance(
                         attr_key_value, (str, ) + MULTI_VALUED_KEY_ATTR_TYPES
@@ -223,7 +223,7 @@ def load_modules(dirnames, cfg, sharer):
                             path, name,
                             "The attribute '%s' of %s must be a string-like value or a list of strings but it is of type %s."
                             % (
-                                key, obj.__class__.__name__,
+                                attr_key, obj.__class__.__name__,
                                 type(attr_key_value)
                             )
                         )
@@ -234,7 +234,7 @@ def load_modules(dirnames, cfg, sharer):
                             path, name,
                             "The attribute '%s' of %s must be a single string-like value but it is of type %s."
                             % (
-                                key, obj.__class__.__name__,
+                                attr_key, obj.__class__.__name__,
                                 type(attr_key_value)
                             )
                         )
@@ -250,11 +250,11 @@ def load_modules(dirnames, cfg, sharer):
             if objs:
                 loaded_objs = []
                 for obj in objs:
-                    key_value = getattr(obj, key)
+                    key_value = getattr(obj, attr_key)
                     if key_value is not None:
                         if is_multikey:
-                            # ensure that the key is list-like iterable
-                            # (we accept a multi-valued key)
+                            # ensure that the attr_key is list-like iterable
+                            # (we accept a multi-valued attr_key)
                             if not isinstance(key_value, (list, tuple, set)):
                                 assert isinstance(key_value, str)
                                 key_value = {key_value}
@@ -262,11 +262,11 @@ def load_modules(dirnames, cfg, sharer):
                                 tmp = set(key_value)
                                 if len(tmp) < len(key_value):
                                     clog().warn(
-                                        f"Extension {obj.__class__.__name__} has duplicated entries in its '{key}' attribute."
+                                        f"Extension {obj.__class__.__name__} has duplicated entries in its '{attr_key}' attribute."
                                     )
                                 elif not tmp:
                                     clog().warn(
-                                        f"Extension {obj.__class__.__name__} has no entries in its '{key}' attribute. If is intentional, prefer to set None instead."
+                                        f"Extension {obj.__class__.__name__} has no entries in its '{attr_key}' attribute. If is intentional, prefer to set None instead."
                                     )
                                     # Stop this iteration and continue with the for-loop in this case
                                     continue
