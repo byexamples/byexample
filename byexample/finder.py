@@ -99,7 +99,6 @@ class ExampleHarvest(object):
     '''
     def __init__(self, cfg):
         self.allowed_languages = cfg.allowed_languages
-        self.verbosity = cfg.verbosity
         self.use_colors = cfg.use_colors
         self.available_finders = cfg.registry['finders'].values()
         self.encoding = cfg.encoding
@@ -429,8 +428,6 @@ class ExampleHarvest(object):
 class ExampleFinder(Extension):
     def __init__(self, **kargs):
         super().__init__(**kargs)
-        self.verbosity = self.cfg.verbosity
-        self.encoding = self.cfg.encoding
 
     def example_regex(self):
         raise NotImplementedError()  # pragma: no cover
@@ -581,8 +578,6 @@ class ExampleFinder(Extension):
 class ZoneDelimiter(Extension):
     def __init__(self, **kargs):
         super().__init__(**kargs)
-        self.verbosity = self.cfg.verbosity
-        self.encoding = self.cfg.encoding
 
     def zone_regex(self):
         raise NotImplementedError()  # pragma: no cover

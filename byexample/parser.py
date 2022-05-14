@@ -30,8 +30,6 @@ class ExampleParser(Extension, ExtendOptionParserMixin):
     def __init__(self, **kargs):
         Extension.__init__(self, **kargs)
         ExtendOptionParserMixin.__init__(self)
-        self.verbosity = self.cfg.verbosity
-        self.encoding = self.cfg.encoding
         self.options = self.cfg.options
 
         self._optparser_extended_cache = None

@@ -20,7 +20,6 @@ class ExampleRunner(Extension):
 
     def __init__(self, **kargs):
         super().__init__(**kargs)
-        self.verbosity = self.cfg.verbosity
         self.encoding = self.cfg.encoding
 
     def __repr__(self):
