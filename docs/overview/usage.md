@@ -94,7 +94,7 @@ usage: byexample -l <languages> [--ff] [--timeout <secs>] [-j <n>] [--dry]
                  [--skip <file> [<file> ...]] [--capture-env-var <var names>]
                  [-d {none,unified,ndiff,context,tool}] [--difftool <cmd>]
                  [--no-enhance-diff] [-o <options>] [--show-options]
-                 [-m <dir>] [--encoding <enc>] [--show-failures <n>]
+                 [-m <dir>] [--encoding <enc>[:<error>]] [--show-failures <n>]
                  [--pretty {none,all}] [--no-progress-bar] [-V] [-v | -q]
                  [-h | -xh]
  
@@ -147,7 +147,10 @@ Miscellaneous Options:
                         (with -l)
   -m <dir>, --modules <dir>
                         append a directory for searching modules there.
-  --encoding <enc>      select the encoding (default: utf-8).
+  --encoding <enc>[:<error>]
+                        select the encoding and optionally the error handler
+                        (default: utf-8:strict); valid error handlers are
+                        "strict", "ignore" and "replace".
   --show-failures <n>   show up to <n> failures per file (all by default) and
                         suppress the rest (the execution of the examples is
                         not stopped, only the failures are not shown)
