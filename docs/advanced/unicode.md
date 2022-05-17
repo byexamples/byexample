@@ -141,7 +141,18 @@ $ cat test/ds/binary-blob           # byexample: +skip
 
 $ byexample -l shell test/ds/output-bin
 <...>
-UnicodeDecodeError:<...>
+**********************************************************************
+File "test/ds/output-bin", line 1
+Failed example:
+    cat test/ds/binary-blob
+=> Execution of example 1 of 1 crashed.
+- The output of the example could not be decoded as 'utf-8'.
+The current setting is '--encoding=utf-8:strict'.
+Try a different one with '--encoding' from the command line.
+If the encoding is correct, try to use a more relaxed error handler
+like 'replace' or 'ignore'.
+If it helps, this is the decoding error we got:
+'utf-8' codec can't decode byte 0x94 in position 11: invalid start byte
 <...>
 [ABORT] Pass: 0 Fail: 0 Skip: 0
 ```

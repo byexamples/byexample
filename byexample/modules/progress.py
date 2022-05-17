@@ -177,10 +177,21 @@ class SimpleReporter(Concern):
                 )
         elif isinstance(exception, UnicodeDecodeError):
             msg += self._bullet('cyan', '-') + ' '
-            msg += 'Incorrect encoding.\n'
-            msg += 'The output of the example is incompatible with the current encoding.\n'
+            msg += f'The output of the example could not be decoded as \'{exception.encoding}\'.\n'
+            msg += f'The current setting is \'--encoding={self.cfg.encoding}:{self.cfg.enc_error_handler}\'.\n'
             msg += 'Try a different one with \'--encoding\' from the command line.\n'
+            msg += 'If the encoding is correct, try to use a more relaxed error handler\n'
+            msg += 'like \'replace\' or \'ignore\'.\n'
+            msg += f'If it helps, this is the decoding error we got:\n{str(exception)}\n'
 
+            if self.verbosity >= 3:
+                tb = ''.join(
+                    traceback.format_tb(self._get_traceback(exception))
+                )
+                ex = '%s: %s' % (
+                    str(exception.__class__.__name__), str(exception)
+                )
+                msg += '%s\n%s\n' % (tb, ex)
         else:
             tb = ''.join(traceback.format_tb(self._get_traceback(exception)))
             ex = '%s: %s' % (str(exception.__class__.__name__), str(exception))
