@@ -308,6 +308,7 @@ class PexpectMixin(object):
                 echo=False,
                 encoding=self.cfg.encoding,
                 dimensions=(rows, cols),
+                codec_errors=self.cfg.enc_error_handler,
                 env=env
             )
         except Exception as err:
