@@ -21,7 +21,7 @@ class Clipboard(Concern):
     target = 'clipboard'
 
     def __init__(self, *, sharer, **kargs):
-        super().__init__(sharer=sharer, **kargs)
+        Concern.__init__(self, sharer=sharer, **kargs)
         if sharer is None:
             # we are in the worker thread, let's get a private copy of
             # the environment variables captured (if any)

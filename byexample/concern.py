@@ -264,7 +264,7 @@ class Concern(Extension, ExtendOptionParserMixin):
 
 class ConcernComposite(Concern):
     def __init__(self, cfg):
-        super().__init__(cfg=cfg)
+        Concern.__init__(self, cfg=cfg)
         self.concerns = cfg.registry['concerns'].values()
 
 

@@ -114,8 +114,9 @@ def import_and_register_modules_iter(dirnames):
 
 class InvalidExtension(Exception):
     def __init__(self, path, name, msg):
-        super(
-        ).__init__(f"From '{os.path.abspath(path)}' module '{name}'\n{msg}")
+        Exception.__init__(
+            self, f"From '{os.path.abspath(path)}' module '{name}'\n{msg}"
+        )
 
 
 @log_context('byexample.load')
@@ -196,7 +197,7 @@ def load_modules(dirnames, cfg, sharer):
                         f"Instantiation of {klass.__name__} failed: {str(err)}"
                     ) from err
 
-                # If the extension class forgot to call super().__init__, we raise
+                # If the extension class forgot to call Extension.__init__, we raise
                 # an exception here.
                 if not obj._was_extension_init_called():
                     raise InvalidExtension(

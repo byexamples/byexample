@@ -7,4 +7,4 @@ class BadTarget(Concern):
    target = ['bogusmodule']
 
    def __init__(self, **kargs):
-       super().__init__(**kargs)
+       Concern.__init__(self, **kargs)

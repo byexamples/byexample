@@ -171,7 +171,7 @@ class PopenSpawnExt(pexpect.popen_spawn.PopenSpawn):
         self.delayafterclose = 0.1
         self.delayafterterminate = 0.1
 
-        super().__init__(cmd, **kargs)
+        pexpect.popen_spawn.PopenSpawn.__init__(self, cmd, **kargs)
         self._closed = False
 
     def isalive(self):

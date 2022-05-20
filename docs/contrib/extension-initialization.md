@@ -80,7 +80,7 @@ The following two `__init__` are equivalent:
 ```python
 >>> class MyParserOldStyle(ExampleParser):
 ...     def __init__(self, verbosity, encoding, **kargs):
-...         super().__init__(self, verbosity=verbosity, encoding=encoding, **kargs)
+...         ExampleParser.__init__(self, verbosity=verbosity, encoding=encoding, **kargs)
 ...
 ...         # Use these two config directly, "captured" by __init__
 ...         # as keyword-only arguments
@@ -89,7 +89,7 @@ The following two `__init__` are equivalent:
 
 >>> class MyParserNewStyle(ExampleParser):
 ...     def __init__(self, cfg, **kargs):
-...         super().__init__(self, cfg=cfg, **kargs)
+...         ExampleParser.__init__(self, cfg=cfg, **kargs)
 ...
 ...         # Use these two config from the "captured" cfg
 ...         print(cfg.verbosity)
@@ -104,7 +104,7 @@ the following `__init__` is also equivalent (and simpler).
 ```python
 >>> class MyParserNewStyle(ExampleParser):
 ...     def __init__(self, **kargs):
-...         super().__init__(self, **kargs)
+...         ExampleParser.__init__(self, **kargs)
 ...
 ...         # Use these two config from the self.cfg property
 ...         print(self.cfg.verbosity)
@@ -122,6 +122,10 @@ the following `__init__` is also equivalent (and simpler).
 > From `11.0.0`, the `cfg` is available and you can use it directly
 > (see `MyParserNewStyle`)
 
+> Note: Python's `super` is not supported. Your subclasses should call
+> the parent class' method explicitly like `ExampleParser.__init__(self,
+> **kargs)` instead of `super().__init__(**kargs)`
+
 ## Errors on initialization
 
 `byexample` will capture any exception during the initialization and it
@@ -133,7 +137,7 @@ you:
 ```python
 >>> class BadInit(Concern):
 ...    def __init__(self, **kargs):
-...        super().__init__(**kargs)
+...        Concern.__init__(self, **kargs)
 ...
 ...        # XXX This will fail and we expect the exception to be caught
 ...        # by byexample initialization process
@@ -248,7 +252,7 @@ will receive an error:
 ...             self, PS1_re=r'\(gdb\)[ ]', any_PS_re=r'\(gdb\)[ ]'
 ...         )
 ...
-...         super(ExampleRunner, self).__init__(**kargs)
+...         ExampleRunner.__init__(self, **kargs)
 ```
 
 ```shell
@@ -278,7 +282,7 @@ but it *must* exist after and `byexample` will complain if it isn't.
 ```python
 >>> class BadTarget(Concern):
 ...    def __init__(self, **kargs):
-...        super().__init__(**kargs)
+...        Concern.__init__(self, **kargs)
 ...
 ...        # XXX 'target' attribute is missing,
 ...        # byexample will complain about this
@@ -306,7 +310,7 @@ if it is set to other thing:
 ...    target = ['bogusmodule']
 ...
 ...    def __init__(self, **kargs):
-...        super().__init__(**kargs)
+...        Concern.__init__(self, **kargs)
 ```
 
 ```shell

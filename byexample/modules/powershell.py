@@ -247,7 +247,7 @@ class PowerShellInterpreter(ExampleRunner, PexpectMixin):
         assert len(self._output_between_prompts) <= before
 
         # Let the rest of the _get_output() pipeline proceed
-        return super()._get_output(options)
+        return PexpectMixin._get_output(self, options)
 
     def cancel(self, example, options):
         return False
