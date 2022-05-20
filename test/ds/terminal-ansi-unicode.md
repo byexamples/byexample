@@ -7,6 +7,9 @@ $ alias byexample=byexample\ --pretty\ none
 --
 -->
 
+**This is a copy of docs/advanced/unicode.md tuned to be executed
+with the terminal emulator turned on**
+
 # Unicode Support
 
 ``byexample`` has full support for unicode examples.
@@ -199,6 +202,10 @@ your font).
 This is the output of the Markus Kuhn's demo that you can use
 for testing your terminal. Just download the file and do a `cat`
 
+**The following example was cut because pyte does not fully support
+arbitrary unicode/encoding**
+
+
 ```shell
 # wget https://github.com/byexamples/byexample/blob/master/test/ds/UTF-8-demo.txt -O- > test/ds/UTF-8-demo.txt # byexample: +skip
 $ cat test/ds/UTF-8-demo.txt    # byexample: +rm= 
@@ -324,15 +331,7 @@ $ cat test/ds/UTF-8-demo.txt    # byexample: +rm= 
    classic 'San Gua'):
  
    [----------------------------|------------------------]
-     ๏ แผ่นดินฮั่นเสื่อมโทรมแสนสังเวช  พระปกเกศกองบู๊กู้ขึ้นใหม่
-   สิบสองกษัตริย์ก่อนหน้าแลถัดไป       สององค์ไซร้โง่เขลาเบาปัญญา
-     ทรงนับถือขันทีเป็นที่พึ่ง           บ้านเมืองจึงวิปริตเป็นนักหนา
-   โฮจิ๋นเรียกทัพทั่วหัวเมืองมา         หมายจะฆ่ามดชั่วตัวสำคัญ
-     เหมือนขับไสไล่เสือจากเคหา      รับหมาป่าเข้ามาเลยอาสัญ
-   ฝ่ายอ้องอุ้นยุแยกให้แตกกัน          ใช้สาวนั้นเป็นชนวนชื่นชวนใจ
-     พลันลิฉุยกุยกีกลับก่อเหตุ          ช่างอาเพศจริงหนาฟ้าร้องไห้
-   ต้องรบราฆ่าฟันจนบรรลัย           ฤๅหาใครค้ำชูกู้บรรลังก์ ฯ
- 
+<...>
    (The above is a two-column text. If combining characters are handled
    correctly, the lines of the second column should be aligned with the
    | character above.)
