@@ -41,7 +41,7 @@ exec(open(path.join(here, 'byexample', '__init__.py')).read())
 required_deps=[
     'pexpect>=4,<5',     # pexpect 4.x.x required
     'appdirs>=1.4.3,<2', # appdirs 1.4.x (x >= 3) required
-    'pyte==0.8.0',       # pyte exact version 0.8.0 required
+    'pyte>=0.8.0,<=0.8.1',   # pyte version between 0.8.0 and 0.8.1 required
     ]
 
 # these, on the other hand, are optional nice to have
