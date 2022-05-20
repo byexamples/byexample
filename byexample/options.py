@@ -416,7 +416,7 @@ class OptionParser(argparse.ArgumentParser):
         if self._no_options_at_all:
             print("  None.")
         else:
-            super().print_help()
+            argparse.ArgumentParser.print_help(self)
 
 
 class ExtendOptionParserMixin(object):

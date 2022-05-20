@@ -304,7 +304,7 @@ class RustInterpreter(ExampleRunner, PexpectMixin):
         # more to capture all the output
         delay = options['x']['delayafterprompt'] or 0
         options['x']['delayafterprompt'] = max(delay, 0.25)
-        return super()._expect_delayed_output(options)
+        return PexpectMixin._expect_delayed_output(self, options)
 
     def shutdown(self):
         self._shutdown_interpreter()

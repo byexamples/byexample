@@ -11,5 +11,5 @@ class BadRunner(ExampleRunner, PexpectMixin):
             self, PS1_re=r'\(gdb\)[ ]', any_PS_re=r'\(gdb\)[ ]'
         )
 
-        super(ExampleRunner, self).__init__(**kargs)
+        ExampleRunner.__init__(self, **kargs)
 

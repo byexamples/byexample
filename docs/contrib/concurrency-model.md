@@ -118,7 +118,7 @@ Something like this:
 ...     target = 'measure-time'
 ...
 ...     def __init__(self, **kargs):
-...         super().__init__(**kargs)
+...         Concern.__init__(self, **kargs)
 ...         self.begin = self.longest = 0
 ...
 ...     def start_example(self, *args):
@@ -145,7 +145,7 @@ This is the modified `__init__` of `MeasureTime`:
 
 ```python
 >>> def __init__(self, sharer, ns, job_number, **kargs):
-...     super().__init__(sharer=sharer, ns=ns, job_number=job_number, **kargs)
+...     Concern.__init__(self, sharer=sharer, ns=ns, job_number=job_number, **kargs)
 ...     self.begin = 0
 ...
 ...     if sharer is not None:

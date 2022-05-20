@@ -5,7 +5,7 @@ class SubMod(Concern):
     target = 'submod'
 
     def __init__(self, prepare_subprocess_call, **kargs):
-        super().__init__(prepare_subprocess_call=prepare_subprocess_call, **kargs)
+        Concern.__init__(self, prepare_subprocess_call=prepare_subprocess_call, **kargs)
         # keep a reference to this function helper
         self.prepare_subprocess_call = prepare_subprocess_call
 
