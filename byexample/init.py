@@ -668,6 +668,7 @@ def _load_modules_and_init_cfg(args, sharer):
         'quiet': args.quiet,
         'verbosity': args.verbosity,
         'encoding': args.encoding,
+        'enc_error_handler': args.enc_error_handler,
         'output': sys.stdout,
         'interact': False,
         'opts_from_cmdline': args.options_str,

@@ -127,6 +127,50 @@ por-éjemplo
 >
 > The solution is to use ``PYTHONIOENCODING`` like before.
 
+## Handling encoding errors
+
+Sometimes, even if you had set the correct encoding it is possible to
+find an example that just output weird stuff or binary non-sense.
+
+By default `byexample` will fail with an error even if the example
+ignores the output with a `<...>` or `+pass`
+
+```shell
+$ cat test/ds/binary-blob           # byexample: +skip
+[Bin Start]<...>[Bin End]
+
+$ byexample -l shell test/ds/output-bin
+<...>
+**********************************************************************
+File "test/ds/output-bin", line 1
+Failed example:
+    cat test/ds/binary-blob
+=> Execution of example 1 of 1 crashed.
+- The output of the example could not be decoded as 'utf-8'.
+The current setting is '--encoding=utf-8:strict'.
+Try a different one with '--encoding' from the command line.
+If the encoding is correct, try to use a more relaxed error handler
+like 'replace' or 'ignore'.
+If it helps, this is the decoding error we got:
+'utf-8' codec can't decode byte 0x94 in position 11: invalid start byte
+<...>
+[ABORT] Pass: 0 Fail: 0 Skip: 0
+```
+
+But it is possible to instruct `byexample` to handle the error
+differently with the `--encoding` parameter,
+like *replacing* the offending bytes by some character or just *ignoring*
+them:
+
+```shell
+$ byexample -l shell --encoding utf8:replace test/ds/output-bin
+<...>
+[PASS] Pass: 1 Fail: 0 Skip: 0
+```
+
+> The `PYTHONIOENCODING` environment variable also accepts a similar
+> syntax. See the documentation of the `python` interpreter.
+
 ## Limitations
 
 If you are running ``byexample`` using ``Python 2.7`` *and* you

@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import sys, argparse, os, multiprocessing, glob, itertools
+import sys, argparse, os, multiprocessing, glob, itertools, codecs
 from . import __version__, __doc__, _author, _license, _url, _license_disclaimer
 
 from .log_level import str_to_level
@@ -272,6 +272,8 @@ def parse_args(args=None):
        If args is None, parse the sys.argv[1:].
        '''
 
+    DEFAULT_ENC_ERROR_HANDLER = 'strict'
+
     search_default = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'modules'
     )
@@ -407,9 +409,11 @@ def parse_args(args=None):
     )
     g.add_argument(
         "--encoding",
-        metavar='<enc>',
-        default=sys.stdout.encoding.lower(),
-        help='select the encoding (default: %(default)s).'
+        metavar='<enc>[:<error>]',
+        default=sys.stdout.encoding.lower() + ':' + DEFAULT_ENC_ERROR_HANDLER,
+        help='select the encoding and optionally the error handler ' +\
+             '(default: %(default)s); valid error handlers are ' +\
+             '"strict", "ignore" and "replace".'
     )
     g.add_argument(
         "--show-failures",
@@ -584,6 +588,32 @@ def parse_args(args=None):
         parser.error(
             "argument --x-log-mask: '%s' is an unknown log level." % k
         )
+
+    # unpack the encoding and its optional error handler and check them
+    enc, *enc_error_handler = namespace.encoding.split(':', 1)
+    if enc_error_handler:
+        enc_error_handler = enc_error_handler[0]
+    else:
+        enc_error_handler = DEFAULT_ENC_ERROR_HANDLER
+
+    try:
+        codecs.lookup_error(enc_error_handler)
+    except LookupError:
+        parser.error(
+            "argument --encoding: error handler '%s' is unknown or unsupported."
+            % enc_error_handler
+        )
+
+    try:
+        codecs.lookup(enc)
+    except LookupError:
+        parser.error(
+            "argument --encoding: encoding '%s' is unknown or unsupported." %
+            enc
+        )
+
+    namespace.encoding = enc
+    namespace.enc_error_handler = enc_error_handler
 
     # expand the file list based on the glob patterns give (if any)
     namespace.files = _expand_glob_patterns(namespace.files)

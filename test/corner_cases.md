@@ -26,7 +26,7 @@ you want to skip from the ones that you want to execute:
 Ensure that `byexample` works even in a super-verbose mode.
 
 ```shell
-$ byexample -l python  -vvvvvvvvvvvvvvvvvvvvv -- byexample/*.py > /dev/null  # byexample: +timeout=60
+$ byexample -l python  -vvvvvvvvvvvvvvvvvvvvv --skip byexample/prof.py -- byexample/*.py > /dev/null  # byexample: +timeout=60
 $ echo $?
 0
 ```
@@ -85,15 +85,18 @@ $ cat test/ds/ascii_with_unicode_example.md
 Then, the execution of `byexample` is:
 
 ```shell
-$ byexample -l shell --encoding ascii test/ds/ascii_with_unicode_example.md
+$ byexample -l shell --encoding ascii test/ds/ascii_with_unicode_example.md     # byexample: +diff=ndiff
 <...>
 File "test/ds/ascii_with_unicode_example.md", line 2
 Failed example:
     cat docs/advanced/unicode.md
 => Execution of example 1 of 1 crashed.
-- Incorrect encoding.
-The output of the example is incompatible with the current encoding.
+- The output of the example could not be decoded as 'ascii'.
+The current setting is '--encoding=ascii:strict'.
 Try a different one with '--encoding' from the command line.
+If the encoding is correct, try to use a more relaxed error handler
+like 'replace' or 'ignore'.
+If it helps, this is the decoding error we got:
 <...>
 [ABORT] Pass: 0 Fail: 0 Skip: 0
 ```
