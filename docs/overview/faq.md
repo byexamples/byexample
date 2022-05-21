@@ -254,3 +254,29 @@ In this case you can run `byexample` with `-o +force-echo-filtering` to
 filter the unwanted strings.
 
 See [echo-filtering](/{{ site.uprefix }}/advanced/echo-filtering) for more information.
+
+### The executed code is outputs weird things in MacOS
+
+See above.
+
+### It seems that the first lines of the output are missing
+
+If you are using `-o +force-echo-filtering` or `+term=ansi`, the output
+of your examples are passed through an
+[ANSI terminal emulator](/{{ site.uprefix }}/advanced/terminal-emulation).
+
+Like any terminal, this one has some
+[geometry](/{{ site.uprefix }}/advanced/geometry)
+which defines how many
+lines/rows and columns the terminal has.
+
+Anything outside will be lost.
+
+If the first lines of the output are missing, chances are that the
+example's output is so large that the terminal had to *"scroll"*.
+
+You can change the [geometry](/{{ site.uprefix }}/advanced/geometry)
+with `+geometry=LINESxCOLS`: try to
+increase the amount of lines (aka, the height or rows of the terminal) so all
+the output fits in the terminal.
+
