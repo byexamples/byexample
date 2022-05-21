@@ -1,0 +1,4 @@
+--skip=test/ds/pkg/foo{1..2}.py
+--
+test/ds/pkg/*.{py,md}
+

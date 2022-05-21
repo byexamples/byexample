@@ -42,6 +42,7 @@ required_deps=[
     'pexpect>=4,<5',     # pexpect 4.x.x required
     'appdirs>=1.4.3,<2', # appdirs 1.4.x (x >= 3) required
     'pyte>=0.8.0,<=0.8.1',   # pyte version between 0.8.0 and 0.8.1 required
+    'bracex>=2.1.0,<3',  # bracex 2.x required (with x >= 1)
     ]
 
 # these, on the other hand, are optional nice to have

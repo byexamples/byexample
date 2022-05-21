@@ -1,11 +1,13 @@
 from __future__ import unicode_literals
 import sys, argparse, os, multiprocessing, glob, itertools, codecs
+import bracex
 from . import __version__, __doc__, _author, _license, _url, _license_disclaimer
 
 from .log_level import str_to_level
 from .prof import profile
 '''
 >>> from byexample.cmdline import ByexampleArgumentParser
+>>> from byexample.cmdline import _expand_brace_glob_patterns
 '''
 
 
@@ -171,17 +173,66 @@ class _HelpExtraAction(argparse.Action):
         parser.exit()
 
 
-def _expand_glob_patterns(gpatterns):
-    # expand the glob patterns into a list of names
-    names = itertools.chain(
-        *[glob.iglob(g, recursive=True) for g in gpatterns]
+def _expand_brace_glob_patterns(filepatterns):
+    r''' Expand the given file paths expanding the brace and glob patterns.
+
+        >>> _expand_brace_glob_patterns(['byexample/cmdline.py', 'byexample/runner.py'])
+        ['byexample/cmdline.py', 'byexample/runner.py']
+
+        >>> _expand_brace_glob_patterns(['byexample/cmdline.{py,rb}', 'byexample/run*.py'])
+        ['byexample/cmdline.py', 'byexample/runner.py']
+
+        Brace expansion (a la Bash) takes place before glob expansion
+
+        >>> _expand_brace_glob_patterns(['byexample/run*.{py,rb}'])
+        ['byexample/runner.py']
+
+        Escaping is possible for the brace expansion but escaping
+        the glob pattern is not supported (currently, glob.glob
+        does not support it)
+
+        >>> _expand_brace_glob_patterns([r'test/ds/file_patterns/foo*'])
+        ['test/ds/file_patterns/foo*', 'test/ds/file_patterns/foo{1,2}']
+
+        >>> _expand_brace_glob_patterns([r'test/ds/file_patterns/foo*{1,2}'])
+        []
+
+        >>> _expand_brace_glob_patterns([r'test/ds/file_patterns/foo*\{1,2}'])
+        ['test/ds/file_patterns/foo{1,2}']
+
+        Escaping the glob pattern is *not* supported and it is *not* defined
+
+        >>> _expand_brace_glob_patterns([r'test/ds/file_patterns/foo\*'])  # just nonsense
+        ['test/ds/file_patterns/foo*', 'test/ds/file_patterns/foo{1,2}']
+
+        Expanded paths that end up being empty paths or paths to directories
+        are stripped as well as non-existing files.
+
+        >>> _expand_brace_glob_patterns(['byexample/', ''])
+        []
+    '''
+    # imagine the following file patterns:
+    #   tmp/a.c     foo/*.{c,cpp,rb}   bar/
+
+    # expand the brace patterns for each file-pattern and get
+    #   tmp/a.c     foo/*.c    foo/*.cpp    foo/*.rb     bar/
+    gpatterns = itertools.chain.from_iterable(
+        bracex.iexpand(f) for f in filepatterns
     )
 
-    # filter out the names that are empty or are directories
+    # expand the glob patterns into a list of names and get
+    #   tmp/a.c     foo/a.c  foo/b.c   ''    foo/r.rb     bar/
+    names = itertools.chain.from_iterable(
+        glob.iglob(g, recursive=True) for g in gpatterns
+    )
+
+    # filter out the names that are empty or are directories and get
+    #   tmp/a.c     foo/a.c  foo/b.c    foo/r.rb
     fnames = (f for f in names if f.strip() and not os.path.isdir(f))
 
-    # remove duplicated and return a list (order is undefined)
-    return list(set(fnames))
+    # remove duplicated and return a list
+    # we sort the list but the order is undefined (don't assume that)
+    return list(sorted(set(fnames)))
 
 
 class ByexampleArgumentParser(argparse.ArgumentParser):
@@ -615,9 +666,9 @@ def parse_args(args=None):
     namespace.encoding = enc
     namespace.enc_error_handler = enc_error_handler
 
-    # expand the file list based on the glob patterns give (if any)
-    namespace.files = _expand_glob_patterns(namespace.files)
-    namespace.skip = _expand_glob_patterns(namespace.skip)
+    # expand the file list based on the brace/glob patterns give (if any)
+    namespace.files = _expand_brace_glob_patterns(namespace.files)
+    namespace.skip = _expand_brace_glob_patterns(namespace.skip)
 
     # which files are allowed to be executed: these are the 'testfiles'
     # Note: the order is undefined, we sort them but this is not guaranteed
