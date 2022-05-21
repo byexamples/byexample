@@ -121,7 +121,7 @@ $ byexample -l python --skip test/ds/pkg/foo* -- test/ds/pkg/*.py | grep pkg | s
 File test/ds/pkg/bar1.py, 1/1 test ran in <...> seconds
 ```
 
-Since `10.0.3`, `byexample` does the same expansion even if you shell does not.
+Since `10.0.3`, `byexample` does the same *glob expansion* even if you shell does not.
 This is in particular useful if the list of files is in a file (where your shell
 never ever see).
 
@@ -134,6 +134,21 @@ test/ds/pkg/*.py
 $ byexample -l python @test/ds/pkg/bopts | grep pkg | sort    # byexample: +timeout=8
 File test/ds/pkg/bar1.py, 1/1 test ran in <...> seconds
 ```
+
+Since `11.0.0`, `byexample` also does the so called *brace expansion*:
+
+```shell
+$ cat test/ds/pkg/bopts-brace
+--skip=test/ds/pkg/foo{1..2}.py
+--
+test/ds/pkg/*.{py,md}
+
+$ byexample -l python @test/ds/pkg/bopts-brace | grep pkg | sort    # byexample: +timeout=8
+File test/ds/pkg/bar1.py, 1/1 test ran in <...> seconds
+File test/ds/pkg/zaz.md, 1/1 test ran in <...> seconds
+```
+
+
 
 <!--
 
@@ -151,6 +166,8 @@ test/ds/pkg/foo1.py
 test/ds/pkg/foo2.py
 <...>
 
+More extra tests to ensure that no file is missing
+
 $ byexample -l python @test/ds/pkg/bopts2 | grep pkg | wc -l    # byexample: +timeout=8
 1
 
@@ -163,5 +180,8 @@ $ byexample -l python @test/ds/pkg/bopts2 | grep pkg | wc -l    # byexample: +ti
 
 $ byexample -l python @test/ds/pkg/bopts | grep pkg | wc -l     # byexample: +timeout=8
 1
+
+$ byexample -l python @test/ds/pkg/bopts-brace | grep pkg | wc -l  # byexample: +timeout=8
+2
 
 -->
