@@ -148,6 +148,18 @@ File test/ds/pkg/bar1.py, 1/1 test ran in <...> seconds
 File test/ds/pkg/zaz.md, 1/1 test ran in <...> seconds
 ```
 
+## Arguments per environment
+
+If you run you tests under different environments and you need to pass
+different options in each one, you may benefit of writing a *single*
+argument file to work as a template and use a template engine like
+[Jinja2](https://jinja.palletsprojects.com/en/3.1.x/) to generate
+different argument files based on the environment.
+
+This is probably a real exotic super-advanced use of `byexample` but
+it may save you some typing! Check the
+[recipe]({{ site.uprefix }}/recipes/arguments-per-environment)
+for a full example.
 
 
 <!--
