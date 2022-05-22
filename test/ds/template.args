@@ -1,0 +1,9 @@
+-l=python,shell
+{% if osname == "Darwin" %}
+    --skip
+    byexample/prof.py
+    docs/overview/good-practices.md
+{% endif %}
+--
+byexample/*.py
+docs/overview/*.md

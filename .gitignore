@@ -15,3 +15,4 @@ test/ds/args
 prof-traces
 .release-notes
 .workflow-log
+test/ds/good.args

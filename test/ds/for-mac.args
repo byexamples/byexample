@@ -1,0 +1,7 @@
+-l=python,shell
+--skip
+byexample/prof.py
+docs/overview/good-practices.md
+--
+byexample/*.py
+docs/overview/*.md
