@@ -174,7 +174,7 @@ class Example(object):
         )
 
         inputs = []
-        for prefix, inp in self.input_list:
+        for prefix, prefix_regex, inp in self.input_list:
             n = len(inp)
             if n > 14:  # 12 max bytes plus 2 dots
                 inp = inp[:6] + '..' + inp[-6:]
