@@ -601,6 +601,9 @@ class PexpectMixin(object):
             # \n, \r and \r\n. In order to match any of those
             # we replace the literal "escaped" \n with a regex
             prefix_regex = prefix_regex.replace('\\\n', r'(?:\r\n|\n|\r)')
+
+            prefix_regex = prefix_regex.strip()
+            prefix_regex += r'.*'
             try:
                 prompt_found = self._expect_prompt(
                     options, countdown, prompt_re, earlier_re=prefix_regex
