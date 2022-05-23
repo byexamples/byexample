@@ -475,6 +475,15 @@ def get_default_options_parser(cmdline_args):
         help="show up to <n> failures per file and suppress the rest"
     )
 
+    g = options_parser.add_argument_group("Advanced Options")
+    options_parser.add_argument(
+        "-x-byexample-brk",
+        metavar='<n>',
+        default=False,
+        type=bool,
+        help="break"
+    )
+
     return options_parser
 
 
@@ -508,14 +517,14 @@ def get_options(args, cfg):
     # possible that the string contains language-specific flags
     options.up(optparser.parse(args.options_str, strict=False))
 
-    clog().chat(
-        "Options (cmdline + byexample's defaults + --options): %s", options
-    )
-
     options['x'] = {}
     for k, v in vars(args).items():
         if k.startswith('x_'):
             options['x'][k[2:]] = v
+
+    clog().chat(
+        "Options (cmdline + byexample's defaults + --options): %s", options
+    )
 
     # In order words, the order of preference for a given option is:
     #

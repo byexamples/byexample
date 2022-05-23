@@ -399,6 +399,11 @@ class PexpectMixin(object):
             )
 
     def _run(self, example, options):
+        if options['x_byexample_brk']:
+            print("A" * 90)
+            import pudb
+            #pudb.set_trace()
+
         with self._change_terminal_geometry_ctx(options):
             return self._run_impl(example, options)
 
