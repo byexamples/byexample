@@ -1,0 +1,5 @@
+
+```python
+>>> print("        <-spaces")
+	<-spaces
+```

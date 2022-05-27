@@ -433,6 +433,12 @@ class FileExecutor(object):
                 example = example.parse_yourself(self.concerns)
                 self.concerns.finish_parse(example, options, None)
 
+                options.up(example.options)
+                if options['warn_tab'] and '\t' in example.source:
+                    clog().warn('The source code has a tab character that may interfere with the interpreter/runner.\n' +\
+                                'You can remove the tab or disable this warning with \'-warn-tab\'.\n', example=example)
+                options.down()
+
             return example
         except Exception as e:
             self.concerns.finish_parse(example, options, e)

@@ -467,6 +467,13 @@ def get_default_options_parser(cmdline_args):
         "each interpreter disables the echo from the terminal but in some cases this cannot be done and an active filtering is required (this is an experimental feature, it will break your tests if no echo is received and it will force a full terminal emulation (see +term=ansi and +geometry))."
     )
 
+    options_parser.add_flag(
+        "warn-tab",
+        default=True,
+        help=
+        "emit a warning if the source code of an example has a tab character (a tab could interfere with the interpreter/runner)."
+    )
+
     options_parser.add_argument(
         "+show-failures",
         metavar='<n>',
