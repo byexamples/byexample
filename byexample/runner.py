@@ -442,6 +442,8 @@ class PexpectMixin(object):
 
     @profile
     def _exec_and_wait(self, source, options, *, from_example=None, **kargs):
+        self._interpreter.setecho(False)
+        self._interpreter.waitnoecho(timeout=100)
         if from_example is None:
             input_list = kargs.get('input_list', [])
         else:
