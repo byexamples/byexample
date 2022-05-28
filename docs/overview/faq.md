@@ -280,3 +280,96 @@ with `+geometry=LINESxCOLS`: try to
 increase the amount of lines (aka, the height or rows of the terminal) so all
 the output fits in the terminal.
 
+
+### Example expecting ^t (tab) instead of spaces
+
+Some editors write a few spaces when the user presses the TAB key but
+some others honor the user's intention and write a literal tab.
+
+This is hard to notice because both are non-visible characters.
+
+When there is a mismatch due what the example prints and what the
+example expects (what the user with his/her editor typed), `byexample`
+will make a clear distinction for tabs, noted with the `^t` symbol:
+
+```shell
+$ byexample -l python test/ds/example-with-tabs.md
+<...>
+File "test/ds/example-with-tabs.md", line 3
+Failed example:
+    print("        <-spaces")
+Some non-printable characters were replaced by printable ones.
+    ^t: tab
+(You can disable this with '--no-enhance-diff')
+Expected:
+^t<-spaces
+Got:
+        <-spaces
+<...>
+```
+
+In the above example, the code printed spaces but the user expected
+(typed) a tab.
+
+You can confirm this reviewing the hexdecimal dump of the file:
+
+```shell
+$ hexdump -C test/ds/example-with-tabs.md
+00000000  0a 60 60 60 70 79 74 68  6f 6e 0a 3e 3e 3e 20 70  |.```python.>>> p|
+00000010  72 69 6e 74 28 22 20 20  20 20 20 20 20 20 3c 2d  |rint("        <-|
+00000020  73 70 61 63 65 73 22 29  0a 09 3c 2d 73 70 61 63  |spaces")..<-spac|
+00000030  65 73 0a 60 60 60 0a                              |es.```.|
+00000037
+```
+
+### Warning about tabs in the example code that could interfere
+
+Some interpreters/runners are sensible to the tabs in their inputs (in
+the code).
+
+In some cases the runner may output weird messages or it may even hang
+(and `byexample` will then make the example fail due a timeout)
+
+Considere the following example:
+
+```python
+>>> print("        <-this is a tab")       # byexample: +term=as-is
+        <-this is a tab
+```
+
+You probably cannot see it but what the `print()` prints is a tab; perhaps
+reading the hexdecimal dump is better:
+
+```shell
+$ hexdump -C test/ds/example-with-tabs-in-code.md
+00000000  0a 60 60 60 70 79 74 68  6f 6e 0a 3e 3e 3e 20 70  |.```python.>>> p|
+00000010  72 69 6e 74 28 22 09 3c  2d 74 68 69 73 20 69 73  |rint(".<-this is|
+00000020  20 61 20 74 61 62 22 29  20 20 20 20 20 20 20 23  | a tab")       #|
+00000030  20 62 79 65 78 61 6d 70  6c 65 3a 20 2b 74 65 72  | byexample: +ter|
+00000040  6d 3d 61 73 2d 69 73 0a  09 3c 2d 74 68 69 73 20  |m=as-is..<-this |
+00000050  69 73 20 61 20 74 61 62  0a 60 60 60 0a           |is a tab.```.|
+0000005d
+```
+
+Since `11.0.0`, `byexample` will emit a warning telling you that the
+code in the example has a tab.
+
+```shell
+$ byexample -l python test/ds/example-with-tabs-in-code.md
+[w] The source code has a tab character that may interfere with the interpreter/runner.
+You can remove the tab or disable this warning with '-warn-tab'.
+<...>
+    print("     <-this is a tab")       # byexample: +term=as-is
+<...>
+```
+
+If you are sure that you want a tab in the code you can disable the
+warning adding `-warn-tab` in the example or from the command line:
+
+```shell
+$ byexample -l python -o '+ -warn-tab' test/ds/example-with-tabs-in-code.md
+<...>
+File test/ds/example-with-tabs-in-code.md, <...>
+[PASS] Pass: 1 Fail: 0 Skip: 0
+```
+
