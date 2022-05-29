@@ -11,6 +11,63 @@ from .prof import profile
 '''
 
 
+def _byexample_location():
+    ''' Return the location of the current file (cmdline.py)
+        and the paths of the python package for byexample.
+
+        The paths are joined with ; so the paths and the location
+        are string, returned in a dictionary.
+    '''
+    import byexample
+    try:
+        paths = '; '.join(byexample.__path__)
+    except:
+        paths = 'paths are unknown'
+
+    try:
+        loc = os.path.dirname(byexample.__file__)
+    except:
+        loc = 'could not be found'
+
+    return dict(paths=paths, loc=loc)
+
+
+def _byexample_dependencies():
+    ''' Return a single string of the dependencies and its versions
+        joined with a comma.
+
+        If a dependency cannot be loaded, assume that it is not installed
+        (aka, not found). If the version cannot be determined, set it
+        to unknown.
+
+    '''
+    import importlib
+    tmp = []
+    for dependency in (
+        'appdirs',
+        'bracex',
+        'pexpect',
+        'pygments',
+        'pyte',
+        'tqdm',
+    ):
+
+        try:
+            mod = importlib.import_module(dependency)
+        except ImportError:
+            msg = f'{dependency} (not found)'
+        else:
+            try:
+                ver = mod.__version__
+                msg = f'{dependency} ({ver})'
+            except AttributeError:
+                msg = f'{dependency} (unknown)'
+
+        tmp.append(msg)
+
+    return ', '.join(tmp)
+
+
 class _CSV(argparse.Action):
     r'''Transform an argument of the form 'a,b' into a list
         of arguments [a, b]
@@ -492,7 +549,8 @@ def parse_args(args=None):
         nargs=0,
         action=_Print,
         message='{prog} {version} (Python {python_version}) - {license}\n\n{doc}'
-        '\n\n{license_disclaimer}'.format(
+        '\n\n{license_disclaimer}\nLocation: {loc}\nPackage paths: {paths}\nDependencies: {deps}\n'
+        .format(
             prog=parser.prog,
             doc=__doc__,
             version=__version__,
@@ -500,7 +558,9 @@ def parse_args(args=None):
             license=_license,
             license_disclaimer=_license_disclaimer.format(
                 author=_author, url=_url
-            )
+            ),
+            deps=_byexample_dependencies(),
+            **_byexample_location(),
         ),
         help='show %(prog)s\'s version and license, then exit'
     )

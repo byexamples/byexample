@@ -38,6 +38,7 @@ exec(open(path.join(here, 'byexample', '__init__.py')).read())
 
 # the following are the required dependencies
 # without them, we cannot run byexample
+# NOTE: keep this list in sync with byexample/cmdline.py
 required_deps=[
     'pexpect>=4,<5',     # pexpect 4.x.x required
     'appdirs>=1.4.3,<2', # appdirs 1.4.x (x >= 3) required
@@ -48,6 +49,7 @@ required_deps=[
 # these, on the other hand, are optional nice to have
 # dependencies. we'll install them by default but if they
 # are not present, byexample will run normally.
+# NOTE: keep this list in sync with byexample/cmdline.py
 nice_to_have_deps=[
     'tqdm>=4,<5',     # tqdm 4.x.x required
     'pygments>=2,<3', # pygments 2.x.x required
