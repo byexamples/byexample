@@ -373,6 +373,16 @@ class ByexampleArgumentParser(argparse.ArgumentParser):
 
         return [arg_line]
 
+    def error(self, msg):
+        if '/--options:' in msg:
+            msg += "\nIf you wrote --options -foo, try put an equal like --options=-foo"
+            msg += "\nand use quotes if you want to set multiples options like --options='-foo +bar'"
+
+        # note: this self.error method must never return: or
+        # we exit the program, or we raise an exception or we
+        # call our parent's error method that will not return.
+        argparse.ArgumentParser.error(self, msg)
+
 
 @profile
 def parse_args(args=None):

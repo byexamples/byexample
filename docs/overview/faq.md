@@ -367,9 +367,48 @@ If you are sure that you want a tab in the code you can disable the
 warning adding `-warn-tab` in the example or from the command line:
 
 ```shell
-$ byexample -l python -o '+ -warn-tab' test/ds/example-with-tabs-in-code.md
+$ byexample -l python -o=-warn-tab test/ds/example-with-tabs-in-code.md
 <...>
 File test/ds/example-with-tabs-in-code.md, <...>
 [PASS] Pass: 1 Fail: 0 Skip: 0
 ```
 
+### `byexample` fails with `argument -o/--options: expected one argument`
+
+The `-o` or `--options` expects a single argument, a string with the
+[options to set](/{{ site.uprefix }}/basic/options).
+
+You may forgot to pass it.
+
+But probably is not the case, isn't? You may be passing an argument
+like:
+
+```shell
+$ byexample -l python -o -warn-tab test/ds/example-with-tabs-in-code.md
+<...>
+byexample: error: argument -o/--options: expected one argument
+If you wrote --options -foo, try put an equal like --options=-foo
+and use quotes if you want to set multiples options like --options='-foo +bar'
+```
+
+The error is because `byexample` presumes that `-warn-tab` is another
+command line flag like `-l` and `-o` and not the argument for `-o`.
+
+As the error message suggests you can workaround this *joining* `-o`
+with its argument with an `=`:
+
+```shell
+$ byexample -l python -o=-warn-tab test/ds/example-with-tabs-in-code.md
+<...>
+File test/ds/example-with-tabs-in-code.md, <...>
+[PASS] Pass: 1 Fail: 0 Skip: 0
+```
+
+If you need to pass multiple options to `-o` you can quote them together:
+
+```shell
+$ byexample -l python -o='-warn-tab +norm-ws' test/ds/example-with-tabs-in-code.md
+<...>
+File test/ds/example-with-tabs-in-code.md, <...>
+[PASS] Pass: 1 Fail: 0 Skip: 0
+```
