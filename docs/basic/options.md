@@ -31,6 +31,39 @@ File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
 [PASS] Pass: 4 Fail: 0 Skip: 0
 ```
 
+If the option begins with `-`, `byexample` may get confuse and it will
+complain that no argument was given to `--options`:
+
+```shell
+$ byexample -l python -o -warn-tab test/ds/example-with-tabs-in-code.md
+<...>
+byexample: error: argument -o/--options: expected one argument
+If you wrote --options -foo, try put an equal like --options=-foo
+and use quotes if you want to set multiples options like --options='-foo +bar'
+```
+
+The error is because `byexample` presumes that `-warn-tab` is another
+command line flag like `-l` and `-o` and not the argument for `-o`.
+
+As the error message suggests you can workaround this *joining* `-o`
+with its argument with an `=`:
+
+```shell
+$ byexample -l python -o=-warn-tab test/ds/example-with-tabs-in-code.md
+<...>
+File test/ds/example-with-tabs-in-code.md, <...>
+[PASS] Pass: 1 Fail: 0 Skip: 0
+```
+
+If you need to pass multiple options to `-o` you can quote them together:
+
+```shell
+$ byexample -l python -o='-warn-tab +norm-ws' test/ds/example-with-tabs-in-code.md
+<...>
+File test/ds/example-with-tabs-in-code.md, <...>
+[PASS] Pass: 1 Fail: 0 Skip: 0
+```
+
 ## Show all the options
 
 You can know what options are available for a given language running the help
