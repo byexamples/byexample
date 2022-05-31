@@ -158,3 +158,27 @@ proving that calling code in background is possible.
 $ byexample -m test/ds/submod -l python -q test/ds/one.md
 ---> 42 bg
 ```
+
+## License, dependencies' versions and `byexample` package location
+
+```shell
+$ byexample -V                                  # byexample: +norm-ws
+byexample <...> (Python <...>) - GNU GPLv3
+Write snippets of code in C++, Python, Ruby, and others as documentation
+and execute them as regression tests.
+Copyright (C) Di Paola Martin - https://byexamples.github.io
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+Location: /<...>/byexample
+Package paths: /<...>/byexample
+Dependencies: appdirs (<...>), bracex (<...>), pexpect (<...>),
+pygments (<...>), pyte (<...>), tqdm (<...>)
+```
