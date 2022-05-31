@@ -166,7 +166,7 @@ has some ellipsis.
 The following is what `doctest` outputs. Can you spot where is the difference?
 
 ```shell
-$ python -m doctest -o REPORT_NDIFF  test/ds/doctest-hard-diff.md	# byexample: +tags
+$ python -m doctest -o REPORT_NDIFF  test/ds/doctest-hard-diff.md       # byexample: +tags
 <...>
 Differences (ndiff with -expected +actual):
     - {'debugger-id': ...
