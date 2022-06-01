@@ -39,7 +39,7 @@ and the underlying runner or interpreter:
 
 | Language   | Runner/Interpreter   |
 |------------|----------------------|
-| latest     | (in review)          |
+| latest     | 0.1.3                |
 
 <!-- matrix CI end -->
 

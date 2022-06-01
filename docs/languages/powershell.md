@@ -45,7 +45,7 @@ and the underlying runner or interpreter:
 
 | Language   | Runner/Interpreter   |
 |------------|----------------------|
-| latest     | 7.2.1                |
+| latest     | 7.2.3                |
 
 <!-- matrix CI end -->
 
