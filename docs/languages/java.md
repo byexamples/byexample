@@ -24,9 +24,9 @@ and the underlying runner or interpreter:
 
 | Language   | Runner/Interpreter   |
 |------------|----------------------|
-| 11         | 11.0.14              |
-| 13         | 13.0.10              |
-| 15         | 15.0.6               |
+| 11         | 11.0.15              |
+| 13         | 13.0.11              |
+| 15         | 15.0.7               |
 
 <!-- matrix CI end -->
 

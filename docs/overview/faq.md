@@ -37,6 +37,10 @@ Line1
 Line3
 ```
 
+And instead of typing `+rm= ` on each example, you can write it once in
+the command line with [--options](/{{ site.uprefix }}/basic/options).
+
+
 ### How to ignore the tag ``<xxx>``?
 
 If the output of your example has the literal ``<xxx>`` and you want

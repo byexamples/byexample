@@ -23,10 +23,10 @@ and the underlying runner or interpreter:
 | Language   | Runner/Interpreter   |
 |------------|----------------------|
 | 10.x       | 10.24.1              |
-| 12.x       | 12.22.10             |
-| 14.x       | 14.19.0              |
+| 12.x       | 12.22.12             |
+| 14.x       | 14.19.2              |
 | 15.x       | 15.14.0              |
-| 16.x       | 16.14.0              |
+| 16.x       | 16.15.0              |
 
 <!-- matrix CI end -->
 
