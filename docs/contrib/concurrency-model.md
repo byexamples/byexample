@@ -187,6 +187,66 @@ The standard [byexample/modules/progress.py](https://github.com/byexamples/byexa
 is also an example of this: there the `Concern` uses a `RLock` to
 synchronize the access to the standard output.
 
+## Private data (per worker) with `sharer`
+
+Above we explained how to use the `sharer` to create shared data structures
+so the workers can communicate each other.
+
+This is the most flexible scenario where you have a N-to-N communicate
+but at the same time requires synchronization with a shared lock and
+this tend to be quite slow.
+
+But if you are in a situation where each worker can live with a *private copy*
+without sharing it with any other worker, you can avoid the lock.
+
+```python
+>>> def __init__(self, sharer, ns, job_number, **kargs):
+...     Concern.__init__(self, sharer=sharer, ns=ns, job_number=job_number, **kargs)
+...
+...     if sharer is not None:
+...         # we are in the main thread, we can use the sharer
+...         # and we can **store** things in the namespace
+...         ns.some_data_for_the_workers = sharer.dict({'foo': 'bar'})
+...
+...     else:
+...         # keep a private copy of the shared dictionary for ourselves
+...         # (the worker). Because we will use a copy we don't need
+...         # to use a shared lock as there is no possibility of race
+...         # condition
+...         self.my_private_data = dict(ns.some_data_for_the_workers)
+```
+
+In this way the main thread can send data to its workers in *one-way*.
+Don't forget to do the copy there!
+
+## Undefined behavior for non-shared data (not using `sharer`)
+
+Setting an arbitrary mutable object in `ns` will lead to unexpected and
+undefined behavior (read "I don't know what will happen").
+
+```python
+>>> def __init__(self, sharer, ns, job_number, **kargs):
+...     Concern.__init__(self, sharer=sharer, ns=ns, job_number=job_number, **kargs)
+...
+...     if sharer is not None:
+...         # do *not* do this:
+...         ns.raw_object = dict()
+...
+...         # this is *ok* because these are immutable pickle-able objects
+...         ns.just_an_int = 42
+...         ns.immutable_stuff = frozenset({1, 2, 3})
+```
+
+The problem is that `byexample` can share only very specific kind of
+objects among the workers and a plain `dict` or `list` may not work
+as expected.
+
+Use always `sharer.dict()` and `sharer.list()` to share data (and
+`sharer.RLock()` to synchronize them).
+
+For the case of immutable/frozen (with pickle support), `byexample`
+supports them out of the box so it is okay to use them.
+
 ## Multiprocessing model
 
 `byexample 10.0.0` not longer support *"officially"* the
