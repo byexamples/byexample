@@ -495,6 +495,7 @@ def get_options(args, cfg):
             'shebangs': args.shebangs,
             'difftool': args.difftool,
             'captured_env_vars': args.captured_env_vars,
+            'language_specific_defaults': {}
         }
     )
     clog().chat("Options (cmdline): %s", options)
@@ -607,20 +608,40 @@ def extend_options_with_language_specific(cfg):
         if p.language in allowed_languages
     ]
 
-    # update the defaults for all the parsers
+    defaults_by_lang = cfg['options']['language_specific_defaults']
     for parser in parsers:
         with enhance_exceptions(
             'Extending the options', parser, cfg['use_colors']
         ):
+            # get from the parser a set of default options
             parser_optparser = parser.get_extended_option_parser(
                 parent_parser=None
             )
-            cfg['options'].update(parser_optparser.defaults())
+            defaults = parser_optparser.defaults()
 
-    # update again but with the options that *may* had set in the command line
-    for parser in parsers:
-        opts = parser.extract_cmdline_options(cfg['opts_from_cmdline'])
-        cfg['options'].update(opts)
+            # let each language-specific parser to parse the options from
+            # the command line.
+            with cfg['options'].with_top(defaults):
+                opts = parser.extract_cmdline_options(cfg['opts_from_cmdline'])
+
+            # we do not update cfg['options'] here anymore
+            # as we want to isolation parser's options from affecting
+            # byexample and other parsers/runners.
+            #
+            # cfg['options'].update(....)  <- not more
+
+            # instead we should keep private each lang-specific option
+            # Note: the parser may decide on extract_cmdline_options() to
+            # change cfg['options'] as it has access to it via parser.options.
+            # We leave this option in case that the parser really needs
+            # to modify some of the main/byexample's options
+            defaults.update(opts)
+            if parser.language not in defaults_by_lang:
+                # ensure we are dealing with plain dicts as we don't
+                # need multiple layers of language-specific defaults
+                defaults_by_lang[parser.language] = dict(defaults)
+            else:
+                defaults_by_lang[parser.language].update(defaults)
 
     clog().chat(
         "Options (cmdline + --options + language specific): %s", cfg['options']
