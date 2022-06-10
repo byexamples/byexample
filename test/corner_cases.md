@@ -182,3 +182,21 @@ Package paths: /<...>/byexample
 Dependencies: appdirs (<...>), bracex (<...>), pexpect (<...>),
 pygments (<...>), pyte (<...>), tqdm (<...>)
 ```
+
+## Doctest interference (language specific options isolation)
+
+In the past setting `+py-doctest` modified how other non-python
+languages worked. This should not happen again.
+See [issue 203](https://github.com/byexamples/byexample/issues/203).
+
+```shell
+$ byexample -l python,shell test/ds/dual.md
+<...>
+File test/ds/dual.md, 3/3 test ran in <...> seconds
+[PASS] Pass: 3 Fail: 0 Skip: 0
+
+$ byexample -l python,shell -o +py-doctest  test/ds/dual.md
+<...>
+File test/ds/dual.md, 3/3 test ran in <...> seconds
+[PASS] Pass: 3 Fail: 0 Skip: 0
+```

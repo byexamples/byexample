@@ -256,7 +256,7 @@ define a ``language`` attribute and implement the missing methods:
 ```python
 >>> from byexample.parser import ExampleParser
 >>> class ArnoldCParser(ExampleParser):
-...     language = 'python'
+...     language = 'arnold'
 ...
 ...     def example_options_string_regex(self):
 ...         global opts_string_re
@@ -341,6 +341,33 @@ because ``GDB`` doesn't support them.
 Other useful example is ``PythonParser`` [byexample/modules/python.py](https://github.com/byexamples/byexample/tree/master/byexample/modules/python.py)
 It modifies heavily the expected string to support a compatibility mode with ``doctest``.
 
+#### TL;DR - Options from the command line and from the examples
+
+`byexample` allow the user to pass options from the command line via
+`-o`. These options are the same that you can set on each example but
+they affect to the whole execution.
+
+Following our `+awesome` example we could call `byexample` like:
+
+```shell
+$ byexample -l arnold -o=+awesome somefile.md       # byexample: +skip
+```
+
+Parsing the options from the command line is done by
+`ExampleParser.extract_cmdline_options` while the parsing from each
+example is done by `ExampleParser.extract_options`.
+
+In general you don't need to worry about those two: `byexample`
+uses the your option parser provided by `extend_option_parser`
+in a reasonable manner.
+
+Only if you want to do something more sophisticated you may want to
+override those two methods. Just remember to call the parent method
+and keep in mind that while the parsing of the options from the command
+line happens in the `main` thread, the rest of the parsing happens on
+each `worker` (this is relevant only if you need to *share* information between
+them, in which case you need to [share data safety](/{{ site.uprefix }}/contrib/concurrency-model).)
+
 ### The Runner class
 
 The Runner is who will execute the code.
@@ -374,7 +401,7 @@ Now we ensemble the ``ExampleRunner`` subclass
 ```python
 >>> from byexample.runner import ExampleRunner
 >>> class ArnoldCRunner(ExampleRunner):
-...     language = 'python'
+...     language = 'arnold'
 ...
 ...     def run(self, example, options):
 ...         return toy_arnoldc_interpreter(example.source)

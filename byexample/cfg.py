@@ -180,14 +180,17 @@ class Config(collections.abc.Mapping):
         return new
 
 
-def _dummy_cfg():
+def _dummy_cfg(languages=['python']):
     from .options import Options
     return Config(
-        allowed_languages=frozenset(),
+        allowed_languages=frozenset(languages),
         verbosity=0,
         use_colors=0,
         encoding='utf-8',
-        options=Options(),
+        options=Options(
+            dict(language_specific_defaults={l: dict()
+                                             for l in languages}, )
+        ),
         registry={
             k: {}
             for k in 'parsers finders runners zdelimiters'.split()

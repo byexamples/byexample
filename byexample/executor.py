@@ -61,7 +61,7 @@ r'''
 ...         if self.bug_in == 'reset':
 ...             raise Exception("Faked on %s of %s" % (self.bug_in, self.name))
 
->>> fexec = FileExecutor(None, None, _dummy_cfg())
+>>> fexec = FileExecutor(None, None, _dummy_cfg(["buggy1", "buggy2", "not-buggy1"]))
 
 FileExecutor will initialize the runners in order, stopping on the
 first failure and shutting down any previous initialized runner (if any).
@@ -71,7 +71,7 @@ runner will fail in the 'initialize' phase.
 
 >>> runners = [Buggy("buggy1", "initialize"), Buggy("not-buggy1", "never")]
 
->>> fexec.initialize_runners(runners, None)
+>>> fexec.initialize_runners(runners)
 initialize() buggy1
 [w] Initialization of Buggy1 Runner failed.
 Traceback (most recent call last):
@@ -82,7 +82,7 @@ But if we change the order, initialize() of 'not-buggy1' is called
 but on the failure of 'buggy1', the shutdown() is called too.
 
 >>> runners = [Buggy("not-buggy1", "never"), Buggy("buggy1", "initialize")]
->>> fexec.initialize_runners(runners, None)
+>>> fexec.initialize_runners(runners)
 initialize() not-buggy1
 initialize() buggy1
 shutdown() not-buggy1
@@ -99,7 +99,7 @@ Note the order of the calls to shutdown(): the reverse order of the calls
 to initialize() (like a stack).
 
 >>> runners = [Buggy("not-buggy1", "never"), Buggy("buggy2", "shutdown"), Buggy("buggy1", "initialize")]
->>> fexec.initialize_runners(runners, None)
+>>> fexec.initialize_runners(runners)
 initialize() not-buggy1
 initialize() buggy2
 initialize() buggy1
@@ -116,7 +116,7 @@ receives the list of runners and it is caller's responsibility (us) to
 pass a reversed list to have the same stack-like de-initialization order.
 
 >>> runners = [Buggy("not-buggy1", "never"), Buggy("buggy1", "shutdown"), Buggy("buggy2", "shutdown")]
->>> fexec.initialize_runners(runners, None)
+>>> fexec.initialize_runners(runners)
 initialize() not-buggy1
 initialize() buggy1
 initialize() buggy2
@@ -166,13 +166,37 @@ class FileExecutor(object):
             if should_raise:
                 raise
 
+    def with_lang_specific_defaults(self, obj):
+        ''' Return a context manager to put on top the language-specific
+            options of the object's language.
+
+            The object can be a Runner or an Example.
+
+            Use this to enforce the set of language-specific default
+            options before override them with example's options (if such)
+            during different stages on FileExecutor journey.
+        '''
+        try:
+            # aka, obj is a Runner
+            lang = obj.language
+        except AttributeError:
+            # aka, obj is an Example
+            lang = obj.runner.language
+
+        # TODO is guaranteed to always have a defaults (empty or not)
+        # for the given lang? aka could the lookup of 'lang' fail?
+        defaults = self.options['language_specific_defaults'][lang]
+        return self.options.with_top(defaults)
+
     @profile
-    def initialize_runners(self, runners, options):
+    def initialize_runners(self, runners):
         # in case of an error, these are the runners initialized so far
         # that we must shutdown
         so_far = []
         for runner in runners:
-            with log_with(runner.language) as log:
+            with self.with_lang_specific_defaults(runner), log_with(
+                runner.language
+            ) as log:
                 if runner in self.still_alive_runners:
                     log.info("Reusing %s", str(runner))
                     so_far.append(runner)
@@ -185,7 +209,7 @@ class FileExecutor(object):
                     log=log,
                     err_args=("Initialization of %s failed.", str(runner))
                 ):
-                    runner.initialize(options)
+                    runner.initialize(self.options)
                     self.still_alive_runners.add(runner)
                     so_far.append(runner)
 
@@ -203,7 +227,9 @@ class FileExecutor(object):
         # in case of an error, these are the runners that we must shutdown
         left = list(runners)
         for runner in runners:
-            with log_with(runner.language) as log:
+            with self.with_lang_specific_defaults(runner), log_with(
+                runner.language
+            ) as log:
                 assert runner in self.still_alive_runners
                 if not force_shutdown:
                     with self.on_failure_shutdown_runners(
@@ -256,6 +282,7 @@ class FileExecutor(object):
         clog().info('File %s, %i examples.', filepath, len(examples))
         for example in examples:
             with enhance_exceptions(example, example.parser, self.use_colors), \
+                self.with_lang_specific_defaults(example), \
                 log_with(example.runner.language):
                 # build but ignore any output; even do not use the concerns
                 example.parse_yourself(concerns=None)
@@ -264,14 +291,13 @@ class FileExecutor(object):
 
     @log_context('byexample.exec')
     def execute(self, examples, filepath):
-        options = self.options
         runners = list(set(e.runner for e in examples))
 
-        self.initialize_runners(runners, options)
+        self.initialize_runners(runners)
         try:
-            self.concerns.start(examples, runners, filepath, options)
+            self.concerns.start(examples, runners, filepath, self.options)
             failed, user_aborted, crashed, broken, timedout = self._exec(
-                examples, filepath, options, runners
+                examples, filepath, runners
             )
             self.concerns.finish(
                 failed, user_aborted, crashed, broken, timedout
@@ -282,7 +308,8 @@ class FileExecutor(object):
         return failed, (crashed or broken or timedout), user_aborted, False
 
     @profile
-    def _exec(self, examples, filepath, options, runners):
+    def _exec(self, examples, filepath, runners):
+        options = self.options
         failing_fast = False
         failed = False
         user_aborted = False
@@ -291,14 +318,16 @@ class FileExecutor(object):
         broken = False
         for example in examples:
             try:
-                with log_with(example.runner.language):
-                    example = self._parse(example, options)
+                with self.with_lang_specific_defaults(example), \
+                        log_with(example.runner.language):
+                    example = self._parse(example)
 
                     if example == None:
                         broken = True
                         break  # cancel if an example couldn't get parsed
 
                 with enhance_exceptions(example, self, self.use_colors), \
+                     self.with_lang_specific_defaults(example), \
                      log_with(example.runner.language), \
                      profile_ctx("inner"):
                     # are we in failing fast mode? if we do, skip all the
@@ -426,7 +455,8 @@ class FileExecutor(object):
         return failed, user_aborted, crashed, broken, timedout
 
     @profile
-    def _parse(self, example, options):
+    def _parse(self, example):
+        options = self.options
         try:
             with enhance_exceptions(example, example.parser, self.use_colors):
                 self.concerns.start_parse(example, options)

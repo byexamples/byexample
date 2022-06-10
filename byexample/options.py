@@ -71,6 +71,16 @@ class Options(collections.abc.MutableMapping):
         >>> 'bar' in opt
         False
 
+    Options.with_top works as a context manager doing an 'up' when entering
+    into the context and a 'down' when exiting.
+
+        >>> with opt.with_top({'bar': 1024}):
+        ...     print("In context:", opt['bar'])
+        In context: 1024
+
+        >>> 'bar' in opt
+        False
+
     Multiple levels are allowed
 
         >>> opt = Options({'foo': 1})
@@ -206,6 +216,9 @@ class Options(collections.abc.MutableMapping):
 
         self.lower_levels_cached = None if len(self.stack) > 1 else {}
 
+    def with_top(self, other_mapping=None):
+        return _OptionsContext(self, other_mapping)
+
     def mask_default(self, val):
         self.default_values.append(val)
 
@@ -274,6 +287,19 @@ class Options(collections.abc.MutableMapping):
 
         clone.default_values = list(self.default_values)
         return clone
+
+
+class _OptionsContext:
+    def __init__(self, opts, other_mapping):
+        self.opts = opts
+        self.other_mapping = other_mapping
+
+    def __enter__(self):
+        self.opts.up(self.other_mapping)
+        return self.opts
+
+    def __exit__(self, *args):
+        self.opts.down()
 
 
 class UnrecognizedOption(Exception):
