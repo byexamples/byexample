@@ -71,7 +71,7 @@ runner will fail in the 'initialize' phase.
 
 >>> runners = [Buggy("buggy1", "initialize"), Buggy("not-buggy1", "never")]
 
->>> fexec.initialize_runners(runners, None)
+>>> fexec.initialize_runners(runners)
 initialize() buggy1
 [w] Initialization of Buggy1 Runner failed.
 Traceback (most recent call last):
@@ -82,7 +82,7 @@ But if we change the order, initialize() of 'not-buggy1' is called
 but on the failure of 'buggy1', the shutdown() is called too.
 
 >>> runners = [Buggy("not-buggy1", "never"), Buggy("buggy1", "initialize")]
->>> fexec.initialize_runners(runners, None)
+>>> fexec.initialize_runners(runners)
 initialize() not-buggy1
 initialize() buggy1
 shutdown() not-buggy1
@@ -99,7 +99,7 @@ Note the order of the calls to shutdown(): the reverse order of the calls
 to initialize() (like a stack).
 
 >>> runners = [Buggy("not-buggy1", "never"), Buggy("buggy2", "shutdown"), Buggy("buggy1", "initialize")]
->>> fexec.initialize_runners(runners, None)
+>>> fexec.initialize_runners(runners)
 initialize() not-buggy1
 initialize() buggy2
 initialize() buggy1
@@ -116,7 +116,7 @@ receives the list of runners and it is caller's responsibility (us) to
 pass a reversed list to have the same stack-like de-initialization order.
 
 >>> runners = [Buggy("not-buggy1", "never"), Buggy("buggy1", "shutdown"), Buggy("buggy2", "shutdown")]
->>> fexec.initialize_runners(runners, None)
+>>> fexec.initialize_runners(runners)
 initialize() not-buggy1
 initialize() buggy1
 initialize() buggy2
@@ -167,7 +167,7 @@ class FileExecutor(object):
                 raise
 
     @profile
-    def initialize_runners(self, runners, options):
+    def initialize_runners(self, runners):
         # in case of an error, these are the runners initialized so far
         # that we must shutdown
         so_far = []
@@ -185,7 +185,7 @@ class FileExecutor(object):
                     log=log,
                     err_args=("Initialization of %s failed.", str(runner))
                 ):
-                    runner.initialize(options)
+                    runner.initialize(self.options)
                     self.still_alive_runners.add(runner)
                     so_far.append(runner)
 
@@ -264,14 +264,13 @@ class FileExecutor(object):
 
     @log_context('byexample.exec')
     def execute(self, examples, filepath):
-        options = self.options
         runners = list(set(e.runner for e in examples))
 
-        self.initialize_runners(runners, options)
+        self.initialize_runners(runners)
         try:
-            self.concerns.start(examples, runners, filepath, options)
+            self.concerns.start(examples, runners, filepath, self.options)
             failed, user_aborted, crashed, broken, timedout = self._exec(
-                examples, filepath, options, runners
+                examples, filepath, runners
             )
             self.concerns.finish(
                 failed, user_aborted, crashed, broken, timedout
@@ -282,7 +281,8 @@ class FileExecutor(object):
         return failed, (crashed or broken or timedout), user_aborted, False
 
     @profile
-    def _exec(self, examples, filepath, options, runners):
+    def _exec(self, examples, filepath, runners):
+        options = self.options
         failing_fast = False
         failed = False
         user_aborted = False
@@ -292,7 +292,7 @@ class FileExecutor(object):
         for example in examples:
             try:
                 with log_with(example.runner.language):
-                    example = self._parse(example, options)
+                    example = self._parse(example)
 
                     if example == None:
                         broken = True
@@ -426,7 +426,8 @@ class FileExecutor(object):
         return failed, user_aborted, crashed, broken, timedout
 
     @profile
-    def _parse(self, example, options):
+    def _parse(self, example):
+        options = self.options
         try:
             with enhance_exceptions(example, example.parser, self.use_colors):
                 self.concerns.start_parse(example, options)
