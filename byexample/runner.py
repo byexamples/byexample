@@ -432,6 +432,17 @@ class PexpectMixin(object):
                 who
             )
 
+    def _may_turn_echo_off(self, options):
+        # If the echo-filtering is enabled, we must not turn off the echo
+        # of the child process (interpreter) otherwise, if the child
+        # really does not output the echo'd input, the echo-filtering
+        # algorithm will fail badly because no echo will be found.
+        if options['force_echo_filtering']:
+            return
+
+        if options['x']['turn_echo_off']:
+            self._interpreter.setecho(False)
+
     @profile
     def _exec_and_wait(self, source, options, *, from_example=None, **kargs):
         if from_example is None:
@@ -443,6 +454,9 @@ class PexpectMixin(object):
 
         # get a copy: _expect_prompt_or_type will modify this in-place
         input_list = list(input_list)
+
+        # turn the echo off (may be)
+        self._may_turn_echo_off(options)
 
         countdown = Countdown(timeout)
         lines = source.split('\n')
