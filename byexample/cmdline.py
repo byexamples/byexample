@@ -148,6 +148,18 @@ def _show_failures_type(item):
     return failures_num
 
 
+def _true_false_type(answer):
+    answer = str(answer).lower()
+    if answer in {'yes', 'true', '1', 'y'}:
+        return True
+    elif answer in {'no', 'false', '0', 'n'}:
+        return False
+    else:
+        raise argparse.ArgumentTypeError(
+            "Invalid answer '%s'. Expected 'yes' or 'no'." % answer
+        )
+
+
 class HelpExtraFormatter(argparse.HelpFormatter):
     __hide = True
     EPILOG = "==EPILOG=="
@@ -647,8 +659,9 @@ def parse_args(args=None):
     )
     g.add_argument(
         "-x-turn-echo-off",
-        action='store_true',
+        action='store',
         default=False,
+        type=_true_false_type,
         help=
         "turn off the echo on each example execution (ignored if force-echo-filtering is on); (default: %(default)s)."
     )
