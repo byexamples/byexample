@@ -521,6 +521,13 @@ def parse_args(args=None):
         "delay in seconds after the prompt to capture more output; 0 disable this (default)."
     )
     g.add_argument(
+        "-x-turn-echo-off",
+        action='store_true',
+        default=False,
+        help=
+        "turn off the echo on each example execution (ignored if force-echo-filtering is on); (default: %(default)s)."
+    )
+    g.add_argument(
         "-x-min-rcount",
         metavar="<n>",
         default=16,
