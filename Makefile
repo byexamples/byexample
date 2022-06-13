@@ -94,7 +94,7 @@ modules-test: clean_test
 
 docs-test: clean_test
 	@$(python_bin) -W error  test/r.py @test/minimum.env -- *.md
-	@$(python_bin) -W error  test/r.py @test/minimum.env -x-turn-echo-off yes --skip docs/advanced/echo-filtering.md docs/recipes/python-doctest.md -- `find docs \( -name languages -prune -o  -name "*.md" \) -type f`
+	@$(python_bin) -W error  test/r.py @test/minimum.env --skip docs/advanced/echo-filtering.md docs/recipes/python-doctest.md -- `find docs \( -name languages -prune -o  -name "*.md" \) -type f`
 	@$(python_bin) -W error  test/r.py @test/minimum.env -x-turn-echo-off no docs/advanced/echo-filtering.md
 	@$(python_bin) -W error  test/r.py @test/minimum.env -o '+py-doctest' docs/recipes/python-doctest.md
 	@$(python_bin) -m doctest docs/recipes/python-doctest.md

@@ -660,10 +660,18 @@ def parse_args(args=None):
     g.add_argument(
         "-x-turn-echo-off",
         action='store',
-        default=False,
+        default=True,
         type=_true_false_type,
         help=
-        "turn off the echo on each example execution (ignored if force-echo-filtering is on); (default: %(default)s)."
+        "turn off the echo on each example execution (if force-echo-filtering is on, the turn-echo-off has no effect); (default: %(default)s)."
+    )
+    g.add_argument(
+        "-x-turn-echo-off-on-spawn",
+        action='store',
+        default=True,
+        type=_true_false_type,
+        help=
+        "turn off the echo on runner spawn (not affected by force-echo-filtering); (default: %(default)s)."
     )
     g.add_argument(
         "-x-min-rcount",

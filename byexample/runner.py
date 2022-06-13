@@ -294,6 +294,9 @@ class PexpectMixin(object):
         self._drop_output()  # there shouldn't be any output yet but...
         self._cmd = cmd
 
+        # True means "echo on"; False means "echo off"
+        echo = not options['x']['turn_echo_off_on_spawn']
+
         clog().info("Spawn command line: %s", cmd)
         if clog().isEnabledFor(INFO):
             v = self.get_version(options)
@@ -305,7 +308,7 @@ class PexpectMixin(object):
         try:
             self._interpreter = spawner(
                 cmd,
-                echo=False,
+                echo=echo,
                 encoding=self.cfg.encoding,
                 dimensions=(rows, cols),
                 codec_errors=self.cfg.enc_error_handler,
