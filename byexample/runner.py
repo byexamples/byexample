@@ -165,7 +165,7 @@ class PopenSpawnExt(pexpect.popen_spawn.PopenSpawn):
         to work more similar to pexpect's spawn class.
     '''
     def __init__(self, cmd, **kargs):
-        kargs.pop('echo')
+        self._echo = kargs.pop('echo')
         kargs.pop('dimensions')
 
         self.delayafterclose = 0.1
@@ -176,6 +176,18 @@ class PopenSpawnExt(pexpect.popen_spawn.PopenSpawn):
 
     def isalive(self):
         return bool(self.proc.poll())
+
+    # PopenSpawnExt does not really use or has the concept of "echo"
+    # bu we fake it to have a more compatible API with Pexpect.Spawn
+    def setecho(self, state):
+        assert isinstance(state, bool)
+        self._echo = state
+
+    def getecho(self):
+        return self._echo
+
+    def waitnoecho(self):
+        return
 
     def sendcontrol(self, control):
         if control == 'c':
@@ -294,6 +306,9 @@ class PexpectMixin(object):
         self._drop_output()  # there shouldn't be any output yet but...
         self._cmd = cmd
 
+        # True means "echo on"; False means "echo off"
+        echo = not options['x']['turn_echo_off_on_spawn']
+
         clog().info("Spawn command line: %s", cmd)
         if clog().isEnabledFor(INFO):
             v = self.get_version(options)
@@ -305,7 +320,7 @@ class PexpectMixin(object):
         try:
             self._interpreter = spawner(
                 cmd,
-                echo=False,
+                echo=echo,
                 encoding=self.cfg.encoding,
                 dimensions=(rows, cols),
                 codec_errors=self.cfg.enc_error_handler,
@@ -440,6 +455,17 @@ class PexpectMixin(object):
                 who
             )
 
+    def _may_turn_echo_off(self, options):
+        # If the echo-filtering is enabled, we must not turn off the echo
+        # of the child process (interpreter) otherwise, if the child
+        # really does not output the echo'd input, the echo-filtering
+        # algorithm will fail badly because no echo will be found.
+        if options['force_echo_filtering']:
+            return
+
+        if options['x']['turn_echo_off']:
+            self._interpreter.setecho(False)
+
     @profile
     def _exec_and_wait(self, source, options, *, from_example=None, **kargs):
         if from_example is None:
@@ -451,6 +477,9 @@ class PexpectMixin(object):
 
         # get a copy: _expect_prompt_or_type will modify this in-place
         input_list = list(input_list)
+
+        # turn the echo off (may be)
+        self._may_turn_echo_off(options)
 
         countdown = Countdown(timeout)
         lines = source.split('\n')

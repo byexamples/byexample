@@ -148,6 +148,18 @@ def _show_failures_type(item):
     return failures_num
 
 
+def _true_false_type(answer):
+    answer = str(answer).lower()
+    if answer in {'yes', 'true', '1', 'y'}:
+        return True
+    elif answer in {'no', 'false', '0', 'n'}:
+        return False
+    else:
+        raise argparse.ArgumentTypeError(
+            "Invalid answer '%s'. Expected 'yes' or 'no'." % answer
+        )
+
+
 class HelpExtraFormatter(argparse.HelpFormatter):
     __hide = True
     EPILOG = "==EPILOG=="
@@ -644,6 +656,22 @@ def parse_args(args=None):
         type=lambda n: None if n == 0 else float(n),
         help=
         "delay in seconds after the prompt to capture more output; 0 disable this (default)."
+    )
+    g.add_argument(
+        "-x-turn-echo-off",
+        action='store',
+        default=True,
+        type=_true_false_type,
+        help=
+        "turn off the echo on each example execution (if force-echo-filtering is on, the turn-echo-off has no effect); (default: %(default)s)."
+    )
+    g.add_argument(
+        "-x-turn-echo-off-on-spawn",
+        action='store',
+        default=True,
+        type=_true_false_type,
+        help=
+        "turn off the echo on runner spawn (not affected by force-echo-filtering); (default: %(default)s)."
     )
     g.add_argument(
         "-x-min-rcount",
