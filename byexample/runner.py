@@ -165,7 +165,7 @@ class PopenSpawnExt(pexpect.popen_spawn.PopenSpawn):
         to work more similar to pexpect's spawn class.
     '''
     def __init__(self, cmd, **kargs):
-        kargs.pop('echo')
+        self._echo = kargs.pop('echo')
         kargs.pop('dimensions')
 
         self.delayafterclose = 0.1
@@ -176,6 +176,18 @@ class PopenSpawnExt(pexpect.popen_spawn.PopenSpawn):
 
     def isalive(self):
         return bool(self.proc.poll())
+
+    # PopenSpawnExt does not really use or has the concept of "echo"
+    # bu we fake it to have a more compatible API with Pexpect.Spawn
+    def setecho(self, state):
+        assert isinstance(state, bool)
+        self._echo = state
+
+    def getecho(self):
+        return self._echo
+
+    def waitnoecho(self):
+        return
 
     def sendcontrol(self, control):
         if control == 'c':
