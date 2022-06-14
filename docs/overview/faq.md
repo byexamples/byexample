@@ -238,8 +238,6 @@ minimal code to exemplify the issue.
 `byexample` tries hard to force the interpreters to not echo the code
 but sometimes is not possible.
 
-This is particular true in MacOS.
-
 In the following example, part of the code executed is *echoed* and
 appears in the output of the example, something that it is unwanted of
 course.
@@ -261,7 +259,13 @@ See [echo-filtering](/{{ site.uprefix }}/advanced/echo-filtering) for more infor
 
 ### The executed code is outputs weird things in MacOS
 
-See above.
+`byexample 11.0.0` has a better support for MacOS but in previous
+versions, `byexample` was not able to turn the echo off.
+
+The result was that in MacOS the examples you execute are echo'ed back.
+
+If you cannot upgrade, the only solution then is an active filter with
+`-o +force-echo-filtering`. See above question and answer.
 
 ### It seems that the first lines of the output are missing
 
