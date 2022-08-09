@@ -24,34 +24,13 @@ pre-installed (the
 [dockerfile](https://github.com/byexamples/byexample/tree/master/test/Dockerfile-cling)
 is available too).
 
+To use the `cling` in that docker image follow
+the [how to run with docker tutorial](/{{ site.uprefix }}/recipes/running-with-docker)
+which explains how to configure the host system and how to run
+`byexample` with an interpreter (`cling`) which it is in a docker image.
+
 <!-- matrix CI begin -->
 <!-- matrix CI end -->
-
-### How to use the docker image
-
-Download the image:
-
-```shell
-$ sudo docker pull eldipa/cling              # byexample: +skip
-```
-
-Define a convenient variable; replace the `<dir>` with the **absolute
-path** where your documentation/tests are.
-
-```shell
-$ cmd="sudo docker run --rm -it -v <dir>:/mnt -w /mnt eldipa/cling cling %a"  # byexample: +skip
-```
-
-Inside the container, the `<dir>` content will be in `/mnt` which
-it will be the current directory for the `cling` command.
-
-Finally, run `byexample` with a custom
-[shebang](/{{ site.uprefix}}/advanced/shebang):
-
-```shell
-$ byexample -l cpp -x-shebang="cpp:$cmd" <files>    # byexample: +skip
-```
-
 
 ### Variable definition
 
