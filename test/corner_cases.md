@@ -180,7 +180,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Location: /<...>/byexample
 Package paths: /<...>/byexample
 Dependencies: appdirs (<...>), bracex (<...>), pexpect (<...>),
-pygments (<...>), pyte (<...>), tqdm (<...>)
+pygments (<...>), termscraper (<...>), tqdm (<...>)
 ```
 
 ## Doctest interference (language specific options isolation)

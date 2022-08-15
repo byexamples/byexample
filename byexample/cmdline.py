@@ -48,7 +48,7 @@ def _byexample_dependencies():
         'bracex',
         'pexpect',
         'pygments',
-        'pyte',
+        'termscraper',
         'tqdm',
     ):
 

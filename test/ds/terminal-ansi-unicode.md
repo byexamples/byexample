@@ -202,7 +202,7 @@ your font).
 This is the output of the Markus Kuhn's demo that you can use
 for testing your terminal. Just download the file and do a `cat`
 
-**The following example was cut because pyte does not fully support
+**The following example was cut because `termscraper` does not fully support
 arbitrary unicode/encoding**
 
 

@@ -11,7 +11,7 @@ from .log import clog, INFO
 from .prof import profile, profile_ctx
 from .extension import Extension
 
-from pyte import Stream, Screen
+from termscraper import Stream, Screen
 import sys
 
 
@@ -539,7 +539,9 @@ class PexpectMixin(object):
     def _create_terminal(self, options):
         rows, cols = options['geometry']
 
-        self._screen = Screen(cols, rows)
+        self._screen = Screen(
+            cols, rows, track_dirty_lines=False, styleless=True
+        )
         self._stream = Stream(self._screen)
 
     @contextlib.contextmanager
@@ -588,8 +590,11 @@ class PexpectMixin(object):
         for chunk in chunks:
             self._stream.feed(chunk)
 
-        lines = self._screen.display
+        lines = self._screen.compressed_display(bfilter=True, rstrip=True)
         self._screen.reset()
+
+        # ensure the lines are right-stripped, termscraper (compressed_display)
+        # may not fully do this.
         lines = (line.rstrip() for line in lines)
 
         return '\n'.join(lines) if join else lines

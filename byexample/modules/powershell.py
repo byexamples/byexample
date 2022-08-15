@@ -217,7 +217,7 @@ class PowerShellInterpreter(ExampleRunner, PexpectMixin):
         #
         raw_output = self._emulate_as_is_terminal(chunks)
 
-        # ANSI Terminal emulator (pyte) requires \r to trigger
+        # ANSI Terminal emulator (termscraper) requires \r to trigger
         # a carriage-return (\n are not enough)
         # This is required because _emulate_as_is_terminal replaced
         # all the newlines (\r, \r\n) by \n
