@@ -97,20 +97,12 @@ with open(sys.argv[1], 'rt') as f:
 begin_marker = '<!-- matrix CI begin -->'
 end_marker = '<!-- matrix CI end -->'
 
-document_files = {
-        'iasm': 'docs/languages/iasm.md',
-        'powershell': 'docs/languages/powershell.md',
-        'shell': 'docs/languages/shell.md',
-        'java': 'docs/languages/java.md',
-        'python': 'docs/languages/python.md',
-        'javascript': 'docs/languages/javascript.md',
-        'ruby': 'docs/languages/ruby.md',
-        }
+fname_template = 'docs/languages/{}.md'
 
 for language, data in matrix.items():
     data = [[lang_ver, runner_ver] for lang_ver, runner_ver in data.items()]
 
-    doc_file = document_files[language.lower()]
+    doc_file = fname_template.format(language.lower())
     with open(doc_file, 'rt') as f:
         doc = f.read()
 
