@@ -1010,6 +1010,7 @@ class PexpectMixin(object):
         if not cmd:
             return None
 
+        out = None
         try:
             out = subprocess.check_output(cmd,
                                           stderr=subprocess.STDOUT).decode(
@@ -1018,9 +1019,17 @@ class PexpectMixin(object):
             version = self._parse_version(out)
 
         except Exception as err:
+            if out is None:
+                dbg_out = "Command failed: %s" % str(err)
+            else:
+                max_len = 64
+                dbg_out = "Read: " + out[:max_len]
+                if len(out) > max_len:
+                    dbg_out += "...(truncated)"
+
             clog().warn(
-                "Failed to obtain %s's version (%s).\nExecuted command: %s",
-                repr(self), str(err), ' '.join(cmd)
+                "Failed to obtain %s's version (%s).\nExecuted command: %s\n%s",
+                repr(self), str(err), ' '.join(cmd), dbg_out
             )
             return None
 
