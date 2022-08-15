@@ -22,3 +22,23 @@ repos:
     -   id: yapf
         args: [-i, --style=.style.yapf]
         files: ^byexample/
+
+-   repo: https://github.com/commitizen-tools/commitizen
+    # Install:
+    #   pre-commit install --hook-type commit-msg
+    # commit type:
+    #   build: think in Makefile
+    #   ci: think in pre-commit or github hooks
+    #   docs
+    #   feat
+    #   fix
+    #   perf
+    #   refactor: think in changes that does not change output but code itself
+    #   style
+    #   test
+    #   chore: used as a fallback, a lot overlap with build and ci
+    #   revert
+    #   bump: bump a new version
+    rev: v2.29.0
+    hooks:
+    -   id: commitizen

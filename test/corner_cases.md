@@ -110,7 +110,7 @@ The file names support *glob expansion* done by `byexample` itself.
 
 ```shell
 $ byexample -l cpp,shell --dry -v --skip 'docs/languages/p*.md' -- 'docs/languages/*.md'
-[i] File docs/languages/cpp.md, 34 examples.
+[i] File docs/languages/cpp.md, 31 examples.
 [i] File docs/languages/elixir.md, 2 examples.
 [i] File docs/languages/gdb.md, 7 examples.
 [i] File docs/languages/go.md, 2 examples.
@@ -131,7 +131,7 @@ $ cat test/ds/args
 docs/languages/*.md
 
 $ byexample -l cpp,shell --dry -v @test/ds/args --skip 'docs/languages/p*.md'
-[i] File docs/languages/cpp.md, 34 examples.
+[i] File docs/languages/cpp.md, 31 examples.
 [i] File docs/languages/elixir.md, 2 examples.
 [i] File docs/languages/gdb.md, 7 examples.
 [i] File docs/languages/go.md, 2 examples.
@@ -180,7 +180,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Location: /<...>/byexample
 Package paths: /<...>/byexample
 Dependencies: appdirs (<...>), bracex (<...>), pexpect (<...>),
-pygments (<...>), pyte (<...>), tqdm (<...>)
+pygments (<...>), termscraper (<...>), tqdm (<...>)
 ```
 
 ## Doctest interference (language specific options isolation)

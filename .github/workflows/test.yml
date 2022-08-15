@@ -69,7 +69,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.6"
+          python-version: "3.7"
       - run: make deps-dev
       - run: pip install iasm
       - run: make lang-iasm-test
@@ -141,7 +141,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
         matrix:
-            go-version: ["1.17", "1.16"]
+            go-version: [{go: "1.19", yaegi: "v0.14.0"}, {go: "1.18", yaegi: "v0.14.0"}, {go: "1.17", yaegi: "v0.13.0"}, {go: "1.16", yaegi: "v0.13.0"}]
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -151,10 +151,10 @@ jobs:
       - name: Setup go
         uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ${{ matrix.go-version.go }}
       - run: go version
       - run: make deps-dev
-      - run: go get -u github.com/traefik/yaegi/cmd/yaegi
+      - run: go install github.com/traefik/yaegi/cmd/yaegi@${{ matrix.go-version.yaegi }}
       - run: PATH=$PATH:$(go env GOPATH)/bin  make lang-go-test
 
   lang-java-test:

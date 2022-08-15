@@ -39,7 +39,7 @@ and the underlying runner or interpreter:
 
 | Language   | Runner/Interpreter   |
 |------------|----------------------|
-| latest     | 0.1.3                |
+| latest     | 0.2.0                |
 
 <!-- matrix CI end -->
 
@@ -91,7 +91,7 @@ pattern.
     r0  4  r1      8  r2      0  r3      0
     r4  0  r5      0  r6      0  r7      0
     r8  0  r9/sb   0  r10     0  r11/fp  0
-r12/ip  0  r13/sp  0  r14/lr  0  r15/pc  100:4
+r12/ip  0  r13/sp  0  r14/lr  0  r15/pc  100:8
 ------  -  ------  -  ------  -  ------  -----
 ```
 

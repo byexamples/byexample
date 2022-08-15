@@ -11,7 +11,7 @@ from .log import clog, INFO
 from .prof import profile, profile_ctx
 from .extension import Extension
 
-from pyte import Stream, Screen
+from termscraper import Stream, Screen
 import sys
 
 
@@ -539,7 +539,9 @@ class PexpectMixin(object):
     def _create_terminal(self, options):
         rows, cols = options['geometry']
 
-        self._screen = Screen(cols, rows)
+        self._screen = Screen(
+            cols, rows, track_dirty_lines=False, styleless=True
+        )
         self._stream = Stream(self._screen)
 
     @contextlib.contextmanager
@@ -588,8 +590,11 @@ class PexpectMixin(object):
         for chunk in chunks:
             self._stream.feed(chunk)
 
-        lines = self._screen.display
+        lines = self._screen.compressed_display(bfilter=True, rstrip=True)
         self._screen.reset()
+
+        # ensure the lines are right-stripped, termscraper (compressed_display)
+        # may not fully do this.
         lines = (line.rstrip() for line in lines)
 
         return '\n'.join(lines) if join else lines
@@ -1005,6 +1010,7 @@ class PexpectMixin(object):
         if not cmd:
             return None
 
+        out = None
         try:
             out = subprocess.check_output(cmd,
                                           stderr=subprocess.STDOUT).decode(
@@ -1013,9 +1019,17 @@ class PexpectMixin(object):
             version = self._parse_version(out)
 
         except Exception as err:
+            if out is None:
+                dbg_out = "Command failed: %s" % str(err)
+            else:
+                max_len = 64
+                dbg_out = "Read: " + out[:max_len]
+                if len(out) > max_len:
+                    dbg_out += "...(truncated)"
+
             clog().warn(
-                "Failed to obtain %s's version (%s).\nExecuted command: %s",
-                repr(self), str(err), ' '.join(cmd)
+                "Failed to obtain %s's version (%s).\nExecuted command: %s\n%s",
+                repr(self), str(err), ' '.join(cmd), dbg_out
             )
             return None
 
