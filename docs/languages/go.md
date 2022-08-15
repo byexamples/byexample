@@ -17,6 +17,14 @@ Check its [download page](https://github.com/traefik/yaegi)
 > *New* in ``byexample 10.2.0``.
 
 <!-- matrix CI begin -->
+
+| Language   | Runner/Interpreter   |
+|------------|----------------------|
+| 1.19       | v0.14.0              |
+| 1.18       | v0.14.0              |
+| 1.17       | v0.13.0              |
+| 1.16       | v0.13.0              |
+
 <!-- matrix CI end -->
 
 ## Find interactive examples
