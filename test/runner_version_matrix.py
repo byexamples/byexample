@@ -45,6 +45,11 @@ def parse_line(line):
     if not lang_version:
         lang_version = 'latest'
 
+    # "Lang Ruby test (3.1, v123)  ... Ruby Runner's version: (1.4.1)"
+    runner_version = None
+    if ',' in lang_version:
+        lang_version, runner_version = [s.strip() for s in lang_version.split(',')]
+
     # "Lang Ruby test (3.1)  ... Failed to obtain Ruby Runner's version ..."
     #       ^^^^                |-----------------^^^^-----------------|
     m = failed_re.search(line)
@@ -53,7 +58,8 @@ def parse_line(line):
         if language == language2:
             # this case means that something went wrong when byexample
             # tried to retrieve the version of the runner
-            runner_version = '(in review)'
+            if runner_version is None:
+                runner_version = '-'
             return language, lang_version, runner_version
 
         # "Lang Ruby test (3.1)  ... Failed to obtain Python Runner's version ..."
@@ -84,7 +90,7 @@ with open(sys.argv[1], 'rt') as f:
             continue
 
         # If it is not the specific step that run the tests, skip it
-        if 'Run make lang-' not in line:
+        if 'Run ' not in line or 'make lang-' not in line:
             continue
 
         language, lang_version, runner_version = parse_line(line)
