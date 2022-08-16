@@ -93,6 +93,11 @@ If your shell-fu is a little rusty and the shebang is too magic, don't worry
 I had the same problem; *it's for very specific situations* and you shouldn't
 need to worry about this most of the time.
 
+In addition to `%e`, `%p` and `%a` you can use `%w` to replace it with
+the current working directory.
+
+> *New* in ``byexample 11.0.0``: the `%w` wildcard.
+
 If you need more specific customization you may want to consider
 [creating your own runner](/{{ site.uprefix }}/contrib/how-to-support-new-finders-and-languages).
 Go ahead, it is much easier than you think.

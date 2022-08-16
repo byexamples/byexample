@@ -630,9 +630,9 @@ def parse_args(args=None):
             default=[],
             type=_key_val_type,
             help='change the command line of the given <runner> by ' + \
-                 '<shebang>; the tokens %%e %%p %%a are replaced by ' + \
+                 '<shebang>; the tokens %%e %%p %%a %%d are replaced by ' + \
                  'the default values for environment, program name, ' + \
-                 'and arguments (however no all ' + \
+                 'arguments and working directory (however no all ' + \
                  'the runners will honor this and some may break).')
     g.add_argument(
         "-x-dfl-timeout",
