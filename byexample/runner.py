@@ -451,7 +451,7 @@ class PexpectMixin(object):
                 if hasattr(self, 'language') and self.language else self
             )
             clog().warn(
-                "Incomplete '%s' Runner shutdown: too slow and it is still running.",
+                "Incomplete '%s' shutdown: too slow and it is still running.",
                 who
             )
 
