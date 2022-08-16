@@ -1,5 +1,5 @@
 from logging import Formatter, Logger, getLogger
-import sys, logging
+import sys, logging, inspect, os.path
 import contextlib
 
 from .common import colored, highlight_syntax, indent
@@ -105,6 +105,11 @@ class XFormatter(Formatter):
         use_colors = getLogger('byexample').use_colors
         if marker and not getattr(record, 'disable_prefix', False):
             marker = colored(marker, color, use_colors=use_colors)
+
+            log_call_location = getattr(record, 'log_call_location', None)
+            if logger.isEnabledFor(DEBUG) and log_call_location:
+                marker += " " + log_call_location
+
             s = "%s %s" % (marker, s)
 
         ex = getattr(record, 'example', None)
@@ -183,6 +188,9 @@ class XLogger(Logger):
         if 'disable_prefix' in kargs:
             extra['disable_prefix'] = kargs.pop('disable_prefix')
 
+        if self.isEnabledFor(DEBUG):
+            extra['log_call_location'] = self.find_log_call_location()
+
         return Logger.log(self, level, msg, *args, extra=extra, **kargs)
 
     def user_aborted(self):
@@ -228,6 +236,35 @@ class XLogger(Logger):
             return Logger.exception(
                 self, msg, *args, exc_info=exc_info, **kwargs
             )
+
+    def find_log_call_location(self):
+        # walk the callstack from the upper (main) frame
+        # to the lower (find_log_call_location) frame
+        # and find the last non-logging func call
+        non_log_caller_frame = None
+        for st in reversed(inspect.stack()):
+            rem, fname = os.path.split(st.filename)
+            _, fhome = os.path.split(rem)
+
+            match_our_file = fname == 'log.py' and fhome == 'byexample'
+            match_one_our_log_meth = st.function in dir(self)
+            if match_our_file and match_one_our_log_meth:
+                break
+
+            non_log_caller_frame = st
+
+        call_location = None
+        if non_log_caller_frame:
+            st = non_log_caller_frame
+            max_len = 18
+            if len(st.filename) > max_len:
+                fname = f"@{st.filename[-max_len:]}"
+            else:
+                fname = st.filename
+
+            call_location = f"({fname}:{st.lineno})"
+
+        return call_location
 
 
 class _LoggerLocalStack(threading.local):
