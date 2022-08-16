@@ -346,13 +346,11 @@ class FileExecutor(object):
                         fail_fast = options['fail_fast']
 
                         if options['skip']:
-                            clog().chat('Skip', example=example)
+                            clog().chat('skip example', example=example)
                             self.concerns.skip_example(example, options)
                             continue
 
-                        clog().chat(
-                            'ex:', example=example, disable_prefix=True
-                        )
+                        clog().chat('example to run:', example=example)
                         self.concerns.start_example(example, options)
                         try:
                             with enhance_exceptions(
@@ -399,7 +397,8 @@ class FileExecutor(object):
                             # cache this *after* calling finish_example/finally_example
                             # those two may modify the got
                             got = example.got
-                            clog().debug(got)
+                            with log_with("got") as clog2:
+                                clog2.debug("\n" + got)
 
                             # We can pass the test regardless of the output
                             force_pass = options['pass']

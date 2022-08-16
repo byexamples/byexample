@@ -129,13 +129,13 @@ $ byexample -x-log-mask byexample.exec.python:chat -l python test/ds/db-stock-mo
 [i:exec.python] Initializing Python Runner
 [i:exec.python] Spawn command line: /usr/bin/env python -i
 [i:exec.python] Python Runner's version: <...>
-ex:
+[i:exec.python] example to run:
     import sqlite3
-ex:
+[i:exec.python] example to run:
     c = sqlite3.connect(':memory:')
-ex:
+[i:exec.python] example to run:
     _ = c.executescript(open('test/ds/stock.sql').read())  # ---> # byexample: +fail-fast
-ex:
+[i:exec.python] example to run:
 <...>
 File test/ds/db-stock-model, 5/5 test ran in <...>
 ```
