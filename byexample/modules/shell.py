@@ -37,7 +37,7 @@ import byexample.regex as re
 from byexample.common import constant, Countdown
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
-from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
+from byexample.runner import ExampleRunner, PexpectMixin
 from byexample.executor import TimeoutException
 
 stability = 'provisional'

@@ -110,7 +110,7 @@ from byexample.common import constant
 from byexample.log import clog
 from byexample.parser import ExampleParser
 from byexample.finder import ExampleFinder
-from byexample.runner import ExampleRunner, PexpectMixin, ShebangTemplate
+from byexample.runner import ExampleRunner, PexpectMixin
 
 stability = 'experimental'
 
