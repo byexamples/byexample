@@ -58,7 +58,8 @@ class XFormatter(Formatter):
         logger = getLogger(name)
 
         color = {
-            DEBUG: 'none',
+            TRACE: 'none',
+            DEBUG: 'green',
             CHAT: 'cyan',
             INFO: 'cyan',
             NOTE: 'cyan',
@@ -67,11 +68,11 @@ class XFormatter(Formatter):
             CRITICAL: 'red',
         }[lvlno]
 
-        if lvlno == DEBUG or getattr(record, 'no_marker', False):
+        if lvlno == TRACE or getattr(record, 'no_marker', False):
             marker = ''
         elif logger.isEnabledFor(DEBUG):
             marker = {
-                DEBUG: '',
+                DEBUG: 'debug',
                 CHAT: 'chat',
                 INFO: 'info',
                 NOTE: 'note',
@@ -82,7 +83,7 @@ class XFormatter(Formatter):
             marker = "%s:%s" % (marker, self.shorter_name(name))
         elif logger.isEnabledFor(CHAT):
             marker = {
-                DEBUG: '',
+                DEBUG: '[d:%s]',
                 CHAT: '[i:%s]',
                 INFO: '[i:%s]',
                 NOTE: '[i:%s]',
@@ -93,7 +94,7 @@ class XFormatter(Formatter):
             marker = marker % self.shorter_name(name)
         else:
             marker = {
-                DEBUG: '',
+                DEBUG: '[.]',
                 CHAT: '[i]',
                 INFO: '[i]',
                 NOTE: '[i]',
@@ -114,7 +115,7 @@ class XFormatter(Formatter):
 
         ex = getattr(record, 'example', None)
         if ex is not None:
-            if logger.isEnabledFor(DEBUG):
+            if logger.isEnabledFor(TRACE):
                 ex.pretty_print()
             else:
                 s += '\n' + indent(highlight_syntax(ex, use_colors))
