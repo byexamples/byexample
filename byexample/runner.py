@@ -366,6 +366,13 @@ class PexpectMixin(object):
             honoring the shebang for the given language and with all the
             substitutions and quoting in place (see ShebangTemplate).
             '''
+        if 'w' in default_tokens:
+            clog().warn(
+                f"'{repr(self)}' specified a value for shebang wildcard '%w' when it should not do it.",
+            )
+
+        default_tokens['w'] = os.getcwd()
+
         shebang, tokens = default_shebang, default_tokens
         shebang = options['shebangs'].get(self.language, shebang)
 
