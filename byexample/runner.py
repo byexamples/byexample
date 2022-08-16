@@ -7,7 +7,7 @@ from functools import reduce, partial
 from .executor import TimeoutException, InputPrefixNotFound, InterpreterClosedUnexpectedly, InterpreterNotFound
 from .common import tohuman, ShebangTemplate, Countdown, short_string, constant
 from .example import Example
-from .log import clog, INFO
+from .log import clog, INFO, DEBUG
 from .prof import profile, profile_ctx
 from .extension import Extension
 
@@ -546,10 +546,12 @@ class PexpectMixin(object):
     def _create_terminal(self, options):
         rows, cols = options['geometry']
 
+        trace_callbacks = clog().isEnabledFor(DEBUG)
+
         self._screen = Screen(
             cols, rows, track_dirty_lines=False, styleless=True
         )
-        self._stream = Stream(self._screen)
+        self._stream = Stream(self._screen, trace_callbacks=trace_callbacks)
 
     @contextlib.contextmanager
     def _change_terminal_geometry_ctx(self, options, force=False):
@@ -598,6 +600,15 @@ class PexpectMixin(object):
             self._stream.feed(chunk)
 
         lines = self._screen.compressed_display(bfilter=True, rstrip=True)
+
+        if clog().isEnabledFor(DEBUG):
+            clog().debug(
+                "ANSI terminal stream:\n" +
+                repr(self._stream.stats(reset=True))
+            )
+            clog(
+            ).debug("ANSI terminal screen:\n" + repr(self._screen.stats()))
+
         self._screen.reset()
 
         # ensure the lines are right-stripped, termscraper (compressed_display)
