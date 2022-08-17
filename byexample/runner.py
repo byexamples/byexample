@@ -7,7 +7,7 @@ from functools import reduce, partial
 from .executor import TimeoutException, InputPrefixNotFound, InterpreterClosedUnexpectedly, InterpreterNotFound
 from .common import tohuman, ShebangTemplate, Countdown, short_string, constant
 from .example import Example
-from .log import clog, INFO, DEBUG
+from .log import clog, log_context, INFO, DEBUG
 from .prof import profile, profile_ctx
 from .extension import Extension
 
@@ -595,7 +595,13 @@ class PexpectMixin(object):
     def _universal_new_lines(out):
         return re.compile(PexpectMixin.UNIV_NL).sub('\n', out)
 
-    def _emulate_ansi_terminal(self, chunks, join=True):
+    @log_context('byexample.exec.term')
+    def _emulate_ansi_terminal(
+        self, chunks, join=True, terminal_geometry=None
+    ):
+        if terminal_geometry:
+            self._screen.resize(*terminal_geometry)
+
         for chunk in chunks:
             self._stream.feed(chunk)
 
@@ -798,26 +804,37 @@ class PexpectMixin(object):
         return out
 
     def _get_output_echo_filtered(self, options):
-        lines = self._filter_echo(options, self._output_between_prompts)
+        lines = self._filter_echo_by_tagging(
+            options, self._output_between_prompts
+        )
 
         self._drop_output()
         return '\n'.join(lines)
 
-    def _filter_echo(self, options, output_between_prompts):
-        # If the interpreter doesn't disable the TTY's echo,
-        # everything we type in it will be reflected in the output.
-        # so this breaks badly self._get_output
-        # Experimental feature, use this instead of _get_output
+    def _filter_echo_by_tagging(self, options, output_between_prompts):
+        ''' Filter the echoed example in the output by injecting
+            a cookie/tag at the begin of each output chuck obtained
+            between prompts.
 
-        # self._output_between_prompts is a list of strings found by pexpect
+            The idea is that this cookie/tag mark the begin of
+            each line which then can be filtered.
+        '''
+        # output_between_prompts is a list of strings found by pexpect
         # after returning of each pexpect.expect
         # in other words if we prefix each line with the prompt
         # should get the original output from the process
         cookie = '[byexamplecookie]$'
-        lines = (cookie + ' ' + line for line in output_between_prompts)
+        cookie_pattern = '^)#@'
+        cookie = cookie_pattern * 5
+        lines = (cookie + line for line in output_between_prompts)
 
-        # now, feed those lines to our ANSI Terminal emulator
-        lines = self._emulate_ansi_terminal(lines, join=False)
+        # pass the chunks through a terminal emulator large enough
+        # to not introduce artifacts due a small geometry
+        # (like linefeeds/carriage_returns) but at the same time emulating
+        # any control sequence that the output may have
+        lines = self._emulate_ansi_terminal(
+            lines, join=False, terminal_geometry=(2048, 1024)
+        )
 
         # get each line in the Terminal's display and ignore each one that
         # starts with our cookie: those are the "echo" lines that
@@ -830,10 +847,12 @@ class PexpectMixin(object):
         # something without adding a newline to separate it from the prompt.
         # for simplicity I will remove any prompt that it may be at
         # the end of all the lines:
-        return (
+        filtered_lines = (
             line[:-len(cookie)] if line.endswith(cookie) else line
             for line in filtered_lines
         )
+
+        return filtered_lines
 
     def _set_cooked_mode(self, state):  # pragma: no cover
         # code borrowed from ptyprocess/ptyprocess.py, _setecho, and
