@@ -488,6 +488,12 @@ class PexpectMixin(object):
         # turn the echo off (may be)
         self._may_turn_echo_off(options)
 
+        # drain the buffers before the example execution in case
+        # of having dirty/unread stuff there that may interfere
+        # with the echo filtering and/or get mixed with the example's output
+        if options['force_echo_filtering']:
+            self._drain(options)
+
         countdown = Countdown(timeout)
         lines = source.split('\n')
 
