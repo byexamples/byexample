@@ -589,6 +589,14 @@ class PexpectMixin(object):
         self._screen.resize(rows, cols)
         self._setwindowsize(rows, cols)
 
+        # Drain the interpreter's buffer reading as much as possible
+        # This is to overcome the possibility that after the change
+        # in the window size, the interpreter decides to do a redraw
+        # of the screen. Without a drain, the redraw will be directly
+        # present in the next example's output got which it won't make
+        # any sense to the user
+        self._drain(options)
+
     UNIV_NL = re.compile('\r\n|\r')
 
     @staticmethod
@@ -783,6 +791,58 @@ class PexpectMixin(object):
             '''
         what = self._interpreter.expect(expect_list, timeout=timeout)
         return what, self._interpreter.before
+
+    @profile
+    def _drain(self, options):
+        ''' Read and discard output as much as possible from the interpreter
+            effectively draining its buffers.
+        '''
+        # time cost: drain_timeout + delaybeforedrain
+        drain_timeout = 0.001
+        delaybeforedrain = 0
+        drain_sz = 1024**2
+
+        assert drain_timeout > 0
+
+        # wait a moment so the interpreter has a change to write in
+        # its buffer (if it wants to)
+        if delaybeforedrain:
+            time.sleep(delaybeforedrain)
+
+        # loop reading as much as possible and break when no data is available
+        # after a while (on timeout).
+        # if for some reason the interpreter is still giving a little of data
+        # on each round but it never stops, eventually give up with a warning
+        drain_countdown = Countdown(drain_timeout)
+        still_writing = True
+        while not drain_countdown.did_run_out():
+            try:
+                left = max(drain_countdown.left(), 0.0001)
+                drain_countdown.start()
+                self._interpreter.read_nonblocking(size=drain_sz, timeout=left)
+                still_writing = True
+            except pexpect.EOF:
+                self._interpreter_closed_unexpectedly_error(options)
+            except pexpect.TIMEOUT:
+                still_writing = False
+            finally:
+                drain_countdown.stop()
+
+        if still_writing:
+            clog().warn(
+                f"Interpreter is still writing (may be a background task is still running?)"
+            )
+
+        # the internal buffer of the interpreter (pexpect) must be
+        # drained too.
+        # the _before/_buffer buffers may contain a partial read
+        # that it didn't went out in the last _exec_and_wait (not present
+        # in the last _get_output)
+        # this possible partial read may be output'd in the next example's
+        # output (got) mixed with the true output (got).
+        # to avoid this unwanted mixing we drain the buffers
+        self._interpreter._buffer.truncate(0)
+        self._interpreter._before.truncate(0)
 
     @profile
     def _get_output(self, options):
