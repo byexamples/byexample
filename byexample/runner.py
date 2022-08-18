@@ -607,7 +607,9 @@ class PexpectMixin(object):
     def _emulate_ansi_terminal(
         self, chunks, join=True, terminal_geometry=None
     ):
+        self._screen.reset()
         if terminal_geometry:
+            old_geometry = (self._screen.lines, self._screen.columns)
             self._screen.resize(*terminal_geometry)
 
         for chunk in chunks:
@@ -616,14 +618,16 @@ class PexpectMixin(object):
         lines = self._screen.compressed_display(bfilter=True, rstrip=True)
 
         if clog().isEnabledFor(DEBUG):
-            clog().debug(
-                "ANSI terminal stream:\n" +
-                repr(self._stream.stats(reset=True))
-            )
-            clog(
-            ).debug("ANSI terminal screen:\n" + repr(self._screen.stats()))
+            r = repr(self._stream.stats(reset=True))
+            clog().debug(f"ANSI terminal stream:\n{r}")
+
+            g = (self._screen.lines, self._screen.columns)
+            r = repr(self._screen.stats())
+            clog().debug(f"ANSI terminal screen {g[0]}x{g[1]}:\n{r}")
 
         self._screen.reset()
+        if terminal_geometry:
+            self._screen.resize(*old_geometry)
 
         # ensure the lines are right-stripped, termscraper (compressed_display)
         # may not fully do this.
