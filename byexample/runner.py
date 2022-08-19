@@ -622,7 +622,7 @@ class PexpectMixin(object):
         return PexpectMixin.LF_or_CR_REGEX.sub('\r\n', out)
 
     @log_context('byexample.exec.term')
-    def _emulate_ansi_terminal(
+    def _pass_output_chunks_through_ansi_terminal(
         self, chunks, join=True, terminal_geometry=None
     ):
         self._screen.reset()
@@ -653,7 +653,19 @@ class PexpectMixin(object):
 
         return '\n'.join(lines) if join else lines
 
-    def _emulate_dumb_terminal(self, chunks):
+    def _emulate_dumb_terminal(self, chunks, options):
+        # If the echo filtering is on, this will imply a terminal
+        # emulation that it will take care of the rest of the output
+        # processing...
+        if options['force_echo_filtering']:
+            chunks = (
+                self._linefeed_and_carriage_return(chunk) for chunk in chunks
+            )
+            chunks = self._filter_echo_by_tagging(options, chunks)
+            return '\n'.join(chunks)
+
+        # ...otherwise we need to emulate by hand the universal newlines
+        # TAB expansion and whitespace trimming
         chunks = (self._universal_new_lines(chunk) for chunk in chunks)
         chunks = (chunk.expandtabs(8) for chunk in chunks)
 
@@ -665,7 +677,31 @@ class PexpectMixin(object):
 
         return ''.join(chunks)
 
-    def _emulate_as_is_terminal(self, chunks):
+    def _emulate_ansi_terminal(self, chunks, options):
+        # Do a first pass doing a terminal emulation and filtering the echos
+        # using an "unbound" (very large) geometry
+        if options['force_echo_filtering']:
+            chunks = self._filter_echo_by_tagging(options, chunks)
+
+            # This is needed to be interpreted by the second pass
+            chunks = (line + '\r\n' for line in chunks)
+
+        # Pass the chunks to the terminal emulator.
+        # If the echo filtering was on, this will be the second time
+        # that we do this. This second pass is required because here
+        #  the terminal will honor the geometry defined by
+        # the example and not the artificial "unbounded" of the first pass.
+        # The net effect is that the lines may be truncated/filtered/written in
+        # multiple lines as side effect of the short dimensions of the terminal
+        return self._pass_output_chunks_through_ansi_terminal(chunks)
+
+    def _emulate_as_is_terminal(self, chunks, options):
+        # Note: we do not any echo filtering. When as-is is used, the echos
+        # will be there and the user will have to deal with them.
+        # Doing any kind of echo filtering will probably destroy/consume any
+        # control sequence/escape sequence that the terminal as-is tries to
+        # preserve in first place.
+        # That's why we don't do the filtering.
         return ''.join((self._universal_new_lines(chunk) for chunk in chunks))
 
     @profile
@@ -868,15 +904,18 @@ class PexpectMixin(object):
 
     @profile
     def _get_output(self, options):
-        if options['force_echo_filtering']:
-            return self._get_output_echo_filtered(options)
-
         if options['term'] == 'dumb':
-            out = self._emulate_dumb_terminal(self._output_between_prompts)
+            out = self._emulate_dumb_terminal(
+                self._output_between_prompts, options
+            )
         elif options['term'] == 'ansi':
-            out = self._emulate_ansi_terminal(self._output_between_prompts)
+            out = self._emulate_ansi_terminal(
+                self._output_between_prompts, options
+            )
         elif options['term'] == 'as-is':
-            out = self._emulate_as_is_terminal(self._output_between_prompts)
+            out = self._emulate_as_is_terminal(
+                self._output_between_prompts, options
+            )
         else:
             raise TypeError(
                 "Unknown terminal type '+term=%s'." % options['term']
@@ -885,10 +924,11 @@ class PexpectMixin(object):
         self._drop_output()
         return out
 
-    def _get_output_echo_filtered(self, options):
-        lines = self._filter_echo_by_tagging(
-            options, self._output_between_prompts
-        )
+    def _get_output_echo_filtered(self, options, chunks=None):
+        if chunks is None:
+            chunks = self._output_between_prompts
+
+        lines = self._filter_echo_by_tagging(options, chunks)
 
         self._drop_output()
         return '\n'.join(lines)
@@ -905,7 +945,6 @@ class PexpectMixin(object):
         # after returning of each pexpect.expect
         # in other words if we prefix each line with the prompt
         # should get the original output from the process
-        cookie = '[byexamplecookie]$'
         cookie_pattern = '^)#@'
         cookie = cookie_pattern * 5
         lines = (cookie + line for line in output_between_prompts)
@@ -914,7 +953,7 @@ class PexpectMixin(object):
         # to not introduce artifacts due a small geometry
         # (like linefeeds/carriage_returns) but at the same time emulating
         # any control sequence that the output may have
-        lines = self._emulate_ansi_terminal(
+        lines = self._pass_output_chunks_through_ansi_terminal(
             lines, join=False, terminal_geometry=(2048, 1024)
         )
 
