@@ -603,11 +603,23 @@ class PexpectMixin(object):
         # any sense to the user
         self._drain(options)
 
-    UNIV_NL = re.compile('\r\n|\r')
+    # Note: the order of the "or" (|) matters so we try to match \r\n
+    # first and only rollback to \r if we failed.
+    LFCR_or_LF_REGEX = re.compile('\r\n|\r')
 
     @staticmethod
     def _universal_new_lines(out):
-        return re.compile(PexpectMixin.UNIV_NL).sub('\n', out)
+        r''' Map \r\n and \r to \n '''
+        return re.compile(PexpectMixin.LFCR_or_LF_REGEX).sub('\n', out)
+
+    # We match \r if not followed by \n and \n if not preceded by \r
+    # effectively matching or \r or \n but without matching \r\n
+    LF_or_CR_REGEX = re.compile('(\r(?!\n))|(^\n)|((?<!\r)\n)', re.MULTILINE)
+
+    @staticmethod
+    def _linefeed_and_carriage_return(out):
+        r''' Map \r and \n to \r\n '''
+        return PexpectMixin.LF_or_CR_REGEX.sub('\r\n', out)
 
     @log_context('byexample.exec.term')
     def _emulate_ansi_terminal(
