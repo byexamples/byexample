@@ -215,7 +215,7 @@ class PowerShellInterpreter(ExampleRunner, PexpectMixin):
         # We should get:
         #   'foo 1\nA1\nA2\ncookieB1\n'
         #
-        raw_output = self._emulate_as_is_terminal(chunks)
+        raw_output = self._emulate_as_is_terminal(chunks, options)
 
         # ANSI Terminal emulator (termscraper) requires \r to trigger
         # a carriage-return (\n are not enough)
