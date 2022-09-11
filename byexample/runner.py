@@ -734,7 +734,7 @@ class PexpectMixin(object):
             # the [ <input> ] that we typed in. This is a sort of
             # echo-emulation (TODO: some interpreters have echo activated,
             # should this be necessary?)
-            chunk = "{}[{}]\n".format(self._interpreter.match.group(), input)
+            chunk = "{}[{}]\r\n".format(self._interpreter.match.group(), input)
             self._output_between_prompts[-1] += chunk
             assert self._last_output_may_be_incomplete
 

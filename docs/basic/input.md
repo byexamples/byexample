@@ -322,3 +322,38 @@ iex> IO.gets("num: ")         # byexample: +input +skip
 num: [42]
 => "42\n"
 -->
+
+<!--
+
+The following is a combination of +type and +term=ansi because
++type injects things in the output obtained (got) and fake
+some new lines which must be correctly interpreted by
+any terminal including ANSI
+
+>>> name = input("your name please: ")      # byexample: +type +term=ansi
+your name please: [john]
+
+>>> print(name)
+john
+
+>>> input("num: ")   # byexample: +type +term=ansi
+num: [42]
+'42'
+
+>>> input()   # byexample: +type +term=ansi
+[it works!]
+'it works!'
+
+>>> def ask():
+...     n = input("name: ")
+...     print("Nice to meet you %s!" % n)
+...     a = input("age: ")
+...     print("%s years old" % a)
+
+>>> ask()               # byexample: +type +term=ansi
+name: [john]
+Nice to meet you john!
+age: [42]
+42 years old
+
+-->
