@@ -116,7 +116,6 @@ test/ds/pkg/foo2.py
 <...>
 # This wouldn't work:
 #--skip test/ds/pkg/foo1.py test/ds/pkg/foo2.py
-<...>
 ```
 
 Then load it with ``@`` and the file; you can use multiple files

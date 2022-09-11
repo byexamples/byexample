@@ -141,5 +141,4 @@ $ byexample -l php --show-options       # byexample: +norm-ws
 php's specific options
 ----------------------
   None.
-<...>
 ```

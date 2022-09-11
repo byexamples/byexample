@@ -92,24 +92,66 @@ good: <foo-bar>
 
 Do not worry, I made this mistake a few times too.
 
-### Check for the last line of xxx fails, why?
+### Discard last lines with `<...>` but it fails, why?
 
 May be you wrote something like this?
 
 ```python
->>> print("last line\n")
-last line
+>>> print("useful info then bla bla bla")           # byexample: +skip
+useful info
 <...>
 ```
 
-That example will work only if the line ends in a new line.
+That example will work *only* if there is a new line after `"useful info"`
+because you put `<...>` in a new line.
 
-If not it will fail. To avoid that put ``<...>`` in the same line:
+If you want to discard anything after `"useful info"` even if no new
+line follows it, put ``<...>`` in the same line:
 
 ```python
->>> print("last line")
-last line<...>
+>>> print("useful info then bla bla bla")
+useful info<...>
 ```
+
+### I want to discard the last empty lines with `<...>` but it fails, why?
+
+This applies to version older than `byexample 11.0.0`.
+
+May be you wrote something like this?
+
+```python
+>>> print("useful info", end='')           # byexample: +skip
+useful info
+<...>
+```
+
+The example above prints `"useful info"` without following it with a new
+line.
+
+Because you put `<...>` in a new line after the `"useful info"` you are
+telling `byexample` to expect a new line.
+
+You may put `<...>` in the same line than `"useful info"` or you can get
+rid it off. `byexample` ignores any empty line at the end of the
+examples by default so the `<...>` is not needed.
+
+This works:
+
+```python
+>>> print("useful info", end='')
+useful info<...>
+```
+
+But this is preferred:
+
+```python
+>>> print("useful info", end='')
+useful info
+```
+
+Since `byexample 11.0.0` is a little smarter and the `<...>` at the end
+will match even if no newline or empty line is found at the end of the
+output obtained. This does not apply if `+term=as-is` is enabled.
 
 ### Verbose mode in only one language?
 

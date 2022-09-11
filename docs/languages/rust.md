@@ -173,5 +173,4 @@ $ byexample -l rust --show-options       # byexample: +norm-ws
 rust's specific options
 -----------------------
   None.
-<...>
 ```
