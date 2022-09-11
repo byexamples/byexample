@@ -129,10 +129,11 @@ class SimpleReporter(Concern):
                    "Perhaps the text before did not match what you expected?\n" + \
                    (exception.prefix) + '\n'
 
-        if exception.output:
+        exception_output = exception.output.rstrip()
+        if exception_output:
             msg += self._bullet('cyan', '-') + ' '
             msg += 'This is the last output obtained:\n%s\n' % str(
-                exception.output
+                exception_output
             )
 
         self._write(msg)
@@ -170,10 +171,11 @@ class SimpleReporter(Concern):
                    'If the interpreter is just crashing, it may be possible to find a workaround,\n' + \
                    'you can open an issue at https://github.com/byexamples/byexample/issues\n'
 
-            if exception.output:
+            exception_output = exception.output.rstrip()
+            if exception_output:
                 msg += self._bullet('cyan', '-') + ' '
                 msg += 'This is the last output obtained:\n%s\n' % str(
-                    exception.output
+                    exception_output
                 )
         elif isinstance(exception, UnicodeDecodeError):
             msg += self._bullet('cyan', '-') + ' '
