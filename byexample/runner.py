@@ -922,6 +922,19 @@ class PexpectMixin(object):
             )
 
         self._drop_output()
+
+        # If the output does not end in a newline, append it.
+        # The example's expected regex will take care of this and ignore
+        # it.
+        # This extra newline is to workaround a common error of
+        # using <...> at the end of the example which may force
+        # byexample to expect a newline that will never exist.
+        # Injecting this extra newline will make those examples
+        # to never fail.
+        # See docs/advanced/terminal-emulation.md
+        if not out.endswith('\n') and options['term'] != 'as-is':
+            out += '\n'
+
         return out
 
     def _get_output_echo_filtered(self, options, chunks=None):

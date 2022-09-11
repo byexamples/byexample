@@ -493,3 +493,90 @@ line 99
 Emulation is typically 3 times slower than the normal mode
 (``+term=dumb``).
 Keep that in mind and try to not enable it by default.
+
+<!--
+
+Since byexample 11 the bottom lines that are empty are stripped
+when +term=ansi is used.
+
+An example may have a <...> to ignore those.
+The user may had written the following:
+
+>>> print("foo\n\n\n\n")   # byexample: +term=ansi
+foo
+<...>
+
+But if the empty bottom lines are stripped,
+they will not appear in the example's got and because
+the <...> is in the next line of "foo", byexample will
+try to match 1 new line.
+
+Since byexample 11 we inject a dummy new line at the end
+so no example will fail (the example above id proof of that)
+
+Here are some combinatory cases:
+
+An <...> in a new separated line:
+'''''''''''''''''''''''''''''''''
+
+ANSI + NEWLINES + ELLIPSIS-NEWLINE
+>>> print("foo\n\n\n\n")   # byexample: +term=ansi
+foo
+<...>
+
+ANSI + NO-NEWLINES + ELLIPSIS-NEWLINE
+>>> print("foo", end='')   # byexample: +term=ansi
+foo
+<...>
+
+NO-NEWLINES + ELLIPSIS-NEWLINE
+>>> print("foo", end='')   # byexample: +term=dumb
+foo
+<...>
+
+NEWLINES + ELLIPSIS-NEWLINE
+>>> print("foo\n\n\n\n")   # byexample: +term=dumb
+foo
+<...>
+
+
+An <...> in the same line than foo:
+'''''''''''''''''''''''''''''''''''
+
+ANSI + NEWLINES + ELLIPSIS-SAMELINE
+>>> print("foo\n\n\n\n")   # byexample: +term=ansi
+foo<...>
+
+ANSI + NO-NEWLINES + ELLIPSIS-SAMELINE
+>>> print("foo", end='')   # byexample: +term=ansi
+foo<...>
+
+NO-NEWLINES + ELLIPSIS-SAMELINE
+>>> print("foo", end='')   # byexample: +term=dumb
+foo<...>
+
+NEWLINES + ELLIPSIS-SAMELINE
+>>> print("foo\n\n\n\n")   # byexample: +term=dumb
+foo<...>
+
+
+No <...> at the end:
+''''''''''''''''''''
+
+ANSI + NEWLINES + NO-ELLIPSIS
+>>> print("foo\n\n\n\n")   # byexample: +term=ansi
+foo
+
+ANSI + NO-NEWLINES + NO-ELLIPSIS
+>>> print("foo", end='')   # byexample: +term=ansi
+foo
+
+NO-NEWLINES + NO-ELLIPSIS
+>>> print("foo", end='')   # byexample: +term=dumb
+foo
+
+NEWLINES + NO-ELLIPSIS
+>>> print("foo\n\n\n\n")   # byexample: +term=dumb
+foo
+
+-->
