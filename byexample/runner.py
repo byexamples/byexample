@@ -7,7 +7,7 @@ from functools import reduce, partial
 from .executor import TimeoutException, InputPrefixNotFound, InterpreterClosedUnexpectedly, InterpreterNotFound
 from .common import tohuman, ShebangTemplate, Countdown, short_string, constant
 from .example import Example
-from .log import clog, INFO
+from .log import clog, log_context, INFO, DEBUG
 from .prof import profile, profile_ctx
 from .extension import Extension
 
@@ -488,6 +488,12 @@ class PexpectMixin(object):
         # turn the echo off (may be)
         self._may_turn_echo_off(options)
 
+        # drain the buffers before the example execution in case
+        # of having dirty/unread stuff there that may interfere
+        # with the echo filtering and/or get mixed with the example's output
+        if options['force_echo_filtering']:
+            self._drain(options)
+
         countdown = Countdown(timeout)
         lines = source.split('\n')
 
@@ -546,10 +552,12 @@ class PexpectMixin(object):
     def _create_terminal(self, options):
         rows, cols = options['geometry']
 
+        trace_callbacks = clog().isEnabledFor(DEBUG)
+
         self._screen = Screen(
             cols, rows, track_dirty_lines=False, styleless=True
         )
-        self._stream = Stream(self._screen)
+        self._stream = Stream(self._screen, trace_callbacks=trace_callbacks)
 
     @contextlib.contextmanager
     def _change_terminal_geometry_ctx(self, options, force=False):
@@ -587,18 +595,57 @@ class PexpectMixin(object):
         self._screen.resize(rows, cols)
         self._setwindowsize(rows, cols)
 
-    UNIV_NL = re.compile('\r\n|\r')
+        # Drain the interpreter's buffer reading as much as possible
+        # This is to overcome the possibility that after the change
+        # in the window size, the interpreter decides to do a redraw
+        # of the screen. Without a drain, the redraw will be directly
+        # present in the next example's output got which it won't make
+        # any sense to the user
+        self._drain(options)
+
+    # Note: the order of the "or" (|) matters so we try to match \r\n
+    # first and only rollback to \r if we failed.
+    LFCR_or_LF_REGEX = re.compile('\r\n|\r')
 
     @staticmethod
     def _universal_new_lines(out):
-        return re.compile(PexpectMixin.UNIV_NL).sub('\n', out)
+        r''' Map \r\n and \r to \n '''
+        return re.compile(PexpectMixin.LFCR_or_LF_REGEX).sub('\n', out)
 
-    def _emulate_ansi_terminal(self, chunks, join=True):
+    # We match \r if not followed by \n and \n if not preceded by \r
+    # effectively matching or \r or \n but without matching \r\n
+    LF_or_CR_REGEX = re.compile('(\r(?!\n))|(^\n)|((?<!\r)\n)', re.MULTILINE)
+
+    @staticmethod
+    def _linefeed_and_carriage_return(out):
+        r''' Map \r and \n to \r\n '''
+        return PexpectMixin.LF_or_CR_REGEX.sub('\r\n', out)
+
+    @log_context('byexample.exec.term')
+    def _pass_output_chunks_through_ansi_terminal(
+        self, chunks, join=True, terminal_geometry=None
+    ):
+        self._screen.reset()
+        if terminal_geometry:
+            old_geometry = (self._screen.lines, self._screen.columns)
+            self._screen.resize(*terminal_geometry)
+
         for chunk in chunks:
             self._stream.feed(chunk)
 
         lines = self._screen.compressed_display(bfilter=True, rstrip=True)
+
+        if clog().isEnabledFor(DEBUG):
+            r = repr(self._stream.stats(reset=True))
+            clog().debug(f"ANSI terminal stream:\n{r}")
+
+            g = (self._screen.lines, self._screen.columns)
+            r = repr(self._screen.stats())
+            clog().debug(f"ANSI terminal screen {g[0]}x{g[1]}:\n{r}")
+
         self._screen.reset()
+        if terminal_geometry:
+            self._screen.resize(*old_geometry)
 
         # ensure the lines are right-stripped, termscraper (compressed_display)
         # may not fully do this.
@@ -606,7 +653,19 @@ class PexpectMixin(object):
 
         return '\n'.join(lines) if join else lines
 
-    def _emulate_dumb_terminal(self, chunks):
+    def _emulate_dumb_terminal(self, chunks, options):
+        # If the echo filtering is on, this will imply a terminal
+        # emulation that it will take care of the rest of the output
+        # processing...
+        if options['force_echo_filtering']:
+            chunks = (
+                self._linefeed_and_carriage_return(chunk) for chunk in chunks
+            )
+            chunks = self._filter_echo_by_tagging(options, chunks)
+            return '\n'.join(chunks)
+
+        # ...otherwise we need to emulate by hand the universal newlines
+        # TAB expansion and whitespace trimming
         chunks = (self._universal_new_lines(chunk) for chunk in chunks)
         chunks = (chunk.expandtabs(8) for chunk in chunks)
 
@@ -618,7 +677,31 @@ class PexpectMixin(object):
 
         return ''.join(chunks)
 
-    def _emulate_as_is_terminal(self, chunks):
+    def _emulate_ansi_terminal(self, chunks, options):
+        # Do a first pass doing a terminal emulation and filtering the echos
+        # using an "unbound" (very large) geometry
+        if options['force_echo_filtering']:
+            chunks = self._filter_echo_by_tagging(options, chunks)
+
+            # This is needed to be interpreted by the second pass
+            chunks = (line + '\r\n' for line in chunks)
+
+        # Pass the chunks to the terminal emulator.
+        # If the echo filtering was on, this will be the second time
+        # that we do this. This second pass is required because here
+        #  the terminal will honor the geometry defined by
+        # the example and not the artificial "unbounded" of the first pass.
+        # The net effect is that the lines may be truncated/filtered/written in
+        # multiple lines as side effect of the short dimensions of the terminal
+        return self._pass_output_chunks_through_ansi_terminal(chunks)
+
+    def _emulate_as_is_terminal(self, chunks, options):
+        # Note: we do not any echo filtering. When as-is is used, the echos
+        # will be there and the user will have to deal with them.
+        # Doing any kind of echo filtering will probably destroy/consume any
+        # control sequence/escape sequence that the terminal as-is tries to
+        # preserve in first place.
+        # That's why we don't do the filtering.
         return ''.join((self._universal_new_lines(chunk) for chunk in chunks))
 
     @profile
@@ -768,16 +851,71 @@ class PexpectMixin(object):
         return what, self._interpreter.before
 
     @profile
-    def _get_output(self, options):
-        if options['force_echo_filtering']:
-            return self._get_output_echo_filtered(options)
+    def _drain(self, options):
+        ''' Read and discard output as much as possible from the interpreter
+            effectively draining its buffers.
+        '''
+        # time cost: drain_timeout + delaybeforedrain
+        drain_timeout = 0.001
+        delaybeforedrain = 0
+        drain_sz = 1024**2
 
+        assert drain_timeout > 0
+
+        # wait a moment so the interpreter has a change to write in
+        # its buffer (if it wants to)
+        if delaybeforedrain:
+            time.sleep(delaybeforedrain)
+
+        # loop reading as much as possible and break when no data is available
+        # after a while (on timeout).
+        # if for some reason the interpreter is still giving a little of data
+        # on each round but it never stops, eventually give up with a warning
+        drain_countdown = Countdown(drain_timeout)
+        still_writing = True
+        while not drain_countdown.did_run_out():
+            try:
+                left = max(drain_countdown.left(), 0.0001)
+                drain_countdown.start()
+                self._interpreter.read_nonblocking(size=drain_sz, timeout=left)
+                still_writing = True
+            except pexpect.EOF:
+                self._interpreter_closed_unexpectedly_error(options)
+            except pexpect.TIMEOUT:
+                still_writing = False
+            finally:
+                drain_countdown.stop()
+
+        if still_writing:
+            clog().warn(
+                f"Interpreter is still writing (may be a background task is still running?)"
+            )
+
+        # the internal buffer of the interpreter (pexpect) must be
+        # drained too.
+        # the _before/_buffer buffers may contain a partial read
+        # that it didn't went out in the last _exec_and_wait (not present
+        # in the last _get_output)
+        # this possible partial read may be output'd in the next example's
+        # output (got) mixed with the true output (got).
+        # to avoid this unwanted mixing we drain the buffers
+        self._interpreter._buffer.truncate(0)
+        self._interpreter._before.truncate(0)
+
+    @profile
+    def _get_output(self, options):
         if options['term'] == 'dumb':
-            out = self._emulate_dumb_terminal(self._output_between_prompts)
+            out = self._emulate_dumb_terminal(
+                self._output_between_prompts, options
+            )
         elif options['term'] == 'ansi':
-            out = self._emulate_ansi_terminal(self._output_between_prompts)
+            out = self._emulate_ansi_terminal(
+                self._output_between_prompts, options
+            )
         elif options['term'] == 'as-is':
-            out = self._emulate_as_is_terminal(self._output_between_prompts)
+            out = self._emulate_as_is_terminal(
+                self._output_between_prompts, options
+            )
         else:
             raise TypeError(
                 "Unknown terminal type '+term=%s'." % options['term']
@@ -786,27 +924,38 @@ class PexpectMixin(object):
         self._drop_output()
         return out
 
-    def _get_output_echo_filtered(self, options):
-        lines = self._filter_echo(options, self._output_between_prompts)
+    def _get_output_echo_filtered(self, options, chunks=None):
+        if chunks is None:
+            chunks = self._output_between_prompts
+
+        lines = self._filter_echo_by_tagging(options, chunks)
 
         self._drop_output()
         return '\n'.join(lines)
 
-    def _filter_echo(self, options, output_between_prompts):
-        # If the interpreter doesn't disable the TTY's echo,
-        # everything we type in it will be reflected in the output.
-        # so this breaks badly self._get_output
-        # Experimental feature, use this instead of _get_output
+    def _filter_echo_by_tagging(self, options, output_between_prompts):
+        ''' Filter the echoed example in the output by injecting
+            a cookie/tag at the begin of each output chuck obtained
+            between prompts.
 
-        # self._output_between_prompts is a list of strings found by pexpect
+            The idea is that this cookie/tag mark the begin of
+            each line which then can be filtered.
+        '''
+        # output_between_prompts is a list of strings found by pexpect
         # after returning of each pexpect.expect
         # in other words if we prefix each line with the prompt
         # should get the original output from the process
-        cookie = '[byexamplecookie]$'
-        lines = (cookie + ' ' + line for line in output_between_prompts)
+        cookie_pattern = '^)#@'
+        cookie = cookie_pattern * 5
+        lines = (cookie + line for line in output_between_prompts)
 
-        # now, feed those lines to our ANSI Terminal emulator
-        lines = self._emulate_ansi_terminal(lines, join=False)
+        # pass the chunks through a terminal emulator large enough
+        # to not introduce artifacts due a small geometry
+        # (like linefeeds/carriage_returns) but at the same time emulating
+        # any control sequence that the output may have
+        lines = self._pass_output_chunks_through_ansi_terminal(
+            lines, join=False, terminal_geometry=(2048, 1024)
+        )
 
         # get each line in the Terminal's display and ignore each one that
         # starts with our cookie: those are the "echo" lines that
@@ -819,10 +968,12 @@ class PexpectMixin(object):
         # something without adding a newline to separate it from the prompt.
         # for simplicity I will remove any prompt that it may be at
         # the end of all the lines:
-        return (
+        filtered_lines = (
             line[:-len(cookie)] if line.endswith(cookie) else line
             for line in filtered_lines
         )
+
+        return filtered_lines
 
     def _set_cooked_mode(self, state):  # pragma: no cover
         # code borrowed from ptyprocess/ptyprocess.py, _setecho, and

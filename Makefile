@@ -80,6 +80,10 @@ lib-test: clean_test
 	@$(python_bin) -W error  test/r.py @test/minimum.env -- byexample/*.py
 	@make -s clean_test
 
+filter-echo-tagging-test: clean_test
+	@$(python_bin) -W error  test/r.py @test/filter-echo-tagging.env -- byexample/*.py
+	@make -s clean_test
+
 corner-test: clean_test
 	@$(python_bin) -W error  test/r.py @test/corner.env -- test/corner_cases.md
 	@make -s clean_test
