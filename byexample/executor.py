@@ -6,24 +6,28 @@ import contextlib
 
 
 class TimeoutException(Exception):
-    def __init__(self, msg, output):
+    def __init__(self, msg, output, raw_output):
         Exception.__init__(self, msg)
         self.output = output
+        self.raw_output = repr(raw_output)
 
 
 class InputPrefixNotFound(TimeoutException):
     def __init__(self, prefix, input, timeout_exc):
         msg = "The text before typing '%s' was not found. Expected '%s' but found '%s'"
         msg = msg % (input, prefix, timeout_exc.output)
-        TimeoutException.__init__(self, msg, timeout_exc.output)
+        TimeoutException.__init__(
+            self, msg, timeout_exc.output, timeout_exc.raw_output
+        )
 
         self.prefix, self.input = prefix, input
 
 
 class InterpreterClosedUnexpectedly(Exception):
-    def __init__(self, msg, output):
+    def __init__(self, msg, output, raw_output):
         Exception.__init__(self, msg)
         self.output = output
+        self.raw_output = repr(raw_output)
 
 
 class InterpreterNotFound(Exception):

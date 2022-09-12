@@ -7,7 +7,7 @@ from functools import reduce, partial
 from .executor import TimeoutException, InputPrefixNotFound, InterpreterClosedUnexpectedly, InterpreterNotFound
 from .common import tohuman, ShebangTemplate, Countdown, short_string, constant
 from .example import Example
-from .log import clog, log_context, INFO, DEBUG
+from .log import clog, log_context, INFO, DEBUG, log_with
 from .prof import profile, profile_ctx
 from .extension import Extension
 
@@ -526,6 +526,10 @@ class PexpectMixin(object):
 
             clog().warn(msg, *args)
 
+        if clog().isEnabledFor(DEBUG):
+            with log_with("raw-got") as clog2:
+                clog2.debug("\n" + ''.join(self._output_between_prompts))
+
         return self._get_output(options)
 
     @profile
@@ -797,9 +801,10 @@ class PexpectMixin(object):
 
         if what == Timeout:
             msg = "Prompt not found: the code is taking too long to finish or there is a syntax error.\n\nLast 1000 bytes read:\n%s"
-            msg = msg % ''.join(self._output_between_prompts)[-1000:]
+            raw_output = ''.join(self._output_between_prompts)
+            msg = msg % raw_output[-1000:]
             out = self._get_output(options)
-            raise TimeoutException(msg, out)
+            raise TimeoutException(msg, out, raw_output)
 
         elif what == Earlier:
             self._last_output_may_be_incomplete = True
@@ -814,9 +819,10 @@ class PexpectMixin(object):
 
     def _interpreter_closed_unexpectedly_error(self, options):
         msg = "Interpreter closed unexpectedly.\nThis could happen because the example triggered a close/shutdown/exit action,\nthe interpreter was killed by someone else or because the interpreter just crashed.\n\nLast 1000 bytes read:\n%s"
-        msg = msg % ''.join(self._output_between_prompts)[-1000:]
+        raw_output = ''.join(self._output_between_prompts)
+        msg = msg % raw_output[-1000:]
         out = self._get_output(options)
-        raise InterpreterClosedUnexpectedly(msg, out)
+        raise InterpreterClosedUnexpectedly(msg, out, raw_output)
 
     def _add_output(self, output):
         ''' Add the given output to the output between prompts.
