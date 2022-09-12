@@ -187,8 +187,6 @@ class FileExecutor(object):
             # aka, obj is an Example
             lang = obj.runner.language
 
-        # TODO is guaranteed to always have a defaults (empty or not)
-        # for the given lang? aka could the lookup of 'lang' fail?
         defaults = self.options['language_specific_defaults'][lang]
         return self.options.with_top(defaults)
 
