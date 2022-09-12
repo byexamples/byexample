@@ -211,5 +211,4 @@ go's specific options
                         print the expression's value (true); suppress it
                         (false); or print it only if the example has a colon
                         (auto, the default)
-<...>
 ```

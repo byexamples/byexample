@@ -212,5 +212,4 @@ $ byexample -l javascript --show-options       # byexample: +norm-ws
 javascript's specific options
 -----------------------------
   None.
-<...>
 ```

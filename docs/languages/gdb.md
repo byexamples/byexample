@@ -82,5 +82,4 @@ $ byexample -l gdb --show-options       # byexample: +norm-ws
 gdb's specific options
 ----------------------
   None.
-<...>
 ```

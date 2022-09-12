@@ -258,5 +258,4 @@ $ byexample -l cpp --show-options       # byexample: +norm-ws
 cpp's specific options
 ----------------------
   None.
-<...>
 ```

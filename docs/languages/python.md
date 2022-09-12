@@ -510,5 +510,4 @@ python's specific options
   +FAIL_FAST            [doctest] alias for +fail-fast.
   +REPORT_ONLY_FIRST_FAILURE
                         [doctest] alias for +show-failures 1.
-<...>
 ```

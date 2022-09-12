@@ -445,5 +445,4 @@ shell's specific options
   +shell {bash,dash,ksh,sh}
                         shell to use with default settings ('bash' by
                         default). For full control use -x-shebang)
-<...>
 ```

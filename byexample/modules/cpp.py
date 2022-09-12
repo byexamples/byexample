@@ -38,9 +38,9 @@ Example:
 
   TODO no newline is sent!
   ?: std::string what;
-  ?: getline(std::cin, what);    // byexample: +type +pass
+  ?: getline(std::cin, what);    // byexample: +type +pass +skip
   [it works!]
-  ?: what
+  ?: what                       // byexample: +skip
   (std::string &) "it works!"
 """
 

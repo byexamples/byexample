@@ -166,5 +166,4 @@ iasm's specific options
   +iasm-code-size <sz>  size of the code segment; see iasm documentation.
   +iasm-pc <addr>       starting address, value of the program counter; see
                         iasm documentation.
-<...>
 ```

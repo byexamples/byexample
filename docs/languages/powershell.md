@@ -131,5 +131,4 @@ $ byexample -l pwsh --show-options       # byexample: +norm-ws
 pwsh's specific options
 -----------------------
   None.
-<...>
 ```
