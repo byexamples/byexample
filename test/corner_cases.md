@@ -26,7 +26,13 @@ you want to skip from the ones that you want to execute:
 Ensure that `byexample` works even in a super-verbose mode.
 
 ```shell
-$ byexample -l python  -vvvvvvvvvvvvvvvvvvvvv --skip byexample/prof.py -- byexample/*.py > /dev/null  # byexample: +timeout=60
+$ BYEXAMPLE_DEV_MODE=1 byexample -l python  -vvvvvvvvvvvvvvvvvvvvv --skip byexample/prof.py -- byexample/*.py > /dev/null  # byexample: +timeout=60
+$ echo $?
+0
+```
+
+```shell
+$ BYEXAMPLE_DEV_MODE=1 byexample -l python,shell  -vvvvvvvvvvvvvvvvvvvvv -- docs/basic/input.md > /dev/null  # byexample: +timeout=180
 $ echo $?
 0
 ```

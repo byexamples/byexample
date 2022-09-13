@@ -248,6 +248,10 @@ def abspath(*args):
     return os.path.abspath(path)
 
 
+def is_byexample_in_dev_mode():
+    return os.getenv('BYEXAMPLE_DEV_MODE')
+
+
 try:
     from shlex import quote as shlex_quote
 except ImportError:

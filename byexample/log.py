@@ -2,7 +2,7 @@ from logging import Formatter, Logger, getLogger
 import sys, logging, inspect, os.path
 import contextlib
 
-from .common import colored, highlight_syntax, indent
+from .common import colored, highlight_syntax, indent, is_byexample_in_dev_mode
 from .log_level import TRACE, DEBUG, CHAT, INFO, NOTE, WARNING, ERROR, CRITICAL
 import functools, threading
 from .prof import profile
@@ -373,6 +373,17 @@ class XStreamHandler(logging.StreamHandler):
 
     def release(self):
         return
+
+    def handleError(self, record):
+        # handleError is called when an error happend during the logging.
+        # We delegate the handling to the parent class (which will log the
+        # error to stderr but it will not make the program crash).
+        # After that, if byexample is in development mode then abort the program
+        try:
+            return logging.StreamHandler.handleError(self, record)
+        finally:
+            if is_byexample_in_dev_mode():
+                sys.exit(-1)
 
 
 def init_log_system(level=NOTE, use_colors=False):
