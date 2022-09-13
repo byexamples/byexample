@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import collections.abc, argparse, shlex, pprint, sys
+import collections.abc, argparse, shlex, pprint, sys, copy
 
 
 class Options(collections.abc.MutableMapping):
@@ -278,14 +278,24 @@ class Options(collections.abc.MutableMapping):
 
             >>> opt.copy()
             {'bar': 2, 'foo': 1}
+
+        The copy is deep so mutable values are copied too and
+        they can be safely modified in the copy:
+
+            >>> opt['blaz'] = [1, 2, 3]    # mutable value
+
+            >>> opt.copy()['blaz'].clear() # modify it
+            >>> opt                        # unmodified
+            {'bar': 2, 'blaz': [1, 2, 3], 'foo': 1}
         '''
-        clone = Options(self.stack[-1])  # bottom
+        deep = copy.deepcopy
+        clone = Options(deep(self.stack[-1]))  # bottom
 
         # clone pushing up
         for s in reversed(self.stack[:-1]):
-            clone.up(s)
+            clone.up(deep(s))
 
-        clone.default_values = list(self.default_values)
+        clone.default_values = deep(self.default_values)
         return clone
 
 
