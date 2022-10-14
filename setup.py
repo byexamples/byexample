@@ -53,6 +53,7 @@ required_deps=[
 nice_to_have_deps=[
     'tqdm>=4,<5',     # tqdm 4.x.x required
     'pygments>=2,<3', # pygments 2.x.x required
+    'argcomplete>=2.0.0,<2.1.0' # argcomplete 2.x.x required
     ]
 
 # run

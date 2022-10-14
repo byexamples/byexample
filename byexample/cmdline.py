@@ -45,6 +45,7 @@ def _byexample_dependencies():
     tmp = []
     for dependency in (
         'appdirs',
+        'argcomplete',
         'bracex',
         'pexpect',
         'pygments',
