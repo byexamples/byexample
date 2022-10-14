@@ -136,6 +136,13 @@ class SimpleReporter(Concern):
                 exception_output
             )
 
+        exception_raw_output = exception.raw_output.rstrip()
+        if self.verbosity >= 4 and exception_raw_output:
+            msg += self._bullet('yellow', '-') + ' '
+            msg += 'This is the last raw output obtained:\n%s\n' % str(
+                exception_raw_output
+            )
+
         self._write(msg)
         self.fail += 1
 
@@ -177,6 +184,14 @@ class SimpleReporter(Concern):
                 msg += 'This is the last output obtained:\n%s\n' % str(
                     exception_output
                 )
+
+            exception_raw_output = exception.raw_output.rstrip()
+            if self.verbosity >= 4 and exception_raw_output:
+                msg += self._bullet('yellow', '-') + ' '
+                msg += 'This is the last raw output obtained:\n%s\n' % str(
+                    exception_raw_output
+                )
+
         elif isinstance(exception, UnicodeDecodeError):
             msg += self._bullet('cyan', '-') + ' '
             msg += f'The output of the example could not be decoded as \'{exception.encoding}\'.\n'

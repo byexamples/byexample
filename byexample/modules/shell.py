@@ -130,7 +130,7 @@ class ShellInterpreter(ExampleRunner, PexpectMixin):
 
     def get_default_cmd(self, *args, **kargs):
         shell = kargs.pop('shell', 'bash')
-        return "%e %p %a", {
+        return "%e -u PS1 -u PS2 %p %a", {
             'bash': {
                 'e': '/usr/bin/env',
                 'p': 'bash',
