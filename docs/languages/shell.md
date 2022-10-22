@@ -136,7 +136,7 @@ Here is an example (the ``%%`` is replaced by the job id by the shell):
 
 ```shell
 $ kill %% ; wait                    # byexample: +timeout=4 +norm-ws +paste
-[<job-id>]+ Terminated <...>
+[<job-id>]+ Terminated<...>
 ```
 
 ### Subshells
