@@ -1,3 +1,8 @@
+<!--
+$ uname | grep -i darwin
+<on-macos>
+-->
+
 # Handy Shell Snippets
 
 ### Wait for a tcp port
@@ -24,7 +29,7 @@ $ free_port() {
 >   for port in {1500..65000}; do ss -tln | grep -q ":$port " || echo "Port $port" && break; done
 > }
 
-$ free_port     # byexample: +fail-fast
+$ free_port     # byexample: +fail-fast +unless=on-macos
 Port <port>
 ```
 
