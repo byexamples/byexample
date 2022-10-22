@@ -6,7 +6,7 @@ what you type is *echoed* so you can see what you are typing.
 `byexample` disables this so it can capture the output of an example
 without having the *typed* example mixed with it.
 
-However not all the interpreters honors this and they may leave turned on
+However not all the interpreters honor this and they may leave turned on
 the echo anyway.
 
 For example this shell example uses `stty` to re-enable the echoing:
@@ -21,6 +21,13 @@ $ echo "normal output"
 echo "normal output"
 normal output
 ```
+
+> *Changed* in `byexample 11.0.0`: since `11.0.0`, the echo is disabled
+> before executing each example. This makes the execution more robust
+> against changes in the terminal settings.
+> Before `11.0.0` the echo was disabled only on the interpreter startup
+> only.
+> You may change this using `-x-turn-echo-off` but be careful.
 
 Having to expect what you typed is ugly and confusing for your readers.
 
@@ -66,17 +73,7 @@ For example, in `python` you can use `termios` to control the echoing:
 ...
 ...     tcsetattr(fd, TCSANOW, attrs)
 
->>> set_echo_mode(True)
-<...>
-
->>> print("normal output")
-print("normal output")
-normal output
-
 >>> set_echo_mode(False)
 <...>
-
->>> print("normal output")
-normal output
 ```
 
