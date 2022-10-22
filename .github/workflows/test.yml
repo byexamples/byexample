@@ -3,6 +3,7 @@ on: [pull_request]
 jobs:
   byexample-test:
     name: "Byexample Python ${{ matrix.python-version }} ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
     strategy:
         matrix:
             python-version: ["3.7", "3.8", "3.9", "3.10"]
