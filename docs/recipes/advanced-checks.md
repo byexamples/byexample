@@ -19,7 +19,7 @@ want can be much easier to implement.
 > For me, Python is my first choice
 
 ```shell
-$ wc -w test/ds/about-lic.doc
+$ wc -w test/ds/about-lic.doc | xargs
 <count> test/ds/about-lic.doc
 ```
 
