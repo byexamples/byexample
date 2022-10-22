@@ -88,7 +88,7 @@ $ tail -f test/ds/some.log      # byexample: +stop-on-silence
 Then we run the asynchronous command (here you put *your* command)
 
 ```shell
-$ (sleep 0.5 ; echo "very important message!" >> test/ds/some.log) &
+$ (sleep 0.5 ; echo 'very important message!' >> test/ds/some.log) &
 [<job-id>] <pid>
 ```
 
