@@ -212,20 +212,20 @@ test/ds/pkg/foo2.py
 
 More extra tests to ensure that no file is missing
 
-$ byexample -l python @test/ds/pkg/bopts2 | grep pkg | wc -l    # byexample: +timeout=8
+$ byexample -l python @test/ds/pkg/bopts2 | grep pkg | wc -l | xargs   # byexample: +timeout=8
 1
 
 $ cat test/ds/pkg/bopts3
 <...>skip=test/ds/pkg/foo1.py test/ds/pkg/foo2.py
 <...>
 
-$ byexample -l python @test/ds/pkg/bopts2 | grep pkg | wc -l    # byexample: +timeout=8
+$ byexample -l python @test/ds/pkg/bopts2 | grep pkg | wc -l | xargs    # byexample: +timeout=8
 1
 
-$ byexample -l python @test/ds/pkg/bopts | grep pkg | wc -l     # byexample: +timeout=8
+$ byexample -l python @test/ds/pkg/bopts | grep pkg | wc -l | xargs     # byexample: +timeout=8
 1
 
-$ byexample -l python @test/ds/pkg/bopts-brace | grep pkg | wc -l  # byexample: +timeout=8
+$ byexample -l python @test/ds/pkg/bopts-brace | grep pkg | wc -l | xargs  # byexample: +timeout=8
 2
 
 -->
