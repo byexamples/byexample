@@ -150,7 +150,7 @@ jobs:
       - run: make lang-javascript-test
 
   lang-go-test:
-    name: "Lang Go test (ver: ${{ matrix.go-version }}) (os: ${{ matrix.os }})"
+    name: "Lang Go test (ver: ${{ matrix.go-version.go }}) (os: ${{ matrix.os }})"
     runs-on: ${{ matrix.os }}
     strategy:
         matrix:
