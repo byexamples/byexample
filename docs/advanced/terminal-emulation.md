@@ -88,15 +88,15 @@ If you have an example that is printing text with color, you will probably see
 something like:
 
 ```shell
-$ echo -e "\033[31mmessage in red\033[0m"
-<...>[31mmessage in red<...>[0m
+$ echo -e "This is a \033[31mmessage in red\033[0m but not panic"
+<...>This is a <...>[31mmessage in red<...>[0m but not panic
 ```
 
 To get rid of those weird symbols you can enable terminal emulation:
 
 ```shell
-$ echo -e "\033[31mmessage in red\033[0m"      # byexample: +term=ansi
-message in red
+$ echo -e "This is a \033[31mmessage in red\033[0m but not panic"      # byexample: +term=ansi
+<...>This is a message in red but not panic
 ```
 
 ### Terminal boundaries
