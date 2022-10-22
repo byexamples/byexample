@@ -245,7 +245,7 @@ This could happen because the example triggered a close/shutdown/exit action,
 the interpreter was killed by someone else or because the interpreter just crashed.
 <...>
 Last 1000 bytes read:
-/usr/bin/env: ‘python99’: No such file or directory
+<...>python99<...>No such file or directory
 <...>
 ```
 

@@ -75,7 +75,7 @@ given environment variable is passed:
 
 ```shell
 $ cat test/ds/capture-bomb.doc               # byexample: +rm= 
-    $ echo "Booom!"    # byexample: +unless=bomb_disabled
+    $ echo 'Booom!'    # byexample: +unless=bomb_disabled
     The bomb should not explode!
 ```
 

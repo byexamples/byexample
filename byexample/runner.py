@@ -433,7 +433,16 @@ class PexpectMixin(object):
 
     @profile
     def _shutdown_interpreter(self):
-        self._interpreter.sendeof()
+        try:
+            self._interpreter.sendeof()
+        except Exception as ex:
+            clog().debug(
+                "Call to sendeof() on interpreter failed (may happen): %s.",
+                str(ex)
+            )
+        else:
+            time.sleep(0.001)
+
         try:
             self._interpreter.close()
         except Exception as ex:
@@ -441,8 +450,9 @@ class PexpectMixin(object):
                 "Call to close() on interpreter failed (may happen): %s.",
                 str(ex)
             )
+        else:
+            time.sleep(0.001)
 
-        time.sleep(0.001)
         try:
             self._interpreter.terminate(force=True)
         except Exception as ex:
@@ -451,6 +461,8 @@ class PexpectMixin(object):
                 str(ex)
             )
 
+        # Unconditionally sleep before checking if the interpreter is alive.
+        # It shouldn't because terminate(force=True) should had killed
         time.sleep(0.001)
         if self._interpreter.isalive():
             who = tohuman(

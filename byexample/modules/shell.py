@@ -288,6 +288,15 @@ export PS4="/byexample/sh/ps4> "
             timeout=options['x']['dfl_timeout']
         )
 
+        if options['shell'] == 'bash':
+            # Disable Bash's history expasion (aka !foo). In some
+            # legacy version of Bash this breaks more things than
+            # it fixes, specially in MacOS
+            self._exec_and_wait(
+                '''set +H
+''', options, timeout=options['x']['dfl_timeout']
+            )
+
         self._drop_output()  # discard banner and things like that
 
     def shutdown(self):

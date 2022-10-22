@@ -136,7 +136,7 @@ Here is an example (the ``%%`` is replaced by the job id by the shell):
 
 ```shell
 $ kill %% ; wait                    # byexample: +timeout=4 +norm-ws +paste
-[<job-id>]+ Terminated <...>
+[<job-id>]+ Terminated<...>
 ```
 
 ### Subshells
@@ -426,6 +426,14 @@ $ byexample -l shell -x-shebang 'shell:%e bash --norc --noprofile --noediting' t
 <!--
 $ kill %% ; fg ; wait    # byexample: +pass -skip
 -->
+
+## Bash history expansion
+
+Since `byexample 11.0.0` the history expansion of Bash is disabled
+(calling `set +H` at the begin of the shell execution).
+
+This feature had troubles in some old versions of Bash and it is
+usefulness is limited anyways.
 
 ## Shell specific options
 

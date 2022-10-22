@@ -1,3 +1,8 @@
+<!--
+$ uname | grep -i darwin
+<on-macos>
+-->
+
 # Handy Shell Snippets
 
 ### Wait for a tcp port
@@ -24,7 +29,7 @@ $ free_port() {
 >   for port in {1500..65000}; do ss -tln | grep -q ":$port " || echo "Port $port" && break; done
 > }
 
-$ free_port     # byexample: +fail-fast
+$ free_port     # byexample: +fail-fast +unless=on-macos
 Port <port>
 ```
 
@@ -49,13 +54,13 @@ sure unlock the file at the end:
 
 ```shell
 $ # try to get the lock, fail fast if we cannot
-$ exec {fd}>>test/ds/f && flock -n $fd || echo "Lock failed"  # byexample: +fail-fast
+$ exec {fd}>>test/ds/f && flock -n $fd || echo "Lock failed"  # byexample: +fail-fast +unless=on-macos
 
 $ # your code here
 
 $ # release the lock, do not skip these steps to avoid deadlocks
-$ flock -u $lockfd              # byexample: -skip +pass
-$ exec {lockfd}>&-              # byexample: -skip +pass
+$ flock -u $lockfd              # byexample: -skip +pass +unless=on-macos
+$ exec {lockfd}>&-              # byexample: -skip +pass +unless=on-macos
 $ rm -f test/ds/f               # byexample: -skip +pass
 ```
 
@@ -83,7 +88,7 @@ $ tail -f test/ds/some.log      # byexample: +stop-on-silence
 Then we run the asynchronous command (here you put *your* command)
 
 ```shell
-$ (sleep 0.5 ; echo "very important message!" >> test/ds/some.log) &
+$ (sleep 0.5 ; echo 'very important message!' >> test/ds/some.log) &
 [<job-id>] <pid>
 ```
 
@@ -113,7 +118,7 @@ do not want to [skip](/{{ site.uprefix }}/basic/setup-and-tear-down) this.
 ```shell
 $ kill %% ; fg ; wait       # byexample: -skip
 tail -f test/ds/some.log
-Terminated
+Terminated<...>
 ```
 
 ### No POSIX-conformant Bash
