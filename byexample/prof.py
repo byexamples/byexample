@@ -23,7 +23,7 @@ On a call, the wrapped function will print an one-line stack trace
 with the elapsed time in nanoseconds:
 
 >>> foo()           # byexample: +timeout=8
-stdin>::foo 10<...>
+stdin>::foo 1<...>
 
 The function name is prefixed by the name of the module. In this case,
 "stdin>".
@@ -36,8 +36,8 @@ Nested profiled functions will print a larger stack trace:
 ...     foo()
 
 >>> gus()           # byexample: +timeout=8 +paste
-stdin>::gus;stdin>::foo 10<...>
-stdin>::gus 20<...>
+stdin>::gus;stdin>::foo 1<...>
+stdin>::gus 2<...>
 
 Two one-liner stack traces were printed: one for foo() called from
 gus() and the other for gus() only.
@@ -58,9 +58,9 @@ use a context manager for that.
 >>> from byexample.prof import profile_ctx
 
 >>> def bar():
-...     time.sleep(0.1)
+...     time.sleep(1)
 ...     with profile_ctx():
-...         time.sleep(0.2)
+...         time.sleep(2)
 
 >>> bar()           # byexample: +timeout=8
 stdin>::bar 2<...>
@@ -73,9 +73,9 @@ managers from the same function:
 
 >>> def baz():
 ...     with profile_ctx("head"):
-...         time.sleep(0.1)
+...         time.sleep(1)
 ...     with profile_ctx("tail"):
-...         time.sleep(0.2)
+...         time.sleep(2)
 
 >>> baz()           # byexample: +timeout=8
 stdin>::baz::head 1<...>
@@ -85,13 +85,13 @@ Nested is possible too:
 
 >>> @profile
 ... def nested():
-...     time.sleep(0.1)
+...     time.sleep(1)
 ...     with profile_ctx():
-...         time.sleep(0.2)
+...         time.sleep(2)
 ...         with profile_ctx():
-...             time.sleep(0.3)
+...             time.sleep(3)
 
->>> nested()           # byexample: +timeout=8
+>>> nested()           # byexample: +timeout=12
 stdin>::nested;stdin>::nested;stdin>::nested 3<...>
 stdin>::nested;stdin>::nested 2<...>
 stdin>::nested 1<...>
