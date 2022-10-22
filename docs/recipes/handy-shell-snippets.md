@@ -54,7 +54,7 @@ sure unlock the file at the end:
 
 ```shell
 $ # try to get the lock, fail fast if we cannot
-$ exec {fd}>>test/ds/f && flock -n $fd || echo "Lock failed"  # byexample: +fail-fast
+$ exec {fd}>>test/ds/f && flock -n $fd || echo "Lock failed"  # byexample: +fail-fast +unless=on-macos
 
 $ # your code here
 
