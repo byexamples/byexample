@@ -59,8 +59,8 @@ $ exec {fd}>>test/ds/f && flock -n $fd || echo "Lock failed"  # byexample: +fail
 $ # your code here
 
 $ # release the lock, do not skip these steps to avoid deadlocks
-$ flock -u $lockfd              # byexample: -skip +pass
-$ exec {lockfd}>&-              # byexample: -skip +pass
+$ flock -u $lockfd              # byexample: -skip +pass +unless=on-macos
+$ exec {lockfd}>&-              # byexample: -skip +pass +unless=on-macos
 $ rm -f test/ds/f               # byexample: -skip +pass
 ```
 
@@ -118,7 +118,7 @@ do not want to [skip](/{{ site.uprefix }}/basic/setup-and-tear-down) this.
 ```shell
 $ kill %% ; fg ; wait       # byexample: -skip
 tail -f test/ds/some.log
-Terminated
+Terminated<...>
 ```
 
 ### No POSIX-conformant Bash
