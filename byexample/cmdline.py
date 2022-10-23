@@ -1,6 +1,11 @@
 from __future__ import unicode_literals
-import sys, argparse, os, multiprocessing, glob, itertools, codecs
+import sys, argparse, os, multiprocessing, glob, itertools, codecs, signal
 import bracex
+import argcomplete
+import textwrap
+from argcomplete.completers import EnvironCompleter, DirectoriesCompleter
+import importlib_resources as impres
+
 from . import __version__, __doc__, _author, _license, _url, _license_disclaimer
 
 from .log_level import str_to_level
@@ -45,7 +50,9 @@ def _byexample_dependencies():
     tmp = []
     for dependency in (
         'appdirs',
+        'argcomplete',
         'bracex',
+        'importlib-resources',
         'pexpect',
         'pygments',
         'termscraper',
@@ -87,6 +94,74 @@ class _Print(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         parser.exit(message=self.message)
+
+
+class _PrintAutocompleteScript(argparse.Action):
+    r'''Print to stdout the shell script required to be sourced
+        to enable autocompletion for the selected shell and then
+        exit.'''
+    def __call__(self, parser, namespace, values, option_string=None):
+        shell = values
+
+        import byexample
+        src = impres.files(byexample
+                           ).joinpath("autocomplete",
+                                      f"autocomplete_{shell}").read_text()
+
+        print(src)
+        parser.exit(0)
+
+
+class HintMessageNonCompleter:
+    ''' Show a help message instead of giving suggestions
+        to autocomplete.
+    '''
+    def __init__(self, help_message):
+        self.help_message = help_message
+
+    def __call__(self, action, **kargs):
+        # Use the given help message, fallback to the
+        # action's help
+        if self.help_message:
+            msg = self.help_message
+        else:
+            msg = action.help
+
+        # The message may have some placeholders
+        # See argparse documentation
+        msg = msg % {
+            'prog': 'byexample',
+            'default': action.default,
+            'choices': action.choices,
+        }
+
+        # Format the message
+        msg = "Hint: " + msg[0].lower() + msg[1:]
+        lines = msg.splitlines()
+        lines = sum((list(textwrap.wrap(l, width=60)) for l in lines), [])
+        msg = '\n'.join(lines)
+
+        # The actual print. Use argcomplete.warn() instead of print()
+        # to do it and to not interfere with argcomplete's engine
+        argcomplete.warn(msg)
+
+        # A hack: we get the process id of the ancestral process
+        # which owns the current window
+        # Retrieve its PID from then envirnoment.
+        # We send a SIGWINCH (window change signal) to force
+        # and redraw of the terminal/command line.
+        # This is required because otherwise the terminal will not
+        # know that we screw the display writting stuff and it is
+        # required a redraw.
+        try:
+            pid = int(os.getenv('_BYEXAMPLE_ARGCOMPLETE_SHELL_PID', 0))
+            if pid:
+                os.kill(pid, signal.SIGWINCH)
+        except:
+            pass
+
+        # Return no suggestions for autocompletion
+        return []
 
 
 def _key_val_type(item):
@@ -436,6 +511,8 @@ def parse_args(args=None):
         default=[],
         help='select which languages to parse and run. ' +
         'Comma separated syntax is also accepted.'
+    ).completer = HintMessageNonCompleter(
+        "Select one ore more languages to run.\nExample: byexample -l python,shell"
     )
 
     g = parser.add_argument_group("Execution Options")
@@ -452,7 +529,9 @@ def parse_args(args=None):
             default=2,
             type=float,
             help='timeout in seconds to complete each example (%(default)s by default); ' + \
-                 'this can be changed per example with this option.')
+                 'this can be changed per example with this option.'
+    ).completer = HintMessageNonCompleter("Timeout in seconds")
+
     g.add_argument(
             "-j",
             "--jobs",
@@ -462,7 +541,9 @@ def parse_args(args=None):
             help='run <n> jobs in parallel (%(default)s by default); ' +\
                  '<n> can be an integer or the string "cpu" or "cpu<n>": ' +\
                  '"cpu" means use all the cpus available; ' +\
-                 '"cpu<n>" multiply it by <n> the cpus available.')
+                 '"cpu<n>" multiply it by <n> the cpus available.'
+    ).completer = HintMessageNonCompleter("Use 'cpu', 'cpu<n>' or <n> (a positive number).")
+
     g.add_argument(
         "--dry",
         action='store_true',
@@ -486,7 +567,7 @@ def parse_args(args=None):
              'the clipboard so they can be pasted and used in ' + \
              'conditional executions. ' + \
              'Comma separated syntax is also accepted.'
-    )
+    ).completer = EnvironCompleter
 
     g = parser.add_argument_group("Diff Options")
     g.add_argument(
@@ -504,7 +585,8 @@ def parse_args(args=None):
             help='command line to the external diff program; ' + \
                  'the tokens %%e and %%g are replaced by ' + \
                  'the file names with the expected and the got outputs ' + \
-                 'to compare. Enabled only if "--diff tool".')
+                 'to compare. Enabled only if "--diff tool".'
+    ).completer = HintMessageNonCompleter(None)
     g.add_argument(
             "--no-enhance-diff",
             action='store_false',
@@ -522,7 +604,7 @@ def parse_args(args=None):
         dest='options_str',
         default="",
         help='add additional options; see --show-options to list them.'
-    )
+    ).completer = HintMessageNonCompleter(None)
     g.add_argument(
         "--show-options",
         action='store_true',
@@ -536,7 +618,8 @@ def parse_args(args=None):
         dest='modules_dirs',
         default=[search_default],
         help='append a directory for searching modules there.'
-    )
+    ).completer = DirectoriesCompleter()
+
     g.add_argument(
         "--encoding",
         metavar='<enc>[:<error>]',
@@ -544,7 +627,8 @@ def parse_args(args=None):
         help='select the encoding and optionally the error handler ' +\
              '(default: %(default)s); valid error handlers are ' +\
              '"strict", "ignore" and "replace".'
-    )
+    ).completer = HintMessageNonCompleter("Encoding and error handler.\nExamples:\n  byexample --encoding utf8:ignore\n  byexample --encoding ascii:replace")
+
     g.add_argument(
         "--show-failures",
         metavar='<n>',
@@ -633,14 +717,16 @@ def parse_args(args=None):
                  '<shebang>; the tokens %%e %%p %%a %%d are replaced by ' + \
                  'the default values for environment, program name, ' + \
                  'arguments and working directory (however no all ' + \
-                 'the runners will honor this and some may break).')
+                 'the runners will honor this and some may break).'
+    ).completer = HintMessageNonCompleter(None)
+
     g.add_argument(
         "-x-dfl-timeout",
         metavar="<secs>",
         default=8,
         type=float,
         help='timeout in seconds for internal operations (default: %(default)s).'
-    )
+    ).completer = HintMessageNonCompleter("Timeout in seconds")
     g.add_argument(
         "-x-delaybeforesend",
         metavar="<secs>",
@@ -648,7 +734,7 @@ def parse_args(args=None):
         type=lambda n: None if n == 0 else float(n),
         help=
         "delay in seconds before sending a line to an runner/interpreter; 0 disable this (default)."
-    )
+    ).completer = HintMessageNonCompleter("Delay in seconds")
     g.add_argument(
         "-x-delayafterprompt",
         metavar="<secs>",
@@ -656,7 +742,7 @@ def parse_args(args=None):
         type=lambda n: None if n == 0 else float(n),
         help=
         "delay in seconds after the prompt to capture more output; 0 disable this (default)."
-    )
+    ).completer = HintMessageNonCompleter("Delay in seconds")
     g.add_argument(
         "-x-turn-echo-off",
         action='store',
@@ -680,7 +766,7 @@ def parse_args(args=None):
         type=int,
         help=
         "minimum match length around a capture tag to perform a guess (default: %(default)s)."
-    )
+    ).completer = HintMessageNonCompleter(None)
     g.add_argument(
         "-x-not-recover-timeout",
         action='store_true',
@@ -696,7 +782,22 @@ def parse_args(args=None):
             type=_key_val_type,
             help="set the <log-level> of a module named <dotted-prefix> " + \
                  "(ex: byexample.exec.python:chat will put in 'chat' level "+ \
-                 "the logs coming from the python execution module.)")
+                 "the logs coming from the python execution module.)"
+    ).completer = HintMessageNonCompleter(None)
+
+    g.add_argument(
+            "-x-autocomplete",
+            action=_PrintAutocompleteScript,
+            metavar='<shell>',
+            choices=['bash'],
+            help="print a shell script to be sourced by the current " +\
+                 "shell session to enable the autocompletion of the " +\
+                 "command line arguments of byexample"
+    )
+
+    argcomplete.autocomplete(
+        parser, always_complete_options='long', exit_method=sys.exit
+    )
     namespace = parser.parse_args(args)
 
     # Some extra checks

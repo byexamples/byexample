@@ -67,7 +67,7 @@ all:
 deps:
 	$(pip_bin) install -e .
 
-deps-dev: deps
+deps-dev:
 	$(pip_bin) install -r requirements-dev.txt
 
 private-all-test: clean_test
@@ -251,10 +251,21 @@ format-test:
 ## Packaging and clean up
 #  ======================
 
+generate-autocomplete:
+	register-python-argcomplete --no-defaults -s bash byexample > autocomplete/autocomplete_bash
+
 dist:
 	rm -Rf dist/ build/ *.egg-info
 	$(python_bin) setup.py sdist bdist_wheel
 	rm -Rf build/ *.egg-info
+
+install-from-pkg-wheel: dist
+	@pip uninstall -y byexample || true
+	pip install dist/byexample-*.whl
+
+install-from-pkg-tgz: dist
+	@pip uninstall -y byexample || true
+	pip install dist/byexample-*.tar.gz
 
 upload: dist version-test
 	twine upload dist/*.tar.gz dist/*.whl

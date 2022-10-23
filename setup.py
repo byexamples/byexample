@@ -44,6 +44,7 @@ required_deps=[
     'appdirs>=1.4.3,<2', # appdirs 1.4.x (x >= 3) required
     'termscraper>=0.9.3,<0.10', # termscraper 0.9.x
     'bracex>=2.1.0,<3',  # bracex 2.x required (with x >= 1)
+    'importlib-resources>=5.5.0,<6.0.0', # importlib-resources 5.y.x (y >= 5)
     ]
 
 # these, on the other hand, are optional nice to have
@@ -53,6 +54,7 @@ required_deps=[
 nice_to_have_deps=[
     'tqdm>=4,<5',     # tqdm 4.x.x required
     'pygments>=2,<3', # pygments 2.x.x required
+    'argcomplete>=2.0.0,<2.1.0' # argcomplete 2.x.x required
     ]
 
 # run
@@ -117,7 +119,7 @@ setup(
 
     packages=['byexample', 'byexample.modules'],
     data_files=[("", ["LICENSE"])],
-    package_data={'byexample':["modules/gadgets/*"]},
+    package_data={'byexample':["modules/gadgets/*", "autocomplete/*"]},
 
     entry_points={
         'console_scripts': [

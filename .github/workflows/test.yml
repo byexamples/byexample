@@ -17,6 +17,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: make deps-dev
+      - run: make install-from-pkg-tgz
       - run: make lib-test
       - run: make modules-test
       - run: make docs-test
@@ -61,6 +62,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: make deps-dev
+      - run: make install-from-pkg-tgz
       - run: make lang-python-test
 
   lang-iasm-test:
@@ -76,6 +78,7 @@ jobs:
         with:
           python-version: "3.7"
       - run: make deps-dev
+      - run: make install-from-pkg-tgz
       - run: pip install iasm
       - run: make lang-iasm-test
 
@@ -92,6 +95,7 @@ jobs:
         with:
           python-version: "3.7"
       - run: make deps-dev
+      - run: make install-from-pkg-tgz
       - run: make lang-pwsh-test
 
   lang-ruby-test:
@@ -112,6 +116,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby-version }}
       - run: make deps-dev
+      - run: make install-from-pkg-tgz
       - run: make lang-ruby-test
 
   lang-shell-test:
@@ -127,6 +132,7 @@ jobs:
         with:
           python-version: "3.7"
       - run: make deps-dev
+      - run: make install-from-pkg-tgz
       - run: make lang-shell-test
 
   lang-javascript-test:
@@ -147,10 +153,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: make deps-dev
+      - run: make install-from-pkg-tgz
       - run: make lang-javascript-test
 
   lang-go-test:
-    name: "Lang Go test (ver: ${{ matrix.go-version }}) (os: ${{ matrix.os }})"
+    name: "Lang Go test (ver: ${{ matrix.go-version.go }}) (os: ${{ matrix.os }})"
     runs-on: ${{ matrix.os }}
     strategy:
         matrix:
@@ -168,6 +175,7 @@ jobs:
           go-version: ${{ matrix.go-version.go }}
       - run: go version
       - run: make deps-dev
+      - run: make install-from-pkg-tgz
       - run: go install github.com/traefik/yaegi/cmd/yaegi@${{ matrix.go-version.yaegi }}
       - run: PATH=$PATH:$(go env GOPATH)/bin  make lang-go-test
 
@@ -190,4 +198,5 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
       - run: make deps-dev
+      - run: make install-from-pkg-tgz
       - run: make lang-java-test

@@ -176,3 +176,40 @@ Examples:
 See https://byexamples.github.io for the full documentation
 and more examples.
 ```
+
+## Autocomplete
+
+You can enable autocompletion in your shell. `byexample` supports this
+partially and only for Bash.
+
+<!--
+$ rm -f test/autocomplete_byexample.sh # byexample: +pass -skip
+-->
+
+Run the following to write down the script required to be sourced
+in the location of your preference
+
+```shell
+$ byexample -x-autocomplete bash > test/autocomplete_byexample.sh
+```
+
+Then you have to *source* the autocomplete script in your shell, typically
+doing this in `.bashrc` as follows:
+
+```shell
+$ source test/autocomplete_byexample.sh
+```
+
+<!--
+$ cat test/autocomplete_byexample.sh        # byexample: +norm-ws
+<...>
+    local SHELL_PID=$$
+<...>
+    _ARGCOMPLETE=1 \
+    _BYEXAMPLE_ARGCOMPLETE_SHELL_PID=$SHELL_PID \
+<...>
+complete -o nospace -o bashdefault -F _python_argcomplete byexample
+
+
+$ rm -f test/autocomplete_byexample.sh # byexample: +pass -skip
+-->
