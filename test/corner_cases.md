@@ -185,8 +185,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Location: /<...>/byexample
 Package paths: /<...>/byexample
-Dependencies: appdirs (<...>), bracex (<...>), pexpect (<...>),
-pygments (<...>), termscraper (<...>), tqdm (<...>)
+Dependencies: appdirs (<...>), argcomplete (<...>),
+bracex (<...>), importlib-resources (<...>),
+pexpect (<...>), pygments (<...>), termscraper (<...>), tqdm (<...>)
 ```
 
 ## Doctest interference (language specific options isolation)

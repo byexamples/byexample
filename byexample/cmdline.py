@@ -50,6 +50,7 @@ def _byexample_dependencies():
         'appdirs',
         'argcomplete',
         'bracex',
+        'importlib-resources',
         'pexpect',
         'pygments',
         'termscraper',
