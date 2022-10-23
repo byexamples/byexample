@@ -16,3 +16,4 @@ prof-traces
 .release-notes
 .workflow-log
 test/ds/good.args
+test/autocomplete_byexample.sh
