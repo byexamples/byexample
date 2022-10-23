@@ -127,14 +127,17 @@ class HelpMessageNonCompleter:
         argcomplete.warn(msg)
 
         # A hack: we get the process id of the ancestral process
-        # which owns the current session (aka the session id).
+        # which owns the current window
+        # Retrieve its PID from then envirnoment.
         # We send a SIGWINCH (window change signal) to force
         # and redraw of the terminal/command line.
         # This is required because otherwise the terminal will not
         # know that we screw the display writting stuff and it is
         # required a redraw.
         try:
-            os.kill(os.getsid(0), signal.SIGWINCH)
+            pid = int(os.getenv('_BYEXAMPLE_ARGCOMPLETE_SHELL_PID', 0))
+            if pid:
+                os.kill(pid, signal.SIGWINCH)
         except:
             pass
 

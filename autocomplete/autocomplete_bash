@@ -25,6 +25,7 @@ __python_argcomplete_run_inner() {
 
 _python_argcomplete() {
     local IFS=$'\013'
+    local SHELL_PID=$$
     local SUPPRESS_SPACE=0
     if compopt +o nospace 2> /dev/null; then
         SUPPRESS_SPACE=1
@@ -35,6 +36,7 @@ _python_argcomplete() {
                   COMP_TYPE="$COMP_TYPE" \
                   _ARGCOMPLETE_COMP_WORDBREAKS="$COMP_WORDBREAKS" \
                   _ARGCOMPLETE=1 \
+                  _BYEXAMPLE_ARGCOMPLETE_SHELL_PID=$SHELL_PID \
                   _ARGCOMPLETE_SUPPRESS_SPACE=$SUPPRESS_SPACE \
                   __python_argcomplete_run "$1") )
     if [[ $? != 0 ]]; then
