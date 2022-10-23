@@ -112,7 +112,7 @@ class _PrintAutocompleteScript(argparse.Action):
         parser.exit(0)
 
 
-class HelpMessageNonCompleter:
+class HintMessageNonCompleter:
     ''' Show a help message instead of giving suggestions
         to autocomplete.
     '''
@@ -136,7 +136,7 @@ class HelpMessageNonCompleter:
         }
 
         # Format the message
-        msg = msg[0].capitalize() + msg[1:]
+        msg = "Hint: " + msg[0].lower() + msg[1:]
         lines = msg.splitlines()
         lines = sum((list(textwrap.wrap(l, width=60)) for l in lines), [])
         msg = '\n'.join(lines)
@@ -511,7 +511,7 @@ def parse_args(args=None):
         default=[],
         help='select which languages to parse and run. ' +
         'Comma separated syntax is also accepted.'
-    ).completer = HelpMessageNonCompleter(
+    ).completer = HintMessageNonCompleter(
         "Select one ore more languages to run.\nExample: byexample -l python,shell"
     )
 
@@ -530,7 +530,7 @@ def parse_args(args=None):
             type=float,
             help='timeout in seconds to complete each example (%(default)s by default); ' + \
                  'this can be changed per example with this option.'
-    ).completer = HelpMessageNonCompleter("Timeout in seconds")
+    ).completer = HintMessageNonCompleter("Timeout in seconds")
 
     g.add_argument(
             "-j",
@@ -542,7 +542,7 @@ def parse_args(args=None):
                  '<n> can be an integer or the string "cpu" or "cpu<n>": ' +\
                  '"cpu" means use all the cpus available; ' +\
                  '"cpu<n>" multiply it by <n> the cpus available.'
-    ).completer = HelpMessageNonCompleter("Use 'cpu', 'cpu<n>' or <n> (a positive number).")
+    ).completer = HintMessageNonCompleter("Use 'cpu', 'cpu<n>' or <n> (a positive number).")
 
     g.add_argument(
         "--dry",
@@ -586,7 +586,7 @@ def parse_args(args=None):
                  'the tokens %%e and %%g are replaced by ' + \
                  'the file names with the expected and the got outputs ' + \
                  'to compare. Enabled only if "--diff tool".'
-    ).completer = HelpMessageNonCompleter(None)
+    ).completer = HintMessageNonCompleter(None)
     g.add_argument(
             "--no-enhance-diff",
             action='store_false',
@@ -604,7 +604,7 @@ def parse_args(args=None):
         dest='options_str',
         default="",
         help='add additional options; see --show-options to list them.'
-    ).completer = HelpMessageNonCompleter(None)
+    ).completer = HintMessageNonCompleter(None)
     g.add_argument(
         "--show-options",
         action='store_true',
@@ -627,7 +627,7 @@ def parse_args(args=None):
         help='select the encoding and optionally the error handler ' +\
              '(default: %(default)s); valid error handlers are ' +\
              '"strict", "ignore" and "replace".'
-    ).completer = HelpMessageNonCompleter("Encoding and error handler.\nExamples:\n  byexample --encoding utf8:ignore\n  byexample --encoding ascii:replace")
+    ).completer = HintMessageNonCompleter("Encoding and error handler.\nExamples:\n  byexample --encoding utf8:ignore\n  byexample --encoding ascii:replace")
 
     g.add_argument(
         "--show-failures",
@@ -718,7 +718,7 @@ def parse_args(args=None):
                  'the default values for environment, program name, ' + \
                  'arguments and working directory (however no all ' + \
                  'the runners will honor this and some may break).'
-    ).completer = HelpMessageNonCompleter(None)
+    ).completer = HintMessageNonCompleter(None)
 
     g.add_argument(
         "-x-dfl-timeout",
@@ -726,7 +726,7 @@ def parse_args(args=None):
         default=8,
         type=float,
         help='timeout in seconds for internal operations (default: %(default)s).'
-    ).completer = HelpMessageNonCompleter("Timeout in seconds")
+    ).completer = HintMessageNonCompleter("Timeout in seconds")
     g.add_argument(
         "-x-delaybeforesend",
         metavar="<secs>",
@@ -734,7 +734,7 @@ def parse_args(args=None):
         type=lambda n: None if n == 0 else float(n),
         help=
         "delay in seconds before sending a line to an runner/interpreter; 0 disable this (default)."
-    ).completer = HelpMessageNonCompleter("Delay in seconds")
+    ).completer = HintMessageNonCompleter("Delay in seconds")
     g.add_argument(
         "-x-delayafterprompt",
         metavar="<secs>",
@@ -742,7 +742,7 @@ def parse_args(args=None):
         type=lambda n: None if n == 0 else float(n),
         help=
         "delay in seconds after the prompt to capture more output; 0 disable this (default)."
-    ).completer = HelpMessageNonCompleter("Delay in seconds")
+    ).completer = HintMessageNonCompleter("Delay in seconds")
     g.add_argument(
         "-x-turn-echo-off",
         action='store',
@@ -766,7 +766,7 @@ def parse_args(args=None):
         type=int,
         help=
         "minimum match length around a capture tag to perform a guess (default: %(default)s)."
-    ).completer = HelpMessageNonCompleter(None)
+    ).completer = HintMessageNonCompleter(None)
     g.add_argument(
         "-x-not-recover-timeout",
         action='store_true',
@@ -783,7 +783,7 @@ def parse_args(args=None):
             help="set the <log-level> of a module named <dotted-prefix> " + \
                  "(ex: byexample.exec.python:chat will put in 'chat' level "+ \
                  "the logs coming from the python execution module.)"
-    ).completer = HelpMessageNonCompleter(None)
+    ).completer = HintMessageNonCompleter(None)
 
     g.add_argument(
             "-x-autocomplete",
