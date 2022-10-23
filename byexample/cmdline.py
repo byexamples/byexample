@@ -4,6 +4,8 @@ import bracex
 import argcomplete
 import textwrap
 from argcomplete.completers import EnvironCompleter, DirectoriesCompleter
+import importlib_resources as impres
+
 from . import __version__, __doc__, _author, _license, _url, _license_disclaimer
 
 from .log_level import str_to_level
@@ -94,6 +96,22 @@ class _Print(argparse.Action):
         parser.exit(message=self.message)
 
 
+class _PrintAutocompleteScript(argparse.Action):
+    r'''Print to stdout the shell script required to be sourced
+        to enable autocompletion for the selected shell and then
+        exit.'''
+    def __call__(self, parser, namespace, values, option_string=None):
+        shell = values
+
+        import byexample
+        src = impres.files(byexample
+                           ).joinpath("autocomplete",
+                                      f"autocomplete_{shell}").read_text()
+
+        print(src)
+        parser.exit(0)
+
+
 class HelpMessageNonCompleter:
     ''' Show a help message instead of giving suggestions
         to autocomplete.
@@ -142,7 +160,7 @@ class HelpMessageNonCompleter:
         except:
             pass
 
-        # Return no suggestions for autocompletition
+        # Return no suggestions for autocompletion
         return []
 
 
@@ -766,6 +784,16 @@ def parse_args(args=None):
                  "(ex: byexample.exec.python:chat will put in 'chat' level "+ \
                  "the logs coming from the python execution module.)"
     ).completer = HelpMessageNonCompleter(None)
+
+    g.add_argument(
+            "-x-autocomplete",
+            action=_PrintAutocompleteScript,
+            metavar='<shell>',
+            choices=['bash'],
+            help="print a shell script to be sourced by the current " +\
+                 "shell session to enable the autocompletion of the " +\
+                 "command line arguments of byexample"
+    )
 
     argcomplete.autocomplete(
         parser, always_complete_options='long', exit_method=sys.exit
