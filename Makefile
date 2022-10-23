@@ -253,8 +253,6 @@ format-test:
 
 generate-autocomplete:
 	register-python-argcomplete --no-defaults -s bash byexample > autocomplete/autocomplete_bash
-	register-python-argcomplete --no-defaults -s tcsh byexample > autocomplete/autocomplete_tcsh
-	register-python-argcomplete --no-defaults -s fish byexample > autocomplete/autocomplete_fish
 
 dist:
 	rm -Rf dist/ build/ *.egg-info
