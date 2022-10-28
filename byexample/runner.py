@@ -11,7 +11,7 @@ from .log import clog, log_context, INFO, DEBUG, log_with
 from .prof import profile, profile_ctx
 from .extension import Extension
 
-from termscraper import Stream, Screen
+from termscraper import Stream, Screen, WSPassthroughStream, LinearScreen
 import sys
 
 
@@ -160,11 +160,37 @@ class ExampleRunner(Extension):
         return None
 
 
-class PopenSpawnExt(pexpect.popen_spawn.PopenSpawn):
+class ReadFilter:
+    def __init__(self):
+        self.read_filtered_enabled = True
+        self._screen = LinearScreen()
+        self._stream = WSPassthroughStream(self._screen, trace_callbacks=False)
+
+    def read_nonblocking(self, size=1, timeout=-1):
+        ret = super().read_nonblocking(size, timeout)
+        if not self.read_filtered_enabled:
+            return ret
+
+        # Reseting the screen state cleans it so we start with a
+        # fresh screen to receive the text.
+        # However this does not reset the stream parser state
+        # so the stream object will correctly decode escape/control
+        # sequences even if a part falls in one read_nonblocking()
+        # call and the rest falls in the next call.
+        self._screen.reset_state()
+        self._stream.feed(ret)
+
+        out = self._screen.current_text
+        return out
+
+
+class PopenSpawnExt(ReadFilter, pexpect.popen_spawn.PopenSpawn):
     ''' This is a compatibility layer that extends pexpect's PopenSpawn
-        to work more similar to pexpect's spawn class.
+        to work more similar to pexpect's spawn class (pty_spawn).
     '''
     def __init__(self, cmd, **kargs):
+        ReadFilter.__init__(self)
+
         self._echo = kargs.pop('echo')
         kargs.pop('dimensions')
 
@@ -245,6 +271,13 @@ class PopenSpawnExt(pexpect.popen_spawn.PopenSpawn):
         pass
 
 
+class PTYSpawnExt(ReadFilter, pexpect.pty_spawn.spawn):
+    ''' Small class to "hook" pty_spawn methods with ReadFilter ones. '''
+    def __init__(self, cmd, **kargs):
+        ReadFilter.__init__(self)
+        pexpect.pty_spawn.spawn.__init__(self, cmd, **kargs)
+
+
 class PexpectMixin(object):
     def __init__(self, PS1_re, any_PS_re):
         if not isinstance(self, ExampleRunner):
@@ -316,7 +349,7 @@ class PexpectMixin(object):
                 v = '.'.join(map(str, v))
                 clog().info("%s's version: (%s)", repr(self), v)
 
-        spawner = PopenSpawnExt if subprocess else pexpect.spawn
+        spawner = PopenSpawnExt if subprocess else PTYSpawnExt
         try:
             self._interpreter = spawner(
                 cmd,
@@ -422,7 +455,8 @@ class PexpectMixin(object):
 
     def _run(self, example, options):
         with self._change_terminal_geometry_ctx(options):
-            return self._run_impl(example, options)
+            out = self._run_impl(example, options)
+            return out
 
     def _run_impl(self, example, options):
         raise NotImplementedError()  # pragma: no cover
@@ -506,6 +540,10 @@ class PexpectMixin(object):
         if options['force_echo_filtering']:
             self._drain(options)
 
+        self._interpreter.read_filtered_enabled = (
+            options['term'] == 'dumb' and options['filter_esc_seqs']
+        )
+
         countdown = Countdown(timeout)
         lines = source.split('\n')
 
@@ -542,7 +580,8 @@ class PexpectMixin(object):
             with log_with("raw-got") as clog2:
                 clog2.debug("\n" + ''.join(self._output_between_prompts))
 
-        return self._get_output(options)
+        out = self._get_output(options)
+        return out
 
     @profile
     def _expect_delayed_output(self, options):

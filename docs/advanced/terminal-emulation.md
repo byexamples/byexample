@@ -56,6 +56,32 @@ taz
 If you need to check whitespace characters, you can use ``+term=as-is`` to
 disable terminal emulation.
 
+### Escape/Control sequences filter
+
+Since `11.0.0`, `byexample` strips any escape and control sequence.
+
+The following example prints a message partially in red using the
+special `\033[31m` and `\033[0m` sequences.
+
+The `dumb` terminal will filter them by default:
+
+```shell
+$ echo -e "This is a \033[31mmessage in red\033[0m but not panic"
+<...>This is a message in red but not panic
+```
+
+If you want the pre-`11.0.0` behaviour, you can turn off the filtering:
+
+```shell
+$ echo -e "This is a \033[31mmessage in red\033[0m but not panic"      # byexample: -filter-esc-seqs
+<...>This is a <...>[31mmessage in red<...>[0m but not panic
+```
+
+If filtering is not enough (the example's output does not display well)
+you probably will need to use a full terminal emulation with
+`+term=ansi`.
+
+
 ## As-is terminal
 
 When ``+term=as-is`` is activated the output is passed *as is* without
@@ -71,6 +97,14 @@ baz	saz
 taz
 ```
 
+Following the message printed partially in red, the `as-is` terminal
+will not filter any escape/control sequence:
+
+```shell
+$ echo -e "This is a \033[31mmessage in red\033[0m but not panic"      # byexample: +term=as-is
+<...>This is a <...>[31mmessage in red<...>[0m but not panic
+```
+
 ## ANSI terminal
 
 Some programs may need a real terminal or at least an
@@ -79,25 +113,19 @@ Some programs may need a real terminal or at least an
 ``byexample`` can emulate one capable of interpreting and emulating
 all the control sequences and escape codes using ``+term=ansi``.
 
-> **Note:** terminal emulation is not fully supported in ``Python 2.7``.
-> It should work but using a modern ``Python`` version is recommended.
-
-### Removing color
-
-If you have an example that is printing text with color, you will probably see
-something like:
-
-```shell
-$ echo -e "This is a \033[31mmessage in red\033[0m but not panic"
-<...>This is a <...>[31mmessage in red<...>[0m but not panic
-```
-
-To get rid of those weird symbols you can enable terminal emulation:
+A full emulation allows you to render correctly any output, not just
+filtering the escape/control sequences but interpreting it correctly.
 
 ```shell
 $ echo -e "This is a \033[31mmessage in red\033[0m but not panic"      # byexample: +term=ansi
 <...>This is a message in red but not panic
 ```
+
+The ANSI terminal emulation comes with some reasonable but unexpected
+behaviours, some gotchas and a slightly slower performance.
+
+> **Note:** terminal emulation is not fully supported in ``Python 2.7``.
+> It should work but using a modern ``Python`` version is recommended.
 
 ### Terminal boundaries
 
@@ -145,7 +173,7 @@ $ less test/ds/python-tutorial.v2.md # byexample: +term=ansi +rm=  +stop-on-tim
  <...>(END)
 ```
 
-> Try the above example without ``+term=ansi`` and see what happens.
+> Try the above example with ``+term=as-is`` and see what happens.
 
 <!--
 $ kill %%     # byexample: -skip +pass
@@ -490,7 +518,7 @@ line 99
 
 ### Performance
 
-Emulation is typically 3 times slower than the normal mode
+Emulation is slightly slower than the normal mode
 (``+term=dumb``).
 Keep that in mind and try to not enable it by default.
 
