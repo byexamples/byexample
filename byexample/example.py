@@ -111,6 +111,10 @@ class Example(object):
         self.start_lineno, self.end_lineno, self.filepath, self.zdelimiter = where
 
         self.fully_parsed = False
+        self.notes_on_failure = []
+
+    def add_note_on_failure(self, msg):
+        self.notes_on_failure.append(msg)
 
     def parse_yourself(self, concerns=None):
         if self.fully_parsed:

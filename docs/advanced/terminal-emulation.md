@@ -81,6 +81,19 @@ If filtering is not enough (the example's output does not display well)
 you probably will need to use a full terminal emulation with
 `+term=ansi`.
 
+In those cases `byexample` will print a hint about that:
+
+```shell
+$ byexample -l shell test/ds/cli.md     # byexample: +norm-ws +timeout 8
+<...>
+Failed example:
+    echo -e "This is a broken \033[23;2Hmessage\033[23;77H"
+<...>
+- Escape/control sequences were detected. If the output looks
+scrambled or dirty, you may try a full terminal emulation with
+'+term=ansi'
+<...>
+```
 
 ## As-is terminal
 

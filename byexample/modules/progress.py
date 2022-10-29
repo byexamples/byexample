@@ -143,6 +143,9 @@ class SimpleReporter(Concern):
                 exception_raw_output
             )
 
+        for note in example.notes_on_failure:
+            msg += self._bullet('yellow', '-') + ' ' + note + '\n'
+
         self._write(msg)
         self.fail += 1
 
@@ -281,6 +284,10 @@ class SimpleReporter(Concern):
             example, got, self.current_merged_flags, self.use_colors
         )
         msg += '\n'
+
+        for note in example.notes_on_failure:
+            msg += self._bullet('yellow', '-') + ' ' + note + '\n'
+
         self._write(msg)
 
         self.fail += 1

@@ -165,13 +165,14 @@ class ReadFilter:
         self.read_filtered_enabled = True
         self._screen = LinearScreen()
         self._stream = WSPassthroughStream(self._screen, trace_callbacks=False)
+        self._were_unhandled_escape_sequences = False
 
     def read_nonblocking(self, size=1, timeout=-1):
         ret = super().read_nonblocking(size, timeout)
         if not self.read_filtered_enabled:
             return ret
 
-        # Reseting the screen state cleans it so we start with a
+        # Resetting the screen state cleans it so we start with a
         # fresh screen to receive the text.
         # However this does not reset the stream parser state
         # so the stream object will correctly decode escape/control
@@ -180,8 +181,21 @@ class ReadFilter:
         self._screen.reset_state()
         self._stream.feed(ret)
 
+        # Track if we detected some unhandled sequences.
+        # These are not displayed in the LinearScreen but it will
+        # probably make the output "scrambled" or "dirty"
+        # and in the case of a failing example we want to hint the
+        # user to use +term=ansi
+        self._were_unhandled_escape_sequences = self._were_unhandled_escape_sequences or self._screen.were_unhandled_escape_sequences
+
         out = self._screen.current_text
         return out
+
+    def were_unhandled_escape_sequences(self):
+        return self._were_unhandled_escape_sequences
+
+    def reset_unhandled_state(self):
+        self._were_unhandled_escape_sequences = False
 
 
 class PopenSpawnExt(ReadFilter, pexpect.popen_spawn.PopenSpawn):
@@ -580,6 +594,14 @@ class PexpectMixin(object):
             with log_with("raw-got") as clog2:
                 clog2.debug("\n" + ''.join(self._output_between_prompts))
 
+        unh = self._interpreter.were_unhandled_escape_sequences()
+        self._interpreter.reset_unhandled_state()
+
+        if from_example is not None and unh:
+            from_example.add_note_on_failure(
+                    "Escape/control sequences were detected. If the output looks\n" +\
+                    "scrambled or dirty, you may try a full terminal emulation with '+term=ansi'"
+                    )
         out = self._get_output(options)
         return out
 
