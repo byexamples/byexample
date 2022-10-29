@@ -16,8 +16,7 @@ Example:
   Line |
      1 |  echo @"this
        |         ~
-       | No characters are allowed after a here-string header but
-       | before the end of the line.
+       | No characters are allowed after a here-string<...>
 
   PS> echo @"
   --> this
