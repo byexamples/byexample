@@ -468,6 +468,13 @@ def get_default_options_parser(cmdline_args):
     )
 
     options_parser.add_flag(
+        "filter-esc-seqs",
+        default=True,
+        help=
+        "filter escape and control sequences from the terminal that may interfere, only used if +term=dumb."
+    )
+
+    options_parser.add_flag(
         "warn-tab",
         default=True,
         help=
