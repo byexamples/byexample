@@ -193,15 +193,19 @@ To work with the current C/C++ interpreter, ``cling``, the ANSI
 enabled by default (``+term=ansi``) and cannot be disabled.
 
 Also, the [terminal geometry](/{{ site.uprefix }}/advanced/geometry)
-cannot by changed after launching the interpreter
-so the option ``+geometry`` cannot be used in an example (but it can be
-used from the command line)
+is set to a default of 1024 columns and 2048 rows with a minimum of
+128x128.
 
-The amount of rows of the terminal has a minimum value of 128 and this limit
-is really important: if your outputs have more than 128 lines you will need
-to increase the geometry or the results may be undefined.
+> *Changed*: before `byexample 11.0.0` the runner was forced to use a
+> 128x128 geometry without possibilities of change it.
+> Since `11.0.0`, the default is expanded to 2048x1024 and can be
+> changed at any time but always with a minimum of 128x128.
 
-The same for the width of the terminal: minimum of 128 columns.
+
+Note: the minimum is enforced because if the snippet of C++ or the output
+is larger than the size of the terminal, the output will be undefined.
+
+The default of 2048x1024 should be fine for most of the use cases.
 
 ### Echoed input lines
 
