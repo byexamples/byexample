@@ -383,13 +383,26 @@ class _OptionActionContainer:
         return g
 
     def add_argument(self, name, *args, **kw):
+        into_group = kw.pop('into_group', None)
+
         self._no_options_at_all = False
         has_default = False
         if 'default' in kw:
             has_default = True
             tmp = kw.pop('default')
 
-        action = super().add_argument(name, *args, **kw)
+        # This is kind of a hack. We allow the caller
+        # to pass a Group so we can add this argument
+        # to it.
+        # The Group should be the one created by add_flag
+        # so in this way we can create mutually exclusive
+        # groups between flags and arguments
+        if into_group:
+            container = into_group
+        else:
+            container = super()
+
+        action = container.add_argument(name, *args, **kw)
 
         if has_default:
             self._internal_actions_defaults[action.dest] = tmp
