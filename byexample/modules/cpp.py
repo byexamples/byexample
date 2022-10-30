@@ -176,5 +176,8 @@ class CPPInterpreter(ExampleRunner, PexpectMixin):
     def _get_output(self, options):
         return self._get_output_echo_filtered(options)
 
+    def _is_echo_filtering_enforced(self, options):
+        return True
+
     def cancel(self, example, options):
         return False  # not supported by cling
