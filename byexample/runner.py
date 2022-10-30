@@ -522,12 +522,24 @@ class PexpectMixin(object):
                 who
             )
 
+    def _is_echo_filtering_enforced(self, options):
+        ''' Return if the echo filtering is enforced for this runner.
+            This can be happen if it is enforced globally
+            (force_echo_filtering) or if it is enforced only
+            for us (force_echo_filtering_for).
+        '''
+        return (
+            options['force_echo_filtering']
+            or self.language in options['force_echo_filtering_for']
+            or set(options['force_echo_filtering_for']) & self.flavors
+        )
+
     def _may_turn_echo_off(self, options):
         # If the echo-filtering is enabled, we must not turn off the echo
         # of the child process (interpreter) otherwise, if the child
         # really does not output the echo'd input, the echo-filtering
         # algorithm will fail badly because no echo will be found.
-        if options['force_echo_filtering']:
+        if self._is_echo_filtering_enforced(options):
             return
 
         if options['x']['turn_echo_off']:
@@ -551,7 +563,7 @@ class PexpectMixin(object):
         # drain the buffers before the example execution in case
         # of having dirty/unread stuff there that may interfere
         # with the echo filtering and/or get mixed with the example's output
-        if options['force_echo_filtering']:
+        if self._is_echo_filtering_enforced(options):
             self._drain(options)
 
         self._interpreter.read_filtered_enabled = (
@@ -734,7 +746,7 @@ class PexpectMixin(object):
         # If the echo filtering is on, this will imply a terminal
         # emulation that it will take care of the rest of the output
         # processing...
-        if options['force_echo_filtering']:
+        if self._is_echo_filtering_enforced(options):
             chunks = (
                 self._linefeed_and_carriage_return(chunk) for chunk in chunks
             )
@@ -757,7 +769,7 @@ class PexpectMixin(object):
     def _emulate_ansi_terminal(self, chunks, options):
         # Do a first pass doing a terminal emulation and filtering the echos
         # using an "unbound" (very large) geometry
-        if options['force_echo_filtering']:
+        if self._is_echo_filtering_enforced(options):
             chunks = self._filter_echo_by_tagging(options, chunks)
 
             # This is needed to be interpreted by the second pass
