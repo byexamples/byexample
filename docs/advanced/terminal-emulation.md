@@ -231,6 +231,16 @@ line 999
 
 For the following the +geometry is never changed
 
+:> ;! show('r[0-9]', 'r1[0-9]')     # byexample: +geometry=8x20
+------  -  ------  -  ------  -  ------  -----
+    r0  0  r1      0  r2      0  r3      0
+    r4  0  r5      0  r6      0  r7      0
+    r8  0  r9/sb   0  r10     0  r11/fp  0
+r12/ip  0  r13/sp  0  r14/lr  0  r15/pc  100:0
+------  -  ------  -  ------  -  ------  -----
+
+
+
 php> for ($i = 1; $i < 100; $i += 1) {  // byexample: +geometry=5x80
 ...>    echo "line $i\n";
 ...> }
