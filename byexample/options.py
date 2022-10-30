@@ -316,30 +316,9 @@ class UnrecognizedOption(Exception):
     pass
 
 
-class OptionParser(argparse.ArgumentParser):
+class _OptionActionContainer:
     def __init__(self, **kw):
-        # allow the +flag/-flag semantics
-        kw.setdefault('prefix_chars', '-+')
-
-        # if an option is not explicitly set, and it has no
-        # a default value, do not create an entry for it
-        kw.setdefault('argument_default', argparse.SUPPRESS)
-
-        # do not show any usage?
-        kw.setdefault('usage', argparse.SUPPRESS)
-
-        # do not show any program
-        kw.setdefault('prog', "")
-
-        # do not add -h/--help options
-        kw.setdefault('add_help', False)
-
-        # do not allow for abbreviations of long options
-        if sys.version_info[:2] >= (3, 5):
-            kw.setdefault('allow_abbrev', False)
-
-        argparse.ArgumentParser.__init__(self, **kw)
-        self.__defaults = {}
+        self._internal_actions_defaults = {}
 
         # Track if the current OptionParser has at least one option/flag.
         # If the OptionParser has no parents (empty list or None), then
@@ -373,7 +352,7 @@ class OptionParser(argparse.ArgumentParser):
         # Setup a mutual exclusive group so both +foo and -foo cannot
         # be set. And if <group_required> is True, the user must provide
         # one.
-        g = self.add_mutually_exclusive_group(required=group_required)
+        g = super().add_mutually_exclusive_group(required=group_required)
         action = g.add_argument("+" + name, action='store_true', **kw)
         g.add_argument(
             "-" + name, action='store_false', help=argparse.SUPPRESS
@@ -399,26 +378,64 @@ class OptionParser(argparse.ArgumentParser):
             )
 
         if has_default:
-            self.__defaults[action.dest] = tmp
+            self._internal_actions_defaults[action.dest] = tmp
 
         return g
 
     def add_argument(self, name, *args, **kw):
+        into_group = kw.pop('into_group', None)
+
         self._no_options_at_all = False
         has_default = False
         if 'default' in kw:
             has_default = True
             tmp = kw.pop('default')
 
-        action = argparse.ArgumentParser.add_argument(self, name, *args, **kw)
+        # This is kind of a hack. We allow the caller
+        # to pass a Group so we can add this argument
+        # to it.
+        # The Group should be the one created by add_flag
+        # so in this way we can create mutually exclusive
+        # groups between flags and arguments
+        if into_group:
+            container = into_group
+        else:
+            container = super()
+
+        action = container.add_argument(name, *args, **kw)
 
         if has_default:
-            self.__defaults[action.dest] = tmp
+            self._internal_actions_defaults[action.dest] = tmp
 
         return action
 
+
+class OptionParser(_OptionActionContainer, argparse.ArgumentParser):
+    def __init__(self, **kw):
+        # allow the +flag/-flag semantics
+        kw.setdefault('prefix_chars', '-+')
+
+        # if an option is not explicitly set, and it has no
+        # a default value, do not create an entry for it
+        kw.setdefault('argument_default', argparse.SUPPRESS)
+
+        # do not show any usage?
+        kw.setdefault('usage', argparse.SUPPRESS)
+
+        # do not show any program
+        kw.setdefault('prog', "")
+
+        # do not add -h/--help options
+        kw.setdefault('add_help', False)
+
+        # do not allow for abbreviations of long options
+        kw.setdefault('allow_abbrev', False)
+
+        _OptionActionContainer.__init__(self, **kw)
+        argparse.ArgumentParser.__init__(self, **kw)
+
     def defaults(self):
-        return Options(self.__defaults)
+        return Options(self._internal_actions_defaults)
 
     def parse(self, source, strict):
         try:

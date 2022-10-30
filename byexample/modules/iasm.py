@@ -205,6 +205,9 @@ class IAsmInterpreter(ExampleRunner, PexpectMixin):
     def _get_output(self, options):
         return self._get_output_echo_filtered(options)
 
+    def _is_echo_filtering_enforced(self, options):
+        return True
+
     def _expect_and_read(self, expect_list, timeout, expect_kinds):
         # This is a hack
         #

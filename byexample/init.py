@@ -460,11 +460,23 @@ def get_default_options_parser(cmdline_args):
         "amount of characters that must precede at minimum/maximum an input tag in the form min:max"
     )
 
-    options_parser.add_flag(
+    grp = options_parser.add_flag(
         "force-echo-filtering",
         default=False,
         help=
         "each interpreter disables the echo from the terminal but in some cases this cannot be done and an active filtering is required (this is an experimental feature, it will break your tests if no echo is received and it will force a full terminal emulation (see +term=ansi and +geometry))."
+    )
+
+    # Note: +force-echo-filtering-for and (+/-)force-echo-filtering
+    # are mutually exclusive
+    options_parser.add_argument(
+        "+force-echo-filtering-for",
+        required=False,
+        action='append',
+        default=[],
+        into_group=grp,
+        help=
+        "apply an active echo filtering for the languages selected (this is an experimental feature, it will break your tests if no echo is received and it will force a full terminal emulation (see +term=ansi and +geometry))."
     )
 
     options_parser.add_flag(

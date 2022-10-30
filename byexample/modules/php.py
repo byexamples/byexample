@@ -154,6 +154,9 @@ class PHPInterpreter(ExampleRunner, PexpectMixin):
     def _get_output(self, options):
         return self._get_output_echo_filtered(options)
 
+    def _is_echo_filtering_enforced(self, options):
+        return True
+
     def initialize(self, options):
         cmd = self.build_cmd(options, *self.get_default_cmd())
 
