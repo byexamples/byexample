@@ -1,3 +1,12 @@
+<!--
+Check that we have byexample installed first
+$ hash byexample                                    # byexample: +fail-fast
+
+# Make byexample to not turn-off the echo for testing some examples here
+$ alias byexample=byexample\ --pretty\ none\ -x-turn-echo-off\ no
+
+--
+-->
 # Echo filtering
 
 When you type something in a console or in an interactive interpreter,
@@ -39,6 +48,39 @@ Having to expect what you typed is ugly and confusing for your readers.
 $ echo "normal output"      # byexample: +force-echo-filtering
 normal output
 ```
+
+You can pass `+force-echo-filtering` from the command line to take effect
+on all the examples of all the languages but this is not encouraged
+and since `byexample 11.0.0` you can enforce the echo filtering
+per language with `+force-echo-filtering-for`
+
+```shell
+$ byexample -l shell,python -o "+force-echo-filtering-for=shell" test/ds/echo-filtering-required.md      # byexample: +timeout 8
+<...>
+File test/ds/echo-filtering-required.md, 5/5 test ran in <...> seconds
+[PASS] Pass: 5 Fail: 0 Skip: 0
+```
+
+Both `+force-echo-filtering` and `+force-echo-filtering-for` from the
+command line is not allowed.
+
+```shell
+$ byexample -l shell,python -o "+force-echo-filtering-for=shell +force-echo-filtering" test/ds/echo-filtering-required.md      # byexample: +timeout 8
+<...>
+argument +force-echo-filtering: not allowed with argument +force-echo-filtering-for
+<...>
+```
+
+> *New* in `byexample 11.0.0`: before `11.0.0`, the only way to apply
+> the filtering to all the examples was using `+force-echo-filtering`
+> from the command line but unfortunately that affects all the rest
+> of interpreters that may not require the filtering.
+>
+> Since `11.0.0` you should use `+force-echo-filtering-for` in the command
+> line to affect all the examples of the language(s) selected and
+> use `+force-echo-filtering` **only** when you want to enable the
+> filtering in a particular example.
+
 
 ## Limitations and restrictions
 
