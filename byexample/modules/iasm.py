@@ -164,8 +164,11 @@ class IAsmInterpreter(ExampleRunner, PexpectMixin):
         return self._get_version(options)
 
     def run(self, example, options):
-        # iasm's output requeries to be emulated by an ANSI Terminal
+        # iasm's output requires to be emulated by an ANSI Terminal
         # so we force this (see _get_output())
+        # in particular changes to the geometry does not plays nice
+        # so we fix the geometry to its initial value and we
+        # don't change it.
         options['geometry'] = self._terminal_default_geometry
         options['term'] = 'ansi'
 
@@ -191,7 +194,8 @@ class IAsmInterpreter(ExampleRunner, PexpectMixin):
 
         options.up()
         options['geometry'] = (
-            max(options['geometry'][0], 128), max(options['geometry'][1], 128)
+            max(options['geometry'][0],
+                2048), max(options['geometry'][1], 1024)
         )
         self._spawn_interpreter(cmd, options)
         options.down()
@@ -201,9 +205,6 @@ class IAsmInterpreter(ExampleRunner, PexpectMixin):
 
     def shutdown(self):
         self._shutdown_interpreter()
-
-    def _get_output(self, options):
-        return self._get_output_echo_filtered(options)
 
     def _is_echo_filtering_enforced(self, options):
         return True

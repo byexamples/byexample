@@ -146,11 +146,11 @@ cannot by changed after launching the interpreter
 so the option ``+geometry`` cannot be used in an example (but it can be
 used from the command line)
 
-The amount of rows of the terminal has a minimum value of 128 and this limit
-is really important: if your outputs have more than 128 lines you will need
+The amount of rows of the terminal has a minimum value of 2048 and this limit
+is really important: if your outputs have more than 2048 lines you will need
 to increase the geometry or the results may be undefined.
 
-The same for the width of the terminal: minimum of 128 columns.
+The same for the width of the terminal: minimum of 1024 columns.
 
 ## iasm specific options
 
