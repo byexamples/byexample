@@ -57,8 +57,8 @@ per language with `+force-echo-filtering-for`
 ```shell
 $ byexample -l shell,python -o "+force-echo-filtering-for=shell" test/ds/echo-filtering-required.md      # byexample: +timeout 8
 <...>
-File test/ds/echo-filtering-required.md, 5/5 test ran in <...> seconds
-[PASS] Pass: 5 Fail: 0 Skip: 0
+File test/ds/echo-filtering-required.md, <...> seconds
+[PASS] <...>
 ```
 
 Both `+force-echo-filtering` and `+force-echo-filtering-for` from the
