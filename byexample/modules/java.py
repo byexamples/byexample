@@ -376,7 +376,8 @@ class JavaInterpreter(ExampleRunner, PexpectMixin):
         # the _terminal_default_geometry variable for later
         options.up()
         options['geometry'] = (
-            max(options['geometry'][0], 128), max(options['geometry'][1], 128)
+            max(options['geometry'][0],
+                2048), max(options['geometry'][1], 1024)
         )
         # run!
         self._spawn_interpreter(cmd, options, env_update=env_update)
