@@ -157,11 +157,13 @@ cannot by changed after launching the interpreter
 so the option ``+geometry`` cannot be used in an example (but it can be
 used from the command line)
 
-The amount of rows of the terminal has a minimum value of 128 and this limit
-is really important: if your outputs have more than 128 lines you will need
-to increase the geometry or the results may be undefined.
+It is set to a default of 1024 columns and 2048 rows with a minimum of
+128x128.
 
-The same for the width of the terminal: minimum of 128 columns.
+> *Changed*: before `byexample 11.0.0` the runner was forced to use a
+> 128x128 geometry.
+> Since `11.0.0`, the default is expanded to 2048x1024.
+
 
 ## Java specific options
 
