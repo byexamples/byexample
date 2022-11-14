@@ -13,11 +13,13 @@ $ hash byexample                                    # byexample: +fail-fast
 ordinary text and snippets of code in the same file and then you
 execute them as regression tests.
 
-You can always be sure that the examples are correct and your documentation
-is up to date!
+<h3 class="noselfanchor">
+Do not <i>write</i> tests: write what you want, what do you expect, make
+examples of them. Let `byexample` <b>turn them</b> in your tests.
 
-It lets you to execute the examples written in ``Python``, ``Ruby`` or whatever
-in your documentation and validate them.
+You can always be <b>sure</b> that the examples are correct and your documentation
+is up to date!
+</h3>
 
 Currently ``byexample`` supports the following languages:
 
