@@ -14,9 +14,12 @@ ordinary text and snippets of code in the same file and then you
 execute them as regression tests.
 
 <div class="take-home-message">
-Do not <b><i>"write"</i></b> tests: write what you want, what do you expect, make
-examples of them. Let  <b>byexample turn them</b> into your tests.
-
+Do not <b><i>"write"</i></b> tests. Instead, write what you want, what do you expect, make
+examples of them.
+<br/>
+<br/>
+Let <b>byexample turn them</b> into your automated tests.
+<br/>
 You can always be <b>sure</b> that the examples are correct and your documentation
 is up to date!
 </div>
