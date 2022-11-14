@@ -180,6 +180,19 @@ File test/ds/pkg/bar1.py, 1/1 test ran in <...> seconds
 File test/ds/pkg/zaz.md, 1/1 test ran in <...> seconds
 ```
 
+The following is a handy example for selecting all the Python files at
+any depth in the folder tree:
+
+```shell
+$ byexample -l python cryptonita{,/**}/*.py     # byexample: +skip
+```
+
+The `cryptonita{,/**}/*.py` looks magic but it says: search for any
+`cryptonita/*.py` and any `cryptonita/**/*.py`. The former are all the
+`.py` files in the folder `cryptonita` and the latter are all the `.py`
+in any sub folder.
+
+
 ## Arguments per environment
 
 If you run you tests under different environments and you need to pass

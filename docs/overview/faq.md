@@ -462,3 +462,83 @@ $ byexample -l python -o='-warn-tab +norm-ws' test/ds/example-with-tabs-in-code.
 File test/ds/example-with-tabs-in-code.md, <...>
 [PASS] Pass: 1 Fail: 0 Skip: 0
 ```
+
+### How do I know which options a language support?
+
+`byexample` has a rich documentation in [its
+website](https://byexamples.github.io/byexample/#byexample-is).
+
+Any language-specific option or configurarion will be in the page for
+that language.
+
+The rest of options can be applied to any language and their
+documentation is across all the site.
+
+If you want a quick overview you can run `byexample` with
+`--show-options`
+
+```shell
+$ byexample -l python --show-options
+byexample's options
+-------------------
+<...>:
+  +fail-fast            if an example fails, fail and stop all the execution.
+  +norm-ws              ignore the amount of whitespaces.
+  <...>
+python's specific options
+-------------------------
+<...>
+  +py-doctest           enable the compatibility with doctest.
+  +py-pretty-print      enable the pretty print enhancement.
+  <...>
+```
+
+### Configuring `byexample` requires too many options
+
+Yes! `byexample` has a lot of levers for you can tweak how it works.
+
+If you are writing too many options in the command line, it is much
+easier to write them in one or multiple files and load them from there.
+
+```shell
+$ byexample @test/ds/options_file -- test/ds/python-tutorial.v2.md
+<...>
+File test/ds/python-tutorial.v2.md, 4/4 test ran in <...> seconds
+[PASS] Pass: 4 Fail: 0 Skip: 0
+```
+
+Here the `test/ds/options_file` is where all the options are defined:
+
+```shell
+$ cat test/ds/options_file
+# Options and their arguments are separated by a = or by a space
+-l python
+--options=+norm-ws
+<...>
+# But if the option receives more than one argument, all of them
+# must be in its own line
+--skip
+test/ds/pkg/foo1.py
+test/ds/pkg/foo2.py
+<...>
+```
+
+The advantage of using a file is that you can version it and document
+it.
+
+
+### How I can select all the X files in a folder tree (recursively) ?
+
+Imagine that you want to run `byexample` on any Python file that are
+in the folder `cryptonita/` or in any of its subfolders.
+
+The following will work:
+
+```shell
+$ byexample -l python cryptonita{,/**}/*.py     # byexample: +skip
+```
+
+The `cryptonita{,/**}/*.py` looks magic but it says: search for any
+`cryptonita/*.py` and any `cryptonita/**/*.py`. The former are all the
+`.py` files in the folder `cryptonita` and the latter are all the `.py`
+in any sub folder.
