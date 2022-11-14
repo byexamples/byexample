@@ -13,13 +13,13 @@ $ hash byexample                                    # byexample: +fail-fast
 ordinary text and snippets of code in the same file and then you
 execute them as regression tests.
 
-<h3 class="noselfanchor">
-Do not <i>write</i> tests: write what you want, what do you expect, make
-examples of them. Let `byexample` <b>turn them</b> in your tests.
+<div class="take-home-message">
+Do not <b><i>"write"</i></b> tests: write what you want, what do you expect, make
+examples of them. Let  <b>byexample turn them</b> into your tests.
 
 You can always be <b>sure</b> that the examples are correct and your documentation
 is up to date!
-</h3>
+</div>
 
 Currently ``byexample`` supports the following languages:
 

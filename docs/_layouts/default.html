@@ -106,10 +106,6 @@ div.logos span.selfanchor {
     });
 
     headings.forEach(function(node){
-        if (node.classList.contains("noselfanchor")) {
-           return;
-        }
-
         var span = document.createElement('span');
         span.className = 'selfanchor';
         span.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
