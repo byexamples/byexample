@@ -117,7 +117,7 @@ setup(
 
     keywords='doctest documentation test testing',
 
-    packages=['byexample', 'byexample.modules'],
+    packages=find_packages(),
     data_files=[("", ["LICENSE"])],
     package_data={'byexample':["modules/gadgets/*", "autocomplete/*"]},
 
