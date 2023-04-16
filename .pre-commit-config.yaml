@@ -42,3 +42,13 @@ repos:
     rev: v2.29.0
     hooks:
     -   id: commitizen
+
+-   repo: local
+    hooks:
+    -   id: check-secrets
+        name: check secrets in files
+        language: script
+        entry: .check-secrets.sh
+        always_run: true
+        verbose: true
+        stages: ["push"]
