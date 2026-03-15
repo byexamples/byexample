@@ -334,6 +334,35 @@ def log_with(logger_name, child=True):
     finally:
         _logger_stack.pop()
 
+class _DummyRLock:
+    '''
+    A dummy reentrant lock to emulate a lock (acquire/release) but without
+    any overhead. Of course, without any mutual exclusion either!
+
+    We use _DummyRLock for XStreamHandler where we are OK with a thread-unsafe
+    implementation because XStreamHandler's emit() will handle the thread-safety
+    or it will delegate the call to someone than manages the thread-safety itself
+    (the concerns set).
+    '''
+    def __init__(self):
+        self._cnt = 0
+
+    def acquire(self, *args, **kargs):
+        self._cnt += 1
+
+    def release(self):
+        self._cnt -= 1
+        self._cnt = max(self._cnt, 0)
+
+    def locked(self):
+        return self._cnt > 0
+
+    def __enter__(self):
+        self.acquire()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.release()
 
 class XStreamHandler(logging.StreamHandler):
     def __init__(self, *args, **kargs):
@@ -366,13 +395,7 @@ class XStreamHandler(logging.StreamHandler):
             self.handleError(record)
 
     def createLock(self):
-        self.lock = None
-
-    def acquire(self):
-        return
-
-    def release(self):
-        return
+        self.lock = _DummyRLock()
 
     def handleError(self, record):
         # handleError is called when an error happend during the logging.
