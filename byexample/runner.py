@@ -576,6 +576,9 @@ class PexpectMixin(object):
         self._last_num_lines_sent = 0
         for line in lines[:-1]:
             with profile_ctx("sendline"):
+                # turn the echo off (may be)
+                self._may_turn_echo_off(options)
+
                 self._sendline(line)
                 self._last_num_lines_sent += 1
             self._expect_prompt_or_type(
@@ -583,6 +586,9 @@ class PexpectMixin(object):
             )
 
         with profile_ctx("sendline"):
+            # turn the echo off (may be)
+            self._may_turn_echo_off(options)
+
             self._sendline(lines[-1])
             self._last_num_lines_sent += 1
 
