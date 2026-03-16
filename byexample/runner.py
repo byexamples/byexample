@@ -573,6 +573,10 @@ class PexpectMixin(object):
         countdown = Countdown(timeout)
         lines = source.split('\n')
 
+        if clog().isEnabledFor(DEBUG):
+            with log_with("sendlines") as clog2:
+                clog2.debug("\n > " + '\n > '.join(lines))
+
         self._last_num_lines_sent = 0
         for line in lines[:-1]:
             with profile_ctx("sendline"):
