@@ -348,7 +348,14 @@ class PexpectMixin(object):
         env = os.environ.copy()
         if env_update:
             env.update(env_update)
+
+        # Override the environment with LINES, COLUMNS (from geometry)
         env.update({'LINES': str(rows), 'COLUMNS': str(cols)})
+
+        # With TERM=dumb is the safest option, TERM=vt100 may be needed to offer a dummy
+        # *but* functional TERM because some programs may print scary "WARNING: terminal is not fully functional"
+        term_kind = options['term_type'].strip()
+        env.update({'TERM': term_kind})
 
         self._drop_output()  # there shouldn't be any output yet but...
         self._cmd = cmd

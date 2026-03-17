@@ -443,6 +443,12 @@ def get_default_options_parser(cmdline_args):
         help=
         "select a terminal emulator to interpret the output (default to 'dumb')."
     )
+    options_parser.add_argument(
+        "+term-type",
+        default='dumb',
+        help=
+        "set the TERM env var for the interpreters/runners (default to 'dumb', other values could be 'vt100'); if left empty, leave it unset."
+    )
 
     options_parser.add_flag(
         "type",
