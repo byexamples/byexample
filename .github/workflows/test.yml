@@ -7,7 +7,7 @@ jobs:
     strategy:
         matrix:
             python-version: ["3.7.17", "3.8.18", "3.9.25", "3.10.20", "3.11.15", "3.12.13", "3.13.12", "3.14.3"]
-            os: [ubuntu-22.04, macos-13]
+            os: [ubuntu-22.04, macos-26]
     env:
         TERM: xterm-color
     steps:
@@ -70,7 +70,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
         matrix:
-            os: [ubuntu-22.04, macos-13]
+            os: [ubuntu-22.04, macos-26]
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -87,7 +87,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
         matrix:
-            os: [ubuntu-22.04, macos-13]
+            os: [ubuntu-22.04, macos-26]
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -104,7 +104,7 @@ jobs:
     strategy:
         matrix:
             ruby-version: ["2.4", "2.5", "2.6", "2.7", "3.0", "3.1"]
-            os: [ubuntu-22.04, macos-13]
+            os: [ubuntu-22.04, macos-26]
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -124,7 +124,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
         matrix:
-            os: [ubuntu-22.04, macos-13]
+            os: [ubuntu-22.04, macos-26]
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -141,7 +141,7 @@ jobs:
     strategy:
         matrix:
             node-version: [10.x, 12.x, 14.x, 15.x, 16.x]
-            os: [ubuntu-22.04, macos-13]
+            os: [ubuntu-22.04, macos-26]
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -162,7 +162,7 @@ jobs:
     strategy:
         matrix:
             go-version: [{go: "1.19", yaegi: "v0.14.0"}, {go: "1.18", yaegi: "v0.14.0"}, {go: "1.17", yaegi: "v0.13.0"}, {go: "1.16", yaegi: "v0.13.0"}]
-            os: [ubuntu-22.04, macos-13]
+            os: [ubuntu-22.04, macos-26]
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
@@ -185,7 +185,7 @@ jobs:
     strategy:
       matrix:
             java: [ '11', '13', '15' ]
-            os: [ubuntu-22.04, macos-13]
+            os: [ubuntu-22.04, macos-26]
     steps:
       - uses: actions/checkout@v2
       - name: Setup python
