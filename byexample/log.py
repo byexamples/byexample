@@ -334,6 +334,7 @@ def log_with(logger_name, child=True):
     finally:
         _logger_stack.pop()
 
+
 class _DummyRLock:
     '''
     A dummy reentrant lock to emulate a lock (acquire/release) but without
@@ -363,6 +364,7 @@ class _DummyRLock:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.release()
+
 
 class XStreamHandler(logging.StreamHandler):
     def __init__(self, *args, **kargs):
