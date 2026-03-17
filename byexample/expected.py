@@ -348,7 +348,7 @@ class _RegexExpected(Expected):
             >>> expected = r'aa<...>bb<...>ddd<...>eee<...>cc'
             >>> got = r'aaAAbbBBxxxddeeeCCcc'
 
-            >>> expected_regexs = ['\A', 'aa', '(.*?)', 'bb', '(.*?)', 'ddd',
+            >>> expected_regexs = ['\\A', 'aa', '(.*?)', 'bb', '(.*?)', 'ddd',
             ...                    '(.*?)', 'eee', '(.*?)', 'cc', r'\n*\Z']
             >>> charnos = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32]
             >>> rcounts   = [0, 2, 0, 2, 0, 3, 0, 3, 0, 2, 0]
@@ -396,7 +396,7 @@ class _RegexExpected(Expected):
             >>> expected = r'aa<foo>bb<b-r>ddd<baz>eee<z-z>cc'
             >>> got = r'aaAAbbBBxxxddeeeCCcc'
 
-            >>> expected_regexs = ['\A', 'aa', '(?P<foo>.*?)', 'bb',
+            >>> expected_regexs = ['\\A', 'aa', '(?P<foo>.*?)', 'bb',
             ...                     '(?P<b_r>.*?)', 'ddd', '(?P<baz>.*?)',
             ...                     'eee', '(?P<z_z>.*?)', 'cc', r'\n*\Z']
             >>> charnos = [0, 0, 2, 7, 9, 14, 17, 22, 25, 30, 32]
@@ -423,7 +423,7 @@ class _RegexExpected(Expected):
             >>> expected = 'aa<foo>bb\ncc\ndd<bar>ee'
             >>> got = 'aaAAbb\nxx\nxxAAee'
 
-            >>> expected_regexs = ['\A', 'aa', '(?P<foo>.*?)', 'bb\n',
+            >>> expected_regexs = ['\\A', 'aa', '(?P<foo>.*?)', 'bb\n',
             ...                     'cc\n', 'dd', '(?P<bar>.*?)',
             ...                     'ee', r'\n*\Z']
             >>> charnos = [0, 0, 2, 7, 10, 13, 15, 20, 22]
@@ -442,7 +442,7 @@ class _RegexExpected(Expected):
 
             >>> expected = 'aa<foo>bb\ncc\ndd<foo>ee'
 
-            >>> expected_regexs = ['\A', 'aa', '(?P<foo>.*?)', 'bb\n',
+            >>> expected_regexs = ['\\A', 'aa', '(?P<foo>.*?)', 'bb\n',
             ...                     'cc\n', 'dd', '(?P=foo)',
             ...                     'ee', r'\n*\Z']
             >>> rcounts   = [0, 2, 0, 3, 3, 2, 1, 2, 0] # notice the +1
