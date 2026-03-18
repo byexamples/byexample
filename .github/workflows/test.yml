@@ -11,11 +11,12 @@ jobs:
     env:
         TERM: xterm-color
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
       - run: make deps-dev
       - run: make install-from-pkg-tgz
       - run: make lib-test
@@ -34,11 +35,12 @@ jobs:
     env:
         TERM: xterm-color
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup python
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
       - run: make deps-dev
       - run: make install-from-pkg-tgz
       - run: make lib-test
@@ -51,11 +53,12 @@ jobs:
     name: "Source code"
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v6
         with:
           python-version: "3.7.17"
+          cache: 'pip'
       - run: make deps-dev
       - run: make format-test
 
@@ -63,7 +66,7 @@ jobs:
     name: "Github Pages test"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -73,17 +76,18 @@ jobs:
 
   lang-python-test:
     name: "Lang Python test (ver: ${{ matrix.python-version }}) (os: ${{ matrix.os }})"
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.os }}
     strategy:
         matrix:
             python-version: ["3.11.15", "3.12.13", "3.13.12", "3.14.3"]
             os: [ubuntu-24.04]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
       - run: make deps-dev
       - run: make install-from-pkg-tgz
       - run: make lang-python-test
@@ -95,11 +99,12 @@ jobs:
         matrix:
             os: [ubuntu-22.04, macos-26-intel]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v6
         with:
           python-version: "3.7.17"
+          cache: 'pip'
       - run: make deps-dev
       - run: make install-from-pkg-tgz
       - run: pip install iasm
@@ -112,11 +117,12 @@ jobs:
         matrix:
             os: [ubuntu-22.04, macos-26-intel]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v6
         with:
           python-version: "3.7.17"
+          cache: 'pip'
       - run: make deps-dev
       - run: make install-from-pkg-tgz
       - run: make lang-pwsh-test
@@ -129,11 +135,12 @@ jobs:
             ruby-version: ["2.4", "2.5", "2.6", "2.7", "3.0", "3.1"]
             os: [ubuntu-22.04, macos-26-intel]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v6
         with:
           python-version: "3.7.17"
+          cache: 'pip'
       - name: Setup ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -149,11 +156,12 @@ jobs:
         matrix:
             os: [ubuntu-22.04, macos-26-intel]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v6
         with:
           python-version: "3.7.17"
+          cache: 'pip'
       - run: make deps-dev
       - run: make install-from-pkg-tgz
       - run: make lang-shell-test
@@ -166,13 +174,14 @@ jobs:
             node-version: [10.x, 12.x, 14.x, 15.x, 16.x]
             os: [ubuntu-22.04, macos-26-intel]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v6
         with:
           python-version: "3.7.17"
+          cache: 'pip'
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
       - run: make deps-dev
@@ -187,13 +196,14 @@ jobs:
             go-version: [{go: "1.19", yaegi: "v0.14.0"}, {go: "1.18", yaegi: "v0.14.0"}, {go: "1.17", yaegi: "v0.13.0"}, {go: "1.16", yaegi: "v0.13.0"}]
             os: [ubuntu-22.04, macos-26-intel]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.7"
+          python-version: "3.7.17"
+          cache: 'pip'
       - name: Setup go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version.go }}
       - run: go version
@@ -210,13 +220,14 @@ jobs:
             java: [ '11', '13', '15' ]
             os: [ubuntu-22.04, macos-26-intel]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.7"
+          python-version: "3.7.17"
+          cache: 'pip'
       - name: Setup java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
