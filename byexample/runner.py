@@ -348,7 +348,14 @@ class PexpectMixin(object):
         env = os.environ.copy()
         if env_update:
             env.update(env_update)
+
+        # Override the environment with LINES, COLUMNS (from geometry)
         env.update({'LINES': str(rows), 'COLUMNS': str(cols)})
+
+        # With TERM=dumb is the safest option, TERM=vt100 may be needed to offer a dummy
+        # *but* functional TERM because some programs may print scary "WARNING: terminal is not fully functional"
+        term_kind = options['term_type'].strip()
+        env.update({'TERM': term_kind})
 
         self._drop_output()  # there shouldn't be any output yet but...
         self._cmd = cmd
@@ -573,9 +580,16 @@ class PexpectMixin(object):
         countdown = Countdown(timeout)
         lines = source.split('\n')
 
+        if clog().isEnabledFor(DEBUG):
+            with log_with("sendlines") as clog2:
+                clog2.debug("\n > " + '\n > '.join(lines))
+
         self._last_num_lines_sent = 0
         for line in lines[:-1]:
             with profile_ctx("sendline"):
+                # turn the echo off (may be)
+                self._may_turn_echo_off(options)
+
                 self._sendline(line)
                 self._last_num_lines_sent += 1
             self._expect_prompt_or_type(
@@ -583,6 +597,9 @@ class PexpectMixin(object):
             )
 
         with profile_ctx("sendline"):
+            # turn the echo off (may be)
+            self._may_turn_echo_off(options)
+
             self._sendline(lines[-1])
             self._last_num_lines_sent += 1
 
