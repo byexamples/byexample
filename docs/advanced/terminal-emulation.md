@@ -211,50 +211,6 @@ line 32
 If this is a problem change the [geometry](/{{ site.uprefix }}/advanced/geometry):
 increase the count of rows that the terminal has with ``+geometry``.
 
-## ``TERM`` environment variable
-
-While the ``+term`` controls how the *output* is emulated and can be
-changed per example, ``byexample`` also sets the ``TERM`` environment
-variable to indicate the interpreter (and possible any subprogram
-executed by it) that the terminal if of a particular type.
-
-Contrary to ``+term``, ``+term-type`` has effect only if it is set
-in the command line before the interpreters are started and it cannot be
-changed later.
-
-By default, ``byexample`` sets ``TERM=dumb`` to indicate a
-zero-capabilites terminal. You can change this setting from
-the command line with ``-o +term-type=vt100`` (``vt100`` indicates a
-basic but functional terminal).
-
-```shell
-$ byexample -l shell test/ds/echo-term-env-variable.md
-<...>
-TERM=dumb
-<...>
-
-$ byexample -l shell -o +term-type=vt100 test/ds/echo-term-env-variable.md
-<...>
-TERM=vt100
-<...>
-```
-
-If you want to use the same ``TERM`` value that your real terminal has,
-you can pass it (nothing special is needed):
-
-```shell
-$ TERM=xterm
-$ byexample -l shell -o +term-type=$TERM test/ds/echo-term-env-variable.md
-<...>
-TERM=xterm
-<...>
-```
-
-> *Changed* in `byexample 11.0.0`. Before `11.0.0.` the `TERM` variable
-> was inherit from the caller's environment. Starting from `11.0.0`
-> this is not longer the case. If you need the old behavior,
-> do `-o +term-type=$TERM` as shown above.
-
 <!--
 
 The following tests make sure that the runners for C++, PHP and Elixir
@@ -581,3 +537,47 @@ NEWLINES + NO-ELLIPSIS
 foo
 
 -->
+
+## ``TERM`` environment variable
+
+While the ``+term`` controls how the *output* is emulated and can be
+changed per example, ``byexample`` also sets the ``TERM`` environment
+variable to indicate the interpreter (and possible any subprogram
+executed by it) that the terminal if of a particular type.
+
+Contrary to ``+term``, ``+term-type`` has effect only if it is set
+in the command line before the interpreters are started and it cannot be
+changed later.
+
+By default, ``byexample`` sets ``TERM=dumb`` to indicate a
+zero-capabilites terminal. You can change this setting from
+the command line with ``-o +term-type=vt100`` (``vt100`` indicates a
+basic but functional terminal).
+
+```shell
+$ byexample -l shell test/ds/echo-term-env-variable.md
+<...>
+TERM=dumb
+<...>
+
+$ byexample -l shell -o +term-type=vt100 test/ds/echo-term-env-variable.md
+<...>
+TERM=vt100
+<...>
+```
+
+If you want to use the same ``TERM`` value that your real terminal has,
+you can pass it (nothing special is needed):
+
+```shell
+$ TERM=xterm
+$ byexample -l shell -o +term-type=$TERM test/ds/echo-term-env-variable.md
+<...>
+TERM=xterm
+<...>
+```
+
+> *Changed* in `byexample 11.0.0`. Before `11.0.0.` the `TERM` variable
+> was inherit from the caller's environment. Starting from `11.0.0`
+> this is not longer the case. If you need the old behavior,
+> do `-o +term-type=$TERM` as shown above.
