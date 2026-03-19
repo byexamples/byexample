@@ -148,7 +148,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
         matrix:
-            ruby-version: ["2.4", "2.5", "2.6", "2.7", "3.0", "3.1"]
+            ruby-version: ["2.4", "2.5", "2.6", "2.7", "3.0", "3.1", "3.2", "3.3", "3.4", "4.0"]
             os: [ubuntu-22.04, macos-26-intel]
             include:
                 - os: ubuntu-22.04
@@ -199,7 +199,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
         matrix:
-            node-version: [10.x, 12.x, 14.x, 15.x, 16.x]
+            node-version: [10.x, 12.x, 14.x, 15.x, 16.x, 18.x, 20.x, 22.x, 23.x]
             os: [ubuntu-22.04, macos-26-intel]
             include:
                 - os: ubuntu-22.04
@@ -227,7 +227,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
         matrix:
-            go-version: [{go: "1.19", yaegi: "v0.14.0"}, {go: "1.18", yaegi: "v0.14.0"}, {go: "1.17", yaegi: "v0.13.0"}, {go: "1.16", yaegi: "v0.13.0"}]
+            go-version: [{go: "1.22", yaegi: "v0.16.1"}, {go: "1.19", yaegi: "v0.14.0"}, {go: "1.18", yaegi: "v0.14.0"}, {go: "1.17", yaegi: "v0.13.0"}, {go: "1.16", yaegi: "v0.13.0"}]
             os: [ubuntu-22.04, macos-26-intel]
             include:
                 - os: ubuntu-22.04
@@ -257,7 +257,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-            java: [ '11', '13', '15' ]
+            java: [ '13', '15', '17', '21', '24' ]
             os: [ubuntu-22.04, macos-26-intel]
             include:
                 - os: ubuntu-22.04
