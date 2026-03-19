@@ -1,0 +1,32 @@
+name: test-lang-go
+on: [pull_request]
+jobs:
+  lang-go-test:
+    name: "Lang Go test (ver: ${{ matrix.go-version.go }}) (os: ${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+        matrix:
+            go-version: [{go: "1.22", yaegi: "v0.16.1"}, {go: "1.19", yaegi: "v0.14.0"}, {go: "1.18", yaegi: "v0.14.0"}, {go: "1.17", yaegi: "v0.13.0"}, {go: "1.16", yaegi: "v0.13.0"}]
+            os: [ubuntu-22.04, macos-26-intel]
+            include:
+                - os: ubuntu-22.04
+                  python-version: "3.7.17"
+                - os: macos-26-intel
+                  python-version: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: setup.py
+      - name: Setup go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go-version.go }}
+      - run: go version
+      - run: make deps-dev
+      - run: make install-from-pkg-tgz
+      - run: go install github.com/traefik/yaegi/cmd/yaegi@${{ matrix.go-version.yaegi }}
+      - run: PATH=$PATH:$(go env GOPATH)/bin  make lang-go-test

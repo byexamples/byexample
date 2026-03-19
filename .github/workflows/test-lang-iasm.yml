@@ -1,0 +1,26 @@
+name: test-lang-iasm
+on: [pull_request]
+jobs:
+  lang-iasm-test:
+    name: "Lang iasm test (ver: latest) (os: ${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+        matrix:
+            os: [ubuntu-22.04, macos-26-intel]
+            include:
+                - os: ubuntu-22.04
+                  python-version: "3.7.17"
+                - os: macos-26-intel
+                  python-version: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: setup.py
+      - run: make deps-dev
+      - run: make install-from-pkg-tgz
+      - run: pip install iasm
+      - run: make lang-iasm-test
