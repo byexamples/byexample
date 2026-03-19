@@ -89,7 +89,7 @@ The help included in ``byexample`` should give you a quick overview of its
 capabilities
 
 ```
-$ byexample -h                                # byexample: +norm-ws -tags +rm=  +diff=ndiff
+$ byexample -h                                # byexample: +norm-ws -capture +rm=  +diff=ndiff
 usage: byexample -l <languages> [--ff] [--timeout <secs>] [-j <n>] [--dry]
                  [--skip <file> [<file> ...]] [--capture-env-var <var names>]
                  [-d {none,unified,ndiff,context,tool}] [--difftool <cmd>]
@@ -105,7 +105,7 @@ positional arguments:
   <file>                files that have the examples to run.
  
 Language Selection:
-  -l <languages>, --language <languages>, --languages <languages>
+  -l<...> --language<...> --languages <languages>
                         select which languages to parse and run. Comma
                         separated syntax is also accepted.
  
@@ -114,21 +114,21 @@ Execution Options:
   --timeout <secs>      timeout in seconds to complete each example (2 by
                         default); this can be changed per example with this
                         option.
-  -j <n>, --jobs <n>    run <n> jobs in parallel (1 by default); <n> can be an
+  -j<...> --jobs <n>    run <n> jobs in parallel (1 by default); <n> can be an
                         integer or the string "cpu" or "cpu<n>": "cpu" means
                         use all the cpus available; "cpu<n>" multiply it by
                         <n> the cpus available.
   --dry                 do not run any example, only parse them.
   --skip <file> [<file> ...]
                         skip these files
-  --capture-env-var <var names>, --capture-env-vars <var names>
+  --capture-env-var<...> --capture-env-vars <var names>
                         capture some environment variables and put them in the
                         clipboard so they can be pasted and used in
                         conditional executions. Comma separated syntax is also
                         accepted.
  
 Diff Options:
-  -d {none,unified,ndiff,context,tool}, --diff {none,unified,ndiff,context,tool}
+  -d<...> --diff {none,unified,ndiff,context,tool}
                         select diff algorithm (none by default).
   --difftool <cmd>      command line to the external diff program; the tokens
                         %e and %g are replaced by the file names with the
@@ -140,12 +140,12 @@ Diff Options:
                         disables all of that.
  
 Miscellaneous Options:
-  -o <options>, --options <options>
+  -o<...> --options <options>
                         add additional options; see --show-options to list
                         them.
   --show-options        show the available options for the selected languages
                         (with -l)
-  -m <dir>, --modules <dir>
+  -m<...> --modules <dir>
                         append a directory for searching modules there.
   --encoding <enc>[:<error>]
                         select the encoding and optionally the error handler

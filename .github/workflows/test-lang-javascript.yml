@@ -1,0 +1,30 @@
+name: test-lang-javascript
+on: [pull_request]
+jobs:
+  lang-javascript-test:
+    name: "Lang Javascript test (ver: ${{ matrix.node-version }}) (os: ${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+        matrix:
+            node-version: [10.x, 12.x, 14.x, 15.x, 16.x, 18.x, 20.x, 22.x, 23.x]
+            os: [ubuntu-22.04, macos-26-intel]
+            include:
+                - os: ubuntu-22.04
+                  python-version: "3.7.17"
+                - os: macos-26-intel
+                  python-version: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: setup.py
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: make deps-dev
+      - run: make install-from-pkg-tgz
+      - run: make lang-javascript-test

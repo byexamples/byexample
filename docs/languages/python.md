@@ -372,7 +372,7 @@ executed and with the output returned by the interpreter.
 
 >>> sys
 Traceback <...>
-NameError: name 'sys' is not defined
+NameError: name 'sys' is not defined<...>
 ```
 
 ### Empty lines

@@ -1,7 +1,6 @@
 <!--
 Check that we have byexample installed first
 $ hash byexample                                    # byexample: +fail-fast
-$ hash j2                                           # byexample: +fail-fast
 
 $ alias byexample=byexample\ --pretty\ none\ --dry
 
@@ -66,8 +65,8 @@ docs/overview/*.md
 Then:
 
 ```shell
-$ osname=$(uname) j2 test/ds/template.args > test/ds/good.args
-$ byexample @test/ds/good.args
+$ osname=$(uname) j2 test/ds/template.args > test/ds/good.args  # byexample: +pass
+$ byexample @test/ds/good.args                                  # byexample: +pass
 ```
 
 `j2` is one of many engines based on
