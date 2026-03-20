@@ -18,3 +18,4 @@ prof-traces
 test/ds/good.args
 test/autocomplete_byexample.sh
 .check-secrets-impl.sh
+build/
