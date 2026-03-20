@@ -465,10 +465,20 @@ class SM(object):
             input_match = None
         yield (charno, 'end', None)
 
+    def _begin_of_string_regex(self):
+        r'''
+        Return the regex to match the beginning of the got string.
+
+        By default it is just the start-of-string anchor \A.
+        Subclasses can override this to also skip any leading
+        empty/whitespace-only lines in the got.
+        '''
+        return r'\A'
+
     @log_context('byexample.parser')
     def parse(self, expected, tags_enabled, input_enabled):
         self.reset()
-        self.emit(0, r'\A', 0)
+        self.emit(0, self._begin_of_string_regex(), 0)
 
         tokenizer = self.expected_tokenizer(
             expected, tags_enabled, input_enabled
@@ -671,6 +681,17 @@ class SM_NormWS(SM):
     def trailing_whitespace_regex(self):
         return re.compile(r'\s*\Z', re.MULTILINE | re.DOTALL)
 
+    def _begin_of_string_regex(self):
+        r'''
+        Skip any leading whitespace (including empty lines) in the got.
+
+        In norm-ws mode all whitespace is equivalent, so leading
+        spaces and newlines can be freely skipped.
+        Non-greedy *? is used so that the next part of the regex
+        (e.g. a tag's \s+ lookahead) can still match the whitespace.
+        '''
+        return r'\A\s*?'
+
     def emit_ws(self, just_one=False):
         charno, _ = self.pull()
         if just_one:
@@ -816,7 +837,7 @@ class SM_NormWS(SM):
             >>> r, p, c, _, _ = _as_regexs('a  \n   b  \t\vc')
 
             >>> r
-            ('\\A', 'a', '\\s+(?!\\s)', 'b', '\\s+(?!\\s)', 'c', '\\s*\\Z')
+            ('\\A\\s*?', 'a', '\\s+(?!\\s)', 'b', '\\s+(?!\\s)', 'c', '\\s*\\Z')
 
             >>> match(r, 'a b c') is not None
             True
@@ -845,7 +866,7 @@ class SM_NormWS(SM):
             >>> regexs, p, _, _, _ = _as_regexs(expected)
 
             >>> regexs
-            ('\\A', 'a', '(?P<foo>.*?)', 'b', '\\s*\\Z')
+            ('\\A\\s*?', 'a', '(?P<foo>.*?)', 'b', '\\s*\\Z')
 
             >>> p
             (0, 0, 1, 6, 7)
@@ -861,7 +882,7 @@ class SM_NormWS(SM):
             >>> regexs, p, _, _, _ = _as_regexs(expected)
 
             >>> regexs               # byexample: -tags
-            ('\\A', 'a', '\\s+(?!\\s)', '(?P<foo>.*?)', 'b', '\\s*\\Z')
+            ('\\A\\s*?', 'a', '\\s+(?!\\s)', '(?P<foo>.*?)', 'b', '\\s*\\Z')
 
             >>> p
             (0, 0, 1, 2, 7, 8)
@@ -873,7 +894,7 @@ class SM_NormWS(SM):
             >>> regexs, p, _, _, _ = _as_regexs(expected)
 
             >>> regexs               # byexample: -tags
-            ('\\A', 'a', '(?P<foo>.*?)(?<!\\s)', '\\s+(?!\\s)', 'b', '\\s*\\Z')
+            ('\\A\\s*?', 'a', '(?P<foo>.*?)(?<!\\s)', '\\s+(?!\\s)', 'b', '\\s*\\Z')
 
             >>> p
             (0, 0, 1, 6, 7, 8)
@@ -888,7 +909,7 @@ class SM_NormWS(SM):
             >>> regexs, p, _, _, _ = _as_regexs(expected)
 
             >>> regexs           # byexample: +norm-ws -tags
-            ('\\A', 'a', '\\s', '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s+(?!\\s)', 'b', '\\s*\\Z')
+            ('\\A\\s*?', 'a', '\\s', '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s+(?!\\s)', 'b', '\\s*\\Z')
 
             >>> p
             (0, 0, 1, 2, 7, 8, 9)
@@ -918,7 +939,7 @@ class SM_NormWS(SM):
             >>> regexs, p, _, _, _ = _as_regexs(expected)
 
             >>> regexs               # byexample: -tags
-            ('\\A', '(?P<foo>.*?)(?<!\\s)', '\\s*\\Z')
+            ('\\A\\s*?', '(?P<foo>.*?)(?<!\\s)', '\\s*\\Z')
 
             >>> p
             (0, 0, 5)
@@ -930,7 +951,7 @@ class SM_NormWS(SM):
             >>> regexs, p, _, _, _ = _as_regexs(expected)
 
             >>> regexs               # byexample: -tags
-            ('\\A', '\\s', '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s*\\Z')
+            ('\\A\\s*?', '\\s', '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s*\\Z')
 
             >>> p
             (0, 0, 1, 6)
@@ -942,7 +963,7 @@ class SM_NormWS(SM):
             >>> regexs, p, _, _, _ = _as_regexs(expected)
 
             >>> regexs               # byexample: -tags
-            ('\\A', '\\s', '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s*\\Z')
+            ('\\A\\s*?', '\\s', '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?', '\\s*\\Z')
 
             >>> p
             (0, 0, 1, 6)
@@ -954,7 +975,7 @@ class SM_NormWS(SM):
             >>> regexs, p, _, _, _ = _as_regexs(expected)
 
             >>> regexs               # byexample: -tags
-            ('\\A', '(?P<foo>.*?)(?<!\\s)', '\\s*\\Z')
+            ('\\A\\s*?', '(?P<foo>.*?)(?<!\\s)', '\\s*\\Z')
 
             >>> p
             (0, 0, 5)
@@ -966,7 +987,7 @@ class SM_NormWS(SM):
             >>> regexs, p, _, _, _ = _as_regexs(expected)
 
             >>> regexs               # byexample: -tags
-            ('\\A', '\\s*\\Z')
+            ('\\A\\s*?', '\\s*\\Z')
 
             >>> p
             (0, 0)
@@ -975,7 +996,7 @@ class SM_NormWS(SM):
             >>> regexs, p, _, _, _ = _as_regexs(expected)
 
             >>> regexs               # byexample: -tags
-            ('\\A', '\\s*\\Z')
+            ('\\A\\s*?', '\\s*\\Z')
 
             >>> p
             (0, 0)
@@ -989,7 +1010,7 @@ class SM_NormWS(SM):
             >>> regexs, charnos, rcounts, _, input_list = _as_regexs(expected)
 
             >>> regexs              # byexample: +norm-ws
-            ('\\A', 'username', '\\s+(?!\\s)', '\\[john\\]', '\\s+(?!\\s)',
+            ('\\A\\s*?', 'username', '\\s+(?!\\s)', '\\[john\\]', '\\s+(?!\\s)',
              'pass', '\\s+(?!\\s)', '\\[admin\\]', '\\s+(?!\\s)',
              'comment', '\\s+(?!\\s)', '\\[', '\\s+(?!\\s)', 'none', '\\s+(?!\\s)', '\\]',
              '\\s*\\Z')
@@ -1020,6 +1041,18 @@ class SM_NotNormWS(SM):
     @constant
     def trailing_newlines_regex(self):
         return re.compile(r'\n*\Z', re.MULTILINE | re.DOTALL)
+
+    def _begin_of_string_regex(self):
+        r'''
+        Skip any leading empty or whitespace-only lines in the got.
+
+        A non-greedy *? is used to avoid consuming lines that the
+        expected regex (e.g. a tag) may need to match itself.
+        This is safe and non-pathological: each iteration of the
+        group consumes at least one \n, so the total work is linear
+        in the number of leading blank lines.
+        '''
+        return r'\A(?:[ \t]*\n)*?'
 
     def emit_tag(self, ctx, endline):
         assert ctx in ('n', '0')
@@ -1105,7 +1138,7 @@ class SM_NotNormWS(SM):
             >>> regexs, charnos, rcounts, tags_by_idx, input_list = _as_regexs(expected)
 
             >>> regexs              # byexample: -tags +norm-ws
-            ('\\A', 'a', '(?P<foo>.*?)', 'b', '(?P<b_b>.*?)', 'c', '(?:.*?)', 'd', '\\n*\\Z')
+            ('\\A(?:[ \\t]*\\n)*?', 'a', '(?P<foo>.*?)', 'b', '(?P<b_b>.*?)', 'c', '(?:.*?)', 'd', '\\n*\\Z')
 
             >>> match(regexs, 'axxbyyyczzd').groups()
             ('xx', 'yyy')
@@ -1152,7 +1185,7 @@ class SM_NotNormWS(SM):
             >>> regexs, _, rcounts, _, _ = _as_regexs(expected)
 
             >>> regexs          # byexample: +norm-ws -tags
-            ('\\A',
+            ('\\A(?:[ \\t]*\\n)*?',
              'a',
              '\\\n',
              '(?P<foo>.*?)',
@@ -1200,7 +1233,7 @@ class SM_NotNormWS(SM):
             >>> regexs, _, _, _, _ = _as_regexs(expected)
 
             >>> regexs          # byexample: -tags
-            ('\\A', '(?:(?P<foo>.+?)(?<!\\n))?', '\\n*\\Z')
+            ('\\A(?:[ \\t]*\\n)*?', '(?:(?P<foo>.+?)(?<!\\n))?', '\\n*\\Z')
 
             >>> match(regexs, '   123  \n\n\n\n').groups()
             ('   123  ',)
@@ -1209,7 +1242,7 @@ class SM_NotNormWS(SM):
             >>> regexs, _, _, _, _ = _as_regexs(expected)
 
             >>> regexs          # byexample: -tags
-            ('\\A', '(?:(?P<foo>.+?)(?<!\\n))?', '\\n*\\Z')
+            ('\\A(?:[ \\t]*\\n)*?', '(?:(?P<foo>.+?)(?<!\\n))?', '\\n*\\Z')
 
             >>> match(regexs, '123\n\n\n\n').groups()
             ('123',)
@@ -1218,7 +1251,7 @@ class SM_NotNormWS(SM):
             >>> regexs, _, _, _, _ = _as_regexs(expected)
 
             >>> regexs          # byexample: -tags
-            ('\\A', '\\\n', '(?:(?P<foo>.+?)(?<!\\n))?', '\\n*\\Z')
+            ('\\A(?:[ \\t]*\\n)*?', '\\\n', '(?:(?P<foo>.+?)(?<!\\n))?', '\\n*\\Z')
 
             >>> match(regexs, '\n123\n\n\n\n').groups()
             ('123',)
@@ -1235,7 +1268,7 @@ class SM_NotNormWS(SM):
             >>> regexs, charnos, rcounts, _, input_list = _as_regexs(expected)
 
             >>> regexs              # byexample: +norm-ws
-            ('\\A', 'username', '\\ ', '\\[john\\]', '\\\n',
+            ('\\A(?:[ \\t]*\\n)*?', 'username', '\\ ', '\\[john\\]', '\\\n',
              'pass', '\\ ', '\\[admin\\]', '\\ \\ ', '\\\n',
              'comment', '\\ ', '\\[', '\\ ', 'none', '\\ ', '\\]',
              '\\n*\\Z')

@@ -262,8 +262,8 @@ class ExampleParser(Extension, ExtendOptionParserMixin):
 
         We return the regexs
 
-            >>> regexs
-            ('\\A', 'a', '(?P<foo>.*?)', 'b', '(?P<bar>.*?)', 'c', '\\n*\\Z')
+            >>> regexs          # byexample: +norm-ws
+            ('\\A(?:[ \\t]*\\n)*?', 'a', '(?P<foo>.*?)', 'b', '(?P<bar>.*?)', 'c', '\\n*\\Z')
 
             >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
             >>> m.match('axxbyyyc').groups()
@@ -300,7 +300,7 @@ class ExampleParser(Extension, ExtendOptionParserMixin):
             >>> regexs, _, _, tags_by_idx, _ = _as_regexs(expected, normalize_whitespace=True)
 
             >>> regexs          # byexample: +norm-ws
-            ('\\A', 'a', '(?:.*?)(?<!\\s)', '\\s+(?!\\s)', '(?P<foo_bar>.*?)', 'c', '\\s*\\Z')
+            ('\\A\\s*?', 'a', '(?:.*?)(?<!\\s)', '\\s+(?!\\s)', '(?P<foo_bar>.*?)', 'c', '\\s*\\Z')
 
             >>> tags_by_idx
             {2: None, 4: 'foo-bar'}
@@ -315,7 +315,7 @@ class ExampleParser(Extension, ExtendOptionParserMixin):
             >>> regexs, _, _, tags_by_idx, _ = _as_regexs(expected)
 
             >>> regexs
-            ('\\A', 'a<foo>b<bar>c', '\\n*\\Z')
+            ('\\A(?:[ \\t]*\\n)*?', 'a<foo>b<bar>c', '\\n*\\Z')
 
             >>> tags_by_idx
             {}
@@ -324,7 +324,7 @@ class ExampleParser(Extension, ExtendOptionParserMixin):
             >>> regexs, _, _, tags_by_idx, _ = _as_regexs(expected)
 
             >>> regexs
-            ('\\A', 'a', '(?:.*?)', 'b<bar>c', '\\n*\\Z')
+            ('\\A(?:[ \\t]*\\n)*?', 'a', '(?:.*?)', 'b<bar>c', '\\n*\\Z')
 
             >>> tags_by_idx
             {2: None}
@@ -433,7 +433,7 @@ r'''
 >>> regexs, _, _, _, _ = _as_regexs(expected, normalize_whitespace=True)
 
 >>> regexs
-('\\A',
+('\\A\\s*?',
  'ex',
  '\\s',
  '(?:\\s*(?!\\s)(?:.+)(?<!\\s))?',
@@ -450,7 +450,7 @@ r'''
 >>> regexs, _, _, _, _ = _as_regexs(expected, normalize_whitespace=True)
 
 >>> regexs
-('\\A',
+('\\A\\s*?',
  'ex',
  '\\s',
  '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?',
