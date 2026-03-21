@@ -281,7 +281,7 @@ the scenes so you do not to be worry about the details):
 
 ```python
 >>> from byexample.options import Options, OptionParser
->>> parser = ArnoldCParser(cfg=Config(verbosity=0, encoding='utf-8', options=Options(rm=[], norm_ws=False, tags=True, capture=True, type=False, input_prefix_range=(6,12), optparser=OptionParser(add_help=False))))
+>>> parser = ArnoldCParser(cfg=Config(verbosity=0, encoding='utf-8', options=Options(rm=[], norm_ws=False, tags=True, capture=True, type=False, input_prefix_range=(6,12), ignore_first_empty_lines=True, optparser=OptionParser(add_help=False))))
 
 >>> from byexample.finder import Example
 >>> runner = None # not yet
