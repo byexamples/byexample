@@ -37,7 +37,12 @@ r'''
 
 class SM(object):
     def __init__(
-        self, tag_regexs, input_regexs, ellipsis_marker, input_prefix_len_range
+        self,
+        tag_regexs,
+        input_regexs,
+        ellipsis_marker,
+        input_prefix_len_range,
+        ignore_first_empty_lines=True
     ):
         self.tag_regex = tag_regexs.for_capture
         self.tag_split_regex = tag_regexs.for_split
@@ -48,6 +53,8 @@ class SM(object):
 
         self.input_prefix_min_len, self.input_prefix_max_len = input_prefix_len_range
         assert self.input_prefix_min_len <= self.input_prefix_max_len
+
+        self.ignore_first_empty_lines = ignore_first_empty_lines
 
         self.reset()
 
@@ -670,11 +677,16 @@ class SM(object):
 
 class SM_NormWS(SM):
     def __init__(
-        self, tag_regexs, input_regexs, ellipsis_marker, input_prefix_len_range
+        self,
+        tag_regexs,
+        input_regexs,
+        ellipsis_marker,
+        input_prefix_len_range,
+        ignore_first_empty_lines=True
     ):
         SM.__init__(
             self, tag_regexs, input_regexs, ellipsis_marker,
-            input_prefix_len_range
+            input_prefix_len_range, ignore_first_empty_lines
         )
 
     @constant
@@ -683,19 +695,25 @@ class SM_NormWS(SM):
 
     def _begin_of_string_regex(self):
         r'''
-        Skip any leading whitespace (including empty lines) in the got.
+        If ignore_first_empty_lines is True (the default), skip any leading
+        whitespace (including empty lines) in the got before matching content.
 
-        In norm-ws mode all whitespace is equivalent, so leading
-        spaces and newlines can be freely skipped.
-        Non-greedy *? is used so that the next part of the regex
-        (e.g. a tag's \s+ lookahead) can still match the whitespace.
+        In norm-ws mode all whitespace is equivalent, so leading spaces and
+        newlines can be freely skipped.  Non-greedy *? is used so that the
+        next part of the regex (e.g. a tag's \s+ lookahead) can still match
+        the whitespace.
+
+        If ignore_first_empty_lines is False, use a plain \A anchor so that
+        the got string must start exactly where the expected content begins.
 
         Note: when the first content token is itself a whitespace transition
-        (\s+(?!\s)), emit_ws() folds \A\s*? + \s+(?!\s) into the single
-        equivalent \A\s+(?!\s) to avoid a quadratic interaction between the
+        (\s+(?!\s)), emit_ws() folds the begin anchor + \s+(?!\s) into the
+        single equivalent \A\s+(?!\s) to avoid a quadratic interaction between
         two overlapping whitespace quantifiers.
         '''
-        return r'\A\s*?'
+        if self.ignore_first_empty_lines:
+            return r'\A\s*?'
+        return r'\A'
 
     def emit_ws(self, just_one=False):
         charno, _ = self.pull()
@@ -703,13 +721,14 @@ class SM_NormWS(SM):
             rx = r'\s'
         else:
             rx = r'\s+(?!\s)'
-            # \A\s*? + \s+(?!\s) is quadratic: both parts match whitespace
+            # If self.ignore_first_empty_lines is True,
+            # the \A\s*? + \s+(?!\s) is quadratic: both parts match whitespace
             # and the engine explores O(n^2) splits on whitespace-only strings.
             # \A\s*?\s+(?!\s) is semantically equivalent to \A\s+(?!\s)
             # (both match one-or-more whitespace anchored at start, stopping
             # before non-whitespace), so fold them when this is the first
             # content emit (only the \A\s*? anchor is in results so far).
-            if len(self.results) == 1:
+            if len(self.results) == 1 and self.ignore_first_empty_lines:
                 self.results.pop()
                 rx = r'\A' + rx
         rc = 1
@@ -1071,11 +1090,16 @@ class SM_NormWS(SM):
 
 class SM_NotNormWS(SM):
     def __init__(
-        self, tag_regexs, input_regexs, ellipsis_marker, input_prefix_len_range
+        self,
+        tag_regexs,
+        input_regexs,
+        ellipsis_marker,
+        input_prefix_len_range,
+        ignore_first_empty_lines=True
     ):
         SM.__init__(
             self, tag_regexs, input_regexs, ellipsis_marker,
-            input_prefix_len_range
+            input_prefix_len_range, ignore_first_empty_lines
         )
 
     @constant
@@ -1084,15 +1108,20 @@ class SM_NotNormWS(SM):
 
     def _begin_of_string_regex(self):
         r'''
-        Skip any leading empty or whitespace-only lines in the got.
+        If ignore_first_empty_lines is True (the default), skip any leading
+        empty or whitespace-only lines in the got before matching content.
 
-        A non-greedy *? is used to avoid consuming lines that the
-        expected regex (e.g. a tag) may need to match itself.
-        This is safe and non-pathological: each iteration of the
-        group consumes at least one \n, so the total work is linear
-        in the number of leading blank lines.
+        A non-greedy *? is used to avoid consuming lines that the expected
+        regex (e.g. a tag) may need to match itself.  This is safe and
+        non-pathological: each iteration of the group consumes at least one
+        \n, so the total work is linear in the number of leading blank lines.
+
+        If ignore_first_empty_lines is False, use a plain \A anchor so that
+        the got string must start exactly where the expected content begins.
         '''
-        return r'\A(?:[ \t]*\n)*?'
+        if self.ignore_first_empty_lines:
+            return r'\A(?:[ \t]*\n)*?'
+        return r'\A'
 
     def emit_tag(self, ctx, endline):
         assert ctx in ('n', '0')

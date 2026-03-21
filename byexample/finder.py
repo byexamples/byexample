@@ -51,7 +51,8 @@ def _build_fake_example(
                 'capture': True,
                 'rm': [],
                 'type': False,
-                'input_prefix_range': (6, 12)
+                'input_prefix_range': (6, 12),
+                'ignore_first_empty_lines': True,
             }
         )
     parser.extract_options = lambda x: opts

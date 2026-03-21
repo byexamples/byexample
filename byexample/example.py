@@ -82,6 +82,7 @@ class Example(object):
 
     >>> example.options
     {'capture': True,
+     'ignore_first_empty_lines': True,
      'input_prefix_range': (6, 12),
      'norm_ws': False,
      'rm': [],
