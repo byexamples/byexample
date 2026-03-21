@@ -97,6 +97,12 @@ Some indented line
 Some indented line
 ```
 
+> *New* in `byexample 11.0.0`: before `11.0.0` it was up to the user to
+> put a <...> or similar to ignore the empty lines at the begin (or use
+> `+rm=~` combined with `+norm-ws`).
+> Since `11.0.0` this is the default. If you want to old behavior you
+> can use the flag `-ignore-first-empty-lines`
+
 <!--
 
 Test a few more combinations
@@ -108,6 +114,6 @@ Test the incorrect combinations and check that they are actually failing
 
 $ byexample -l python test/bad-empty-line.md
 <...>
-[FAIL] Pass: 0 Fail: 2 Skip: 0
+[FAIL] Pass: 0 Fail: 3 Skip: 0
 
 -->
