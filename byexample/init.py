@@ -387,6 +387,12 @@ def get_default_options_parser(cmdline_args):
         "norm-ws", default=False, help="ignore the amount of whitespaces."
     )
     options_parser.add_flag(
+        "ignore-first-empty-lines",
+        default=True,
+        help=
+        "ignore any empty or whitespace-only lines at the begin of the got string."
+    )
+    options_parser.add_flag(
         "pass",
         default=False,
         help="run the example but do not check its output."

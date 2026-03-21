@@ -193,7 +193,8 @@ class ExampleParser(Extension, ExtendOptionParserMixin):
         input_prefix_len_range = options['input_prefix_range']
         expected_regexs, charnos, rcounts, tags_by_idx, input_list = self.expected_as_regexs(
             example.expected_str, options['tags'], options['capture'],
-            options['type'], options['norm_ws'], input_prefix_len_range
+            options['type'], options['norm_ws'], input_prefix_len_range,
+            options['ignore_first_empty_lines']
         )
 
         ExpectedClass = _LinearExpected
@@ -230,8 +231,14 @@ class ExampleParser(Extension, ExtendOptionParserMixin):
 
     @profile
     def expected_as_regexs(
-        self, expected, tags_enabled, capture_enabled, input_enabled,
-        normalize_whitespace, input_prefix_len_range
+        self,
+        expected,
+        tags_enabled,
+        capture_enabled,
+        input_enabled,
+        normalize_whitespace,
+        input_prefix_len_range,
+        ignore_first_empty_lines=True
     ):
         r'''
         From the expected string create a list of regular expressions that
@@ -262,8 +269,8 @@ class ExampleParser(Extension, ExtendOptionParserMixin):
 
         We return the regexs
 
-            >>> regexs
-            ('\\A', 'a', '(?P<foo>.*?)', 'b', '(?P<bar>.*?)', 'c', '\\n*\\Z')
+            >>> regexs          # byexample: +norm-ws
+            ('\\A(?:[ \\t]*\\n)*?', 'a', '(?P<foo>.*?)', 'b', '(?P<bar>.*?)', 'c', '\\n*\\Z')
 
             >>> m = re.compile(''.join(regexs), re.MULTILINE | re.DOTALL)
             >>> m.match('axxbyyyc').groups()
@@ -300,7 +307,7 @@ class ExampleParser(Extension, ExtendOptionParserMixin):
             >>> regexs, _, _, tags_by_idx, _ = _as_regexs(expected, normalize_whitespace=True)
 
             >>> regexs          # byexample: +norm-ws
-            ('\\A', 'a', '(?:.*?)(?<!\\s)', '\\s+(?!\\s)', '(?P<foo_bar>.*?)', 'c', '\\s*\\Z')
+            ('\\A\\s*?', 'a', '(?:.*?)(?<!\\s)', '\\s+(?!\\s)', '(?P<foo_bar>.*?)', 'c', '\\s*\\Z')
 
             >>> tags_by_idx
             {2: None, 4: 'foo-bar'}
@@ -315,7 +322,7 @@ class ExampleParser(Extension, ExtendOptionParserMixin):
             >>> regexs, _, _, tags_by_idx, _ = _as_regexs(expected)
 
             >>> regexs
-            ('\\A', 'a<foo>b<bar>c', '\\n*\\Z')
+            ('\\A(?:[ \\t]*\\n)*?', 'a<foo>b<bar>c', '\\n*\\Z')
 
             >>> tags_by_idx
             {}
@@ -324,10 +331,23 @@ class ExampleParser(Extension, ExtendOptionParserMixin):
             >>> regexs, _, _, tags_by_idx, _ = _as_regexs(expected)
 
             >>> regexs
-            ('\\A', 'a', '(?:.*?)', 'b<bar>c', '\\n*\\Z')
+            ('\\A(?:[ \\t]*\\n)*?', 'a', '(?:.*?)', 'b<bar>c', '\\n*\\Z')
 
             >>> tags_by_idx
             {2: None}
+
+        When ignore_first_empty_lines is False the begin anchor is a plain \\A,
+        so the got string must start exactly at the first expected character.
+
+            >>> regexs, _, _, _, _ = _as_regexs('foo', ignore_first_empty_lines=False)
+
+            >>> regexs
+            ('\\A', 'foo', '\\n*\\Z')
+
+            >>> regexs, _, _, _, _ = _as_regexs('foo', normalize_whitespace=True, ignore_first_empty_lines=False)
+
+            >>> regexs
+            ('\\A', 'foo', '\\s*\\Z')
 
         '''
         if capture_enabled:
@@ -338,12 +358,12 @@ class ExampleParser(Extension, ExtendOptionParserMixin):
         if normalize_whitespace:
             sm = SM_NormWS(
                 tag_regexs, self.input_regexs(), self.ellipsis_marker(),
-                input_prefix_len_range
+                input_prefix_len_range, ignore_first_empty_lines
             )
         else:
             sm = SM_NotNormWS(
                 tag_regexs, self.input_regexs(), self.ellipsis_marker(),
-                input_prefix_len_range
+                input_prefix_len_range, ignore_first_empty_lines
             )
 
         return sm.parse(expected, tags_enabled, input_enabled)
@@ -433,7 +453,7 @@ r'''
 >>> regexs, _, _, _, _ = _as_regexs(expected, normalize_whitespace=True)
 
 >>> regexs
-('\\A',
+('\\A\\s*?',
  'ex',
  '\\s',
  '(?:\\s*(?!\\s)(?:.+)(?<!\\s))?',
@@ -450,7 +470,7 @@ r'''
 >>> regexs, _, _, _, _ = _as_regexs(expected, normalize_whitespace=True)
 
 >>> regexs
-('\\A',
+('\\A\\s*?',
  'ex',
  '\\s',
  '(?:\\s*(?!\\s)(?P<foo>.+?)(?<!\\s))?',

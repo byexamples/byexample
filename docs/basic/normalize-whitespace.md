@@ -1,3 +1,11 @@
+<!--
+Check that we have byexample installed first
+$ hash byexample                                    # byexample: +fail-fast
+
+$ alias byexample=byexample\ --pretty\ none
+
+--
+-->
 # Normalize Whitespace
 
 Replace any sequence of whitespace by a single one.
@@ -35,3 +43,77 @@ Here is another example, this time written in ``Ruby``:
    10,  11, 12, 13, 14, 15, 16, 17, 18, 19]
 ```
 
+## Empty lines at the begin are ignored by default
+
+
+Consider the following `"\n  \nSome line"` output. The following three
+examples matches because by default `byexample` discards any empty line
+at the begin of the output.
+
+```python
+>>> someline = "\n  \nSome line"
+
+>>> print(someline)  # OK: <...> captures the empty lines
+<...>
+Some line
+
+>>> print(someline)  # OK too: the same reason above
+<...>Some line
+
+>>> print(someline)  # OK: byexample ignores the empty lines "as if" a <...> was there
+Some line
+```
+
+`byexample` understands as "empty lines" lines made entirely of spaces
+and tabs ended with a new line. It is subtle but such definition does
+not include indentation.
+
+Consider the following `"\n  \n  Some indented line"`:
+
+```python
+>>> someindented = "\n  \n  Some indented line"
+
+>>> print(someindented)  # FAIL: the example is not expecting indentation    # byexample: +pass
+<...>
+Some indented line
+
+>>> print(someindented)  # OK: <...> captures all including the indentation
+<...>Some indented line
+
+>>> print(someindented)  # FAIL: byexample ignores the empty lines but not the indentation   # byexample: +pass
+Some indented line
+```
+
+When `+norm-ws` is enabled, those two `FAIL` examples will work because
+`byexample` relaxes the definition of empty lines and replaces by
+"any whitespace" which the indentation gets included:
+
+```python
+>>> print(someindented) # byexample: +norm-ws
+<...>
+Some indented line
+
+>>> print(someindented)  # byexample: +norm-ws
+Some indented line
+```
+
+> *New* in `byexample 11.0.0`: before `11.0.0` it was up to the user to
+> put a <...> or similar to ignore the empty lines at the begin (or use
+> `+rm=~` combined with `+norm-ws`).
+> Since `11.0.0` this is the default. If you want to old behavior you
+> can use the flag `-ignore-first-empty-lines`
+
+<!--
+
+Test a few more combinations
+
+>>> print(someindented) # byexample: +norm-ws
+<...>Some indented line
+
+Test the incorrect combinations and check that they are actually failing
+
+$ byexample -l python test/bad-empty-line.md
+<...>
+[FAIL] Pass: 0 Fail: 3 Skip: 0
+
+-->
