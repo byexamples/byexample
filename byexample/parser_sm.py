@@ -689,6 +689,11 @@ class SM_NormWS(SM):
         spaces and newlines can be freely skipped.
         Non-greedy *? is used so that the next part of the regex
         (e.g. a tag's \s+ lookahead) can still match the whitespace.
+
+        Note: when the first content token is itself a whitespace transition
+        (\s+(?!\s)), emit_ws() folds \A\s*? + \s+(?!\s) into the single
+        equivalent \A\s+(?!\s) to avoid a quadratic interaction between the
+        two overlapping whitespace quantifiers.
         '''
         return r'\A\s*?'
 
@@ -698,6 +703,15 @@ class SM_NormWS(SM):
             rx = r'\s'
         else:
             rx = r'\s+(?!\s)'
+            # \A\s*? + \s+(?!\s) is quadratic: both parts match whitespace
+            # and the engine explores O(n^2) splits on whitespace-only strings.
+            # \A\s*?\s+(?!\s) is semantically equivalent to \A\s+(?!\s)
+            # (both match one-or-more whitespace anchored at start, stopping
+            # before non-whitespace), so fold them when this is the first
+            # content emit (only the \A\s*? anchor is in results so far).
+            if len(self.results) == 1:
+                self.results.pop()
+                rx = r'\A' + rx
         rc = 1
 
         self.record_input_event(charno, 'prefix', ' ', rx, rc)
@@ -982,6 +996,32 @@ class SM_NormWS(SM):
 
             >>> match(regexs, '   123  \n\n\n\n').groups()
             ('   123',)
+
+            When the expected starts with whitespace, \A\s*? + \s+(?!\s) would
+            be quadratic on whitespace-only got strings.  They are folded into
+            the single equivalent \A\s+(?!\s) which is linear (greedy, no
+            overlap).
+
+            >>> expected = '  foo'
+            >>> regexs, p, _, _, _ = _as_regexs(expected)
+
+            >>> regexs               # byexample: -tags
+            ('\\A\\s+(?!\\s)', 'foo', '\\s*\\Z')
+
+            >>> p
+            (0, 2, 5)
+
+            This still skips any extra leading whitespace in the got, just
+            like \A\s*?\s+(?!\s) would, because \s+ is greedy from \A.
+
+            >>> match(regexs, '\n\n  foo').groups()
+            ()
+
+            >>> match(regexs, '  foo').groups()
+            ()
+
+            >>> match(regexs, 'foo') is None
+            True
 
             >>> expected = ' '
             >>> regexs, p, _, _, _ = _as_regexs(expected)
