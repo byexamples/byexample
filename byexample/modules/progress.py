@@ -125,21 +125,21 @@ class SimpleReporter(Concern):
             input = short_string(exception.input)
 
             msg += self._bullet('cyan', '-') + ' '
-            msg += ("This happen before typing '%s'.\n" % input) + \
-                   "Perhaps the text before did not match what you expected?\n" + \
-                   (exception.prefix) + '\n'
+            msg += ("This happen before typing >>%s<<.\n" % input) + \
+                    "Perhaps the text before did not match what you expected? You were expecting:\n" + \
+                   ">>" + (exception.prefix) + "<<" + '\n'
 
         exception_output = exception.output.rstrip()
         if exception_output:
             msg += self._bullet('cyan', '-') + ' '
-            msg += 'This is the last output obtained:\n%s\n' % str(
+            msg += 'This is the last output obtained:\n>>%s<<\n' % str(
                 exception_output
             )
 
         exception_raw_output = exception.raw_output.rstrip()
         if self.verbosity >= 4 and exception_raw_output:
             msg += self._bullet('yellow', '-') + ' '
-            msg += 'This is the last raw output obtained:\n%s\n' % str(
+            msg += 'This is the last raw output obtained:\n>>%s<<\n' % str(
                 exception_raw_output
             )
 

@@ -176,11 +176,11 @@ $ byexample -l python test/ds/maximum-ctx-input.md
 - This could be because the example just ran too slow (try add more time
 with +timeout=<n>) or the example is "syntactically incorrect" and
 the interpreter hang (may be you forgot a parenthesis or something like that?).
-- This happen before typing 'foo'.
-Perhaps the text before did not match what you expected?
-typo! text:
+- This happen before typing >>foo<<.
+Perhaps the text before did not match what you expected? You were expecting:
+>>typo! text: <<
 - This is the last output obtained:
-Some large text:
+>>Some large text:<<
 <...>
 [ABORT] Pass: 0 Fail: 1 Skip: 0
 ```
