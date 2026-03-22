@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 import pexpect, pexpect.popen_spawn, time, operator, os, itertools, contextlib
+
+import pprint
 import signal
 import subprocess
 from . import regex as re
@@ -196,6 +198,9 @@ class ReadFilter:
 
     def reset_unhandled_state(self):
         self._were_unhandled_escape_sequences = False
+
+    def stats(self):
+        return self._screen.stats()
 
 
 class PopenSpawnExt(ReadFilter, pexpect.popen_spawn.PopenSpawn):
@@ -584,29 +589,54 @@ class PexpectMixin(object):
             with log_with("sendlines") as clog2:
                 clog2.debug("\n > " + '\n > '.join(lines))
 
-        self._last_num_lines_sent = 0
-        for line in lines[:-1]:
+        try:
+            self._last_num_lines_sent = 0
+            for line in lines[:-1]:
+                with profile_ctx("sendline"):
+                    # turn the echo off (may be)
+                    self._may_turn_echo_off(options)
+
+                    self._sendline(line)
+                    self._last_num_lines_sent += 1
+                self._expect_prompt_or_type(
+                    options, countdown, input_list=input_list
+                )
+
             with profile_ctx("sendline"):
                 # turn the echo off (may be)
                 self._may_turn_echo_off(options)
 
-                self._sendline(line)
+                self._sendline(lines[-1])
                 self._last_num_lines_sent += 1
+
             self._expect_prompt_or_type(
-                options, countdown, input_list=input_list
+                options,
+                countdown,
+                prompt_re=self._PS1_re,
+                input_list=input_list
             )
+            self._expect_delayed_output(options)
+        finally:
+            unh = self._interpreter.were_unhandled_escape_sequences()
 
-        with profile_ctx("sendline"):
-            # turn the echo off (may be)
-            self._may_turn_echo_off(options)
+            if from_example is not None and unh:
+                from_example.add_note_on_failure(
+                        "Escape/control sequences were detected. If the output looks\n" +\
+                        "scrambled or dirty, you may try a full terminal emulation with '+term=ansi'" +\
+                        ("\nRun byexample with -v to get more debugging details" if not clog().isEnabledFor(INFO) else "")
+                        )
 
-            self._sendline(lines[-1])
-            self._last_num_lines_sent += 1
+                if clog().isEnabledFor(INFO):
+                    from_example.add_note_on_failure(
+                        "Unhandled sequences: " + pprint.pformat(
+                            list(
+                                self._interpreter._screen.
+                                _unhandled_escape_seq_cnt.keys()
+                            )
+                        )
+                    )
 
-        self._expect_prompt_or_type(
-            options, countdown, prompt_re=self._PS1_re, input_list=input_list
-        )
-        self._expect_delayed_output(options)
+            self._interpreter.reset_unhandled_state()
 
         if input_list:
             s = short_string(input_list[0][-1])
@@ -623,14 +653,6 @@ class PexpectMixin(object):
             with log_with("raw-got") as clog2:
                 clog2.debug("\n" + ''.join(self._output_between_prompts))
 
-        unh = self._interpreter.were_unhandled_escape_sequences()
-        self._interpreter.reset_unhandled_state()
-
-        if from_example is not None and unh:
-            from_example.add_note_on_failure(
-                    "Escape/control sequences were detected. If the output looks\n" +\
-                    "scrambled or dirty, you may try a full terminal emulation with '+term=ansi'"
-                    )
         out = self._get_output(options)
         return out
 
